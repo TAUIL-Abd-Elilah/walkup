@@ -122,6 +122,14 @@ METROS: dict[str, dict[str, Any]] = {
         # The six cities in full, south to the NC line (~77 km x 68 km).
         "bbox": {"south": 36.54, "west": -76.62, "north": 37.23, "east": -75.86},
     },
+    "dc": {
+        "label": "Washington, DC: the District and the inner Maryland and Virginia suburbs",
+        "center": {"lat": 38.8801, "lon": -77.0262},
+        "cities": ["Washington", "Arlington", "Alexandria", "Bethesda", "Silver Spring"],
+        # ~80 km x 80 km around The Anthem (the live hero room), so a 40 km lift radius stays
+        # inside: Fairfax, Reston, Rockville, Laurel, Bowie and Upper Marlboro at the edges.
+        "bbox": km_box(38.8801, -77.0262, 40.0, 40.0),
+    },
     "tacoma": {
         "label": "Tacoma, WA: Tacoma, Pierce County core and south Seattle",
         "center": {"lat": 47.2529, "lon": -122.4443},

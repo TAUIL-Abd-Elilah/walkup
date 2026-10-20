@@ -161,7 +161,7 @@ npx tsc -p apps/web/tsconfig.json --noEmit
 
 - Live mode is wired but unexercised: no keys exist. The live paths (free-text search, caps, stored presets, the quota
   guard, recorded mode on stored live runs) are tested with the fixture world standing in for the live transports. g1-a and g1-b have a live show (the
-  hero bills at The Basement East, `presetFor` in `@walkup/orchestrator`); g2 and g3 do not, and a live run of either
+  hero bills at The Anthem, Washington DC, `presetFor` in `@walkup/orchestrator`); g2 and g3 do not, and a live run of either
   stops with "This preset has no live show yet." before any call, and in live mode the preset pages show the
   bundled fixture until a stored run of the live show's event exists. A live sheet of a preset takes its line and
   real-show wording from the preset's live show only when it planned that show's event; a run recorded before the

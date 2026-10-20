@@ -6,9 +6,9 @@
  * fields are the fixture show: event ids point at the fixture world and every
  * bill there is invented. `live` is a real Ticketmaster bill picked by
  * HERO_RULE (one independent room, HERO_WINDOW): g1-a and g1-b carry the two
- * hero bills at The Basement East; g2 and g3 have none. presetFor(preset, mode) is the one reader of either
- * show: a live run of a preset with no live show stops with NO_LIVE_SHOW
- * before any call. Presets carry no seats-left count; capacity and budget are
+ * hero bills at The Anthem, Washington DC; g2 and g3 have none.
+ * presetFor(preset, mode) is the one reader of either show: a live run of a
+ * preset with no live show stops with NO_LIVE_SHOW before any call. Presets carry no seats-left count; capacity and budget are
  * operator what-ifs, never sales data.
  */
 import type { OperatorInputs } from "@walkup/contracts";
@@ -101,24 +101,23 @@ const G1_OPERATOR: OperatorInputs = {
 };
 
 /**
- * The live hero room: The Basement East, Nashville (independently owned; Live Nation has booked it since 2019).
- * The rule was run with npm run tm:room on 2026-10-20 over the room's Ticketmaster calendar, venue KovZ917ACl7:
- *   npm run tm:room -- --venue-id=KovZ917ACl7 --as-of=2026-10-20 --unresolved=rZ7HnEZ1AfGI-f
- * Its first folk bill, Bo Staloch on Feb 3 2027 (rZ7HnEZ1AfGI-f), was skipped: an exact Qloo search for the name
- * returned other acts only. Both picked headliners resolve by their Spotify ids and pass the signal check.
- * The events list the room under its TicketWeb venue id, rZ7HnEZ1789Gg, which is what a run reads the house
- * roster from.
+ * The live hero room: The Anthem, Washington DC (I.M.P., an independent promoter and venue operator).
+ * The rule was run with npm run tm:room on 2026-10-20 over the room's Ticketmaster calendar:
+ *   npm run tm:room -- --venue-id=KovZ917A3Y7 --as-of=2026-10-20
+ * Both picks are the rule's own; no bill was skipped. Rhiannon Giddens resolves by her Spotify id and FLO by an
+ * exact name search with one match; both pass the signal check. (The Basement East, Nashville, was tried first: its
+ * bill B came back too thin to map, so partners fell back to the venue's block.)
  */
-const HERO_VENUE = { name: "The Basement East", city: "Nashville", state: "TN" } as const;
-const HERO_VENUE_ID = "rZ7HnEZ1789Gg";
+const HERO_VENUE = { name: "The Anthem", city: "Washington", state: "DC" } as const;
+const HERO_VENUE_ID = "KovZ917A3Y7";
 const HERO_AS_OF = "2026-10-20";
-const HERO_LINE = "Same room, two crowds: two real bills at The Basement East, planned side by side.";
+const HERO_LINE = "Same room, two crowds: two real bills at The Anthem, planned side by side.";
 
-/** What-ifs for the hero room: the capacity is the room's published 500-600 range; the budget is an example. */
+/** What-ifs for the hero room: the capacity is the room's published 6,000; the budget is an example. */
 const HERO_OPERATOR: OperatorInputs = {
   seatsLeft: null,
-  capacity: 550,
-  mediaBudgetUsd: 1500,
+  capacity: 6000,
+  mediaBudgetUsd: 6000,
   streetTeamDays: ["thursday", "saturday"],
   radiusKm: 40,
   declaredPartners: [],
@@ -141,16 +140,12 @@ export const PRESETS: Record<PresetId, Preset> = {
     realShow: false,
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
     live: {
-      tmEventId: "rZ7HnEZ1AfGx4f",
+      tmEventId: "1AvfZ_3Gkmo647x",
       tmVenueId: HERO_VENUE_ID,
       asOf: HERO_AS_OF,
-      title: "The Basement East, Nashville: bill A",
+      title: "The Anthem, Washington DC: bill A",
       venue: HERO_VENUE,
-      selection: {
-        rule: HERO_RULE,
-        result:
-          "Bill A: Rayland Baxter, The True Violet Tour, Fri Feb 5 2027 (Rock / Folk Rock), the first folk bill in the window after Bo Staloch (Feb 3), whose headliner has no exact match in Qloo.",
-      },
+      selection: { rule: HERO_RULE, result: "Bill A: Rhiannon Giddens, Sun Feb 28 2027 (Country), the only Americana, country or folk bill in the window." },
       operator: HERO_OPERATOR,
       line: HERO_LINE,
     },
@@ -167,15 +162,12 @@ export const PRESETS: Record<PresetId, Preset> = {
     realShow: false,
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
     live: {
-      tmEventId: "rZ7HnEZ1AfusAf",
+      tmEventId: "1A4Zk4vGkemjaL_",
       tmVenueId: HERO_VENUE_ID,
       asOf: HERO_AS_OF,
-      title: "The Basement East, Nashville: bill B",
+      title: "The Anthem, Washington DC: bill B",
       venue: HERO_VENUE,
-      selection: {
-        rule: HERO_RULE,
-        result: "Bill B: Little Stranger with Shwayze and Damn Skippy, Sun Feb 21 2027 (Hip-Hop/Rap), the genre most distant from bill A.",
-      },
+      selection: { rule: HERO_RULE, result: "Bill B: FLO, Therapy At The Club Tour, Wed Feb 17 2027 (R&B), the genre most distant from bill A." },
       operator: HERO_OPERATOR,
       line: HERO_LINE,
     },

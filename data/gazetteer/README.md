@@ -18,6 +18,7 @@ lift tile without calling any API at run time. `@walkup/gazetteer`
 |---|---|---|
 | `nashville` | 35.8752, -87.1377, 36.4502, -86.4255 | ~64 x 64 km around downtown: Davidson County plus Brentwood, Franklin, Smyrna, La Vergne, Mt. Juliet, Hendersonville, Goodlettsville |
 | `hampton_roads` | 36.54, -76.62, 37.23, -75.86 | Hampton, Newport News, Norfolk, Portsmouth, Virginia Beach and Chesapeake in full (~77 x 68 km) |
+| `dc` | 38.5208, -77.4878, 39.2394, -76.5646 | ~80 x 80 km around The Anthem (the live hero room): the District, Arlington, Alexandria, Fairfax, Reston, Bethesda, Rockville, Silver Spring, College Park, Laurel, Bowie |
 | `tacoma` | 46.99, -122.78, 47.62, -122.12 | ~70 km north-south from Spanaway/Graham to downtown Seattle, Gig Harbor to Auburn/Bonney Lake |
 
 The boxes live in `METROS` in `build.py`. A lift radius of 40 km from a venue can reach past
