@@ -34,6 +34,8 @@ export interface PlanBody {
   /** Partner names to rank (rank-partners). */
   partners?: string[];
   wait: Wait;
+  /** Operator only (WALKUP_OPERATOR_TOKEN): plan a live preset again instead of serving its stored run. */
+  rerecord?: boolean;
 }
 
 export type Result<T> = { ok: true; value: T } | { ok: false; reason: string };
@@ -233,6 +235,10 @@ export function parsePlanBody(v: unknown, presetIds: readonly string[]): Result<
       else if (looksPolitical(event)) return { ok: false, reason: POLITICAL_REFUSAL };
       else body.freeText = event;
     }
+  }
+  if (v.rerecord !== undefined) {
+    if (v.rerecord !== true || !body.presetId) return { ok: false, reason: "rerecord: true goes with a presetId only." };
+    body.rerecord = true;
   }
   return { ok: true, value: body };
 }

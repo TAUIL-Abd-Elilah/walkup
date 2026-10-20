@@ -3,7 +3,7 @@
  * keyed hash downstream), origin, and the one functional cookie (a random
  * session id that scopes the operator's remembered picks and preset actions).
  */
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { FIXTURE_FRESH_RUNS_REASON, json, RECORDED_REASON } from "../api";
 import { runtimeMode } from "../mode";
 
@@ -83,6 +83,22 @@ export function contextOf(request: Request, ensureSession = false): RequestConte
 }
 
 export { json };
+
+/** Shortest WALKUP_OPERATOR_TOKEN accepted; a shorter one turns the operator paths off. */
+export const MIN_OPERATOR_TOKEN_CHARS = 32;
+
+/**
+ * True when the request carries `Authorization: Bearer <WALKUP_OPERATOR_TOKEN>`. Unset or short token: always
+ * false. Compared as SHA-256 digests in constant time, so neither the length nor a prefix leaks.
+ */
+export function operatorAuthorized(request: Request, env: Record<string, string | undefined> = process.env): boolean {
+  const token = (env.WALKUP_OPERATOR_TOKEN ?? "").trim();
+  if (token.length < MIN_OPERATOR_TOKEN_CHARS) return false;
+  const m = /^Bearer\s+(\S+)$/i.exec(request.headers.get("authorization") ?? "");
+  if (!m) return false;
+  const digest = (s: string) => createHash("sha256").update(s).digest();
+  return timingSafeEqual(digest(m[1] as string), digest(token));
+}
 
 /** Free-form runs need live keys; the skill maps 503 + mode "fixture" or "recorded" to its exit code 6. */
 export function freshRunsDisabled(): Response {

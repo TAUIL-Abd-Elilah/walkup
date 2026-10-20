@@ -21,7 +21,7 @@ import { resetActionsForTests, sessionActions } from "../lib/server/actions";
 import { depsFor, resetEngineForTests, setEngineForTests, stores } from "../lib/server/engine";
 import { exportKind, exportResponse } from "../lib/server/exports";
 import type { RequestContext } from "../lib/server/http";
-import { clientIp, parseCookies, sessionCookie } from "../lib/server/http";
+import { clientIp, operatorAuthorized, parseCookies, sessionCookie } from "../lib/server/http";
 import { parseOperator, parsePlanBody, POLITICAL_REFUSAL, tmEventIdFrom } from "../lib/server/input";
 import { noteQlooRejection, qlooKeyRejection, qlooRefusedKey, resetKeyStatusMemo } from "../lib/server/key-status";
 import { FreshRunLimiter, rateLimit, resetRateWindowsForTests, setFreshRunsForTests } from "../lib/server/limits";
@@ -539,6 +539,41 @@ describe("live mode (keys present; the fixture world stands in for the live tran
     expect((again.body as Body).planId).toBe((run.body as Body).planId);
     const v = await loadPlan("g1-a", { view: "page" });
     expect(v?.kind === "sheet" && v.source).toBe("store");
+  });
+
+  it("re-records a preset only for the operator, and then serves the new run as the preset", async () => {
+    useWorldLiveShows();
+    const token = "test-operator-token-0123456789abcdef";
+    process.env.WALKUP_OPERATOR_TOKEN = token;
+    try {
+      const first = await startPlan({ presetId: "g3" }, ctx({ ip: "198.51.100.94" }));
+      const firstId = String((first.body as Body).planId);
+      // Without the operator flag the request is refused and nothing runs.
+      const refused = await startPlan({ presetId: "g3", rerecord: true }, ctx({ ip: "198.51.100.94" }));
+      expect(refused.status).toBe(403);
+      expect((refused.body as Body).reason).toMatch(/operator token/);
+      expect(((await loadPlan("g3", { view: "page" })) as { planId?: string }).planId).toBe(firstId);
+      // With it, the preset is planned again and the new run becomes the preset.
+      const again = await startPlan({ presetId: "g3", rerecord: true }, ctx({ ip: "198.51.100.95" }), { operator: true });
+      expect(again.status).toBe(200);
+      const againId = String((again.body as Body).planId);
+      expect(againId).not.toBe(firstId);
+      expect((again.body as Body).servedFromStore).toBeUndefined();
+      expect(((await loadPlan("g3", { view: "page" })) as { planId?: string }).planId).toBe(againId);
+      // rerecord goes with a presetId only.
+      expect((await startPlan({ tmEventId: WORLD_EVENT_IDS.g3, rerecord: true }, ctx({ ip: "198.51.100.96" }), { operator: true })).status).toBe(400);
+      // The token check: Bearer only, exact token, and a short or unset token turns it off.
+      const req = (auth?: string) => new Request("https://walkup.example/api/plan", { method: "POST", headers: auth ? { authorization: auth } : {} });
+      expect(operatorAuthorized(req(`Bearer ${token}`))).toBe(true);
+      expect(operatorAuthorized(req(`Bearer ${token}x`))).toBe(false);
+      expect(operatorAuthorized(req(token))).toBe(false);
+      expect(operatorAuthorized(req())).toBe(false);
+      expect(operatorAuthorized(req("Bearer short"), { WALKUP_OPERATOR_TOKEN: "short" })).toBe(false);
+      expect(operatorAuthorized(req(`Bearer ${token}`), {})).toBe(false);
+    } finally {
+      delete process.env.WALKUP_OPERATOR_TOKEN;
+      restoreLiveShows();
+    }
   });
 
   it("never serves one caller's what-ifs, partner list or up-front picks as the preset to everyone", async () => {

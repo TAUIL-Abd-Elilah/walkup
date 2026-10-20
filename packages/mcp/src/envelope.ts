@@ -199,6 +199,7 @@ export const SECRET_ENV_VARS = [
   "OPENROUTER_API_KEY",
   "RESEND_API_KEY",
   "WALKUP_SIGNING_SECRET",
+  "WALKUP_OPERATOR_TOKEN",
 ] as const;
 
 export interface Secret {

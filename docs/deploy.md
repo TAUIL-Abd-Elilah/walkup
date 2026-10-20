@@ -247,6 +247,19 @@ the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
 
    A preset that shows `null` has no usable live run yet. Open each `/plan/<preset>` and read the sheet before the key
    goes: this is what visitors will see until Dec 31.
+
+   **Re-recording.** Once a preset has a stored run, `POST /api/plan {"presetId": ...}` serves that run; there is no
+   public way to replace it. After a code change or a show change, the operator re-records with a token held in Fly
+   secrets (32 characters or more; requests without it get 403):
+
+   ```bash
+    fly secrets set WALKUP_OPERATOR_TOKEN="$(openssl rand -hex 32)" -a walkup-agent   # once; keep a copy off the repo
+   curl -sS -X POST https://walkup-agent.fly.dev/api/plan -H "Authorization: Bearer $WALKUP_OPERATOR_TOKEN" \
+     -H 'content-type: application/json' -d '{"presetId":"g1-a","rerecord":true}' | head -c 400
+   ```
+
+   The new run is stored and becomes the preset; earlier runs stay in the store under their own ids. A re-record is a
+   fresh run and counts against the caps.
 2. **Snapshot the volume.**
 
    ```bash

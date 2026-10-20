@@ -443,7 +443,7 @@ function declaredOnly(env: unknown): unknown {
 }
 
 /** POST /api/plan (and /api/rank-partners with `partners`). */
-export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankPartners?: boolean } = {}): Promise<ServiceResponse> {
+export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankPartners?: boolean; operator?: boolean } = {}): Promise<ServiceResponse> {
   const parsed = parsePlanBody(raw, PRESET_PLAN_IDS);
   if (!parsed.ok) return { status: 400, body: { reason: parsed.reason } };
   const body = parsed.value;
@@ -451,6 +451,10 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
   const mode = runtimeMode();
   if (mode.kind === "recorded") return recordedRefusal();
   const presetId = body.presetId;
+  if (body.rerecord) {
+    if (!opts.operator) return { status: 403, body: { reason: "Re-recording a preset needs the operator token." } };
+    if (mode.kind !== "live") return { status: 409, body: { mode: mode.kind, reason: "Only a live server re-records a preset." } };
+  }
 
   if (!presetId && mode.kind === "fixture") return { status: 503, body: { mode: "fixture", reason: FIXTURE_FRESH_RUNS_REASON } };
   if (mode.kind === "fixture") {
@@ -462,8 +466,8 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
   if (body.partners) operator.declaredPartners = body.partners.map((label) => ({ label }));
   const overrides = Object.keys(operator).length > 0 || body.picks.length > 0;
 
-  // Live presets: the stored run is served when nothing is overridden (unlimited).
-  if (presetId && mode.kind === "live" && !overrides) {
+  // Live presets: the stored run is served when nothing is overridden (unlimited), unless the operator re-records.
+  if (presetId && mode.kind === "live" && !overrides && !body.rerecord) {
     const stored = await storedPresetRun(presetId);
     const v = stored ? sheetFromStored(stored, "store") : null;
     if (v) {
