@@ -6,9 +6,9 @@ Walkup is an agent for one booked show that still has seats to sell. Give it the
 
 > Your email list reaches people who already come to this room. Most of this bill's fans aren't on it; Walkup looks for the places they already go.
 
-**Try it:** https://walkup-agent.fly.dev (no login). Until the hero runs are recorded on the host, its preset sheets are the labelled sample sheets. Or [run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
+**Try it:** https://walkup-agent.fly.dev (no login). The home page opens on the live hero: two real Ticketmaster bills at The Anthem, Washington DC, recorded on the hosted site on Oct 20 2026. Or [run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
 
-**Status:** the whole pipeline runs end to end today on labelled sample data (a synthetic stand-in for Qloo and Ticketmaster), with no keys. On Oct 15 2026 every request shape a run sends was checked against the live Qloo host ([what we found](#verified-on-hackathonapiqloocom-oct-15-2026)); no full live sheet has been recorded yet, so this page reports no live sheet results.
+**Status:** on Oct 20 2026 both hero sheets (Rhiannon Giddens and FLO at The Anthem) were run live on Qloo and Ticketmaster and recorded on the hosted site ([what they show](#live-oct-20-2026)). The other presets, Hampton Coliseum (G2) and Super Funny, Tacoma (G3), are still labelled sample sheets: a synthetic stand-in for Qloo and Ticketmaster, which also runs the whole pipeline end to end with no keys. On Oct 15 2026 every request shape a run sends was checked against the live Qloo host ([what we found](#verified-on-hackathonapiqloocom-oct-15-2026)).
 
 Contents: [The problem](#the-problem) · [What it does](#what-it-does) · [Qloo workflows and tools used, and why](#how-walkup-uses-qloo) · [A request, end to end](#a-request-end-to-end-redacted) · [What we checked](#what-we-checked) · [Screenshots](#screenshots) · [Run it yourself](#run-it-yourself-setup-from-a-clean-environment) · [Known limitations](#known-limitations-what-this-does-not-establish) · [Responsible by construction](#responsible-by-construction) · [How this differs](#how-this-differs) · [Where to look in the code](#where-to-look-in-the-code)
 
@@ -44,13 +44,13 @@ Supporting cards: **your own partner list in call order** (the operator's declar
 
 Then the action: **Send to street team** opens a confirm dialog listing recipients and attachments. Nothing is sent until you confirm. Exports: the PDF sheet, `partners.csv`, `zips.csv` and `pins.csv` for ad platforms, `street-team.ics`, `offer-codes.csv` (codes you create in your own ticketing platform) and `sheet.json` with the full ledger.
 
-Three sample presets open from cache. Their bills are invented; only the rooms are real. **The Truth, Nashville** has two bills in the same room and two different maps. **Hampton Coliseum** is a three-act comedy bill where one act's one-word name matches several catalog entries, so the run stops and asks, and a thin act is seeded through a TV title. **Super Funny, Tacoma** is a small comedy club with thin signal and too short a roster to build its usual crowd; Qloo has no comedy-wide map to stand in, so the sheet has no lift map and says so, and partners are picked near the venue.
+Three sample presets open from cache. Their bills are invented; only the rooms are real. **The Truth, Nashville** has two bills in the same room and two different maps. **Hampton Coliseum** is a three-act comedy bill where one act's one-word name matches several catalog entries, so the run stops and asks, and a thin act is seeded through a TV title. **Super Funny, Tacoma** is a small comedy club with thin signal and too short a roster to build its usual crowd; Qloo has no comedy-wide map to stand in, so the sheet has no lift map and says so, and partners are picked near the venue. On the hosted site the first preset opens the live hero instead: two real bills at The Anthem, Washington DC.
 
 ## How Walkup uses Qloo
 
 ### Qloo workflows and tools used, and why
 
-Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. About **16 to 32 Qloo calls per fresh run** on the sample run (G1-A makes 32 cold, including the signal check, 4 split-half heatmaps, 3 partner usual-crowd searches and 3 popularity searches that check the result; G3, with no lift map, makes 16). Each call gates one decision; each has a coded fallback whose reason shows on its card.
+Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. About **16 to 32 Qloo calls per fresh run** on the sample run (G1-A makes 32 cold, including the signal check, 4 split-half heatmaps, 3 partner usual-crowd searches and 3 popularity searches that check the result; G3, with no lift map, makes 16; a live hero run makes about 30). Each call gates one decision; each has a coded fallback whose reason shows on its card.
 
 | Call | Request shape (abridged) | Decision it gates | Calls per run |
 |---|---|---|---|
@@ -143,7 +143,7 @@ The LLM (`claude-opus-5-5`) is called at three points only: parsing free text in
 
 ## A request, end to end (redacted)
 
-No full live run has been recorded yet, so this section shows the shape of the core partner call (checked against the live host on Oct 15) and what the code does with the answer, not a recorded response.
+This is the partner call behind the hero sheets recorded on Oct 20 2026, shown as its redacted shape (checked against the live host on Oct 15), with what the code does with the answer. Qloo response bodies are never committed, so no response is shown.
 
 ```http
 GET /v2/insights
@@ -168,8 +168,21 @@ The field-by-field mapping from our inputs to Qloo parameters and back is in [do
 
 ## What we checked
 
+### Live, Oct 20 2026
+
+Recorded on the hosted site from live Qloo and Ticketmaster calls. The hero rule picks the bills: at The Anthem, Washington DC (an independent room, I.M.P.), the first Americana, country or folk bill between Dec 20 2026 and Feb 28 2027, and the bill whose genre is most distant from it. That gave Rhiannon Giddens (Sun Feb 28 2027) and FLO (Wed Feb 17 2027). Both were recorded live; a fresh run makes about 30 Qloo calls.
+
+- **Two bills, two crowds.** The two sheets share none of their top 5 areas and none of their suggested partners (11 and 15). Giddens' crowd stands out most in Langston (H Street NE), about 2.2 times the room's usual crowd; FLO's in Le Droit Park, about 2.8 times.
+- **Popularity check.** For each area, the same Qloo place search without the bill as the signal, which Qloo returns in popularity order, cut to the same length as the partner list there. 8 of Giddens' 11 partners and 13 of FLO's 15 are not in the popularity list for their area: 21 of 26 overall. It compares two lists, not ticket sales.
+- **A change note.** "All ages, no bars" on FLO's sheet: Claude (`anthropic/claude-opus-5.5` through OpenRouter) read it as two tool calls (`set_all_ages`, `exclude_partner_categories`). 8 partners were removed, and the re-run made 0 new Qloo calls (30 answered from cache).
+- **A partial map.** FLO's map is marked partial: only 159 areas came back, so the search widened to 60 km. Some suburban areas still carry national chains when no local place fits; they are listed after local places and labelled.
+- **Is lift just foot traffic? (KG2)** Re-run on Oct 20 with the real Ticketmaster roster of The Truth, Nashville: Spearman(lift, raw heat) 0.20 and 0.01 (gate: below 0.8), and top-decile lift Jaccard between two bills 0.47 (gate: below 0.5). Pass. It says lift is not just foot traffic for that pair, at one room.
+- **What the live host does without saying so.** From replaying the recorded bodies on Oct 20: explainability shares can sum to less than 1 (0.936 seen), and a demographics call leaves out the block of a signal Qloo has no demographics for, with no warning. Earlier (Oct 15): an exact `/search` hit can be a `not_found` signal that Qloo drops silently ("Jason Isbell" against "Jason Isbell and The 400 Unit"), and heatmaps drop such ids without a warning.
+
+### On sample data, and a test not run
+
 - **Product eval, 20 cases, on sample data.** Four goldens and sixteen scenario cases (the `needs_input` pause, thin heatmaps, empty compare, closed places, missing hours, the all-ages rule, quota and rate limits and more) run end to end through the orchestrator on the synthetic stand-in, with grounding, ledger, budget and policy checks on every sheet. All 20 pass; CI writes the score to [`evals/product/out/score.md`](evals/product/out/score.md). This checks that the pipeline behaves as described. It says nothing about whether Qloo's picks are better than another list.
-- **Popularity check, on every sheet.** For each partner area, Walkup runs the same Qloo place search without the bill as the signal, which Qloo answers in popularity order, and counts how many partners are not among that list's first k places (k = the partners picked there, after the same open, closed and type rules). The partner card says it in one sentence with its receipts, and `sheet.json` carries it as `popularityCheck`. It compares Qloo with the bill against Qloo without a signal over the same pool; it says nothing about ticket sales or whether the partners are better. On the sample sheets the numbers are made up with everything else (G1-A: 18 of 24).
+- **Popularity check, on every sheet.** For each partner area, Walkup runs the same Qloo place search without the bill as the signal, which Qloo answers in popularity order, and counts how many partners are not among that list's first k places (k = the partners picked there, after the same open, closed and type rules). The partner card says it in one sentence with its receipts, and `sheet.json` carries it as `popularityCheck`. It compares Qloo with the bill against Qloo without a signal over the same pool; it says nothing about ticket sales or whether the partners are better. On the sample sheets the numbers are made up with everything else (G1-A: 18 of 24); the live hero numbers are above.
 - **P1, the Fan-Bar Test: designed and sealed, not run.** The question was whether a supporters' club, used as a Qloo signal, ranks that club's official home bar in each US metro above a popularity ranking of the same places and above the same model searching Google Places. The analysis plan was hashed before any data existed ([`docs/preregistration/`](docs/preregistration/)), and the collector, analysis code and their tests on synthetic data are in [`evals/p1/`](evals/p1/). A full run needs up to 1,331 Qloo calls, more than a tenth of a monthly key, so we chose not to run it. There is no P1 result.
 
 What we tried and dropped is in [docs/what-we-tried.md](docs/what-we-tried.md).
@@ -239,7 +252,7 @@ Also:
 - **Chains are spotted by name.** The chain list is kept by hand. A chain that is not on it, or a store Qloo names another way, is listed like a local place.
 - **Generic compare results.** When bill-versus-house compare returns only shared, generic tags, the card falls back to a tag diff and is marked `degraded`.
 - **Local or national.** Podcast and brand rankings with `signal.location` may not move with location; when they don't, they are labelled "national, not local".
-- **No live sheet yet.** Every sheet today is sample data. The Oct 15 checks show which request shapes work on the live host, not that Qloo's picks beat a popularity ranking or any other list.
+- **One live pair.** The live sheets are the two hero bills at The Anthem, recorded on Oct 20 2026; the Hampton Coliseum and Super Funny, Tacoma presets are still sample sheets. One room and two bills show the pipeline runs on live data. They do not show that Qloo's picks sell more tickets than a popularity list, or that the result holds in other rooms.
 - **No comparison list.** The sheet shows Qloo's picks with their receipts, not how they compare with a list made without Qloo. The popularity check compares two Qloo lists over the same places (with the bill and without a signal); it does not show the picks sell more tickets. The Google Places comparison list was removed on Oct 20 2026 ([why](docs/what-we-tried.md)).
 - **Revisions change five settings only.** All ages, place types, areas, street-team days and radius. A note asking for anything else gets a question back. The fixed rules know a short list of phrasings; the model reads more, but only when a model key (OpenRouter or Anthropic) is set, and in sample mode the rules always read the note.
 - **Counts are what-ifs.** Seats left and capacity are operator inputs, marked as what-ifs wherever they appear. The presets carry no seats-left count. No sales data about any show is known or shown.

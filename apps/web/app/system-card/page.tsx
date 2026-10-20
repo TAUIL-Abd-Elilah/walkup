@@ -117,7 +117,8 @@ export default function SystemCardPage() {
           </p>
           <p>
             It is a planning tool. It does not sell tickets, set prices or rank shows, and it shows no sales data for any show. Seats left and capacity are
-            what-ifs the operator enters, marked as what-ifs. The sample presets use invented bills and carry no seats-left count.
+            what-ifs the operator enters, marked as what-ifs. The sample presets use invented bills; the live hero uses two real Ticketmaster bills at
+            The Anthem, Washington DC. No preset carries a seats-left count.
           </p>
         </Section>
 
@@ -154,11 +155,15 @@ export default function SystemCardPage() {
           <p>
             Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 15 to 29 calls per
             fresh run, counted from the sample run: G1-A makes 29 from cold, including the signal check, the 4 map-check heatmaps and 3 usual-crowd partner
-            searches; G3, with no lift map, makes 15. Every call is a GET with plain entity ids.
+            searches; G3, with no lift map, makes 15. The two live hero runs on Oct 20 2026 made about 30 each. Every call is a GET with plain entity ids.
           </p>
           <p className="hint">
-            Every request shape below was checked against the live Qloo host on Oct 15 2026; what it did is listed after this list. No full live sheet has
-            been recorded yet.
+            Every request shape below was checked against the live Qloo host on Oct 15 2026; what it did is listed after this list. On Oct 20 2026 both
+            hero sheets were run live and recorded on the hosted site (see{" "}
+            <a href="#evals" className="link">
+              Evals
+            </a>
+            ).
           </p>
           <ul className="border-t border-rule">
             {ENDPOINTS.map((e) => (
@@ -260,6 +265,19 @@ export default function SystemCardPage() {
 
         <Section id="evals" title="Evals">
           <p>
+            <strong>Live, Oct 20 2026.</strong> Two real Ticketmaster bills at The Anthem, Washington DC (an independent room, I.M.P.), picked by a fixed
+            rule: Rhiannon Giddens and FLO. Both were run live and recorded on the hosted site, about 30 Qloo calls per fresh run. The two sheets share none
+            of their top 5 areas and none of their suggested partners. 21 of their 26 partners are not in the popularity list for their area (the same Qloo
+            place search without the bill as the signal); that compares two lists, not ticket sales. The change note &ldquo;All ages, no bars&rdquo; was
+            read by Claude as two tool calls, removed 8 partners and made no new Qloo call. The check that lift is not just foot traffic passed for two
+            bills at The Truth, Nashville, with that room&apos;s real roster. One room and two bills show the pipeline runs on live data, not that a sheet
+            sells tickets.{" "}
+            <Link href="/eval#live" className="link">
+              The numbers
+            </Link>
+            .
+          </p>
+          <p>
             The product eval (20 cases) passes on the sample data. It checks that the pipeline behaves as described, not that Qloo&apos;s picks are better. The
             preregistered Fan-Bar Test (P1) was designed and sealed but not run, so there is no P1 result. See{" "}
             <Link href="/eval" className="link">
@@ -286,6 +304,14 @@ export default function SystemCardPage() {
             </li>
             <li>New venues not yet in the catalog: the run uses the Ticketmaster point instead.</li>
             <li>Sparse small metros: the radius widens and the sheet says so.</li>
+            <li>
+              A sparse map in a big metro: on FLO&apos;s live sheet only 159 areas came back, so the search widened to 60 km and the map is marked partial.
+              Some suburban areas then carry national chains when no local place fits; they are listed after local places and labelled.
+            </li>
+            <li>
+              Live shapes the documentation doesn&apos;t mention (seen Oct 20 2026): explainability shares can sum to less than 1, and a demographics call
+              leaves out the block of a signal Qloo has no demographics for, with no warning.
+            </li>
             <li>Empty or generic compare results: two tag lists compared by rank stand in, and the section says so.</li>
             <li>signal.location has not been shown to move podcast or brand rankings: those picks are labelled national.</li>
             <li>One-word act names: always stop for a pick, never resolved silently.</li>

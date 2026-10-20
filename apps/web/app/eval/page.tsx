@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headlinerName } from "@/lib/format";
 import { getPlan } from "@/lib/plans";
-// The product eval writes this file (npx tsx evals/product/run.ts); nothing on this page is typed in by hand.
+// The product eval writes this file (npx tsx evals/product/run.ts); nothing in the sample-data section is typed in by hand.
+// The live section is typed in from the runs recorded on the hosted site on Oct 20 2026 (no API call at render).
 import scoreFile from "../../../../evals/product/out/score.json";
 
 export const metadata: Metadata = {
   title: "Evaluation",
-  description: "What has been checked so far, on sample data, and what has not.",
+  description: "What has been checked so far, on live runs and on sample data, and what has not.",
 };
 
 interface Clause {
@@ -89,6 +90,26 @@ function caseTitle(title: string): string {
     .replace(/spread top tiles/, "the numbered areas");
 }
 
+/** The two live hero bills at The Anthem, Washington DC, recorded on Oct 20 2026. */
+const LIVE_BILLS = [
+  { name: "Rhiannon Giddens", date: "Sun Feb 28 2027", partners: 11, topArea: "Langston (H Street NE)", lift: "about 2.2x", notPopular: 8 },
+  { name: "FLO", date: "Wed Feb 17 2027", partners: 15, topArea: "Le Droit Park", lift: "about 2.8x", notPopular: 13 },
+] as const;
+
+/** The KG2 gate, re-run on Oct 20 2026 with The Truth's (Nashville) real Ticketmaster roster. */
+const KG2 = [
+  { measure: "Spearman(lift, raw heat)", value: "0.20 and 0.01", gate: "below 0.8" },
+  { measure: "Top-decile lift Jaccard between two bills", value: "0.47", gate: "below 0.5" },
+] as const;
+
+function ShowsLine({ shows, not }: { shows: string; not: string }) {
+  return (
+    <p className="mt-2 text-sm text-muted">
+      Shows: {shows} Does not show: {not}
+    </p>
+  );
+}
+
 function caseStatus(status: string): string {
   if (status === "passed") return "Passes";
   if (status === "failed") return "Fails";
@@ -101,11 +122,176 @@ export default function EvalPage() {
       <div className="max-w-[760px]">
       <h1>Evaluation</h1>
       <p className="mt-3">
-        What has been checked so far, and what has not. Everything on this page ran on sample data: a stand-in for Qloo and Ticketmaster with
-        made-up places and numbers. No result here comes from a live Qloo call.
+        What has been checked so far, and what has not. The first section comes from live runs recorded on the hosted site on Oct 20 2026. The
+        product eval after it ran on sample data: a stand-in for Qloo and Ticketmaster with made-up places and numbers.
       </p>
 
-      <section className="section mt-8" aria-labelledby="product-title">
+      <section id="live" className="section mt-8 scroll-mt-24" aria-labelledby="live-title">
+        <h2 id="live-title">Live runs (Oct 20 2026)</h2>
+        <p className="mt-3">
+          Two real Ticketmaster bills at The Anthem, Washington DC, an independent room (I.M.P.), run on live Qloo and Ticketmaster calls and recorded on
+          the hosted site, walkup-agent.fly.dev. A fixed rule picked them: the first Americana, country or folk bill from Dec 20 2026 to Feb 28 2027, and
+          the bill whose genre is most distant from it. A fresh run makes about 30 Qloo calls. The hosted home page opens on these two sheets.
+        </p>
+
+        <h3 className="mt-6">Same room, two crowds</h3>
+        <p className="mt-2">
+          The two sheets share none of their top 5 areas and none of their suggested partners. The table names the area where each bill&apos;s crowd
+          stands out most from the room&apos;s usual crowd.
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Bill</th>
+              <th scope="col">Stands out most in</th>
+              <th scope="col" className="num">
+                Lift
+              </th>
+              <th scope="col" className="num">
+                Partners
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {LIVE_BILLS.map((b) => (
+              <tr key={b.name}>
+                <td>
+                  {b.name}
+                  <span className="block text-sm text-muted">{b.date}</span>
+                </td>
+                <td>{b.topArea}</td>
+                <td className="num">{b.lift}</td>
+                <td className="num">{b.partners}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="hint mt-1">Lift is against the room&apos;s usual crowd, the acts The Anthem usually hosts.</p>
+        <ShowsLine
+          shows="in one room, the bill changes where the street team goes and which places it calls."
+          not="that either list sells tickets."
+        />
+
+        <h3 className="mt-6">Popularity check</h3>
+        <p className="mt-2">
+          For each area, the same Qloo place search without the bill as the signal, which Qloo returns in popularity order, with the same list length as
+          the partners picked there. The count is the partners that are not in that popularity list for their area.
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Bill</th>
+              <th scope="col" className="num">
+                Not in the popularity list
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {LIVE_BILLS.map((b) => (
+              <tr key={b.name}>
+                <td>{b.name}</td>
+                <td className="num">
+                  {b.notPopular} of {b.partners}
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>Both</td>
+              <td className="num">
+                {LIVE_BILLS.reduce((n, b) => n + b.notPopular, 0)} of {LIVE_BILLS.reduce((n, b) => n + b.partners, 0)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <ShowsLine
+          shows="most partners are places a popularity list of the same areas would not name."
+          not="ticket sales. It compares two lists, not sales, and not whether the partners are better."
+        />
+
+        <h3 className="mt-6">A change note</h3>
+        <p className="mt-2">
+          &ldquo;All ages, no bars&rdquo; on FLO&apos;s sheet. Claude (anthropic/claude-opus-5.5 through OpenRouter) read it as two tool calls,
+          set_all_ages and exclude_partner_categories, and the plan ran again with those settings.
+        </p>
+        <table className="table mt-2">
+          <tbody>
+            <tr>
+              <th scope="row" className="font-normal">
+                Tool calls
+              </th>
+              <td className="num">2</td>
+            </tr>
+            <tr>
+              <th scope="row" className="font-normal">
+                Partners removed
+              </th>
+              <td className="num">8</td>
+            </tr>
+            <tr>
+              <th scope="row" className="font-normal">
+                New Qloo calls
+              </th>
+              <td className="num">0</td>
+            </tr>
+            <tr>
+              <th scope="row" className="font-normal">
+                Answered from cache
+              </th>
+              <td className="num">30</td>
+            </tr>
+          </tbody>
+        </table>
+        <ShowsLine shows="a plain note became settings, and the re-run cost no Qloo calls." not="that every note is read correctly." />
+
+        <h3 className="mt-6">A partial map</h3>
+        <p className="mt-2">
+          FLO&apos;s map is marked partial: only 159 areas came back, so the search widened to 60 km. Some suburban areas still carry national chains when
+          no local place fits; they are listed after local places and labelled.
+        </p>
+        <ShowsLine shows="the sheet says when its map is thin." not="which areas a fuller map would pick." />
+
+        <h3 className="mt-6">Is lift just foot traffic? (KG2)</h3>
+        <p className="mt-2">
+          Re-run on Oct 20 with the real Ticketmaster roster of The Truth, Nashville, as the room&apos;s usual crowd. Passes.
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Measure</th>
+              <th scope="col" className="num">
+                Value
+              </th>
+              <th scope="col" className="num">
+                Gate
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {KG2.map((k) => (
+              <tr key={k.measure}>
+                <td>{k.measure}</td>
+                <td className="num">{k.value}</td>
+                <td className="num">{k.gate}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <ShowsLine shows="lift is not just foot traffic for that pair of bills, at one room." not="that it holds in other rooms." />
+
+        <h3 className="mt-6">What the live host does without saying so</h3>
+        <ul className="mt-2 list-disc space-y-1.5 pl-5">
+          <li>Explainability shares can sum to less than 1 (0.936 seen). From replaying the recorded bodies on Oct 20.</li>
+          <li>A demographics call leaves out the block of a signal Qloo has no demographics for, with no warning. Oct 20.</li>
+          <li>
+            An exact /search hit can be a not_found signal that Qloo drops silently (Jason Isbell against &ldquo;Jason Isbell and The 400 Unit&rdquo;).
+            Oct 15.
+          </li>
+          <li>Heatmaps drop such ids without a warning. Oct 15.</li>
+        </ul>
+        <ShowsLine shows="response shapes the code has to expect." not="anything about the picks." />
+      </section>
+
+      <section className="section" aria-labelledby="product-title">
         <h2 id="product-title">Product eval on sample data</h2>
         <p className="mt-3">
           <span className="tabular">{score.passed}</span> of <span className="tabular">{score.total}</span> cases pass
@@ -177,7 +363,10 @@ export default function EvalPage() {
           <li>That a sheet sells tickets. No test here measures sales.</li>
           <li>Where buyers live. The map shows where this bill&apos;s fans stand out from the room&apos;s usual crowd.</li>
           <li>That a partner will take part. Partners are suggested, not affiliated.</li>
-          <li>How live Qloo data behaves. The sample data was written from the documentation, not from real responses.</li>
+          <li>
+            How live Qloo data behaves beyond the two live sheets and the one roster check above. The sample data was written from the documentation, not
+            from real responses.
+          </li>
         </ul>
       </section>
 
