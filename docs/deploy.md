@@ -340,6 +340,32 @@ fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup-agent
 - `fly ssh console` is root on the machine. Keep the Fly organization to the people who operate the app.
 - The server process runs as `node`. Only the entrypoint runs as root, to prepare `/data`.
 
+## Static mirror
+
+https://walkup-mirror.fly.dev is a static copy of the hero sheets for when the main app is down: the home page,
+both Anthem sheets and the "All ages, no bars" revision (each with its print view and every download), the system
+card and the eval. It is a second Fly app in another region (`ord`; the main app is in `iad`), plain nginx, no
+Node, no keys, no database. Every page says at the top that it is a static copy and when it was saved; the street
+map, receipt dialogs, sending and new plans are off there. The uptime workflow checks it too.
+
+To refresh it after the hero runs change (the files in `deploy/mirror/site/` are git-ignored: they hold the sheets'
+data):
+
+```
+cd deploy/mirror
+npm i --no-save playwright-core
+A=<g1-a plan id>; B=<g1-b plan id>; R=<revision plan id>
+CHROMIUM_PATH=<path to chromium> node mirror.mjs https://walkup-agent.fly.dev site $A $B $R
+for id in $A $B $R; do mkdir -p site/api/sheet/$id
+  for f in pdf ics partners.csv zips.csv pins.csv offer-codes.csv sheet.json; do
+    curl -fsS -o site/api/sheet/$id/$f https://walkup-agent.fly.dev/api/sheet/$id/$f; done; done
+mkdir -p site/_next && cp -R ../../apps/web/.next/static site/_next/static   # the CSS of the deployed build
+fly deploy -a walkup-mirror
+```
+
+Copy `_next/static` from the same build that is deployed, or the pages lose their styles. Run the crawl against
+the live site, not a local server, so the saved pages match what judges and users see.
+
 ## Troubleshooting
 
 ### Building the image without a remote builder

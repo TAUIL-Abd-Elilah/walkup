@@ -6,7 +6,7 @@ Walkup is an agent for one booked show that still has seats to sell. Give it the
 
 > Your email list reaches people who already come to this room. Most of this bill's fans aren't on it; Walkup looks for the places they already go.
 
-**Try it:** https://walkup-agent.fly.dev (no login). The home page opens on the live hero: two real Ticketmaster bills at The Anthem, Washington DC, recorded on the hosted site on Oct 20 2026. Or [run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
+**Try it:** https://walkup-agent.fly.dev (no login). The home page opens on the live hero: two real Ticketmaster bills at The Anthem, Washington DC, recorded on the hosted site on Oct 20 2026. If that site is down, a static copy of the same sheets is at https://walkup-mirror.fly.dev. Or [run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
 
 **Status:** on Oct 20 2026 both hero sheets (Rhiannon Giddens and FLO at The Anthem) were run live on Qloo and Ticketmaster and recorded on the hosted site ([what they show](#live-oct-20-2026)). The other presets, Hampton Coliseum (G2) and Super Funny, Tacoma (G3), are still labelled sample sheets: a synthetic stand-in for Qloo and Ticketmaster, which also runs the whole pipeline end to end with no keys. On Oct 15 2026 every request shape a run sends was checked against the live Qloo host ([what we found](#verified-on-hackathonapiqloocom-oct-15-2026)).
 
