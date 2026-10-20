@@ -1,6 +1,6 @@
 # @walkup/narrator
 
-Every place Walkup calls Claude (`claude-opus-5-5`), and nothing else. `runControlArm` and `runLlmOnlyArm` are called by nothing since the product's arm F was removed on Oct 20 2026 (the P1 research harness has its own model arms in `evals/p1/arms/model-arms.ts`); they stay, with their tests, until the owner decides.
+Every place Walkup calls Claude (`claude-haiku-5-5` through OpenRouter, `claude-opus-5-5` through the Anthropic API), and nothing else. `runControlArm` and `runLlmOnlyArm` are called by nothing since the product's arm F was removed on Oct 20 2026 (the P1 research harness has its own model arms in `evals/p1/arms/model-arms.ts`); they stay, with their tests, until the owner decides.
 
 | Function | What it does | Effort |
 |---|---|---|
@@ -21,7 +21,7 @@ Qloo decides; this package narrates. Scores, ranks and tiles come from `@walkup/
 
 | Keys set | Route | Client |
 |---|---|---|
-| `OPENROUTER_API_KEY` | OpenRouter, `https://openrouter.ai/api/v1/chat/completions`, model `anthropic/claude-opus-5.5` (`OPENROUTER_MODEL` overrides) | `createOpenRouterClient` (`src/openrouter.ts`) |
+| `OPENROUTER_API_KEY` | OpenRouter, `https://openrouter.ai/api/v1/chat/completions`, model `anthropic/claude-haiku-5.5` (`OPENROUTER_MODEL` overrides) | `createOpenRouterClient` (`src/openrouter.ts`) |
 | `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` (and no OpenRouter key, or `WALKUP_LLM_PROVIDER=anthropic`) | Anthropic Messages API through `@anthropic-ai/sdk` | `createAnthropicClient` |
 | neither | none: narration uses the labelled template, change notes the fixed rules | `null` |
 
@@ -40,11 +40,11 @@ The OpenRouter client takes the same Messages API request and returns the same m
 | Provider routing | n/a | `provider.require_parameters: true`, so OpenRouter only routes to a host that supports every parameter sent (tools, response format) |
 | Retries | the SDK's (2, on 408/409/429/5xx) | the same policy in the client: 2 retries on 408/409/429/5xx and network errors, 1 s then 2 s |
 | Ledger | `/v1/messages`, curl with `$ANTHROPIC_API_KEY` | `/api/v1/chat/completions`, curl with `$OPENROUTER_API_KEY`, `provider: "openrouter"` in params |
-| Spend guard | Anthropic list rates | the same rates (the slug is mapped to `claude-opus-5-5` by `canonicalModel`); OpenRouter's own invoice can differ slightly |
+| Spend guard | Anthropic list rates | the same rates (the slug is mapped to the Anthropic model id by `canonicalModel`; Opus, Sonnet and Haiku 5.5 are listed); OpenRouter's own invoice can differ slightly |
 
 `npm run llm:check` sends three small synthetic requests through whichever route `.env` selects (a two-tool revision, a note naming an area that is not on the sheet, and a schema-bound narration) and prints PASS/FAIL with the ledger. Run it after changing keys or the model slug. Behind an HTTPS proxy, Node's `fetch` needs `NODE_USE_ENV_PROXY=1`.
 
-Checked live on Oct 20 2026 through OpenRouter (`anthropic/claude-opus-5.5`): "All ages, no bars" came back as two tool calls in one turn (`set_all_ages`, `exclude_partner_categories` with every bar key), the unknown area came back as `ask_operator`, and the narration parsed against the per-run schema with no guard drops; `verbosity` was accepted. The `is_error` correction turn is covered by tests only: the model made no invalid call live.
+Checked live on Oct 20 2026 through OpenRouter (`anthropic/claude-opus-5.5`): "All ages, no bars" came back as two tool calls in one turn (`set_all_ages`, `exclude_partner_categories` with every bar key), the unknown area came back as `ask_operator`, and the narration parsed against the per-run schema with no guard drops; `verbosity` was accepted. The `is_error` correction turn is covered by tests only: the model made no invalid call live. The same three checks passed on `anthropic/claude-haiku-5.5` on Oct 20 2026, which became the default.
 
 ## Request shape (all calls)
 

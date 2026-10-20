@@ -17,7 +17,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const MODEL = process.env["OPENROUTER_MODEL"]?.trim() || "anthropic/claude-opus-5.5";
+const MODEL = process.env["OPENROUTER_MODEL"]?.trim() || "anthropic/claude-haiku-5.5";
 const MAX_TURNS = 8;
 const TASK =
   "I promote FLO's show at The Anthem in Washington DC (Walkup preset g1-b). Plan where my street team should go. " +

@@ -125,8 +125,8 @@ export default function SystemCardPage() {
         <Section id="models" title="Models and versions">
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <strong>Claude</strong> <span className="font-semibold">claude-opus-5-5</span>, through OpenRouter when that key is set (no server-side refusal fallback on that route),
-              otherwise through the Anthropic Messages API.
+              <strong>Claude</strong> <span className="font-semibold">claude-haiku-5-5</span> through OpenRouter when that key is set (no server-side refusal fallback on that route),
+              otherwise <span className="font-semibold">claude-opus-5-5</span> through the Anthropic Messages API.
             </li>
             <li>
               Narration: effort <span className="font-semibold">low</span>, structured output against a JSON schema built per run. It may cite only entity ids and

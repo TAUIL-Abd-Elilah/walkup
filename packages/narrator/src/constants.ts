@@ -36,10 +36,11 @@ export const ANTHROPIC_CURL =
 
 /**
  * OpenRouter (used when OPENROUTER_API_KEY is set): the Chat Completions endpoint
- * and the slug of the same Claude model. OPENROUTER_MODEL overrides the slug.
+ * and the Claude model slug: Haiku 5.5 by default (about 40 times cheaper than Opus 5.5 and enough for these
+ * short, schema-bound calls; checked with `npm run llm:check`). OPENROUTER_MODEL overrides the slug.
  */
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-export const OPENROUTER_MODEL = "anthropic/claude-opus-5.5";
+export const OPENROUTER_MODEL = "anthropic/claude-haiku-5.5";
 export const OPENROUTER_ENDPOINT = "/api/v1/chat/completions";
 export const OPENROUTER_TIMEOUT_MS = 120_000;
 export const OPENROUTER_CURL =

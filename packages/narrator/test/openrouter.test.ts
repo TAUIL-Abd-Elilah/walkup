@@ -208,7 +208,10 @@ describe("response translation", () => {
 
   it("prices the OpenRouter slug at the Anthropic rates", () => {
     const usage = { input_tokens: 1000, output_tokens: 500 };
-    expect(estimateCostUsd(usage, OPENROUTER_MODEL)).toBeCloseTo(estimateCostUsd(usage, "claude-opus-5-5"), 12);
+    expect(estimateCostUsd(usage, OPENROUTER_MODEL)).toBeCloseTo(estimateCostUsd(usage, "claude-haiku-5-5"), 12);
+    expect(estimateCostUsd(usage, "anthropic/claude-opus-5.5")).toBeCloseTo(estimateCostUsd(usage, "claude-opus-5-5"), 12);
+    // Haiku is listed at its own rates, not priced as an unlisted model.
+    expect(estimateCostUsd(usage, OPENROUTER_MODEL)).toBeCloseTo((1000 * 0.1 + 500 * 0.5) / 1e6, 12);
   });
 });
 

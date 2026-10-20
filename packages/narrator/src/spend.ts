@@ -23,6 +23,9 @@ export interface ModelRates {
 /** Rates for the model this package calls. */
 export const MODEL_RATES: Readonly<Record<string, ModelRates>> = {
   [MODEL]: { input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5 },
+  // Cheaper Claude models a deployment may pick with OPENROUTER_MODEL (rates as OpenRouter lists them, Oct 2026).
+  "claude-sonnet-5-5": { input: 2, output: 10, cacheRead: 0.2, cacheWrite: 2.5 },
+  "claude-haiku-5-5": { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
 };
 
 /**

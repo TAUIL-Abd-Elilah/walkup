@@ -111,7 +111,7 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `QLOO_BASE_URL` | `fly.toml` `[env]` | `https://hackathon.api.qloo.com`. Any other host is refused. |
 | `TICKETMASTER_API_KEY` | secret | |
 | `CENSUS_API_KEY` | secret | Optional: the gazetteer already carries adult counts. |
-| `OPENROUTER_API_KEY` | secret | Claude through OpenRouter (narration, free-text parsing, change notes). `OPENROUTER_MODEL` (plain env) overrides the slug `anthropic/claude-opus-5.5`. |
+| `OPENROUTER_API_KEY` | secret | Claude through OpenRouter (narration, free-text parsing, change notes). `OPENROUTER_MODEL` (plain env) overrides the slug `anthropic/claude-haiku-5.5`. |
 | `ANTHROPIC_API_KEY` | secret | Optional instead of the OpenRouter key: Claude directly, with the server-side refusal fallback. With neither key, narration uses the labelled template and change notes the fixed rules. |
 | `RESEND_API_KEY` | secret | |
 | `RESEND_FROM` | secret | A sender on a domain verified in Resend. Not sensitive, but set per deployment. |
