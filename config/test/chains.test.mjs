@@ -36,10 +36,10 @@ test("top-level shape matches the schema", () => {
   assert.ok(Array.isArray(config.chains));
 });
 
-test("about 100 to 200 brands, each with exactly the schema's fields", () => {
+test("about 100 to 250 brands, each with exactly the schema's fields", () => {
   const def = schema.$defs.chain;
   const allowed = new Set(Object.keys(def.properties));
-  assert.ok(config.chains.length >= 100 && config.chains.length <= 200, `${config.chains.length} brands`);
+  assert.ok(config.chains.length >= 100 && config.chains.length <= 250, `${config.chains.length} brands`);
   for (const /** @type {Entry} */ e of config.chains) {
     for (const key of def.required) assert.ok(key in e, `${e.name}: missing ${key}`);
     for (const key of Object.keys(e)) assert.ok(allowed.has(key), `${e.name}: unexpected field ${key}`);

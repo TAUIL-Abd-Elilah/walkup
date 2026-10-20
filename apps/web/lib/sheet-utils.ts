@@ -143,15 +143,24 @@ export function ordinal(n: number): string {
 }
 
 /** "16:00-02:00" -> "4 pm to 2 am" (same wording as the printed sheet). */
+function clock(hh: number, mm: number): string {
+  const h = hh % 24;
+  if (mm === 0 && h === 0) return "midnight";
+  if (mm === 0 && h === 12) return "noon";
+  const suffix = h < 12 ? "am" : "pm";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return mm === 0 ? `${h12} ${suffix}` : `${h12}:${String(mm).padStart(2, "0")} ${suffix}`;
+}
+
+/**
+ * 24-hour times inside a sentence ("open 17:00 to 02:00") in the hours column's style ("open 5 pm to 2 am"). For the
+ * narration's partner lines, which quote the run's hours as the data has them.
+ */
+export function humanTimes(text: string): string {
+  return text.replace(/\b([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\b/g, (_m, h: string, m: string) => clock(Number(h), Number(m)));
+}
+
 export function formatHours(s: string): string {
-  const clock = (hh: number, mm: number) => {
-    const h = hh % 24;
-    if (mm === 0 && h === 0) return "midnight";
-    if (mm === 0 && h === 12) return "noon";
-    const suffix = h < 12 ? "am" : "pm";
-    const h12 = h % 12 === 0 ? 12 : h % 12;
-    return mm === 0 ? `${h12} ${suffix}` : `${h12}:${String(mm).padStart(2, "0")} ${suffix}`;
-  };
   // Live Qloo hours carry seconds ("17:00:00-00:00:00"); they are dropped.
   return s.replace(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*[-–]\s*(\d{1,2}):(\d{2})(?::\d{2})?\b/g, (_m, a: string, b: string, c: string, d: string) => `${clock(Number(a), Number(b))} to ${clock(Number(c), Number(d))}`);
 }

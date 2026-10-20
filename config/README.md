@@ -2,7 +2,7 @@
 
 ## `chains.json`: national chains, by name
 
-A hand-kept list of national and large regional US chain brands that show up as Qloo places: coffee, bakeries and desserts, fast food, fast casual, pizza, casual dining, sports bars, retail, book stores, barbers and salons (195 brands, reviewed Oct 20 2026). Partner and pre/post lists put a place whose name is on it after the local places; nothing on the list is dropped, and a chain is kept when no local place can fill its slot. The rule and the matcher are in [`packages/engine`](../packages/engine/README.md#partners).
+A hand-kept list of national and large regional US chain brands that show up as Qloo places: coffee, bakeries and desserts, fast food, fast casual, pizza, casual dining, sports bars, retail, book stores, barbers and salons (205 brands, reviewed Oct 20 2026; bowling and amusement chains are filed with sports bars). Partner and pre/post lists put a place whose name is on it after the local places; nothing on the list is dropped, and a chain is kept when no local place can fill its slot. The rule and the matcher are in [`packages/engine`](../packages/engine/README.md#partners).
 
 Shape (JSON Schema: [`chains.schema.json`](chains.schema.json)): `version`, `about` (what the list is), `reviewedAt` (date of the last review), and `chains[]`, each with:
 

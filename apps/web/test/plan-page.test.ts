@@ -144,6 +144,8 @@ describe("plan page helpers", () => {
     expect(utils.formatHours("16:00-02:00")).toBe("4 pm to 2 am");
     expect(utils.formatHours("06:00:00-11:00:00")).toBe("6 am to 11 am");
     expect(utils.formatHours("17:00:00-00:00:00")).toBe("5 pm to midnight");
+    expect(utils.humanTimes("Pub on 18th St, open 17:00 to 02:00 Wednesday; 07:30 to 12:00 too.")).toBe("Pub on 18th St, open 5 pm to 2 am Wednesday; 7:30 am to noon too.");
+    expect(utils.humanTimes("About 2.2 times the room's usual crowd, 58% of the budget.")).toBe("About 2.2 times the room's usual crowd, 58% of the budget.");
   });
 
   it("links the discovery callout to a row or tile on this sheet, and to nothing that is not there", () => {

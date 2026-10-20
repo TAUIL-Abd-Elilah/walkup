@@ -198,6 +198,16 @@
     {"name":"Drybar","kind":"beauty_barber"},
     {"name":"European Wax Center","kind":"beauty_barber"},
     {"name":"The Lash Lounge","kind":"beauty_barber"},
-    {"name":"Massage Envy","kind":"beauty_barber"}
+    {"name":"Massage Envy","kind":"beauty_barber"},
+    {"name":"Charleys Cheesesteaks","aliases":["Charleys Philly Steaks","Charley's Philly Steaks","Charleys Cheesesteaks and Wings"],"kind":"fast_food"},
+    {"name":"Jollibee","kind":"fast_food"},
+    {"name":"El Pollo Loco","kind":"fast_food"},
+    {"name":"Sardi's Pollo a la Brasa","aliases":["Sardi's Pollo A La Brasa","Sardis Pollo a la Brasa"],"kind":"casual_dining"},
+    {"name":"Punch Bowl Social","kind":"casual_dining"},
+    {"name":"Pinstripes","kind":"casual_dining","exact":true},
+    {"name":"Bowlero","aliases":["Bowlmor","AMF Bowling","AMF"],"kind":"sports_bar"},
+    {"name":"Main Event","kind":"sports_bar","exact":true},
+    {"name":"Round1","aliases":["Round1 Bowling & Amusement","Round 1"],"kind":"sports_bar"},
+    {"name":"Total Wine & More","aliases":["Total Wine"],"kind":"retail"}
   ]
 }

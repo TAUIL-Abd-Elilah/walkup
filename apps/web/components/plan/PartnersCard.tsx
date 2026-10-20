@@ -3,7 +3,7 @@ import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { shortUrl, telHref } from "../../lib/format";
 import { categoryLabel } from "../../lib/labels";
-import { areaName, formatHours, isThinSignal, normalizeName, partnerLine, partnerSummary, topTiles } from "../../lib/sheet-utils";
+import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, topTiles } from "../../lib/sheet-utils";
 import { LESS_SURE_NOTE, partnerLessSure } from "@walkup/exports/format";
 import { popularitySentence } from "@walkup/engine/popularity";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
@@ -182,7 +182,10 @@ export function PartnersCard({
     );
 
   // Only the model's lines: the template's partner lines repeat the rank line above them.
-  const narrated = (p: Partner) => (sheet.narration?.templated ? undefined : partnerLine(sheet, p.entity.entityId));
+  const narrated = (p: Partner) => {
+    const line = sheet.narration?.templated ? undefined : partnerLine(sheet, p.entity.entityId);
+    return line ? humanTimes(line) : undefined;
+  };
 
   const whyCell = (p: Partner) => {
     const w = partnerWhy(p);
