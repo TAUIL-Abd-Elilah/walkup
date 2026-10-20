@@ -5,7 +5,6 @@
 import type {
   Bill,
   Candidate,
-  ControlArmResult,
   Envelope,
   LedgerEntry,
   LedgerSink,
@@ -18,7 +17,6 @@ import type {
 } from "@walkup/contracts";
 import type { AcsClient } from "@walkup/acs";
 import type { NarratorClient, SpendGuard } from "@walkup/narrator";
-import type { PlacesClient } from "@walkup/places";
 import type { QlooClient } from "@walkup/qloo";
 import type { TmClient } from "@walkup/tm";
 import type { ChoiceStore, PlanStore } from "./store";
@@ -132,9 +130,10 @@ export interface PlanDeps {
   qloo: QlooClient;
   /** Ticketmaster client per run ledger. */
   tm?: (ledger: LedgerSink) => TmClient;
-  /** Google Places client per run ledger (arm F). */
-  places?: (ledger: LedgerSink) => PlacesClient;
-  /** Census ACS client per run ledger (arm F's acs_lookup; the gazetteer covers tiles). */
+  /**
+   * Census ACS client per run ledger. No step calls it since arm F (its only user, through acs_lookup) was
+   * removed on Oct 20 2026; adult counts come from the gazetteer. Kept, with @walkup/acs, for now.
+   */
   acs?: (ledger: LedgerSink) => AcsClient;
   gazetteer?: GazetteerLike;
   narrator?: NarratorDeps;
@@ -156,14 +155,9 @@ export interface PlanDeps {
   mode?: "live" | "fixture";
 }
 
-/** The one comparison arm: F, the "Without Qloo" fair control. */
-export type ArmKey = "F";
-
 export interface PlanOptions {
   /** Called as each card is ready, in CARD_ORDER. */
   onCard?: (key: CardKey, envelope: Envelope<unknown>) => void;
-  /** Comparison arm to run after the sheet (only "F"). Default none. */
-  arms?: ArmKey[];
   /** When the Qloo month guard has tripped, serve a stored sheet for a preset. Default true. */
   serveFromStoreWhenGuarded?: boolean;
   /** Write the result to deps.store. Default true when a store is given. */
@@ -189,12 +183,6 @@ export interface ReviseHook {
   settingRefs: string[];
 }
 
-export interface ArmRun extends ControlArmResult {
-  /** "model", "template" (model off: fixed category queries), "skipped" ... */
-  status: string;
-  notes: string[];
-}
-
 export interface CallBudget {
   /** Qloo requests sent (not served from cache). */
   qlooFresh: number;
@@ -202,13 +190,14 @@ export interface CallBudget {
   qlooTotal: number;
   /**
    * Fresh Qloo calls by level: bill-specific, venue baseline (Q2/Q3/Q5/Q6/Q10
-   * twin), arms. `arms` stays 0: arm F calls Google Places, not Qloo (the field
-   * is kept so stored plans keep their shape).
+   * twin), arms. `arms` stays 0: no comparison arm runs (the field is kept so
+   * stored plans keep their shape).
    */
   billLevel: number;
   venueLevel: number;
   arms: number;
   tm: number;
+  /** Google Places requests. Stays 0 since Places was removed (Oct 20 2026); kept so stored plans keep their shape. */
   places: number;
   anthropic: number;
   byNode: Record<string, number>;
@@ -230,7 +219,6 @@ export interface PlanResult {
   sheet?: StreetSheet;
   pause?: PausedPlan;
   error?: string;
-  arms: Partial<Record<ArmKey, ArmRun>>;
   budget: CallBudget;
   /** Every entity id the sheet cites -> the ledger id of the call that returned it. */
   citations: Record<string, string>;

@@ -634,8 +634,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       usd: sheet.operator.mediaBudgetUsd !== null && Number.isFinite(sheet.operator.mediaBudgetUsd) ? formatUsd(sheet.operator.mediaBudgetUsd * b.share) : null,
     };
   });
-  // The real limits only: lines about where the data came from (sample data, approximate venue points, how the
-  // Google Places list was searched) belong in the header, the footer line and the watermark, not here.
+  // The real limits only: lines about where the data came from (sample data, approximate venue points) belong in
+  // the header, the footer line and the watermark, not here.
   const limits = realLimits(sheet.limits, LIMITS_EVERY_SHEET).slice(
     0,
     opts.maxLimits ?? 8,

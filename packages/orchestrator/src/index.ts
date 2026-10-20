@@ -3,15 +3,13 @@
  *
  * Runs one plan end to end and returns a StreetSheet: Ticketmaster intake,
  * Qloo resolution (Q1-Q3), the plan graph (Q4-Q14) with typed fallbacks,
- * engine scoring, narration with two guards, optional comparison arms, the
+ * engine scoring, narration with two guards, the
  * ledger and plan storage. The SQLite store lives at
  * "@walkup/orchestrator/sqlite" (server code only).
  */
 export { planShow, resolveMode, FIXTURE_LIMITS } from "./plan";
 export { CARD_ORDER, DEFAULT_PROBES } from "./types";
 export type {
-  ArmKey,
-  ArmRun,
   CallBudget,
   CardKey,
   GazetteerLike,

@@ -27,7 +27,6 @@ export {
 export type { McpServices, ServicesOptions, FixtureServicesOptions, EnvServicesOptions, ShowParser, PresetViewLoader, RunPolicy } from "./services";
 export {
   sheetEnvelope,
-  asRecordedSheet,
   sheetStatus,
   pausedEnvelope,
   errorEnvelope,

@@ -33,7 +33,7 @@ export interface Envelope<T> {
 export type LedgerKind = "qloo" | "tm" | "places" | "acs" | "anthropic" | "action";
 
 export interface LedgerEntry {
-  /** "Q1".."Qn" for Qloo, "T1" Ticketmaster, "P1" Places, "C1" Census, "L1" LLM, "A1" actions. */
+  /** "Q1".."Qn" for Qloo, "T1" Ticketmaster, "P1" Google Places (older sheets only), "C1" Census, "L1" LLM, "A1" actions. */
   id: string;
   kind: LedgerKind;
   method: "GET" | "POST" | "ACTION";
@@ -449,7 +449,10 @@ export interface StreetSheet {
   guard: GuardReport;
   budgetSplit?: { geohash: string; share: number; label: "heuristic, not a forecast" }[];
   limits: string[];
-  /** Fair-control arm F (same model + Google Places + ACS, same inputs), shown by "Without Qloo". */
+  /**
+   * Arm F's Google Places comparison list. No longer produced (Places was removed from the product on Oct 20
+   * 2026); kept optional so older stored sheets still load. Never shown or handed out: see withoutControl.
+   */
   control?: ControlArmResult;
   /** Plan id of another bill on the same date in the same room ("Swap the bill"). */
   pairedPlanId?: string;
@@ -567,7 +570,8 @@ export interface SheetRevision {
 }
 
 // ---------------------------------------------------------------------------
-// Fair control arm (same model + Google Places + ACS), shown beside Qloo
+// Fair control arm (same model + Google Places + ACS). No longer produced: the
+// shapes stay for older stored sheets and the P1 research harness.
 // ---------------------------------------------------------------------------
 
 export interface ControlPlace {
@@ -587,6 +591,25 @@ export interface ControlArmResult {
   /** Names that appear in both arms (fuzzy name + 150 m match). */
   overlapWithQloo: string[];
   ledgerRefs: string[];
+}
+
+/** Limits lines older sheets carried about how their Google Places list was searched. */
+const CONTROL_LIMIT = /^(The Google Places list|Without-Qloo list)/;
+
+/**
+ * The sheet without an older run's Google Places list (`control`), its "Without Qloo" step and the limits lines
+ * about it: third-party content the product no longer shows, so pages, exports and MCP drop it on output.
+ * Returns the same object when there is nothing to drop.
+ */
+export function withoutControl<T extends Pick<StreetSheet, "control" | "steps" | "limits">>(sheet: T): T {
+  const controlStep = sheet.steps?.some((s) => s.id === "control") === true;
+  const controlLimit = Array.isArray(sheet.limits) && sheet.limits.some((l) => CONTROL_LIMIT.test(l));
+  if (sheet.control === undefined && !controlStep && !controlLimit) return sheet;
+  const copy = { ...sheet };
+  delete copy.control;
+  if (controlStep) copy.steps = (sheet.steps ?? []).filter((s) => s.id !== "control");
+  if (controlLimit) copy.limits = sheet.limits.filter((l) => !CONTROL_LIMIT.test(l));
+  return copy;
 }
 
 // ---------------------------------------------------------------------------

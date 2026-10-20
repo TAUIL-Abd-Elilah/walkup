@@ -520,26 +520,6 @@ export function guardStep(i: GuardStepInput): TraceStep {
   return traceStep("guard", "guard", "Checks", decision, "ok", i.ledgerRefs, cause);
 }
 
-export interface ControlStepInput {
-  /** The arm's own status: "model: ok", "template", "skipped", or an error. */
-  armStatus: string;
-  searches: number;
-  places: number;
-  overlap: number;
-  /** First arm note (shown when the arm did not run as a model run). */
-  note?: string;
-  ledgerRefs: string[];
-}
-
-export function controlStep(i: ControlStepInput): TraceStep {
-  const status: EnvelopeStatus = i.armStatus === "model: ok" ? "ok" : i.armStatus === "template" ? "degraded" : i.armStatus === "skipped" ? "empty" : "error";
-  if (i.places === 0) {
-    return traceStep("control", "other", "Without Qloo", "Built no list without Qloo", status === "ok" ? "empty" : status, i.ledgerRefs, i.note);
-  }
-  const decision = `Built a list without Qloo from ${countOf(i.searches, "Google Places search", "Google Places searches")}: ${i.overlap} of its ${countOf(i.places, "place")} ${i.overlap === 1 ? "is" : "are"} also on this sheet`;
-  return traceStep("control", "other", "Without Qloo", decision, status, i.ledgerRefs, status === "ok" ? undefined : i.note);
-}
-
 // ---------------------------------------------------------------------------
 // Places the ubiquity penalty pushed off the list
 // ---------------------------------------------------------------------------

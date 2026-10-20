@@ -79,7 +79,8 @@ describe("toPdf", () => {
       expect(text).toContain("not for fans");
       expect(text).toMatch(/Juniper Wire · Example Hall · Fri Nov 20 · printed \w{3} \w{3} \d{1,2} \d{4} · data from Fri Oct 9 2026/);
       expect(text).toContain("Q1-Q12, T1-T2, P1, L1");
-      for (const source of ["Ticketmaster", "Google", "OpenStreetMap", "U.S. Census Bureau", "Qloo"]) expect(text).toContain(source);
+      for (const source of ["Ticketmaster", "OpenStreetMap", "U.S. Census Bureau", "Qloo"]) expect(text).toContain(source);
+      expect(text).not.toContain("Google");
       for (const limit of makeSheet().limits) expect(text).toContain(limit);
       expect(text).not.toContain("Cold beer");
       // A live, non-hypothetical sheet carries no label and no watermark, and no shouted labels at all.
@@ -98,7 +99,7 @@ describe("toPdf", () => {
       const text = pdfPlainText(buf);
       // Header label, the sample credit line in place of the live sources, the footer line and the watermark; no limits bullet.
       expect(text).toContain("Walkup street sheet · Sample data");
-      expect(text).toContain("Sample data shaped like Ticketmaster, Google Places and Qloo answers. Map data © OpenStreetMap contributors.");
+      expect(text).toContain("Sample data shaped like Ticketmaster and Qloo answers. Map data © OpenStreetMap contributors.");
       expect(text).not.toContain("Affinity data: Qloo");
       expect(text).not.toContain("Sample data: made-up places and numbers, not a live run.");
       expect(countOccurrences(text, "Sample data")).toBe(3);

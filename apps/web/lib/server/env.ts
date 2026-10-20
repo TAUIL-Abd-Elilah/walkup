@@ -52,7 +52,6 @@ export function keyPresence(env: Env = process.env) {
   return {
     qloo: has(env, "QLOO_API_KEY"),
     ticketmaster: has(env, "TICKETMASTER_API_KEY"),
-    places: has(env, "GOOGLE_PLACES_API_KEY"),
     anthropic: has(env, "ANTHROPIC_API_KEY") || has(env, "ANTHROPIC_AUTH_TOKEN"),
     openrouter: has(env, "OPENROUTER_API_KEY"),
     /** The route narration and revisions take: OpenRouter, Anthropic, or none (template and rules). */

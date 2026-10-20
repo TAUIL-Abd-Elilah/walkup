@@ -21,7 +21,7 @@ import { getRun, resetRunsForTests, startRun } from "../lib/server/runs";
 import { loadPlan } from "../lib/server/service";
 import { planEventStream, staticFrames } from "../lib/server/stream";
 
-const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "WALKUP_MODE", "WALKUP_QLOO_UNTIL"];
+const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "WALKUP_MODE", "WALKUP_QLOO_UNTIL"];
 const saved: Record<string, string | undefined> = {};
 let dir = "";
 const ctx = (over: Partial<RequestContext> = {}): RequestContext => ({ ip: "203.0.113.9", sessionId: "test-session-revise01", origin: "https://walkup.example", ...over });

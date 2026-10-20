@@ -11,17 +11,14 @@
  *   npx tsx evals/product/run.ts --out <dir> --quiet
  *
  * Exit code 0 when every failure is a known product gap (known-gaps.ts) or there is none,
- * 1 on any other failure, 2 on bad usage. --strict-hours also fails partners that Google
- * Places lists without hours (the sheet shows them as "call ahead").
- * Nothing calls a live API unless --ground-live is given on a recorded run
- * (Google Places, with GOOGLE_PLACES_API_KEY; capped at 300 requests a day).
+ * 1 on any other failure, 2 on bad usage. --strict-hours also fails partners Qloo lists
+ * without hours (the sheet shows them as "call ahead"). Nothing calls a live API.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createMemoryLedger, type StreetSheet } from "@walkup/contracts";
+import { withoutControl, type StreetSheet } from "@walkup/contracts";
 import { type CallBudget, type PlanResult } from "@walkup/orchestrator";
-import { createPlacesClient, type PlacesClient } from "@walkup/places";
 import { DEFAULT_WORLD_SEED } from "@walkup/qloo-world";
 import { CASES, type CaseEnv, type ProductCase, type RecordedRun } from "./cases";
 import { CLAUSES, checkSubject, type CheckResult, type ClauseId, type SubjectMetrics } from "./checks";
@@ -85,7 +82,7 @@ export interface Score {
   unexpectedFailures: number;
   skipped: number;
   total: number;
-  /** Partners checked against Google Places only with hours listed there (no "call ahead" allowance). */
+  /** Partners pass only with hours from Qloo for the day (no "call ahead" allowance). */
   strictHours: boolean;
   clauses: ClauseScore[];
   cases: CaseScore[];
@@ -97,8 +94,6 @@ export interface RunOptions {
   plans?: string;
   /** Case ids or slugs to run (others are reported as skipped). */
   only?: string[];
-  /** Places client for grounding recorded runs. */
-  places?: PlacesClient | null;
   /** See GroundingOptions.strictHours. */
   strictHours?: boolean;
   now?: () => Date;
@@ -134,8 +129,8 @@ export function recordedFromJson(raw: unknown, source: string): RecordedRun | nu
     status,
     planId: typeof o.planId === "string" ? o.planId : sheet.planId,
     mode: sheet.mode,
-    sheet,
-    arms: (o.arms as PlanResult["arms"]) ?? {},
+    // As the product serves it: an older run's Google Places list is dropped.
+    sheet: withoutControl(sheet),
     budget: (o.budget as CallBudget) ?? emptyBudget(),
     citations: (o.citations as Record<string, string>) ?? {},
     servedFromStore: false,
@@ -268,9 +263,9 @@ function clauseScores(cases: CaseScore[]): ClauseScore[] {
     if (CI_NOTES[cl.id]) notes.push(CI_NOTES[cl.id] as string);
     if (status === "not verified" && t.skip > 0) notes.push(`${t.skip} check(s) skipped: see the case details`);
     if (cl.id === "D3") {
-      // The default reading passes a partner Places lists without hours when the sheet says "call ahead"; say how many.
+      // The default reading passes a partner Qloo lists without hours when the sheet says "call ahead"; say how many.
       const callAhead = scoped.flatMap((c) => Object.entries(c.metrics).filter(([k, v]) => k.endsWith(".partnersCallAhead") && typeof v === "number" && v > 0).map(([k, v]) => `${k.slice(0, -".partnersCallAhead".length)}: ${String(v)}`));
-      if (callAhead.length > 0) notes.push(`partners with no hours in Google Places, passed as "call ahead" (--strict-hours fails them): ${callAhead.join(", ")}`);
+      if (callAhead.length > 0) notes.push(`partners with no hours from Qloo, passed as "call ahead" (--strict-hours fails them): ${callAhead.join(", ")}`);
     }
     if (goldensOnly) {
       const other = tally(cases.filter((c) => !c.golden), cl.id);
@@ -290,7 +285,6 @@ export async function runProductEval(opts: RunOptions = {}): Promise<Score> {
   if (source === "recorded") {
     if (!opts.plans) throw new Error("--source recorded needs --plans <dir | plans.sqlite>");
     env.recorded = await loadRecordedPlans(opts.plans);
-    env.places = opts.places ?? null;
     log(`recorded plans: ${[...env.recorded.keys()].join(", ") || "none"}`);
   }
   const cases: CaseScore[] = [];
@@ -343,7 +337,7 @@ export function scoreMarkdown(score: Score): string {
   lines.push(
     `Source: ${
       score.source === "fixture-world"
-        ? `fixture world (synthetic stand-in for Qloo, Ticketmaster and Google Places; seed \`${score.worldSeed}\`). No live API was called.`
+        ? `fixture world (synthetic stand-in for Qloo and Ticketmaster; seed \`${score.worldSeed}\`). No live API was called.`
         : `recorded plans (${(score.recordedPlans ?? []).map((p) => `${p.presetId}: ${p.mode} sheet from ${p.source}`).join("; ") || "none"}).`
     }`,
   );
@@ -352,7 +346,7 @@ export function scoreMarkdown(score: Score): string {
     `**${score.passed} passed, ${score.failed} failed (${score.knownGaps} on known product gaps only, ${score.unexpectedFailures} unexpected), ${score.skipped} skipped, of ${score.total} cases.**`,
     "",
   );
-  if (score.strictHours) lines.push("Strict hours: a partner with no hours in Google Places counts as not shown open, even when the sheet says call ahead.", "");
+  if (score.strictHours) lines.push("Strict hours: a partner with no hours from Qloo counts as not shown open, even when the sheet says call ahead.", "");
   lines.push("## Definition of done", "", "Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.", "", "| Clause | Status | Cases | Checks (pass / fail / skip) |", "|---|---|---|---|");
   for (const cl of score.clauses) {
     lines.push(`| ${cl.id}. ${cell(cl.text)} | ${cl.status}${cl.note ? ` (${cell(cl.note)})` : ""} | ${cl.cases.join(", ") || "-"} | ${cl.pass} / ${cl.fail} / ${cl.skip} |`);
@@ -382,7 +376,7 @@ export function scoreMarkdown(score: Score): string {
   }
   lines.push(
     "",
-    "Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding looks every partner and pre/post spot up by name near its point in Google Places (here the fixture world's Places transport).",
+    "Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.",
     "",
   );
   return lines.join("\n");
@@ -407,12 +401,11 @@ export interface CliArgs {
   out: string;
   only?: string[];
   quiet: boolean;
-  groundLive: boolean;
   strictHours: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs {
-  const args: CliArgs = { source: "fixture", out: DEFAULT_OUT_DIR, quiet: false, groundLive: false, strictHours: false };
+  const args: CliArgs = { source: "fixture", out: DEFAULT_OUT_DIR, quiet: false, strictHours: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i] as string;
     const next = (): string => {
@@ -428,12 +421,10 @@ export function parseArgs(argv: string[]): CliArgs {
     else if (a === "--out") args.out = resolve(next());
     else if (a === "--only") args.only = next().split(",").map((x) => x.trim()).filter(Boolean);
     else if (a === "--quiet") args.quiet = true;
-    else if (a === "--ground-live") args.groundLive = true;
     else if (a === "--strict-hours") args.strictHours = true;
     else throw new Error(`Unknown argument ${a}`);
   }
   if (args.source === "recorded" && !args.plans) throw new Error("--source recorded needs --plans <dir | plans.sqlite>");
-  if (args.groundLive && args.source !== "recorded") throw new Error("--ground-live applies to recorded runs only");
   return args;
 }
 
@@ -445,16 +436,8 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     console.error(err instanceof Error ? err.message : String(err));
     return 2;
   }
-  let places: PlacesClient | null = null;
-  if (args.groundLive) {
-    if (!process.env.GOOGLE_PLACES_API_KEY) {
-      console.error("--ground-live needs GOOGLE_PLACES_API_KEY");
-      return 2;
-    }
-    places = createPlacesClient({ ledger: createMemoryLedger() });
-  }
   const log = args.quiet ? () => {} : (s: string) => console.log(s);
-  const opts: RunOptions = { source: args.source, places, log, strictHours: args.strictHours };
+  const opts: RunOptions = { source: args.source, log, strictHours: args.strictHours };
   if (args.plans) opts.plans = args.plans;
   if (args.only) opts.only = args.only;
   let score: Score;

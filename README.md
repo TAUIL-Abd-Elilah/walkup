@@ -8,7 +8,7 @@ Walkup is an agent for one booked show that still has seats to sell. Give it the
 
 **Try it:** not hosted yet. [Run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
 
-**Status:** the whole pipeline runs end to end today on labelled sample data (a synthetic stand-in for Qloo, Ticketmaster and Google Places), with no keys. On Oct 15 2026 every request shape a run sends was checked against the live Qloo host ([what we found](#verified-on-hackathonapiqloocom-oct-15-2026)); no full live sheet has been recorded yet, so this page reports no live sheet results.
+**Status:** the whole pipeline runs end to end today on labelled sample data (a synthetic stand-in for Qloo and Ticketmaster), with no keys. On Oct 15 2026 every request shape a run sends was checked against the live Qloo host ([what we found](#verified-on-hackathonapiqloocom-oct-15-2026)); no full live sheet has been recorded yet, so this page reports no live sheet results.
 
 Contents: [The problem](#the-problem) · [What it does](#what-it-does) · [Qloo workflows and tools used, and why](#how-walkup-uses-qloo) · [A request, end to end](#a-request-end-to-end-redacted) · [What we checked](#what-we-checked) · [Screenshots](#screenshots) · [Run it yourself](#run-it-yourself-setup-from-a-clean-environment) · [Known limitations](#known-limitations-what-this-does-not-establish) · [Responsible by construction](#responsible-by-construction) · [How this differs](#how-this-differs) · [Where to look in the code](#where-to-look-in-the-code)
 
@@ -128,21 +128,16 @@ flowchart TD
   NOTE --> REVISE(["LLM: read the note, choose tools (fixed rules without a key)"])
   REVISE -->|"re-run with new settings; unchanged requests from cache"| GRAPH
   CONFIRM --> ACT["Send, exports, .ics (ledger A1, A2...)"]
-  CONTROL(["Arm F: same LLM + Google Places + ACS"]) -.->|shown beside, never merged| SHEET
 
   classDef llm fill:#fde68a,stroke:#92400e,color:#1f2937
   classDef qloo fill:#bfdbfe,stroke:#1e3a8a,color:#1f2937
   classDef human fill:#e5e7eb,stroke:#374151,color:#1f2937
-  class PARSE,NARRATE,CONTROL,REVISE llm
+  class PARSE,NARRATE,REVISE llm
   class RESOLVE,GRAPH qloo
   class PICK,CONFIRM,NOTE human
 ```
 
-The LLM (`claude-opus-5-5`) is called at four points only: parsing free text into a Ticketmaster query, narrating the finished sheet, the fair-control arm, and reading a change note. For a change note it sees a short summary of the sheet (areas, place types, settings; no partner names or contacts) and chooses among strict tools whose allowed values come from that sheet; it can also ask one question instead. It never ranks places: the tools only set inputs, and the plan runs again through Qloo and the same code. Without a model key (OpenRouter or Anthropic), or when the call fails, fixed rules read common notes ("all ages", "no bars", "skip <area>", "only Saturday", "within 10 km") into the same tool calls, the sheet says the rules read it, and anything else gets a question. Which places, which tiles and in what order is decided by Qloo plus deterministic code. Narration is schema-constrained: each field can reference only the entity IDs and numbers returned in this run, and a validator drops anything else and shows the count.
-
-### Without Qloo
-
-The **"Without Qloo"** list is the fair control, shown beside the Qloo list. On a live run with a model key it is the same model with the same system prompt and output schema, using Google Places Text Search and a Census ACS lookup as its tools. Without a model key, and in sample mode, fixed category searches ranked by Google rating stand in, and the sheet says so. The overlap is counted and the Qloo-only picks are marked. The app does not claim the control is worse; it shows where the two lists differ.
+The LLM (`claude-opus-5-5`) is called at three points only: parsing free text into a Ticketmaster query, narrating the finished sheet, and reading a change note. For a change note it sees a short summary of the sheet (areas, place types, settings; no partner names or contacts) and chooses among strict tools whose allowed values come from that sheet; it can also ask one question instead. It never ranks places: the tools only set inputs, and the plan runs again through Qloo and the same code. Without a model key (OpenRouter or Anthropic), or when the call fails, fixed rules read common notes ("all ages", "no bars", "skip <area>", "only Saturday", "within 10 km") into the same tool calls, the sheet says the rules read it, and anything else gets a question. Which places, which tiles and in what order is decided by Qloo plus deterministic code. Narration is schema-constrained: each field can reference only the entity IDs and numbers returned in this run, and a validator drops anything else and shows the count.
 
 ## A request, end to end (redacted)
 
@@ -181,12 +176,11 @@ What we tried and dropped is in [docs/what-we-tried.md](docs/what-we-tried.md).
 None yet. They will come from a live run and will show no credentials or personal data:
 
 1. The first screen: two bills in the same room, side by side, with named tiles.
-2. The "Without Qloo" list beside the Qloo list, overlap marked.
-3. The receipt drawer: a partner's `[Q9]` link opens the request with its parameters and copy-as-curl.
-4. `needs_input` and thin signal, on a phone: the candidate picker and the policy-denied tag count.
-5. The Street Sheet PDF, page 1.
-6. Confirm and send: recipients, Confirm, the ledger entry.
-7. The agent skill in a terminal returning a sheet link and the JSON envelope.
+2. The receipt drawer: a partner's `[Q9]` link opens the request with its parameters and copy-as-curl.
+3. `needs_input` and thin signal, on a phone: the candidate picker and the policy-denied tag count.
+4. The Street Sheet PDF, page 1.
+5. Confirm and send: recipients, Confirm, the ledger entry.
+6. The agent skill in a terminal returning a sheet link and the JSON envelope.
 
 ## Run it yourself (setup from a clean environment)
 
@@ -200,17 +194,16 @@ cp .env.example .env        # Windows: copy .env.example .env
 npm run dev                 # http://localhost:3000
 ```
 
-**Sample mode works with no keys.** With `WALKUP_MODE=auto` (the default) and blank keys, the four preset shows run end to end through the same orchestrator on a synthetic stand-in for Qloo, Ticketmaster and Google Places (`packages/qloo-world`, no network). Every page, file and email is marked as sample (fixture) data, and free-form show search is disabled with an explanation. Once Qloo is no longer available (`WALKUP_MODE=recorded`, or the time in `WALKUP_QLOO_UNTIL` has passed), the server is in recorded mode instead: it serves the sheets it stored on earlier live runs, dated and labelled as recordings, and makes no new plans ([`docs/deploy.md`](docs/deploy.md#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). To run live, fill in `.env`:
+**Sample mode works with no keys.** With `WALKUP_MODE=auto` (the default) and blank keys, the four preset shows run end to end through the same orchestrator on a synthetic stand-in for Qloo and Ticketmaster (`packages/qloo-world`, no network). Every page, file and email is marked as sample (fixture) data, and free-form show search is disabled with an explanation. Once Qloo is no longer available (`WALKUP_MODE=recorded`, or the time in `WALKUP_QLOO_UNTIL` has passed), the server is in recorded mode instead: it serves the sheets it stored on earlier live runs, dated and labelled as recordings, and makes no new plans ([`docs/deploy.md`](docs/deploy.md#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). To run live, fill in `.env`:
 
 | Variable | Used for | Without it |
 |---|---|---|
 | `QLOO_API_KEY` | Every Qloo call. Server-side only, never sent to the browser | Sample mode |
 | `QLOO_BASE_URL` | Defaults to `https://hackathon.api.qloo.com` | |
 | `TICKETMASTER_API_KEY` | Event lookup, venue coordinates, age policy, venue roster | Sample mode |
-| `GOOGLE_PLACES_API_KEY` | The fair-control arm and grounding checks only | No "Without Qloo" list |
-| `CENSUS_API_KEY` | Live ACS lookups (`packages/acs`) | Adult counts come from the bundled gazetteer; the Census API redirected keyless requests to a missing-key page in October 2026, so live ACS calls need the (free) key |
-| `OPENROUTER_API_KEY` | Narration, free-text parsing, the fair-control arm and change notes, through OpenRouter (`anthropic/claude-opus-5.5`; `OPENROUTER_MODEL` overrides). Used first when set. No server-side refusal fallback on this route (see `packages/narrator/README.md`, "Providers") | Uses `ANTHROPIC_API_KEY` if set |
-| `ANTHROPIC_API_KEY` | The same calls through the Anthropic API directly (with the server-side refusal fallback). Used when no OpenRouter key is set, or when `WALKUP_LLM_PROVIDER=anthropic` | With neither key, narration falls back to a labelled template, change notes are read by fixed rules and the fair control uses fixed searches |
+| `CENSUS_API_KEY` | Live ACS lookups (`packages/acs`); no product step makes one since the comparison list was removed | Adult counts come from the bundled gazetteer; the Census API redirected keyless requests to a missing-key page in October 2026, so live ACS calls need the (free) key |
+| `OPENROUTER_API_KEY` | Narration, free-text parsing and change notes, through OpenRouter (`anthropic/claude-opus-5.5`; `OPENROUTER_MODEL` overrides). Used first when set. No server-side refusal fallback on this route (see `packages/narrator/README.md`, "Providers") | Uses `ANTHROPIC_API_KEY` if set |
+| `ANTHROPIC_API_KEY` | The same calls through the Anthropic API directly (with the server-side refusal fallback). Used when no OpenRouter key is set, or when `WALKUP_LLM_PROVIDER=anthropic` | With neither key, narration falls back to a labelled template and change notes are read by fixed rules |
 | `RESEND_API_KEY`, `RESEND_FROM` | The confirm-gated send | The preview and the ledger entry are real, but nothing is sent ("demo: not sent") |
 
 Checks (the same ones CI runs):
@@ -242,8 +235,8 @@ Also:
 - **New venues.** A room that opened recently may not be a Qloo place yet; the run uses the Ticketmaster coordinates as a `POINT` and says so. Partners do not depend on the venue entity.
 - **Generic compare results.** When bill-versus-house compare returns only shared, generic tags, the card falls back to a tag diff and is marked `degraded`.
 - **Local or national.** Podcast and brand rankings with `signal.location` may not move with location; when they don't, they are labelled "national, not local".
-- **No live sheet yet.** Every sheet today is sample data. The Oct 15 checks show which request shapes work on the live host, not that Qloo's picks beat a popularity ranking or the fair control.
-- **The fair control is a fair control, not every alternative.** It excludes Google Trends and Spotify's top cities because neither has an official API.
+- **No live sheet yet.** Every sheet today is sample data. The Oct 15 checks show which request shapes work on the live host, not that Qloo's picks beat a popularity ranking or any other list.
+- **No comparison list.** The sheet shows Qloo's picks with their receipts, not how they compare with a list made without Qloo. The Google Places comparison list was removed on Oct 20 2026 ([why](docs/what-we-tried.md)).
 - **Revisions change five settings only.** All ages, place types, areas, street-team days and radius. A note asking for anything else gets a question back. The fixed rules know a short list of phrasings; the model reads more, but only when a model key (OpenRouter or Anthropic) is set, and in sample mode the rules always read the note.
 - **Counts are what-ifs.** Seats left and capacity are operator inputs, marked as what-ifs wherever they appear. The presets carry no seats-left count. No sales data about any show is known or shown.
 
@@ -267,7 +260,7 @@ Other public 2026 projects built on Qloo work on nearby problems. Descriptions a
 |---|---|---|
 | Theme Night GM | Turns a sports team's weaker home dates into theme-night kits: a heatmap near the venue, places within 6 km, a sponsor, with the league as the fan proxy | Starts from one already-booked show and compares that bill against the room's own roster; ranks partners per lift tile; scores the operator's own list; produces a street-team sheet and a confirm-gated send |
 | Routed, Advance, Booker, Opener, Roomtone | Choosing where and with whom to play: cities, rooms, supporting acts; promoter advance briefs | Starts after those choices: the date, room and bill are fixed, and the remaining seats are the problem |
-| Fanroute | Poster spots ranked by the act's affinity | Lift against the house crowd, a live fair control, grounding checks, the operator's declared partners scored, and a confirm-gated send |
+| Fanroute | Poster spots ranked by the act's affinity | Lift against the house crowd, a receipt behind every claim, the operator's declared partners scored, and a confirm-gated send |
 | Tasteplot | Site selection using heatmap lift over a baseline audience | A dated show and a weekly street-team decision, not a lease |
 
 ## Where to look in the code
@@ -279,7 +272,7 @@ Other public 2026 projects built on Qloo work on nearby problems. Descriptions a
 | [`packages/engine/`](packages/engine/) | Pure code, no I/O: lift, partner scoring, diversity rules, load balancer, budget heuristic, guard, denylist |
 | [`packages/narrator/`](packages/narrator/) | Schema-constrained narration and the labelled template fallback |
 | [`packages/tm/`](packages/tm/) | Ticketmaster Discovery: intake, venue roster, age policy |
-| [`packages/places/`](packages/places/) | Google Places (New) for the fair-control arm and grounding checks |
+| [`packages/places/`](packages/places/) | Google Places (New) client, used only by the P1 research harness, not by the product |
 | [`packages/acs/`](packages/acs/), [`packages/gazetteer/`](packages/gazetteer/) | Census ACS lookups; neighbourhood and ZCTA naming for tiles |
 | [`apps/web/`](apps/web/) | Next.js app: Street Sheet, map, receipt drawer, confirm dialog, exports |
 | [`config/tags.json`](config/tags.json) | Pinned Qloo tag URNs (see [`config/README.md`](config/README.md)) |
@@ -290,4 +283,4 @@ Other public 2026 projects built on Qloo work on nearby problems. Descriptions a
 
 ## License
 
-MIT. See [LICENSE](LICENSE). Data from Qloo, Ticketmaster, Google, OpenStreetMap contributors (ODbL, via OpenFreeMap) and the US Census Bureau is used under each provider's terms and attributed in the app.
+MIT. See [LICENSE](LICENSE). Data from Qloo, Ticketmaster, OpenStreetMap contributors (ODbL, via OpenFreeMap) and the US Census Bureau is used under each provider's terms and attributed in the app.

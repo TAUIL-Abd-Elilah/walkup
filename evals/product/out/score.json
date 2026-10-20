@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-20T05:03:28.635Z",
+  "generatedAt": "2026-10-20T05:32:06.577Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -26,7 +26,7 @@
         "C03",
         "C04"
       ],
-      "pass": 55,
+      "pass": 54,
       "fail": 0,
       "skip": 0,
       "note": "outside the goldens: 110 pass, 0 fail"
@@ -51,7 +51,7 @@
     },
     {
       "id": "D3",
-      "text": "Every partner is open on the street-team day per Google Places.",
+      "text": "Every partner is open on the street-team day per the hours Qloo returns for it.",
       "source": "Definition of done",
       "checkedBy": "eval",
       "scope": "goldens",
@@ -65,7 +65,7 @@
       "pass": 12,
       "fail": 0,
       "skip": 0,
-      "note": "partners with no hours in Google Places, passed as \"call ahead\" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail"
+      "note": "partners with no hours from Qloo, passed as \"call ahead\" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail"
     },
     {
       "id": "D4",
@@ -265,9 +265,9 @@
           "subject": "g1-a"
         },
         {
-          "name": "the control arm is F (same model + Google Places)",
+          "name": "no Google Places comparison list on the sheet",
           "status": "pass",
-          "detail": "20 control places",
+          "detail": "none",
           "clause": "D1",
           "subject": "g1-a"
         },
@@ -328,13 +328,6 @@
           "subject": "g1-a"
         },
         {
-          "name": "the Without Qloo view is arm F with places",
-          "status": "pass",
-          "detail": "20 control places",
-          "clause": "D1",
-          "subject": "g1-a"
-        },
-        {
           "name": "paired with bill B for the swap",
           "status": "pass",
           "detail": "\"g1-b\"",
@@ -372,7 +365,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 39",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
           "clause": "D1",
           "subject": "g1-a"
         },
@@ -491,14 +484,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "164 refs",
+          "detail": "156 refs",
           "clause": "D4",
           "subject": "g1-a"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "39",
+          "detail": "31",
           "clause": "D4",
           "subject": "g1-a"
         },
@@ -524,21 +517,21 @@
           "subject": "g1-a"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -616,7 +609,7 @@
         }
       ],
       "counts": {
-        "pass": 54,
+        "pass": 53,
         "fail": 0,
         "skip": 0
       },
@@ -628,7 +621,7 @@
         "g1-a.hoursUnverified": 2,
         "g1-a.partnersCallAhead": 2,
         "g1-a.openAllStreetDays": 22,
-        "g1-a.ledgerEntries": 39,
+        "g1-a.ledgerEntries": 31,
         "g1-a.qlooFresh": 29,
         "g1-a.qlooCached": 0,
         "g1-a.coreBillCalls": 14,
@@ -686,9 +679,9 @@
           "subject": "g1-b"
         },
         {
-          "name": "the control arm is F (same model + Google Places)",
+          "name": "no Google Places comparison list on the sheet",
           "status": "pass",
-          "detail": "20 control places",
+          "detail": "none",
           "clause": "D1",
           "subject": "g1-b"
         },
@@ -765,7 +758,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 39",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
           "clause": "D1",
           "subject": "g1-b"
         },
@@ -884,14 +877,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "164 refs",
+          "detail": "156 refs",
           "clause": "D4",
           "subject": "g1-b"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "39",
+          "detail": "31",
           "clause": "D4",
           "subject": "g1-b"
         },
@@ -917,21 +910,21 @@
           "subject": "g1-b"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-b"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-b"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -1021,7 +1014,7 @@
         "g1-b.hoursUnverified": 0,
         "g1-b.partnersCallAhead": 0,
         "g1-b.openAllStreetDays": 23,
-        "g1-b.ledgerEntries": 39,
+        "g1-b.ledgerEntries": 31,
         "g1-b.qlooFresh": 29,
         "g1-b.qlooCached": 0,
         "g1-b.coreBillCalls": 14,
@@ -1079,9 +1072,9 @@
           "subject": "g2"
         },
         {
-          "name": "the control arm is F (same model + Google Places)",
+          "name": "no Google Places comparison list on the sheet",
           "status": "pass",
-          "detail": "20 control places",
+          "detail": "none",
           "clause": "D1",
           "subject": "g2"
         },
@@ -1186,7 +1179,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 42",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 37",
           "clause": "D1",
           "subject": "g2"
         },
@@ -1305,14 +1298,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "157 refs",
+          "detail": "152 refs",
           "clause": "D4",
           "subject": "g2"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "42",
+          "detail": "37",
           "clause": "D4",
           "subject": "g2"
         },
@@ -1338,21 +1331,21 @@
           "subject": "g2"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "22 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g2"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g2"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -1442,7 +1435,7 @@
         "g2.hoursUnverified": 0,
         "g2.partnersCallAhead": 0,
         "g2.openAllStreetDays": 21,
-        "g2.ledgerEntries": 42,
+        "g2.ledgerEntries": 37,
         "g2.qlooFresh": 36,
         "g2.qlooCached": 7,
         "g2.coreBillCalls": 17,
@@ -1500,9 +1493,9 @@
           "subject": "g3"
         },
         {
-          "name": "the control arm is F (same model + Google Places)",
+          "name": "no Google Places comparison list on the sheet",
           "status": "pass",
-          "detail": "20 control places",
+          "detail": "none",
           "clause": "D1",
           "subject": "g3"
         },
@@ -1586,7 +1579,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 25",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 17",
           "clause": "D1",
           "subject": "g3"
         },
@@ -1705,14 +1698,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "45 refs",
+          "detail": "37 refs",
           "clause": "D4",
           "subject": "g3"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "25",
+          "detail": "17",
           "clause": "D4",
           "subject": "g3"
         },
@@ -1738,21 +1731,21 @@
           "subject": "g3"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "6 partners checked for wednesday; 0 with no hours in Places, shown as call ahead",
+          "detail": "6 partners checked for wednesday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g3"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "3 spots checked",
           "clause": "D3",
           "subject": "g3"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -1842,7 +1835,7 @@
         "g3.hoursUnverified": 0,
         "g3.partnersCallAhead": 0,
         "g3.openAllStreetDays": 6,
-        "g3.ledgerEntries": 25,
+        "g3.ledgerEntries": 17,
         "g3.qlooFresh": 15,
         "g3.qlooCached": 0,
         "g3.coreBillCalls": 10,
@@ -2147,21 +2140,21 @@
           "subject": "g2 resumed"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "22 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g2 resumed"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g2 resumed"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -2480,21 +2473,21 @@
           "subject": "g1-a, empty compare"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, empty compare"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, empty compare"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -2770,21 +2763,21 @@
           "subject": "g1-a, thin heatmap"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "16 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "16 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, thin heatmap"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, thin heatmap"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -3060,21 +3053,21 @@
           "subject": "g1-a, lift weak"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "8 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "8 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, lift weak"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, lift weak"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -3372,21 +3365,21 @@
           "subject": "g1-b all-ages, model"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-b all-ages, model"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-b all-ages, model"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -3582,21 +3575,21 @@
           "subject": "g1-a 21+, model"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a 21+, model"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a 21+, model"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -3881,21 +3874,21 @@
           "subject": "g2, model tries denied words"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "22 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g2, model tries denied words"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g2, model tries denied words"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -4144,21 +4137,21 @@
           "subject": "g1-a, closed places"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 1 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 1 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, closed places"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, closed places"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -4414,21 +4407,21 @@
           "subject": "g1-a, unknown hours"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 8 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 8 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, unknown hours"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, unknown hours"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -4782,21 +4775,21 @@
           "subject": "g1-a from cache under the guard"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a from cache under the guard"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a from cache under the guard"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -4985,21 +4978,21 @@
           "subject": "g1-b under the guard"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "0 partners checked for the street-team day; 0 with no hours in Places, shown as call ahead",
+          "detail": "0 partners checked for the street-team day; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-b under the guard"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "0 spots checked",
           "clause": "D3",
           "subject": "g1-b under the guard"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -5312,21 +5305,21 @@
           "subject": "g1-a, 429 once"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, 429 once"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, 429 once"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -5617,21 +5610,21 @@
           "subject": "g1-b, 23 declared partners"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-b, 23 declared partners"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-b, 23 declared partners"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -5928,21 +5921,21 @@
           "subject": "g1-a, bar-heavy categories"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "16 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "16 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, bar-heavy categories"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, bar-heavy categories"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -7215,21 +7208,21 @@
           "subject": "g1-a, house heat fails"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "8 partners checked for thursday; 0 with no hours in Places, shown as call ahead",
+          "detail": "8 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, house heat fails"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, house heat fails"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",
@@ -7618,21 +7611,21 @@
           "subject": "g1-a, no model"
         },
         {
-          "name": "every partner open on the street-team day per Google Places",
+          "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours in Places, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
           "clause": "D3",
           "subject": "g1-a, no model"
         },
         {
-          "name": "every pre/post spot open on show night per Google Places",
+          "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
           "detail": "8 spots checked",
           "clause": "D3",
           "subject": "g1-a, no model"
         },
         {
-          "name": "every pre/post spot without hours in Google Places is marked call ahead",
+          "name": "every pre/post spot without hours from Qloo is marked call ahead",
           "status": "pass",
           "detail": "none presented as open without hours",
           "clause": "D3",

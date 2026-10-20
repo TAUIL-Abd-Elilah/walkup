@@ -24,7 +24,7 @@ export const STATUS_WORD: Record<EnvelopeStatus, string> = {
 
 /**
  * The word before a decision in "What Walkup decided" when the step isn't ok, said in 600 with a colon:
- * "Fell back: built a list without Qloo ...". A step that did nothing stays listed as "Skipped".
+ * "Fell back: couldn't build the room's usual crowd.". A step that did nothing stays listed as "Skipped".
  */
 export const STEP_STATUS_WORD: Record<EnvelopeStatus, string> = {
   ok: "",
@@ -68,10 +68,11 @@ export const ROLE_LABEL: Record<string, string> = {
   partner: "Partner",
 };
 
+/** `places` appears only in the ledgers of sheets made before Google Places was removed (Oct 20 2026). */
 export const LEDGER_KIND_LABEL: Record<LedgerKind, string> = {
   qloo: "Qloo",
   tm: "Ticketmaster",
-  places: "Google Places (comparison list)",
+  places: "Google Places",
   acs: "Census ACS",
   anthropic: "Claude",
   action: "Action",
@@ -154,6 +155,7 @@ const NODE_WORDS: [RegExp, (m: RegExpExecArray) => string][] = [
   [/^Q1 proxy seed: (.*)$/, (m) => `Stand-in title (${m[1]?.replace(/_/g, " ")})`],
   [/^Q1 acts? (search|by Spotify id)(.*)$/, () => "The acts"],
   [/^T intake$/, () => "The show listing"],
+  // Older sheets only: the comparison list was removed on Oct 20 2026.
   [/^arm F/, () => "Google Places comparison list"],
   [/^narration$/, () => "Summary"],
   [/^revise/, () => "Your change note"],
@@ -217,9 +219,9 @@ export function genreLabel(classification: string | undefined, fallback: string)
 
 /** The footer's data credit for the runtime mode: sample data, recordings of live runs, or the live services. */
 export function dataSourcesLine(mode: "live" | "fixture" | "recorded"): string {
-  if (mode === "fixture") return "Sample data shaped like Qloo, Ticketmaster and Google Places responses; none of those services is called.";
+  if (mode === "fixture") return "Sample data shaped like Qloo and Ticketmaster responses; neither service is called.";
   if (mode === "recorded") {
     return "Affinity data from Qloo, events and age rules from Ticketmaster, as recorded on live runs; neither service is called now.";
   }
-  return "Affinity data from Qloo. Events and age rules from Ticketmaster. The comparison list comes from Google Places.";
+  return "Affinity data from Qloo. Events and age rules from Ticketmaster.";
 }

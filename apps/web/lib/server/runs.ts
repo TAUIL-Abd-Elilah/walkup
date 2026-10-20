@@ -187,7 +187,6 @@ export function startRun(input: StartRunInput): RunState {
   void (async () => {
     try {
       const opts: PlanOptions = {
-        arms: ["F"],
         onCard: (key, envelope) => {
           const card = { key, envelope };
           run.cards.push(card);

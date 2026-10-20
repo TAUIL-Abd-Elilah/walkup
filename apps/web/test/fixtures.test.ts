@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { ControlArmResult, StreetSheet } from "@walkup/contracts";
+import type { StreetSheet } from "@walkup/contracts";
 import { DENIED_TAG_PREFIXES } from "@walkup/contracts";
 import type { SheetFixture } from "../lib/fixture-types";
 import { isDeniedTag } from "../lib/policy";
@@ -26,10 +26,9 @@ describe("hand-built fixtures (the fallback)", () => {
     expect(files.sort()).toEqual(["g1-a.sheet.json", "g1-b.sheet.json", "g2.sheet.json", "g3.sheet.json"]);
   });
 
-  it("type-check against the contracts (generator output is a SheetFixture of StreetSheet + ControlArmResult)", () => {
+  it("type-check against the contracts (generator output is a SheetFixture of a StreetSheet)", () => {
     expectTypeOf(buildG1A()).toEqualTypeOf<SheetFixture>();
     expectTypeOf<SheetFixture["sheet"]>().toEqualTypeOf<StreetSheet>();
-    expectTypeOf<SheetFixture["control"]>().toEqualTypeOf<ControlArmResult>();
   });
 
   for (const f of files) {
@@ -83,9 +82,9 @@ describe("hand-built fixtures (the fallback)", () => {
         expect(fx.sheet.guard.dropped).toBe(0);
       });
 
-      it("only marks overlap with partners that exist on the Qloo side", () => {
-        const names = new Set(fx.sheet.cards.partners.results.map((p) => p.entity.name));
-        for (const n of fx.control.overlapWithQloo) expect(names.has(n), n).toBe(true);
+      it("carries no Google Places list and no Places call", () => {
+        expect(fx.control).toBeUndefined();
+        expect(fx.sheet.ledger.some((e) => e.kind === "places")).toBe(false);
       });
     });
   }

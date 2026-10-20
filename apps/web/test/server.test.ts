@@ -36,7 +36,7 @@ import { loadPlan, planSnapshot, resolvePlan, startPlan, storedPresetRun } from 
 import { planEventStream, staticFrames } from "../lib/server/stream";
 import { addPartnerHouseRanks, continueLedger, houseSignalOf, TWIN_CHIP_PREFIX, twinChipLabel } from "../lib/server/twin";
 
-const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE", "WALKUP_QLOO_UNTIL"];
+const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE", "WALKUP_QLOO_UNTIL"];
 const saved: Record<string, string | undefined> = {};
 let dir = "";
 
@@ -275,7 +275,9 @@ describe("plans", () => {
     const sheet = body.results as StreetSheet;
     expect(validateSheet(sheet)).toEqual([]);
     expect(sheet.cards.partners.results.every((p) => p.chips.some((c) => c.label.startsWith(TWIN_CHIP_PREFIX)))).toBe(true);
-    expect(sheet.control?.arm).toBe("F");
+    // No comparison arm runs: no Google Places list and no Places call.
+    expect(sheet.control).toBeUndefined();
+    expect(sheet.ledger.some((e) => e.kind === "places")).toBe(false);
     const run = getRun(String(body.planId));
     expect(run?.cards.map((c) => c.key)).toEqual([...CARD_ORDER]);
     // Stored, so it reloads after the run registry forgets it.

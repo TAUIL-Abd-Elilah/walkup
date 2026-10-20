@@ -64,12 +64,11 @@ describe("generated preset sheets", () => {
         for (const e of fx(id).sheet.ledger) for (const m of e.curl.matchAll(CURL_SECRET_RE)) expect(m[1]?.startsWith("$"), e.id).toBe(true);
       });
 
-      it("carries the Without Qloo control (arm F) on the sheet and in the wrapper", () => {
+      it("carries no Google Places list and no Places call", () => {
         const f = fx(id);
-        expect(f.control.arm).toBe("F");
-        expect(f.sheet.control?.arm).toBe("F");
-        const names = new Set(f.control.places.map((p) => p.name));
-        for (const n of f.control.overlapWithQloo) expect(names.has(n)).toBe(true);
+        expect(f.control).toBeUndefined();
+        expect(f.sheet.control).toBeUndefined();
+        expect(f.sheet.ledger.some((e) => e.kind === "places")).toBe(false);
       });
     });
   }

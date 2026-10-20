@@ -8,8 +8,6 @@
 import { createMemoryLedger, LIMITS_EVERY_SHEET } from "@walkup/contracts";
 import type {
   Chip,
-  ControlArmResult,
-  ControlPlace,
   DeclaredPartner,
   DeclaredPartnerScore,
   Envelope,
@@ -182,19 +180,6 @@ export function tmCurl(endpoint: string, params: Params): string {
     .map(([k, v]) => ` --data-urlencode ${sq(`${k}=${paramText(v)}`)}`)
     .join("");
   return `curl -sG ${sq(`https://app.ticketmaster.com${endpoint}`)} --data-urlencode "apikey=$TICKETMASTER_API_KEY"${args}`;
-}
-
-export function placesCurl(textQuery: string, lat: number, lon: number, radiusM: number): string {
-  const body = JSON.stringify({
-    textQuery,
-    locationBias: { circle: { center: { latitude: lat, longitude: lon }, radius: radiusM } },
-    pageSize: 20,
-  });
-  return (
-    `curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H "X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY"` +
-    ` -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours'` +
-    ` -H 'Content-Type: application/json' -d ${sq(body)}`
-  );
 }
 
 /**
@@ -588,36 +573,6 @@ export function makeDeclared(
   }
   scores.sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9));
   return { inputs, scores };
-}
-
-export interface ControlSpec {
-  name: string;
-  street: string;
-  query: string;
-  near: { lat: number; lon: number };
-}
-
-export function makeControl(
-  specs: ControlSpec[],
-  ctx: { city: string; state: string; key: string },
-  r: () => number,
-  overlap: string[],
-  ledgerRefs: string[],
-): ControlArmResult {
-  const places: ControlPlace[] = specs.map((s) => {
-    const at = offset(s.near, (r() - 0.5) * 900, (r() - 0.5) * 900);
-    return {
-      placeId: `syn-gplace-${hashHex(`${ctx.key}:${s.name}`)}`,
-      name: s.name,
-      address: `${s.street}, ${ctx.city}, ${ctx.state}`,
-      rating: round(3.9 + r() * 0.9, 1),
-      userRatingCount: 80 + Math.floor(r() * 6000),
-      businessStatus: "OPERATIONAL",
-      location: at,
-      query: s.query,
-    };
-  });
-  return { arm: "F", places, overlapWithQloo: overlap, ledgerRefs };
 }
 
 /** Lift x adults, normalised, with a 10% floor per tile. Labelled heuristic. */

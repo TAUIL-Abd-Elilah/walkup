@@ -102,9 +102,9 @@ describe("All ages: no bars (G1-A, a 21+ bill)", { timeout: 90_000 }, () => {
   const d = deps({ store });
 
   beforeAll(async () => {
-    const p = await planShow({ presetId: "g1-a", planId: "parent-a" }, d, { arms: ["F"] });
+    const p = await planShow({ presetId: "g1-a", planId: "parent-a" }, d);
     parent = sheetOf(p);
-    const r = await revisePlan({ sheet: parent, request: parentRequest(parent, { presetId: "g1-a" })! }, "All ages: no bars", d, { arms: ["F"], onStep: (s) => streamed.push(s) });
+    const r = await revisePlan({ sheet: parent, request: parentRequest(parent, { presetId: "g1-a" })! }, "All ages: no bars", d, { onStep: (s) => streamed.push(s) });
     result = completed(r);
     sheet = sheetOf(result);
   });

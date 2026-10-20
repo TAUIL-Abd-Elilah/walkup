@@ -3,11 +3,11 @@
  * that records every string the Qloo transport returned (the ID validator's
  * ground truth), world variants for the edge cases the scenario knobs do not
  * cover, a preset runner that answers a needs_input pause the way an operator
- * would, a mock narrator model and a Places client for the grounding check.
+ * would and a mock narrator model.
  *
  * Nothing here reaches the network: every transport is @walkup/qloo-world.
  */
-import { createMemoryLedger, type HeatCell } from "@walkup/contracts";
+import type { HeatCell } from "@walkup/contracts";
 import { computeLiftAll } from "@walkup/engine";
 import type { NarratorClient } from "@walkup/narrator";
 import {
@@ -19,15 +19,11 @@ import {
   type PlanRequest,
   type PlanResult,
 } from "@walkup/orchestrator";
-import { createMemoryCacheStore, createMemoryCounterStore, createPlacesClient, type PlacesClient } from "@walkup/places";
 import { normalizeHeatmap } from "@walkup/qloo";
 import { createWorld, WORLD_TAG_PINS, type FetchLike, type Scenario, type World } from "@walkup/qloo-world";
 
 /** Planning clock for every fixture run (the presets' asOf dates are earlier). */
 export const EVAL_CLOCK_MS = Date.parse("2026-10-30T15:00:00Z");
-
-/** Not a credential: the world transports ignore it and ledgers show $ENV references. */
-const FIXTURE_KEY = "fixture-world-no-key";
 
 // ---------------------------------------------------------------------------
 // ID tap: every string value in every Qloo response body of one case
@@ -179,24 +175,6 @@ export async function runWithPick(request: PlanRequest, deps: FixtureDeps, opts:
   }
   const final = await planShow({ ...request, resolutions: { ...request.resolutions, ...picks }, planId: first.planId }, deps, opts);
   return { first, final, picks };
-}
-
-// ---------------------------------------------------------------------------
-// Grounding: Google Places Text Search on the world's Places transport
-// ---------------------------------------------------------------------------
-
-/** A Places client on the world's Places transport, with its own ledger (the sheet's ledger is not touched). */
-export function worldPlacesClient(world: World): PlacesClient {
-  return createPlacesClient({
-    apiKey: FIXTURE_KEY,
-    fetch: world.placesFetch,
-    ledger: createMemoryLedger(),
-    now: () => EVAL_CLOCK_MS,
-    sleep: async () => {},
-    dailyCap: 100_000,
-    counterStore: createMemoryCounterStore(),
-    cache: createMemoryCacheStore(),
-  });
 }
 
 // ---------------------------------------------------------------------------

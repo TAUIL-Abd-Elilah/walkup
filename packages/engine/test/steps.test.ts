@@ -4,7 +4,6 @@ import { TRACE_STEP_KINDS } from "@walkup/contracts";
 import {
   baselineStep,
   checkStep,
-  controlStep,
   countOf,
   dayName,
   declaredStep,
@@ -249,7 +248,7 @@ describe("partners and the usual crowd", () => {
   });
 });
 
-describe("spots, media, summary, checks and the control list", () => {
+describe("spots, media, summary and checks", () => {
   it("picks spots near the room and keeps bars off fan copy without an age rule", () => {
     const s = prePostStep({ status: "partial", spots: 8, unknownHours: 2, radiusM: 2500, widened: { fromM: 1500, minSpots: 6 }, barsOperatorOnly: 3, legalAgeEnforced: null, ledgerRefs: ["Q22"] });
     expect(s.decision).toBe("Picked 8 spots within 2.5 km of the room; 2 list no hours for show night, so call first.");
@@ -282,13 +281,6 @@ describe("spots, media, summary, checks and the control list", () => {
     expect(guardStep({ dropped: 0, denied: 0, alcoholHeld: 2, allAgesByOperator: true, ledgerRefs: [] }).cause).toBe("Kept 2 alcohol tags out of fan copy: you set the show to all ages.");
     expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] })).toMatchObject({ decision: "Dropped 2 lines that cited something this run didn't return." });
     expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] }).cause).toBeUndefined();
-    expectPlain(s);
-  });
-  it("describes the list without Qloo and how it ran", () => {
-    const s = controlStep({ armStatus: "template", searches: 8, places: 40, overlap: 2, note: "No model configured: fixed category queries stood in.", ledgerRefs: ["P1", "P2"] });
-    expect(s).toMatchObject({ kind: "other", status: "degraded", decision: "Built a list without Qloo from 8 Google Places searches: 2 of its 40 places are also on this sheet." });
-    expect(s.cause).toBe("No model configured: fixed category queries stood in.");
-    expect(controlStep({ armStatus: "model: ok", searches: 1, places: 5, overlap: 1, ledgerRefs: [] })).toMatchObject({ status: "ok", decision: "Built a list without Qloo from 1 Google Places search: 1 of its 5 places is also on this sheet." });
     expectPlain(s);
   });
 });

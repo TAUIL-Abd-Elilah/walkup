@@ -39,7 +39,7 @@ const { resetRunsForTests } = await import("../lib/server/runs");
 const { startPlan } = await import("../lib/server/service");
 const { restoreLiveShows, useWorldLiveShows } = await import("./live-presets");
 
-const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "WALKUP_MODE", "WALKUP_QLOO_UNTIL", "WALKUP_DATA_DIR", "WALKUP_PLAN_STORE"];
+const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "WALKUP_MODE", "WALKUP_QLOO_UNTIL", "WALKUP_DATA_DIR", "WALKUP_PLAN_STORE"];
 const saved: Record<string, string | undefined> = {};
 let dir = "";
 const ORIGIN = "https://walkup.example";
@@ -180,7 +180,7 @@ describe("live runs recorded, then Qloo goes away", () => {
 
   it("serves a recording at GET /api/sheet/<id> with mode recorded and without its Google Places list", async () => {
     process.env.WALKUP_MODE = "recorded";
-    // The recording kept its Google Places list (arm F), as a live run on the host does.
+    // A recording made before Oct 20 2026 kept its Google Places list (arm F).
     const stored = await stores().plans.get(recordedIds["g1-a"]!);
     const control = { arm: "F" as const, places: [], overlapWithQloo: [], ledgerRefs: [] };
     await stores().plans.put({ ...stored!, sheet: { ...stored!.sheet!, control } });

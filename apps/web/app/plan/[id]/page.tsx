@@ -85,7 +85,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   const paired = await pairedFor(v.sheet.pairedPlanId ?? (v.source === "preset" ? getPlan(id)?.pairedWith : undefined));
   return (
     <PlanView
-      payload={{ sheet: v.sheet, control: v.control, note: v.note, source: v.source, ...(presetId ? { presetId } : {}) }}
+      payload={{ sheet: v.sheet, note: v.note, source: v.source, ...(presetId ? { presetId } : {}) }}
       line={isPauseLine(presetText) ? null : presetText}
       realShow={preset?.realShow ?? false}
       {...(preset?.showName ? { showName: preset.showName } : {})}

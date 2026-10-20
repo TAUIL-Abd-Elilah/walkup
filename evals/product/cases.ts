@@ -19,7 +19,6 @@ import {
   type CardKey,
   type PlanResult,
 } from "@walkup/orchestrator";
-import type { PlacesClient } from "@walkup/places";
 import { catalogByKey, DENIED_EXAMPLE_TAGS } from "@walkup/qloo-world";
 import { Checks, readBudget, topPartnerIds, type CheckResult, type ClauseId, type Subject, type SubjectExpect } from "./checks";
 import {
@@ -29,7 +28,6 @@ import {
   mockModel,
   newRig,
   runWithPick,
-  worldPlacesClient,
   type EvalRig,
   type MockDraft,
   type PresetRun,
@@ -49,8 +47,6 @@ export interface CaseEnv {
   source: "fixture" | "recorded";
   /** Recorded runs by preset id (recorded source only). */
   recorded?: Map<string, RecordedRun>;
-  /** Places client for grounding recorded runs; null skips grounding. */
-  places?: PlacesClient | null;
 }
 
 export interface CaseOutput {
@@ -86,10 +82,10 @@ function sheetOf(r: PlanResult): StreetSheet {
   return r.sheet;
 }
 
-/** A fixture subject: tapped ids and grounding on the same world the run used. */
+/** A fixture subject: ids tapped on the world the run used. */
 function fixtureSubject(label: string, rig: EvalRig, run: PresetRun | PlanResult, expect: SubjectExpect): Subject {
   const r = "final" in run ? run : { first: run, final: run };
-  return { label, result: r.final, first: r.first, tap: rig.tap, places: worldPlacesClient(rig.world), expect };
+  return { label, result: r.final, first: r.first, tap: rig.tap, expect };
 }
 
 function recordedRun(env: CaseEnv, id: GoldenId): RecordedRun {
@@ -98,16 +94,16 @@ function recordedRun(env: CaseEnv, id: GoldenId): RecordedRun {
   return r;
 }
 
-/** A recorded subject: no tap; grounding only with a Places client; statuses stated by the spec only. */
+/** A recorded subject: no tap; statuses stated by the spec only. */
 function recordedSubject(env: CaseEnv, id: GoldenId, expect: SubjectExpect): Subject {
   const r = recordedRun(env, id);
-  return { label: `${id} (recorded: ${r.source})`, result: r.result, places: env.places ?? null, expect: { ...expect, pdf: true } };
+  return { label: `${id} (recorded: ${r.source})`, result: r.result, expect: { ...expect, pdf: true } };
 }
 
-/** Golden run on the fixture world (arm F included: the sheet's "Without Qloo" view). */
+/** Golden run on the fixture world. */
 async function goldenFixture(id: GoldenId): Promise<{ rig: EvalRig; run: PresetRun }> {
   const rig = newRig({ idPrefix: id });
-  const run = await runWithPick({ presetId: id }, rig.deps, { arms: ["F"] });
+  const run = await runWithPick({ presetId: id }, rig.deps);
   return { rig, run };
 }
 
@@ -121,7 +117,7 @@ function goldenSpecChecks(c: Checks, s: StreetSheet): void {
   c.ok("at most 8 pre/post spots", s.cards.prePost.results.length <= 8, `${s.cards.prePost.results.length} spots`, "D1");
   c.ok("at most one sponsor", s.cards.media.results.filter((m) => m.kind === "sponsor").length <= 1, cardLine(s, "media"), "D1");
   c.ok("at most three copy hooks", s.cards.copyHooks.results.length <= 3, `${s.cards.copyHooks.results.length} hooks`, "D1");
-  c.ok("the control arm is F (same model + Google Places)", !s.control || s.control.arm === "F", s.control ? `${s.control.places.length} control places` : "no control on this sheet", "D1");
+  c.ok("no Google Places comparison list on the sheet", !s.control, s.control ? `${s.control.places.length} control places` : "none", "D1");
 }
 
 const GOLDEN_EXPECT_FIXTURE: Record<GoldenId, SubjectExpect> = {
@@ -255,7 +251,6 @@ export const CASES: readonly ProductCase[] = [
       c.eq("lift baseline is the room's roster", s.cards.liftMap.results.diagnostics.baseline, "house", "S2");
       const top5 = s.cards.liftMap.results.tiles.slice(0, 5);
       c.ok("top five tiles carry gazetteer names", top5.every((t) => !!t.name), top5.map((t) => t.name ?? t.geohash).join(", "), "D1");
-      c.ok("the Without Qloo view is arm F with places", s.control?.arm === "F" && s.control.places.length > 0, `${s.control?.places.length ?? 0} control places`, "D1");
       c.eq("paired with bill B for the swap", s.pairedPlanId, "g1-b", "S4");
       return { subjects: [fixtureSubject("g1-a", rig, run, GOLDEN_EXPECT_FIXTURE["g1-a"])], checks: c.list };
     },
@@ -419,7 +414,7 @@ export const CASES: readonly ProductCase[] = [
       c.match("the sheet says a pick came from the operator", later.sheet?.cards.resolution.summary, /pick by the operator/, "S2");
       return {
         // The venue baseline is cached by the earlier runs of this case, so no venue calls are expected here.
-        subjects: [{ label: "g2 resumed", result: resumed, first: again, tap: rig.tap, places: worldPlacesClient(rig.world), expect: { ...GOLDEN_EXPECT_FIXTURE.g2, pdf: false, budget: { venueMax: 6 } } }],
+        subjects: [{ label: "g2 resumed", result: resumed, first: again, tap: rig.tap, expect: { ...GOLDEN_EXPECT_FIXTURE.g2, pdf: false, budget: { venueMax: 6 } } }],
         checks: c.list,
         metrics: { candidates: cands.length },
       };

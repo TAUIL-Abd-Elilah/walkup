@@ -4,8 +4,6 @@
  */
 import type { Bill, Envelope, EnvelopeStatus, OperatorInputs, QlooEntity, StreetSheetCards } from "@walkup/contracts";
 import { sanitizeEntityTags } from "@walkup/engine";
-import type { AcsClient } from "@walkup/acs";
-import type { PlacesClient } from "@walkup/places";
 import { errorStatus, type QlooClient } from "@walkup/qloo";
 import type { TmClient, TmEvent } from "@walkup/tm";
 import type { NodeLevel, RunLedger } from "./ledger";
@@ -39,9 +37,6 @@ export interface RunContext {
   ledger: RunLedger;
   qloo: QlooClient;
   tm: TmClient | null;
-  places: PlacesClient | null;
-  /** Census ACS for arm F's acs_lookup by ZCTA (the gazetteer covers points). */
-  acs: AcsClient | null;
   gazetteer: GazetteerLike;
   narrator: NarratorDeps;
   pins: TagPins;

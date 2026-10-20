@@ -4,7 +4,7 @@
  * mode, results, resolution, cards, reason, provenance, limits; paused plans add
  * pending. Built from a sheet, a paused plan or a refusal.
  */
-import { LIMITS_EVERY_SHEET, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet, type StreetSheetCards } from "@walkup/contracts";
+import { LIMITS_EVERY_SHEET, withoutControl, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet, type StreetSheetCards } from "@walkup/contracts";
 import { FIXTURE_LIMITS } from "@walkup/orchestrator";
 
 /**
@@ -107,22 +107,12 @@ export function cardStatuses(sheet: StreetSheet): Partial<Record<keyof StreetShe
 }
 
 /**
- * A sheet as a server that serves recorded sheets only hands it out. A live sheet loses its Google Places
- * comparison list (arm F): Places content may be kept 30 days at most, and a recording is served for longer.
- * A sample sheet is returned as it is.
- */
-export function asRecordedSheet(sheet: StreetSheet): StreetSheet {
-  if (sheet.mode !== "live" || !sheet.control) return sheet;
-  const copy = { ...sheet };
-  delete copy.control;
-  return copy;
-}
-
-/**
  * The envelope for a finished Street Sheet (results = the whole sheet, ledger included). `recorded`: the server
- * serves recorded sheets only, so a live sheet's envelope says mode "recorded" and carries asRecordedSheet.
+ * serves recorded sheets only, so a live sheet's envelope says mode "recorded". An older stored sheet's Google
+ * Places list is dropped (withoutControl): the product no longer shows it.
  */
-export function sheetEnvelope(sheet: StreetSheet, origin: string | null, opts: { recorded?: boolean } = {}): ToolEnvelope<StreetSheet> {
+export function sheetEnvelope(stored: StreetSheet, origin: string | null, opts: { recorded?: boolean } = {}): ToolEnvelope<StreetSheet> {
+  const sheet = withoutControl(stored);
   const recorded = opts.recorded === true && sheet.mode === "live";
   const status = sheetStatus(sheet);
   const reason = rollupReason(sheet, status);
@@ -133,7 +123,7 @@ export function sheetEnvelope(sheet: StreetSheet, origin: string | null, opts: {
     sheetUrl: sheetUrlFor(origin, sheet.planId),
     planUrl: planUrlFor(origin, sheet.planId),
     mode: recorded ? "recorded" : sheet.mode,
-    results: recorded ? asRecordedSheet(sheet) : sheet,
+    results: sheet,
     resolution: sheet.cards.resolution.results,
     cards: cardStatuses(sheet),
     ...(reason ? { reason } : {}),
@@ -195,7 +185,10 @@ export function errorEnvelope(reason: string, mode: PlanMode, extras: ErrorExtra
   };
 }
 
-/** Env vars whose values must never leave the server. */
+/**
+ * Env vars whose values must never leave the server. GOOGLE_PLACES_API_KEY is no longer read (Places was removed
+ * from the product); it stays here so an older deploy that still sets it never echoes it.
+ */
 export const SECRET_ENV_VARS = [
   "QLOO_API_KEY",
   "TICKETMASTER_API_KEY",

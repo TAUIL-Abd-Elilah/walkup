@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { ControlArmResult, LedgerEntry, Partner, SheetDiscovery, SheetRevision, StreetSheet, TraceStep } from "@walkup/contracts";
+import type { LedgerEntry, Partner, SheetDiscovery, SheetRevision, StreetSheet, TraceStep } from "@walkup/contracts";
 
 // The map pieces load MapLibre and use the "@/" alias; the page is checked without them.
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => undefined, refresh: () => undefined }) }));
@@ -32,7 +32,7 @@ vi.mock("../components/TileList", () => ({
 const { PlanView } = await import("../components/plan/PlanView");
 const { PlanLive } = await import("../components/plan/PlanLive");
 const { DiscoveryNote, RevisionNote, StepList } = await import("../components/plan/SheetExtras");
-const { PartnerWhy, controlOverlapLine } = await import("../components/plan/PartnersCard");
+const { PartnerWhy } = await import("../components/plan/PartnersCard");
 const { ReceiptContext } = await import("../components/plan/receipts");
 const model = await import("../components/plan/model");
 const utils = await import("../lib/sheet-utils");
@@ -40,7 +40,7 @@ const { RecordedStrip } = await import("../components/RecordedStrip");
 const { runtimeMode } = await import("../lib/mode");
 
 const ENGINE = fileURLToPath(new URL("../../../fixtures/synthetic/engine/", import.meta.url));
-const fixture = (id: string): { sheet: StreetSheet; control: ControlArmResult } => JSON.parse(readFileSync(`${ENGINE}${id}.sheet.json`, "utf8"));
+const fixture = (id: string): { sheet: StreetSheet } => JSON.parse(readFileSync(`${ENGINE}${id}.sheet.json`, "utf8"));
 
 /** Words and marks the design brief rules out of visible copy. */
 const BANNED = /AI-powered|powered by AI|\bunlock|supercharge|seamless|effortless|(?<!\/v2\/)insights?\b|!\s|\bLet's\b|Tonight's program/i;
@@ -124,10 +124,9 @@ function bare(id: string): StreetSheet {
 }
 
 function renderView(sheet: StreetSheet, extra: Partial<Parameters<typeof PlanView>[0]> = {}): string {
-  const { control } = fixture(sheet.planId);
   return renderToStaticMarkup(
     createElement(PlanView, {
-      payload: { sheet, control, note: null, source: "preset", presetId: sheet.planId },
+      payload: { sheet, note: null, source: "preset", presetId: sheet.planId },
       line: null,
       realShow: false,
       paired: { planId: "g1-b", headliner: "Neon Orchard" },
@@ -265,7 +264,7 @@ describe("the plan page as a document", () => {
     expect(html).toContain("Sample street sheet");
     expect(html).toContain('class="fn');
     expect(html).toContain("Send to street team");
-    expect(html).toContain("Compare with Google Places");
+    expect(html).not.toMatch(/Google|Without Qloo/);
     expect(html).toContain('href="/plan/g1-b"');
     expect(html).toContain(`/api/sheet/${sheet.planId}/pdf`);
     // One row per partner, with its hours on the first street-team day.
@@ -313,10 +312,14 @@ describe("the plan page as a document", () => {
     expect(visibleText(html)).not.toMatch(BANNED);
   });
 
-  it("counts the overlap with the list without Qloo in words", () => {
-    expect(controlOverlapLine(0, 20, 24)).toBe("None of its 20 places is among the 24 partners above.");
-    expect(controlOverlapLine(3, 20, 24)).toBe("3 of its 20 places are also among the 24 partners above.");
-    expect(controlOverlapLine(1, 1, 8)).toBe("Its one place is also among the 8 partners above.");
+  it("shows no Google Places list, even for an older sheet that still carries one", () => {
+    const old: StreetSheet = {
+      ...bare("g1-a"),
+      control: { arm: "F", places: [{ placeId: "gp-1", name: "Example Comparison Tavern", query: "bar" }], overlapWithQloo: [], ledgerRefs: [] },
+    };
+    const html = renderView(old);
+    expect(html).not.toContain("Example Comparison Tavern");
+    expect(html).not.toMatch(/Google|Without Qloo|without-qloo/);
   });
 
   it("offers the revise box when the page marks the sheet revisable", () => {
@@ -338,8 +341,6 @@ describe("the plan page as a document", () => {
     expect(metaLine(html)).toMatch(/^Street sheet · Draft, not sent · Recorded Oct 30 2026, 15:00 UTC from \d+ requests in \d+ steps$/);
     expect(visibleText(html)).toContain("Recorded from a live run on Oct 30 2026, 15:00 UTC and not refreshed since.");
     for (const gone of ["Sample sheet.", "Sample street sheet", "A live run.", "Run it again", 'id="revise"']) expect(html).not.toContain(gone);
-    // A recording is served without its Google Places list, so there is no comparison to open.
-    expect(html).not.toContain("Compare with Google Places");
     // Live mode keeps saying when the sheet was planned.
     expect(metaLine(renderView(live, { runtimeLive: true, canRerun: false }))).toMatch(/· Planned Oct 30 2026, 15:00 UTC from/);
     // A preset with no recording shows its sample sheet, said as such.
@@ -347,7 +348,6 @@ describe("the plan page as a document", () => {
     expect(sample).toContain("Sample sheet.");
     expect(visibleText(sample)).toContain("This sheet uses made-up places and numbers. No live run of this show was recorded.");
     expect(metaLine(sample)).toMatch(/^Sample street sheet · /);
-    expect(sample).toContain("Compare with Google Places");
     expect(visibleText(html + sample)).not.toMatch(BANNED);
   });
 
@@ -535,7 +535,8 @@ describe("sheet page patterns from the design research", () => {
     expect(html).toContain('<span class="max-sm:sr-only">Name</span>');
     expect(html).toMatch(/<span class="sr-only">Area <\/span><span class="font-semibold tabular">1<\/span> /);
     // Status words before a decision, in 600, only when the step isn't ok.
-    expect(html).toMatch(/<span class="font-semibold ">Fell back: <\/span>Built a list without Qloo/);
+    expect(html).not.toMatch(/Fell back: </);
+    expect(renderView(fixture("g3").sheet)).toMatch(/<span class="font-semibold ">Fell back: <\/span>Couldn(&#x27;|')t build the room(&#x27;|')s usual crowd/);
     // The street team's part comes before how the plan was made.
     expect(html.indexOf('id="partners"')).toBeLessThan(html.indexOf('id="steps"'));
     expect(text).not.toMatch(BANNED);

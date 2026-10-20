@@ -17,7 +17,7 @@ Server-side only: it runs `@walkup/orchestrator`, which loads `better-sqlite3`.
 The envelope (`ToolEnvelope`, the same keys as `GET /api/sheet/<planId>`) has these fields:
 
 - `status`: one of `ok`, `empty`, `needs_input`, `partial`, `degraded`, `error`.
-- `summary`, `planId`, `mode` (`live` or `fixture`; `recorded` from a server that serves recorded sheets only, on its refusals and on a live sheet `get_sheet` returns, which is then sent without its Google Places list), `results`, `resolution`, `reason`, `provenance` (ledger ids), `limits` ("What this does not establish").
+- `summary`, `planId`, `mode` (`live` or `fixture`; `recorded` from a server that serves recorded sheets only, on its refusals and on a live sheet `get_sheet` returns), `results` (a sheet stored before Oct 20 2026 is sent without its Google Places comparison list, which the product no longer shows), `resolution`, `reason`, `provenance` (ledger ids), `limits` ("What this does not establish").
 - `sheetUrl` (`/s/<planId>`) and `planUrl` (`/plan/<planId>`).
 - `cards`: each card's status.
 - Paused plans add `pending` (`[{input, candidates}]`).
@@ -62,7 +62,7 @@ At `/mcp` the web app plugs in its own persistent per-IP limiter, so REST and MC
 - Tools refuse inputs that contain an email address, and political campaign events.
 - Partners are "suggested, not affiliated", and every rank result says so.
 - Seat counts are what-ifs.
-- Every result is scrubbed for the values of `QLOO_API_KEY`, `TICKETMASTER_API_KEY`, `GOOGLE_PLACES_API_KEY`, `CENSUS_API_KEY`, `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `OPENROUTER_API_KEY`, `RESEND_API_KEY` and `WALKUP_SIGNING_SECRET`. These are replaced by `$NAME`, as in the ledger's copy-as-curl, so no key leaves the server even if a dependency echoes one.
+- Every result is scrubbed for the values of `QLOO_API_KEY`, `TICKETMASTER_API_KEY`, `GOOGLE_PLACES_API_KEY`, `CENSUS_API_KEY`, `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `OPENROUTER_API_KEY`, `RESEND_API_KEY` and `WALKUP_SIGNING_SECRET`. These are replaced by `$NAME`, as in the ledger's copy-as-curl, so no key leaves the server even if a dependency echoes one. Nothing reads `GOOGLE_PLACES_API_KEY` any more; it stays on the list in case an older deploy still sets it.
 
 ## Transports
 
@@ -127,7 +127,7 @@ claude mcp add walkup -e WALKUP_DATA_DIR=/abs/path/walkup/.cache -- \
 }
 ```
 
-Add `QLOO_API_KEY` and `TICKETMASTER_API_KEY` (and optionally `GOOGLE_PLACES_API_KEY`, `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY`, `CENSUS_API_KEY`) to `env` only for a server on your own keys; they never leave that process. On Windows, use paths such as `C:/path/walkup/...`.
+Add `QLOO_API_KEY` and `TICKETMASTER_API_KEY` (and optionally `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY`, `CENSUS_API_KEY`) to `env` only for a server on your own keys; they never leave that process. On Windows, use paths such as `C:/path/walkup/...`.
 
 **OpenClaw**:
 

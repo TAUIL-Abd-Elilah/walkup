@@ -38,7 +38,7 @@ beforeAll(async () => {
   const d = deps({ store, choices });
   for (const id of ["g1-a", "g1-b", "g2", "g3"]) {
     const cards: CardKey[] = [];
-    const r = await runPreset(id, d, { arms: ["F"], onCard: (k) => cards.push(k) });
+    const r = await runPreset(id, d, { onCard: (k) => cards.push(k) });
     runs[id] = { ...r, cards };
   }
 }, 120_000);
@@ -353,27 +353,21 @@ describe("call budget", () => {
       expect(c.twins, id).toBeLessThanOrEqual(PARTNER_TILES);
       expect(c.total, id).toBeLessThanOrEqual(7);
       expect(b.qlooFresh).toBe(b.billLevel + b.venueLevel + b.arms);
-      // No Qloo-calling comparison arm remains: arm F uses Google Places.
+      // No comparison arm runs, and nothing calls Google Places.
       expect(b.arms).toBe(0);
+      expect(b.places).toBe(0);
       expect(Object.keys(b.byNode).some((n) => /^arm [PS] /.test(n))).toBe(false);
       expect(b.tm).toBe(2);
     }
   });
 });
 
-describe("arms", () => {
-  it("runs only F (template without a model), with overlap from the canonical matcher", () => {
-    for (const id of ["g1-a", "g2"]) {
-      const r = runs[id]!.final;
-      expect(Object.keys(r.arms)).toEqual(["F"]);
-      expect(r.arms.F?.status).toBe("template");
-      expect(r.arms.F?.places.length).toBeGreaterThan(0);
-      expect(sheet(id).ledger.some((e) => /node arm [PS] /.test(e.note ?? ""))).toBe(false);
+describe("no Google Places", () => {
+  it("no sheet carries a comparison list or a Places call", () => {
+    for (const id of ["g1-a", "g1-b", "g2", "g3"]) {
       const s = sheet(id);
-      expect(s.control?.arm).toBe("F");
-      const names = new Set(s.control!.places.map((p) => p.name));
-      for (const n of s.control!.overlapWithQloo) expect(names.has(n)).toBe(true);
-      expect(s.ledger.some((e) => e.kind === "places")).toBe(true);
+      expect(s.control, id).toBeUndefined();
+      expect(s.ledger.some((e) => e.kind === "places"), id).toBe(false);
     }
   });
 });
@@ -389,7 +383,7 @@ describe("web sheet validator", () => {
     for (const id of ["g1-a", "g1-b", "g2", "g3"]) {
       const s = sheet(id);
       expect(mod.validateSheet(s), id).toEqual([]);
-      expect(mod.validateFixture({ synthetic: true, fixtureId: id, title: id, note: "test", sheet: s, control: s.control }), id).toEqual([]);
+      expect(mod.validateFixture({ synthetic: true, fixtureId: id, title: id, note: "test", sheet: s }), id).toEqual([]);
     }
   });
 });

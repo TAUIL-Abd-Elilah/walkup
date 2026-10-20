@@ -7,7 +7,7 @@
  * - Fixture mode: createFixtureDeps() on one @walkup/qloo-world per
  *   process. Presets run end to end for free; the narrator uses its labelled
  *   template (no model call on synthetic data).
- * - Live mode: createDepsFromEnv() (Qloo, Ticketmaster, Places, Census, Claude).
+ * - Live mode: createDepsFromEnv() (Qloo, Ticketmaster, Claude).
  *
  * Singletons live on globalThis so every route bundle shares one engine.
  */

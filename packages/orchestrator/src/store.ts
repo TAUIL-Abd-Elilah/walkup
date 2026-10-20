@@ -4,7 +4,7 @@
  * tests with memory.
  */
 import type { StreetSheet } from "@walkup/contracts";
-import type { ArmKey, ArmRun, CallBudget, PausedPlan, PlanRequest } from "./types";
+import type { CallBudget, PausedPlan, PlanRequest } from "./types";
 
 export interface StoredPlan {
   planId: string;
@@ -15,7 +15,6 @@ export interface StoredPlan {
   request: PlanRequest;
   sheet?: StreetSheet;
   pause?: PausedPlan;
-  arms?: Partial<Record<ArmKey, ArmRun>>;
   budget?: CallBudget;
   citations?: Record<string, string>;
 }

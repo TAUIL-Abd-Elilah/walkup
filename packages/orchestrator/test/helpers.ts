@@ -57,7 +57,6 @@ export function citedRefs(sheet: StreetSheet): string[] {
     };
     walk(card.results);
   }
-  if (sheet.control) refs.push(...sheet.control.ledgerRefs);
   return refs;
 }
 

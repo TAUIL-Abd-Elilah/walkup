@@ -37,8 +37,7 @@ async function run(id: string, d: FixtureDeps, operator?: Record<string, unknown
   const firstSteps: TraceStep[] = [];
   const finalSteps: TraceStep[] = [];
   let partnersCard: Envelope<unknown> | null = null;
-  const opts = (sink: TraceStep[]): TraceOptions & { arms: ["F"]; onCard: (k: string, e: Envelope<unknown>) => void } => ({
-    arms: ["F"],
+  const opts = (sink: TraceStep[]): TraceOptions & { onCard: (k: string, e: Envelope<unknown>) => void } => ({
     onStep: (s) => sink.push(s),
     onCard: (k, e) => {
       if (k === "partners") partnersCard = e;
@@ -125,10 +124,10 @@ function textsOf(s: StreetSheet): { where: string; text: string; extraNumbers?: 
 
 describe("the step stream", () => {
   const order: Record<string, string[]> = {
-    "g1-a": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard", "control"],
-    "g1-b": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard", "control"],
-    g2: ["pause-1", "resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard", "control"],
-    g3: ["resolve", "baseline", "heat", "partners", "prepost", "media", "narrate", "guard", "control"],
+    "g1-a": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard"],
+    "g1-b": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard"],
+    g2: ["pause-1", "resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard"],
+    g3: ["resolve", "baseline", "heat", "partners", "prepost", "media", "narrate", "guard"],
   };
   for (const id of IDS) {
     it(`${id}: one step per decision, in run order, with receipts from this run`, () => {
@@ -171,7 +170,6 @@ describe("the step stream", () => {
     expect(by.get("heat")?.decision).toBe("No lift map: there is no usual crowd to compare this bill with.");
     expect(by.has("heat-check")).toBe(false);
     expect(by.get("partners")?.cause).toMatch(/treat it as a starting list\.$/);
-    expect(by.get("control")?.status).toBe("degraded");
   });
   it("names the places the room's usual crowd ranks as high (G1-A)", () => {
     const st = (sheet("g1-a").steps ?? []).find((x) => x.id === "partners-usual");

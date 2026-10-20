@@ -12,7 +12,6 @@ import { join, resolve } from "node:path";
 import { createMemoryLedger, type LedgerSink } from "@walkup/contracts";
 import { createAcsClient } from "@walkup/acs";
 import { createNarratorClient, createFileSpendStore, createMemorySpendStore, SpendGuard, type NarratorClient } from "@walkup/narrator";
-import { createMemoryCacheStore as createPlacesCache, createMemoryCounterStore as createPlacesCounter, createPlacesClient } from "@walkup/places";
 import {
   createMemoryFixtureStore,
   createQlooClient,
@@ -75,16 +74,12 @@ export function createFixtureDeps(o: FixtureDepsOptions = {}): FixtureDeps {
     random: () => 0.5,
   });
   const tmCounter = createTmCounter();
-  const placesCounter = createPlacesCounter();
-  const placesCache = createPlacesCache();
   const deps: FixtureDeps = {
     world,
     mode: "fixture",
     qloo,
     tm: (ledger: LedgerSink) =>
       createTmClient({ apiKey: FIXTURE_KEY, fetch: world.tmFetch, ledger, now: clock, sleep, ratePerSecond: 10_000, counterStore: tmCounter, onQuotaWarning: () => {} }),
-    places: (ledger: LedgerSink) =>
-      createPlacesClient({ apiKey: FIXTURE_KEY, fetch: world.placesFetch, ledger, now: clock, sleep, counterStore: placesCounter, cache: placesCache }),
     narrator: { client: o.narratorClient ?? null, spend: o.spend ?? new SpendGuard({ store: createMemorySpendStore(), now: () => new Date(clock()) }) },
     ledger: () => createMemoryLedger(),
     clock,
@@ -127,11 +122,8 @@ export function createDepsFromEnv(env: Record<string, string | undefined> = proc
     });
   }
   const tmCounter = createTmCounter();
-  const placesCounter = createPlacesCounter();
-  const placesCache = createPlacesCache();
   // Keys come from the same env that decided the mode (the clients would otherwise read process.env).
   const tmKey = env.TICKETMASTER_API_KEY as string;
-  const placesKey = env.GOOGLE_PLACES_API_KEY;
   const deps: PlanDeps = {
     mode: "live",
     qloo: createQlooClient({ env }),
@@ -141,7 +133,6 @@ export function createDepsFromEnv(env: Record<string, string | undefined> = proc
     ledger: () => createMemoryLedger(),
     tags: loadTagPins(),
   };
-  if (placesKey) deps.places = (ledger) => createPlacesClient({ apiKey: placesKey, ledger, counterStore: placesCounter, cache: placesCache });
   if (o.store) deps.store = o.store;
   if (o.choices) deps.choices = o.choices;
   if (o.clock) deps.clock = o.clock;

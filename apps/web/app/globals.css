@@ -301,7 +301,7 @@
     text-decoration: underline;
   }
 
-  /* Secondary actions as one line of plain text links: "Print view · Compare with Google Places". */
+  /* Secondary actions as one line of plain text links: "Print view · Swap the bill". */
   .link-row {
     display: flex;
     flex-wrap: wrap;

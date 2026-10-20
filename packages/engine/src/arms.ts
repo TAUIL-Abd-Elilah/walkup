@@ -1,7 +1,7 @@
 /**
- * Support for the comparison with the fair control ("Without Qloo", arm F):
- * ranked-list overlap and the place matcher used beside it (fuzzy name +
- * distance match).
+ * Comparing two ranked place lists: ranked-list overlap and a place matcher
+ * (fuzzy name + distance match). Written for the Google Places comparison
+ * arm, which was removed from the product; nothing in the product calls it.
  */
 import { haversineM } from "./geohash";
 import { cmpStr, isFiniteNumber } from "./num";
@@ -17,7 +17,7 @@ export interface ArmComparison {
   kendallTauShared: number | null;
 }
 
-/** Overlap between two ranked id lists (e.g. the Qloo list vs the control list). Lists keep rank order. */
+/** Overlap between two ranked id lists (e.g. two partner lists). Lists keep rank order. */
 export function compareArms(a: readonly string[], b: readonly string[], k = 8): ArmComparison {
   const sa = new Set(a);
   const sb = new Set(b);

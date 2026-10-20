@@ -12,7 +12,6 @@ import type { LedgerEntry, StreetSheet, StreetSheetCards, TraceStep } from "@wal
 import {
   baselineStep,
   checkStep,
-  controlStep,
   declaredStep,
   guardStep,
   heatStep,
@@ -30,7 +29,6 @@ import {
 import { normalizeName } from "@walkup/qloo";
 import { categoryTagMap, categoryUrns, isComedyClassification } from "../tags";
 import type { RunContext } from "../context";
-import type { ArmRun } from "../types";
 import type { CopyResult } from "./copy";
 import { MIN_BILL_PCT, MIN_SPLIT_HALF, SPLIT_HALF_NODE, THIN_CELLS, type HeatResult } from "./heat";
 import { excludedCategoriesFor, HOUSE_TWIN_NODE, PARTNER_TILES, partnerCategories, streetDay, TILE_RADIUS_M, TILE_RADIUS_WIDE_M, type PartnersResult } from "./partners";
@@ -370,14 +368,3 @@ export function guardTrace(guard: StreetSheet["guard"], reasons: readonly string
   return guardStep({ dropped: guard.dropped, denied: guard.deniedTagCount, alcoholHeld: alcoholHeld(reasons), allAgesByOperator, ledgerRefs: [] });
 }
 
-export function controlTrace(arm: ArmRun | undefined): TraceStep | null {
-  if (!arm) return null;
-  return controlStep({
-    armStatus: arm.status,
-    searches: arm.ledgerRefs.filter((r) => r.startsWith("P")).length,
-    places: arm.places.length,
-    overlap: arm.overlapWithQloo.length,
-    ...(arm.notes[0] ? { note: arm.notes[0] } : {}),
-    ledgerRefs: arm.ledgerRefs,
-  });
-}

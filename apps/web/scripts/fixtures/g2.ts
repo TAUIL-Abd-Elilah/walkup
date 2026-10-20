@@ -18,17 +18,14 @@ import {
   anthropicCurl,
   envelope,
   makeBudget,
-  makeControl,
   makeDeclared,
   makeMedia,
   makePartners,
   makeSpots,
   makeTiles,
-  placesCurl,
   rng,
   synId,
   tag,
-  type ControlSpec,
   type DeclaredSpec,
   type PlaceContext,
   type Seed,
@@ -120,27 +117,6 @@ const DECLARED: DeclaredSpec[] = [
   { label: "Tidewater Fade Studio", place: { name: "Tidewater Fade Studio", category: "barber_shop", street: "Warwick Blvd", northM: 0, eastM: 0, rank: 2, city: "Newport News" } },
   { label: "Mercury Line Cuts", place: { name: "Mercury Line Cuts", category: "barber_shop", street: "Colley Ave", northM: 0, eastM: 0, rank: 3, city: "Norfolk" } },
   { label: "Southside Social Hall" },
-];
-
-const PENINSULA = { lat: 37.0435, lon: -76.39 };
-const TOWN_CENTER = { lat: 37.0605, lon: -76.4395 };
-const NORFOLK_DT = { lat: 36.8475, lon: -76.2905 };
-
-const CONTROL: ControlSpec[] = [
-  { name: "Mercury Plaza Sports Bar", street: "W Mercury Blvd", query: "comedy night bar Hampton VA", near: PENINSULA },
-  { name: "Town Center Taphouse", street: "Town Center Dr", query: "comedy night bar Hampton VA", near: TOWN_CENTER },
-  { name: "Granby Street Giggle Room", street: "Granby St", query: "comedy club Norfolk VA", near: NORFOLK_DT },
-  { name: "Downtown Norfolk Comedy Cellar", street: "Main St", query: "comedy club Norfolk VA", near: NORFOLK_DT },
-  { name: "Waterside Open Mic Bar", street: "Waterside Dr", query: "comedy club Norfolk VA", near: NORFOLK_DT },
-  { name: "Coliseum Drive Clippers", street: "Coliseum Dr", query: "barbershop Hampton VA", near: PENINSULA },
-  { name: "Power Plant Parkway Cuts", street: "Power Plant Pkwy", query: "barbershop Hampton VA", near: PENINSULA },
-  { name: "Kecoughtan Cuts", street: "Kecoughtan Rd", query: "barbershop Hampton VA", near: { lat: 37.0185, lon: -76.3555 } },
-  { name: "Crown & Clipper Barbershop", street: "Mellen St", query: "barbershop Hampton VA", near: { lat: 37.0205, lon: -76.3265 } },
-  { name: "Bayside Crab Shack", street: "Pembroke Ave", query: "seafood restaurant Hampton VA", near: { lat: 37.033, lon: -76.33 } },
-  { name: "Hampton Harbor Fish House", street: "Settlers Landing Rd", query: "seafood restaurant Hampton VA", near: { lat: 37.0245, lon: -76.341 } },
-  { name: "Harborline Seafood Kitchen", street: "E Mercury Blvd", query: "seafood restaurant Hampton VA", near: { lat: 37.021, lon: -76.327 } },
-  { name: "Pembroke Seafood Grill", street: "Pembroke Ave", query: "seafood restaurant Hampton VA", near: PENINSULA },
-  { name: "Military Highway Wing Spot", street: "N Military Hwy", query: "comedy night bar Hampton VA", near: { lat: 36.8705, lon: -76.215 } },
 ];
 
 export function buildG2(): SheetFixture {
@@ -300,9 +276,6 @@ export function buildG2(): SheetFixture {
 
   const zctas = [...new Set(top.flatMap((t) => t.zctas ?? []))];
   const c1 = L.add("acs", "GET", ACS_ENDPOINT, acsParams(zctas), { resultCount: zctas.length, curl: acsCurl(zctas), note: ACS_NOTE });
-  const queries = ["comedy night bar Hampton VA", "barbershop Hampton VA", "seafood restaurant Hampton VA", "comedy club Norfolk VA"];
-  const placeRefs = queries.map((q) => L.add("places", "POST", "/v1/places:searchText", { textQuery: q, "locationBias.radiusM": 40000, pageSize: 20 }, { resultCount: 20, curl: placesCurl(q, VENUE.lat, VENUE.lon, 40000), note: "Arm F: query chosen by the model." }));
-  const lControl = L.add("anthropic", "POST", "/v1/messages", { model: "claude-opus-5-5", "output_config.effort": "medium", tools: ["places_search", "acs_lookup"], max_tokens: 16000 }, { resultCount: 1, latencyMs: 15800, bytes: 19_900, curl: anthropicCurl(), note: "Arm F: same model, same schema, Google Places + ACS tools." });
   L.add("anthropic", "POST", "/v1/messages", { model: "claude-opus-5-5", "output_config.effort": "low", "output_config.format": "json_schema:street_sheet_narration", max_tokens: 4000 }, { resultCount: 1, latencyMs: 6900, bytes: 8_300, curl: anthropicCurl(), note: "Narration may cite only ids and numbers from this run; guard dropped 0." });
 
   const bill: Bill = {
@@ -446,7 +419,6 @@ export function buildG2(): SheetFixture {
     title: "Hampton Coliseum: Peninsula Comedy Night",
     note: "Synthetic fixture. The bill is invented; acts, titles, partner businesses, ids, scores and ledger timings are made up, and only the room is real. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
     sheet,
-    control: makeControl(CONTROL, { city: "Hampton Roads", state: "VA", key: planId }, r, ["Crown & Clipper Barbershop", "Harborline Seafood Kitchen"], [...placeRefs, lControl, c1]),
   };
 }
 

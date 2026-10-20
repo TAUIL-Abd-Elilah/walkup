@@ -394,7 +394,7 @@ export function validateSheet(sheet: unknown): string[] {
   return c.errors;
 }
 
-/** Validate a fixture wrapper (sheet + control arm). */
+/** Validate a fixture wrapper (a sheet, and on older files the Google Places list, which is no longer produced). */
 export function validateFixture(fx: unknown): string[] {
   const c = new Checker();
   if (!c.check(isObj(fx), "fixture", "expected object")) return c.errors;
@@ -405,6 +405,7 @@ export function validateFixture(fx: unknown): string[] {
   c.str(f, "note", "fixture");
   const sheetErrors = validateSheet(f.sheet);
   const sheet = isObj(f.sheet) ? (f.sheet as unknown as StreetSheet) : null;
+  if (f.control === undefined) return [...c.errors, ...sheetErrors];
   const ledgerIds = new Set((Array.isArray(sheet?.ledger) ? sheet.ledger : []).map((e) => e.id));
   const control = c.obj(f, "control", "fixture");
   c.oneOf(control, "arm", ["F", "S", "P", "L"], "fixture.control");

@@ -312,10 +312,10 @@ export function codeFragment(s: string, len: number): string {
 export const SUGGESTED_NOT_AFFILIATED = "Suggested, not affiliated: no partner has agreed to anything.";
 
 export const ATTRIBUTION =
-  "Events: Ticketmaster. Places: Google. Map data © OpenStreetMap contributors. Population: U.S. Census Bureau, ACS 5-year. Affinity data: Qloo.";
+  "Events: Ticketmaster. Map data © OpenStreetMap contributors. Population: U.S. Census Bureau, ACS 5-year. Affinity data: Qloo.";
 
 /** The credit line on a sample (fixture) sheet: no live source answered, so none is credited as one. */
-export const SAMPLE_ATTRIBUTION = "Sample data shaped like Ticketmaster, Google Places and Qloo answers. Map data © OpenStreetMap contributors.";
+export const SAMPLE_ATTRIBUTION = "Sample data shaped like Ticketmaster and Qloo answers. Map data © OpenStreetMap contributors.";
 
 /** The map key's four steps, the same on the web, the print view and the PDF: label and a lift that draws it. */
 export const LIFT_KEY: readonly { label: string; sample: number }[] = [
@@ -407,12 +407,15 @@ export function capacityText(capacity: number): string {
   return `Capacity ${formatInt(capacity)} (assumed)`;
 }
 
-/** Lines in a sheet's limits that say where the data came from, not what the sheet can't show. */
+/**
+ * Lines in a sheet's limits that say where the data came from, not what the sheet can't show. "The Google Places
+ * list" and "Without-Qloo list" appear only on sheets made before the comparison list was removed (Oct 20 2026).
+ */
 const PROVENANCE_LINE = /^(Sample data|Venue points for rooms|Venue coordinates in this synthetic fixture|The Google Places list|Fixture mode|Without-Qloo list|Planning tool)/i;
 
 /**
  * The sheet's real limits ("What this sheet doesn't show"), the same list on paper and in the email: provenance
- * lines (sample data, approximate venue points, how the Google Places list was searched, "planning tool") are
+ * lines (sample data, approximate venue points, "planning tool") are
  * said elsewhere once. Falls back to the four lines every sheet carries.
  */
 export function realLimits(limits: readonly string[] | undefined, fallback: readonly string[]): string[] {

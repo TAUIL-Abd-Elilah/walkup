@@ -1,7 +1,6 @@
 /**
- * The sheet says what actually happened: the "Without Qloo" control is arm F
- * only, a model-less arm F is labelled on the sheet, the narration names a
- * genre baseline when no house crowd stands behind the lift, a failed house
+ * The sheet says what actually happened: no comparison arm runs and no
+ * Google Places call is made, the narration names a genre baseline when no house crowd stands behind the lift, a failed house
  * heatmap falls back to the genre tag, age-policy wording follows what
  * Ticketmaster said, and a failed act search is not reported as "no match".
  */
@@ -28,24 +27,18 @@ function failingHouseHeat(): World {
   return { ...world, qlooFetch };
 }
 
-describe("the Without Qloo control", () => {
-  it("is arm F only: without it the sheet has no control and no arm calls", async () => {
-    const r = await runPreset("g1-a", deps());
-    expect(r.final.arms).toEqual({});
+describe("no comparison arm", () => {
+  it("runs no arm and calls no Google Places: the sheet has no control list", async () => {
+    const d = deps();
+    const r = await runPreset("g1-a", d);
     expect(r.final.budget.arms).toBe(0);
+    expect(r.final.budget.places).toBe(0);
+    expect(d.world.stats().places).toBe(0);
     const s = sheetOf(r.final);
     expect(s.control).toBeUndefined();
-    expect(s.ledger.some((e) => /node arm /.test(e.note ?? ""))).toBe(false);
-  });
-
-  it("says on the sheet when arm F ran without the model", async () => {
-    const r = await runPreset("g1-a", deps(), { arms: ["F"] });
-    const s = sheetOf(r.final);
-    expect(r.final.arms.F?.status).toBe("template");
-    expect(s.control?.arm).toBe("F");
-    expect(s.limits).toContain("The Google Places list used fixed searches because no model key is set.");
-    const plain = sheetOf((await runPreset("g1-a", deps())).final);
-    expect(plain.limits.some((l) => l.startsWith("The Google Places list"))).toBe(false);
+    expect(s.ledger.some((e) => e.kind === "places" || /node arm /.test(e.note ?? ""))).toBe(false);
+    expect(s.limits.some((l) => /Google Places/.test(l))).toBe(false);
+    expect((s.steps ?? []).some((x) => x.id === "control")).toBe(false);
   });
 });
 

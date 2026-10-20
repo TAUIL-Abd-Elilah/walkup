@@ -67,7 +67,6 @@ fly volumes create walkup_data --region iad --size 1 --snapshot-retention 14 --y
  fly secrets set --stage -a walkup \
   QLOO_API_KEY=... \
   TICKETMASTER_API_KEY=... \
-  GOOGLE_PLACES_API_KEY=... \
   CENSUS_API_KEY=... \
   OPENROUTER_API_KEY=... \
   RESEND_API_KEY=... \
@@ -111,9 +110,8 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `QLOO_API_KEY` | secret | Can stay set after the key is switched off: recorded mode calls nothing (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). |
 | `QLOO_BASE_URL` | `fly.toml` `[env]` | `https://hackathon.api.qloo.com`. Any other host is refused. |
 | `TICKETMASTER_API_KEY` | secret | |
-| `GOOGLE_PLACES_API_KEY` | secret | Also set a 300 requests/day quota on the Google Cloud project. |
 | `CENSUS_API_KEY` | secret | Optional: the gazetteer already carries adult counts. |
-| `OPENROUTER_API_KEY` | secret | Claude through OpenRouter (narration, change notes, arm F). `OPENROUTER_MODEL` (plain env) overrides the slug `anthropic/claude-opus-5.5`. |
+| `OPENROUTER_API_KEY` | secret | Claude through OpenRouter (narration, free-text parsing, change notes). `OPENROUTER_MODEL` (plain env) overrides the slug `anthropic/claude-opus-5.5`. |
 | `ANTHROPIC_API_KEY` | secret | Optional instead of the OpenRouter key: Claude directly, with the server-side refusal fallback. With neither key, narration uses the labelled template and change notes the fixed rules. |
 | `RESEND_API_KEY` | secret | |
 | `RESEND_FROM` | secret | A sender on a domain verified in Resend. Not sensitive, but set per deployment. |
@@ -123,6 +121,9 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `QLOO_MONTH_GUARD_FLOOR` | `fly.toml` `[env]` | `1500`: fresh Qloo calls stop below 1,500 calls left this month. |
 | `WALKUP_RECORD` | secret, only while recording | `1` writes Qloo bodies to `/data/fixtures/raw`. Unset it afterwards. |
 | `WALKUP_FIXTURES_DIR` | `fly.toml` `[env]` and the image | `/data/fixtures` (`raw/` recorded on the volume, `synthetic/` from the image). |
+
+`GOOGLE_PLACES_API_KEY` is no longer read: Google Places was removed from the product on Oct 20 2026. A host that
+still has it set can drop it with `fly secrets unset GOOGLE_PLACES_API_KEY -a walkup`.
 | `WALKUP_GAZETTEER_DIR` | `fly.toml` `[env]` and the image | `/app/data/gazetteer/out`. |
 | `WALKUP_TAGS_FILE` | `fly.toml` `[env]` and the image | `/app/config/tags.json`: the pinned Qloo tag URNs the orchestrator reads. |
 | `WALKUP_FRESH_RUNS_PER_IP`, `WALKUP_FRESH_RUNS_PER_DAY` | optional, `fly.toml` `[env]` | Fresh live runs per network and in total per UTC day; defaults 3 and 15. |
@@ -188,7 +189,6 @@ restarts, especially during PDF exports, and go back to 2 GB if they appear.
 | Fly | about $15/month | Configuration: one machine of a fixed size, no autoscaling. |
 | Qloo | stop fresh calls below 1,500 left this month; fresh runs capped per IP and per day | `QLOO_MONTH_GUARD_FLOOR` in `packages/qloo`; the per-IP and daily caps in the web app. Cached answers are still served. |
 | Claude (OpenRouter or Anthropic) | $5/day | The narrator's spend guard; the spend file lives on the volume. Above the cap narration uses the labelled template. |
-| Google Places | 300 requests/day | The client's daily cap, plus a quota on the Google Cloud project as a backstop. |
 | Resend | free tier, 100/day; 10 confirmed sends per requester per day | Resend's plan; `WALKUP_SEND_DAILY_CAP` in `packages/send`. Every send needs a human confirm in the app. |
 
 ## Recorded mode after the Qloo key is switched off (Nov 2 2026)
@@ -201,15 +201,14 @@ and makes nothing new. The web app calls this **recorded** mode:
   count) and one with at least half of its cards failed. A preset with no such run shows its bundled sample sheet, labelled "Sample sheet".
 - Any stored live sheet still opens at `/plan/<id>`, `/s/<id>` and `/api/sheet/<id>`, with its downloads. Sample
   sheets stored earlier stay labelled sample. The send step stays as it is (confirm first, test inbox by default).
-  A recorded sheet is served without its Google Places comparison list (Places content is kept 30 days at most), and
-  its envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps `"mode": "live"`.
+  A recorded sheet's envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps
+  `"mode": "live"`. A sheet recorded before Oct 20 2026 is served without the Google Places comparison list it carried.
 - A strip on every page says since when Qloo has been unavailable, that new plans are off, and that sheets recorded
   from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
   sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
   "Planned <date>", on the page and in the PDF.
 - New plans, the show and title searches, picks, revisions and the MCP tools other than `get_sheet` answer with
-  `"mode": "recorded"` and one plain reason (HTTP 503 on the REST routes). Nothing calls Qloo, Ticketmaster or Google
-  Places.
+  `"mode": "recorded"` and one plain reason (HTTP 503 on the REST routes). Nothing calls Qloo or Ticketmaster.
 
 The server is in recorded mode when `WALKUP_MODE=recorded`, when the time in `WALKUP_QLOO_UNTIL` has passed, or when
 Qloo has rejected the configured key and the plan store holds a live sheet. A rejected key with no live sheet stored

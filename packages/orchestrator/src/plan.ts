@@ -12,13 +12,13 @@
  *  8. Sheet extras, from data already fetched (no extra calls): "why this
  *     place" on every partner, the step stream (`sheet.steps`, also streamed
  *     through opts.onStep) and the discovery picked by a fixed rule.
- * Cards stream through opts.onCard in CARD_ORDER. The optional arm F (the
- * "Without Qloo" control) follows.
+ * Cards stream through opts.onCard in CARD_ORDER.
  */
 import { randomUUID } from "node:crypto";
 import {
   createMemoryLedger,
   LIMITS_EVERY_SHEET,
+  withoutControl,
   type Bill,
   type DeclaredPartner,
   type Envelope,
@@ -34,7 +34,6 @@ import { emit, failure, node, type RunContext } from "./context";
 import { createRunLedger } from "./ledger";
 import { deniedReceipt } from "./policy";
 import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, type Preset, type PresetShow } from "./presets";
-import { runArmF } from "./steps/arms";
 import { splitBudget, type BudgetShare } from "./steps/budget";
 import { honestWording, runCopy } from "./steps/copy";
 import { runDeclared } from "./steps/declared";
@@ -42,14 +41,13 @@ import { discoverFor } from "./steps/discovery";
 import { explainPartners } from "./steps/explain";
 import { genreBaselinePhrase, runHeat } from "./steps/heat";
 import { runMedia } from "./steps/media";
-import { excludedCategoriesFor, partnerCategories, runPartners, type PartnersResult } from "./steps/partners";
+import { runPartners, type PartnersResult } from "./steps/partners";
 import { runPrePost } from "./steps/prepost";
 import { runCompare, runDemographics } from "./steps/profile";
 import { resolveAll } from "./steps/resolve";
 import {
   baselineTrace,
   checkTrace,
-  controlTrace,
   createTrace,
   declaredTrace,
   guardTrace,
@@ -67,8 +65,6 @@ import { EMPTY_PINS } from "./tags";
 import {
   CARD_ORDER,
   DEFAULT_PROBES,
-  type ArmKey,
-  type ArmRun,
   type CallBudget,
   type GazetteerLike,
   type PlanDeps,
@@ -165,7 +161,6 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     planId,
     mode,
     error: msg,
-    arms: {},
     budget: emptyBudget(),
     citations: {},
     servedFromStore: false,
@@ -199,8 +194,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
         status: "complete",
         planId: stored.planId,
         mode: stored.mode,
-        sheet: stored.sheet,
-        arms: stored.arms ?? {},
+        // An older stored sheet may carry a Google Places list; it is no longer shown.
+        sheet: withoutControl(stored.sheet),
         budget: stored.budget ?? emptyBudget(),
         citations: stored.citations ?? {},
         servedFromStore: true,
@@ -212,9 +207,6 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const base = deps.ledger ? deps.ledger() : createMemoryLedger();
   const ledger = createRunLedger(base, { fixture: mode === "fixture" });
   const tm = deps.tm ? deps.tm(ledger) : null;
-  const wantArms = new Set<ArmKey>(opts.arms ?? []);
-  const places = deps.places && wantArms.has("F") ? deps.places(ledger) : null;
-  const acs = deps.acs && wantArms.has("F") ? deps.acs(ledger) : null;
 
   // ---- 1. Intake -------------------------------------------------------------
   let bill: Bill | null = request.bill ?? null;
@@ -242,8 +234,6 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     ledger,
     qloo: deps.qloo.withLedger(ledger),
     tm,
-    places,
-    acs,
     gazetteer: deps.gazetteer ?? DEFAULT_GAZETTEER,
     narrator: deps.narrator ?? { client: null },
     pins: deps.tags ?? EMPTY_PINS,
@@ -280,7 +270,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     const pause = { resolution: resolved.card, pending: resolved.pending, bill: ctx.bill, operator, ledger: ledger.entries() };
     const budget = callBudget(ledger.entries(), ledger);
     await persist({ planId, createdAt: new Date(now()).toISOString(), mode, status: "needs_input", ...(presetId ? { presetId } : {}), request: storedRequest(request), pause, budget });
-    return { status: "needs_input", planId, mode, pause, arms: {}, budget, citations: Object.fromEntries(ctx.citations), servedFromStore: false, ...(presetId ? { presetId } : {}) };
+    return { status: "needs_input", planId, mode, pause, budget, citations: Object.fromEntries(ctx.citations), servedFromStore: false, ...(presetId ? { presetId } : {}) };
   }
   if (resolved.card.status === "error") {
     return errorResult(resolved.card.reason ?? "Resolution failed.", { budget: callBudget(ledger.entries(), ledger), ledger: ledger.entries() });
@@ -344,15 +334,6 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   emit(ctx, "copyHooks", copy.card);
   trace.add(quiet(() => narrateTrace(copy), null));
 
-  // ---- Arms ---------------------------------------------------------------------------
-  const arms: Partial<Record<ArmKey, ArmRun>> = {};
-  if (wantArms.has("F")) {
-    // The comparison list obeys the same exclusions as the partner list (all ages: no bars searched).
-    const excluded = new Set(excludedCategoriesFor(ctx));
-    const armCats = (partners.categories.length > 0 ? partners.categories : partnerCategories(ctx)).filter((c) => !excluded.has(c));
-    arms.F = await runArmF(ctx, partners.partners, armCats);
-  }
-
   // ---- Assemble -----------------------------------------------------------------------
   node(ctx, "assemble", "intake");
   const cards = ctx.cards as StreetSheetCards;
@@ -365,14 +346,6 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   if (hypothetical) limits.push("Planning tool; no sales data for this show is known or shown.");
   if (ctx.thinSignal || heat.thin || heat.widened || partners.partners.length < 15) limits.push("Thin signal: treat as a starting list.");
   if (mode === "fixture") limits.push(...FIXTURE_LIMITS);
-  // The "Without Qloo" view promises the same model; say so on the sheet when it did not run that way.
-  if (arms.F && arms.F.status !== "model: ok") {
-    limits.push(
-      arms.F.status === "template"
-        ? "The Google Places list used fixed searches because no model key is set."
-        : `The Google Places list did not run as planned (${arms.F.status.replace(/^model: /, "")}): ${arms.F.notes[0] ?? "see the receipts."}`,
-    );
-  }
   limits.push(...ctx.limits);
 
   const entries = ledger.entries();
@@ -396,8 +369,6 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   });
   if (citationDrops > 0) reasons.push(`${citationDrops} partner line(s) dropped: cited entity not traced to this run's ledger.`);
 
-  // Arm F is the "Without Qloo" control.
-  const control = arms.F;
   const sheet: StreetSheet = {
     planId,
     createdAt: new Date(now()).toISOString(),
@@ -417,12 +388,11 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     limits,
   };
   if (budgetSplit.length > 0) sheet.budgetSplit = budgetSplit;
-  if (control) sheet.control = { arm: control.arm, places: control.places, overlapWithQloo: control.overlapWithQloo, ledgerRefs: control.ledgerRefs };
   const paired = request.pairedPlanId ?? preset?.pairedWith;
   if (paired) sheet.pairedPlanId = paired;
 
   // ---- 8. Sheet extras: the last steps, the step stream and the discovery ---------------------
-  trace.add(quiet(() => guardTrace(sheet.guard, reasons, ctx.operator.allAges === true), null), quiet(() => controlTrace(control), null));
+  trace.add(quiet(() => guardTrace(sheet.guard, reasons, ctx.operator.allAges === true), null));
   sheet.steps = trace.steps();
   const discovery = quiet(() => discoverFor(ctx, heat, partners), null);
   if (discovery) sheet.discovery = discovery;
@@ -439,7 +409,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
 
   const budget = callBudget(entries, ledger);
   const citations = Object.fromEntries([...ctx.citations.entries()].filter(([, ref]) => ledgerIds.has(ref)));
-  const result: PlanResult = { status: "complete", planId, mode, sheet, arms, budget, citations, servedFromStore: false, ...(presetId ? { presetId } : {}) };
-  await persist({ planId, createdAt: sheet.createdAt, mode, status: "complete", ...(presetId ? { presetId } : {}), request: storedRequest(request), sheet, arms, budget, citations });
+  const result: PlanResult = { status: "complete", planId, mode, sheet, budget, citations, servedFromStore: false, ...(presetId ? { presetId } : {}) };
+  await persist({ planId, createdAt: sheet.createdAt, mode, status: "complete", ...(presetId ? { presetId } : {}), request: storedRequest(request), sheet, budget, citations });
   return result;
 }

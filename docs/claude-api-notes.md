@@ -4,7 +4,7 @@ SDK: `@anthropic-ai/sdk` (installed in packages/narrator). Model: `claude-opus-5
 
 ## Hard facts for claude-opus-5-5
 - Thinking is always on. Do NOT send `thinking: {type: "disabled"}` or `budget_tokens` (both 400). Omit `thinking` or send `{ type: "adaptive" }`.
-- Control depth with `output_config: { effort: "low" | "medium" | "high" | "xhigh" | "max" }`. Default is `medium`; set it explicitly. Narration: `low`. Fair-control arm F and revisions: `medium`.
+- Control depth with `output_config: { effort: "low" | "medium" | "high" | "xhigh" | "max" }`. Default is `medium`; set it explicitly. Narration: `low`. Revisions: `medium`.
 - Forced tool choice (`tool_choice: {type: "any"}` or `{type: "tool", ...}`) returns 400. Use `tool_choice: {type: "auto"}` (the default), name the tool in the prompt, and set `strict: true` on each tool (schema needs `additionalProperties: false` and `required`). `auto` does not guarantee a call: check for a `tool_use` block and re-prompt once if none came back.
 - No assistant prefill (400).
 - Structured output: `client.messages.parse({ ..., output_config: { format: zodOutputFormat(Schema) } })` with `import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod"`; read `response.parsed_output` (null if parsing failed: guard it). Do not use the deprecated `output_format` param.

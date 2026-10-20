@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
   // The Dockerfile runs apps/web/.next/standalone/apps/web/server.js.
   output: "standalone",
   // Workspace packages ship raw TypeScript. Every one the app imports, directly or through another, is listed.
-  // Server-only packages (qloo, orchestrator, qloo-world, tm, places, acs, gazetteer, narrator, exports, send, mcp)
+  // Server-only packages (qloo, orchestrator, qloo-world, tm, acs, gazetteer, narrator, exports, send, mcp)
   // are imported from route handlers, server components and lib/server only, never from client components.
   transpilePackages: [
     "@walkup/contracts",
@@ -29,7 +29,6 @@ const nextConfig: NextConfig = {
     "@walkup/qloo",
     "@walkup/qloo-world",
     "@walkup/tm",
-    "@walkup/places",
     "@walkup/acs",
     "@walkup/gazetteer",
     "@walkup/narrator",

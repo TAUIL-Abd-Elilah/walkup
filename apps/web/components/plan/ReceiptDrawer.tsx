@@ -18,11 +18,6 @@ function paramLines(v: LedgerEntry["params"][string]): string[] {
   return s.includes(",") && /urn:|^[\w:.-]+(,[\w:.-]+)+$/.test(s) ? s.split(",").map((x) => x.trim()).filter(Boolean) : [s];
 }
 
-/** "Google Places", not "Google Places (comparison list)": the service's own name. */
-function serviceName(kind: LedgerEntry["kind"]): string {
-  return LEDGER_KIND_LABEL[kind].replace(/ \(.*\)$/, "");
-}
-
 /**
  * A plain side panel for one ledger entry: the request, its parameters with
  * keys redacted, status, time, cache, and copy-as-curl. With an entity, it also
@@ -88,7 +83,7 @@ export function ReceiptDrawer({
   // On a sample sheet nothing was requested from a live service: no latency, no cache, and the source says so.
   const facts: [string, string][] = entry
     ? [
-        ["Source", sample ? (entry.kind === "action" ? "Action (sample)" : `${serviceName(entry.kind)} format (sample)`) : LEDGER_KIND_LABEL[entry.kind]],
+        ["Source", sample ? (entry.kind === "action" ? "Action (sample)" : `${LEDGER_KIND_LABEL[entry.kind]} format (sample)`) : LEDGER_KIND_LABEL[entry.kind]],
         ["Endpoint", `${entry.method === "ACTION" ? "" : `${entry.method} `}${entry.endpoint}`],
         [sample ? "Generated" : "Requested", formatStampSeconds(entry.startedAt)],
         [
@@ -147,7 +142,7 @@ export function ReceiptDrawer({
                 <p className="mb-3 font-semibold">
                   {entry.kind === "action"
                     ? "Recorded on a sample sheet: the places and numbers it carried are made up."
-                    : `Sample answer from Walkup's stand-in. ${serviceName(entry.kind)} was not called.`}
+                    : `Sample answer from Walkup's stand-in. ${LEDGER_KIND_LABEL[entry.kind]} was not called.`}
                 </p>
               ) : null}
               <p>{claim}</p>

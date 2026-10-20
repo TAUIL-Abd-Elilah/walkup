@@ -17,18 +17,15 @@ import {
   artistEntity,
   envelope,
   makeBudget,
-  makeControl,
   makeDeclared,
   makeMedia,
   makePartners,
   makeSpots,
   makeTiles,
-  placesCurl,
   rng,
   round,
   synId,
   tag,
-  type ControlSpec,
   type DeclaredSpec,
   type MediaSpec,
   type PlaceContext,
@@ -70,7 +67,6 @@ interface Variant {
   hooks: { text: string; tagIds: string[] }[];
   allowTags: [string, string][];
   demo: { bill: DemographicsBlock["age"][]; house: DemographicsBlock["age"] };
-  control: { overlap: string[]; places: ControlSpec[]; queries: string[] };
   spearman: number;
   narration: (tiles: LiftTile[], partners: Partner[]) => NonNullable<StreetSheet["narration"]>;
 }
@@ -200,11 +196,6 @@ const A: Variant = {
     ],
     house: { "24_and_younger": 0.06, "25_to_29": 0.08, "30_to_34": 0.04, "35_to_44": -0.01, "45_to_54": -0.04, "55_and_older": -0.08 },
   },
-  control: {
-    queries: ["americana bar Nashville", "record store Nashville", "bluegrass live music Nashville", "coffee shop near The Truth Nashville"],
-    overlap: ["Porchlight Vinyl & Coffee", "The Rusty Mandolin Tavern", "Second Fret Books", "Riverbend Record Exchange"],
-    places: [],
-  },
   spearman: 0.41,
   narration: (tiles, partners) => ({
     summary: `This bill's crowd over-indexes in ${tiles[0]?.name}, ${tiles[1]?.name} and ${tiles[2]?.name} versus The Truth's usual crowd. ${partners.length} partners across those three tiles; 7 pre/post spots within 1.5 km.`,
@@ -330,11 +321,6 @@ const B: Variant = {
     ],
     house: { "24_and_younger": 0.06, "25_to_29": 0.08, "30_to_34": 0.04, "35_to_44": -0.01, "45_to_54": -0.04, "55_and_older": -0.08 },
   },
-  control: {
-    queries: ["indie music bar Nashville", "record store Nashville", "late night bar Nashville", "coffee shop near The Truth Nashville"],
-    overlap: ["Static Bloom Records", "Velvet Hour Cocktail Den", "Satellite Record Shop"],
-    places: [],
-  },
   spearman: 0.37,
   narration: (tiles, partners) => ({
     summary: `This bill's crowd over-indexes in ${tiles[0]?.name}, ${tiles[1]?.name} and ${tiles[2]?.name} versus The Truth's usual crowd. ${partners.length} partners across those three tiles; 7 pre/post spots within 1.5 km, bars listed for the operator only (all-ages show).`,
@@ -349,50 +335,6 @@ const B: Variant = {
     templated: false,
   }),
 };
-
-const DOWNTOWN = { lat: 36.1595, lon: -86.778 };
-const MIDTOWN = { lat: 36.152, lon: -86.7985 };
-const GULCH = { lat: 36.1525, lon: -86.785 };
-
-const CONTROL_A: ControlSpec[] = [
-  { name: "Lower Broad Boot Hall", street: "Broadway", query: "americana bar Nashville", near: DOWNTOWN },
-  { name: "Neon Saddle Honky-Tonk", street: "Broadway", query: "americana bar Nashville", near: DOWNTOWN },
-  { name: "The Rusty Mandolin Tavern", street: "Gallatin Ave", query: "americana bar Nashville", near: { lat: 36.1785, lon: -86.7495 } },
-  { name: "Big Fiddle Bar & Grill", street: "2nd Ave N", query: "bluegrass live music Nashville", near: DOWNTOWN },
-  { name: "Steel Guitar Smokehouse", street: "Broadway", query: "bluegrass live music Nashville", near: DOWNTOWN },
-  { name: "Riverfront Pickers Pub", street: "1st Ave N", query: "bluegrass live music Nashville", near: DOWNTOWN },
-  { name: "Honeysuckle Hall Bar", street: "Demonbreun St", query: "bluegrass live music Nashville", near: GULCH },
-  { name: "Downtown Vinyl Depot", street: "5th Ave N", query: "record store Nashville", near: DOWNTOWN },
-  { name: "Studio Row Records", street: "Music Square E", query: "record store Nashville", near: MIDTOWN },
-  { name: "Porchlight Vinyl & Coffee", street: "Fatherland St", query: "record store Nashville", near: { lat: 36.1765, lon: -86.7505 } },
-  { name: "Riverbend Record Exchange", street: "Gallatin Pike", query: "record store Nashville", near: { lat: 36.2015, lon: -86.7275 } },
-  { name: "Second Fret Books", street: "Eastland Ave", query: "record store Nashville", near: { lat: 36.1775, lon: -86.7485 } },
-  { name: "Hatch Mark Coffee", street: "Church St", query: "coffee shop near The Truth Nashville", near: DOWNTOWN },
-  { name: "Gulch Grind Coffee", street: "11th Ave S", query: "coffee shop near The Truth Nashville", near: GULCH },
-  { name: "Midtown Mule Bar", street: "Division St", query: "americana bar Nashville", near: MIDTOWN },
-  { name: "Bootstitch Saloon", street: "Broadway", query: "americana bar Nashville", near: DOWNTOWN },
-];
-
-const CONTROL_B: ControlSpec[] = [
-  { name: "Neon Lights Karaoke Bar", street: "Broadway", query: "late night bar Nashville", near: DOWNTOWN },
-  { name: "Gulch Rooftop Lounge", street: "12th Ave S", query: "late night bar Nashville", near: GULCH },
-  { name: "Lower Broad Boot Hall", street: "Broadway", query: "late night bar Nashville", near: DOWNTOWN },
-  { name: "Velvet Hour Cocktail Den", street: "Division St", query: "indie music bar Nashville", near: { lat: 36.152, lon: -86.7975 } },
-  { name: "Demonbreun Dance Hall", street: "Demonbreun St", query: "indie music bar Nashville", near: GULCH },
-  { name: "Pixel Palace Arcade Bar", street: "2nd Ave N", query: "indie music bar Nashville", near: DOWNTOWN },
-  { name: "Midtown Mule Bar", street: "Division St", query: "indie music bar Nashville", near: MIDTOWN },
-  { name: "Honeysuckle Hall Bar", street: "Demonbreun St", query: "late night bar Nashville", near: GULCH },
-  { name: "Downtown Vinyl Depot", street: "5th Ave N", query: "record store Nashville", near: DOWNTOWN },
-  { name: "Studio Row Records", street: "Music Square E", query: "record store Nashville", near: MIDTOWN },
-  { name: "Static Bloom Records", street: "51st Ave N", query: "record store Nashville", near: { lat: 36.1645, lon: -86.8505 } },
-  { name: "Satellite Record Shop", street: "Elliston Pl", query: "record store Nashville", near: { lat: 36.1515, lon: -86.799 } },
-  { name: "Hatch Mark Coffee", street: "Church St", query: "coffee shop near The Truth Nashville", near: DOWNTOWN },
-  { name: "Gulch Grind Coffee", street: "11th Ave S", query: "coffee shop near The Truth Nashville", near: GULCH },
-  { name: "Midtown Taco Garage", street: "Broadway", query: "late night bar Nashville", near: MIDTOWN },
-];
-
-A.control.places = CONTROL_A;
-B.control.places = CONTROL_B;
 
 function buildVariant(v: Variant): SheetFixture {
   const r = rng(v.seed);
@@ -484,11 +426,9 @@ function buildVariant(v: Variant): SheetFixture {
   // --- Copy allowlist --------------------------------------------------------
   const qTags = L.add("qloo", "GET", "/v2/insights", { "filter.type": "urn:tag", "signal.interests.entities": billIds, "filter.tag.types": ["urn:tag:keyword:media", "urn:tag:genre:music", "urn:tag:theme:qloo", "urn:tag:audience:qloo"], "diversify.by": "subtype", take: 30 }, { resultCount: 30, note: `Denylist applied first; ${v.allowTags.length} tags survived to the copy allowlist.` });
 
-  // --- ACS, control arm, narration -------------------------------------------
+  // --- ACS, narration --------------------------------------------------------
   const zctas = [...new Set(top.flatMap((t) => t.zctas ?? []))];
   const c1 = L.add("acs", "GET", ACS_ENDPOINT, acsParams(zctas), { resultCount: zctas.length, curl: acsCurl(zctas), note: ACS_NOTE });
-  const placeRefs = v.control.queries.map((q) => L.add("places", "POST", "/v1/places:searchText", { textQuery: q, "locationBias.radiusM": 40000, pageSize: 20 }, { resultCount: 20, curl: placesCurl(q, TRUTH.lat, TRUTH.lon, 40000), note: "Arm F: query chosen by the model." }));
-  const lControl = L.add("anthropic", "POST", "/v1/messages", { model: "claude-opus-5-5", "output_config.effort": "medium", tools: ["places_search", "acs_lookup"], max_tokens: 16000 }, { resultCount: 1, latencyMs: 14200, bytes: 18_400, curl: anthropicCurl(), note: "Arm F: same model, same schema, Google Places + ACS tools." });
   const lNarr = L.add("anthropic", "POST", "/v1/messages", { model: "claude-opus-5-5", "output_config.effort": "low", "output_config.format": "json_schema:street_sheet_narration", max_tokens: 4000 }, { resultCount: 1, latencyMs: 6100, bytes: 7_900, curl: anthropicCurl(), note: "Narration may cite only ids and numbers from this run; guard dropped 0." });
 
   const bill: Bill = {
@@ -584,7 +524,6 @@ function buildVariant(v: Variant): SheetFixture {
     note: "Synthetic fixture. Acts, partner businesses, ids, scores and ledger timings are invented; neighbourhood names and ZIPs are real places used for layout only. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
     pairedWith: v.key === "a" ? "g1-b" : "g1-a",
     sheet,
-    control: makeControl(v.control.places, { city: "Nashville", state: "TN", key: planId }, r, v.control.overlap, [...placeRefs, lControl, c1]),
   };
 }
 

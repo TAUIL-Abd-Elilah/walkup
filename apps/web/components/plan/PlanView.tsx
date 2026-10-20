@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { revisePlan } from "../../lib/api";
-import type { ControlArmResult, ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from "@walkup/contracts";
+import type { ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from "@walkup/contracts";
 import { SampleStrip } from "../SampleStrip";
 import { actsLine, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
 import { streetDaysText } from "@walkup/exports/format";
@@ -23,8 +23,6 @@ import { DiscoveryNote, RevisionNote, StepList } from "./SheetExtras";
 /** What the interactive sheet renders: a finished sheet plus where it came from. */
 export interface PlanPayload {
   sheet: StreetSheet;
-  /** Arm F (the Google Places comparison list); null when the control arm did not run. */
-  control: ControlArmResult | null;
   /** About-this-sheet note (bundled presets). */
   note: string | null;
   /** preset = bundled preset sheet; store / run = a run this server made. */
@@ -69,8 +67,6 @@ function apiRevise(planId: string): ReviseHandler {
     return { planId: r.body.planId };
   };
 }
-
-const EMPTY_CONTROL: ControlArmResult = { arm: "F", places: [], overlapWithQloo: [], ledgerRefs: [] };
 
 const DOWNLOADS: { file: string; label: string; what: string }[] = [
   { file: "pdf", label: "Street sheet PDF", what: "one page to print or forward" },
@@ -133,8 +129,11 @@ function inputsSentences(sheet: StreetSheet, realShow: boolean): string {
   return parts.join(" ");
 }
 
-/** Lines about where the data came from are not limits: "About this sheet" says it in one sentence. */
-const ABOUT_LINE = /^(Sample data|Venue points for rooms|Venue coordinates in this synthetic fixture|The Google Places list|Fixture mode|Without-Qloo list)/;
+/**
+ * Lines about where the data came from are not limits: "About this sheet" says it in one sentence. (Older sheets
+ * also said how their Google Places list was searched; withoutControl drops those lines.)
+ */
+const ABOUT_LINE = /^(Sample data|Venue points for rooms|Venue coordinates in this synthetic fixture|Fixture mode)/;
 /** Already said in the header (the what-if note), so not repeated in the limits. */
 const HEADER_LINE = /^Planning tool/;
 /** Said by the Summary note already ("Written from a fixed template"). */
@@ -184,10 +183,8 @@ function RerunLink({ presetId }: { presetId: string }) {
 export function PlanView({ payload, line, realShow, showName, paired, runtimeLive, recorded = false, canRerun, onRevise, revisable = false }: PlanViewProps) {
   const router = useRouter();
   const sheet = payload.sheet;
-  const control = payload.control ?? sheet.control ?? EMPTY_CONTROL;
   const [actions, setActions] = useState<LedgerEntry[]>([]);
   const [drawer, setDrawer] = useState<DrawerTarget | null>(null);
-  const [compare, setCompare] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
   const [tile, setTile] = useState<string | null>(null);
 
@@ -229,8 +226,6 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
   const op = sheet.operator;
   const venue = sheet.bill.venue;
   const sample = sheet.mode === "fixture";
-  // A recorded live sheet is served without its Google Places list (kept 30 days at most), so there is nothing to compare.
-  const placesList = !(recorded && !sample);
   const base = `/api/sheet/${encodeURIComponent(sheet.planId)}`;
   const target = sheet.discovery ? discoveryTarget(sheet, sheet.discovery) : null;
   const revise = useMemo(() => onRevise ?? (revisable ? apiRevise(sheet.planId) : null), [onRevise, revisable, sheet.planId]);
@@ -348,20 +343,6 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
             <Link href={`/s/${sheet.planId}`} className="text-button">
               Print view
             </Link>
-            {placesList ? (
-              <button
-                type="button"
-                className="text-button"
-                aria-pressed={compare}
-                onClick={() => {
-                  const next = !compare;
-                  setCompare(next);
-                  if (next) document.getElementById("partners")?.scrollIntoView({ block: "start" });
-                }}
-              >
-                Compare with Google Places
-              </button>
-            ) : null}
             {paired ? (
               <Link href={`/plan/${paired.planId}`} className="text-button" aria-label={`Swap the bill: open ${paired.headliner} in the same room`}>
                 Swap the bill
@@ -414,7 +395,7 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
 
         {/* The street team's part first: where to go, then who to call. How the plan was made follows. */}
         <LiftCard sheet={sheet} selected={tile} onSelect={setTile} />
-        <PartnersCard sheet={sheet} control={control} compare={compare} canRevise={revise !== null} />
+        <PartnersCard sheet={sheet} canRevise={revise !== null} />
         {revise ? <ReviseBox onRevise={revise} onOpen={(id) => router.push(`/plan/${id}`)} /> : null}
         {steps.length > 0 ? <StepList steps={steps} /> : null}
         <ResolutionCard sheet={sheet} />

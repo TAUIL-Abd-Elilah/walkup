@@ -1,4 +1,4 @@
-import type { ControlArmResult, GuardReport, LedgerEntry, LiftTile, Partner, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
+import type { GuardReport, LedgerEntry, LiftTile, Partner, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
 import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd } from "./format";
 import { TOP_LIFT } from "./lift";
 import { LEDGER_SOURCE_SHORT, tagFallbackName } from "./labels";
@@ -196,25 +196,7 @@ export function normalizeName(s: string): string {
     .trim();
 }
 
-export interface OverlapSummary {
-  /** normalized names present in both arms */
-  both: Set<string>;
-  qlooOnly: number;
-  controlOnly: number;
-}
-
-export function overlapSummary(partners: Partner[], control: ControlArmResult): OverlapSummary {
-  const declared = new Set(control.overlapWithQloo.map(normalizeName));
-  const qloo = new Set(partners.map((p) => normalizeName(p.entity.name)));
-  const both = new Set([...declared].filter((n) => qloo.has(n)));
-  return {
-    both,
-    qlooOnly: partners.filter((p) => !both.has(normalizeName(p.entity.name))).length,
-    controlOnly: control.places.filter((p) => !both.has(normalizeName(p.name))).length,
-  };
-}
-
-/** Ledger id ranges for a footer line, e.g. "Q1-Q18, T1-T2, P1-P4". */
+/** Ledger id ranges for a footer line, e.g. "Q1-Q18, T1-T2, L1". */
 export function ledgerRanges(entries: LedgerEntry[]): string {
   const byPrefix = new Map<string, number[]>();
   for (const e of entries) {

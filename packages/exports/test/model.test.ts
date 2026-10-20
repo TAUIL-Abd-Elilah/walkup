@@ -107,11 +107,12 @@ describe("header", () => {
       ...LIMITS_EVERY_SHEET,
       "Sample data: made-up places and numbers; no live service was called.",
       "Venue points for rooms without a public map point are approximate in sample data.",
+      // Older sheets only: how their Google Places list was searched.
       "The Google Places list used fixed searches because no model key is set.",
     ];
     const m = buildSheetModel(fx);
     expect(m.footer.limits).toEqual([...LIMITS_EVERY_SHEET]);
-    expect(m.footer.attribution).toBe("Sample data shaped like Ticketmaster, Google Places and Qloo answers. Map data © OpenStreetMap contributors.");
+    expect(m.footer.attribution).toBe("Sample data shaped like Ticketmaster and Qloo answers. Map data © OpenStreetMap contributors.");
     expect(buildSheetModel(makeSheet()).footer.attribution).toMatch(/^Events: Ticketmaster\./);
   });
 
@@ -382,7 +383,8 @@ describe("footer", () => {
   });
 
   it("attributes every data source", () => {
-    for (const source of ["Ticketmaster", "Google", "OpenStreetMap", "U.S. Census Bureau", "Qloo"]) expect(m.footer.attribution).toContain(source);
+    for (const source of ["Ticketmaster", "OpenStreetMap", "U.S. Census Bureau", "Qloo"]) expect(m.footer.attribution).toContain(source);
+    expect(m.footer.attribution).not.toContain("Google");
   });
 });
 

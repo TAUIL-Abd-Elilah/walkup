@@ -101,7 +101,7 @@ export default function EvalPage() {
       <div className="max-w-[760px]">
       <h1>Evaluation</h1>
       <p className="mt-3">
-        What has been checked so far, and what has not. Everything on this page ran on sample data: a stand-in for Qloo, Ticketmaster and Google Places with
+        What has been checked so far, and what has not. Everything on this page ran on sample data: a stand-in for Qloo and Ticketmaster with
         made-up places and numbers. No result here comes from a live Qloo call.
       </p>
 

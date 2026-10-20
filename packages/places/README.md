@@ -1,6 +1,8 @@
 # @walkup/places
 
-Google Places API (New) Text Search client. It serves the "without Qloo" control list (same model, Google Places instead of Qloo) and the grounding checks: does the place exist, is it operating, and is it open on the street-team day.
+Google Places API (New) Text Search client. It served the "without Qloo" control list (same model, Google Places instead of Qloo) and the grounding checks: does the place exist, is it operating, and is it open on the street-team day.
+
+Since Oct 20 2026 it is used only by the P1 research harness (`evals/p1/arms`), not by the product.
 
 ## Public API
 

@@ -18,8 +18,8 @@ import { createSqliteStores } from "@walkup/orchestrator/sqlite";
 import { DEFAULT_WORLD_SEED, placeById } from "@walkup/qloo-world";
 import { WEEKDAYS, type Weekday } from "@walkup/contracts";
 import { CASES } from "./cases";
-import { checkSubject, classifyGuardReasons, CLAUSES, readBudget, type CheckResult, type Subject } from "./checks";
-import { newRig, runWithPick, worldPlacesClient, type EvalRig } from "./harness";
+import { checkSubject, classifyGuardReasons, CLAUSES, PARTNERS_OPEN_CHECK, readBudget, SPOTS_OPEN_CHECK, type CheckResult, type Subject } from "./checks";
+import { newRig, runWithPick, type EvalRig } from "./harness";
 import { KNOWN_GAPS, knownGapFor } from "./known-gaps";
 import { DEFAULT_OUT_DIR, parseArgs, recordedFromJson, runProductEval, scoreMarkdown, writeScore, type Score } from "./run";
 
@@ -105,7 +105,7 @@ describe("universal checks catch a broken sheet", () => {
     base = (await runWithPick({ presetId: "g1-a" }, rig.deps)).final;
   }, 120_000);
 
-  const subject = (r: PlanResult): Subject => ({ label: "mutant", result: r, tap: rig.tap, places: worldPlacesClient(rig.world), expect: { budget: { venueMin: 4 } } });
+  const subject = (r: PlanResult): Subject => ({ label: "mutant", result: r, tap: rig.tap, expect: { budget: { venueMin: 4 } } });
   const mutate = (fn: (r: PlanResult) => void): PlanResult => {
     const r = structuredClone(base);
     fn(r);
@@ -118,7 +118,7 @@ describe("universal checks catch a broken sheet", () => {
     expect(checks.filter((x) => x.status !== "pass").map((x) => `${x.name}: ${x.detail}`)).toEqual([]);
   });
 
-  it("a partner closed on the street-team day per Google Places", async () => {
+  it("a partner closed on the street-team day per Qloo's hours", async () => {
     const p = base.sheet!.cards.partners.results.find((x) => {
       if (x.hoursOnDay === null) return false;
       const place = placeById(x.entity.entityId, DEFAULT_WORLD_SEED);
@@ -131,21 +131,23 @@ describe("universal checks catch a broken sheet", () => {
     const r = mutate((x) => {
       x.sheet!.operator.streetTeamDays = [closedDay];
     });
-    expect(await statusOf(r, "every partner open on the street-team day per Google Places")).toBe("fail");
+    expect(await statusOf(r, PARTNERS_OPEN_CHECK)).toBe("fail");
   });
 
-  it("a partner Google Places does not know", async () => {
+  it("a partner Qloo marks closed", async () => {
     const r = mutate((x) => {
-      x.sheet!.cards.partners.results[0]!.entity.name = "Nowhere Example Lounge";
+      const e = x.sheet!.cards.partners.results[0]!.entity;
+      e.properties = { ...e.properties, is_closed: true };
     });
-    expect(await statusOf(r, "every partner open on the street-team day per Google Places")).toBe("fail");
+    expect(await statusOf(r, PARTNERS_OPEN_CHECK)).toBe("fail");
   });
 
-  it("a pre/post spot Google Places does not know, which the known gap never masks", async () => {
+  it("a pre/post spot Qloo marks closed, which the known gap never masks", async () => {
     const r = mutate((x) => {
-      x.sheet!.cards.prePost.results[0]!.entity.name = "Nowhere Example Supper Club";
+      const e = x.sheet!.cards.prePost.results[0]!.entity;
+      e.properties = { ...e.properties, is_closed: true };
     });
-    const check = (await checkSubject(subject(r))).checks.find((x) => x.name === "every pre/post spot open on show night per Google Places");
+    const check = (await checkSubject(subject(r))).checks.find((x) => x.name === SPOTS_OPEN_CHECK);
     expect(check?.status).toBe("fail");
     for (const gap of KNOWN_GAPS) for (const id of gap.cases) expect(knownGapFor(id, check!)).toBeUndefined();
   });
@@ -212,11 +214,11 @@ describe("universal checks catch a broken sheet", () => {
     expect(await statusOf(live, "mode is labelled honestly")).toBe("fail");
   });
 
-  it("strict hours fails a partner Google Places lists without hours", async () => {
+  it("strict hours fails a partner Qloo lists without hours", async () => {
     const strict = await checkSubject(subject(base), { strictHours: true });
     const unknown = base.sheet!.cards.partners.results.filter((p) => p.hoursOnDay === null).length;
     expect(unknown).toBeGreaterThan(0);
-    expect(strict.checks.find((x) => x.name === "every partner open on the street-team day per Google Places")?.status).toBe("fail");
+    expect(strict.checks.find((x) => x.name === PARTNERS_OPEN_CHECK)?.status).toBe("fail");
   });
 });
 
@@ -298,7 +300,7 @@ describe("arguments", () => {
     expect(parseArgs([]).source).toBe("fixture");
     expect(parseArgs(["--only", "C01,c05", "--quiet", "--strict-hours"])).toMatchObject({ only: ["C01", "c05"], quiet: true, strictHours: true });
     expect(() => parseArgs(["--source", "recorded"])).toThrow(/--plans/);
-    expect(() => parseArgs(["--ground-live"])).toThrow(/recorded runs only/);
+    expect(() => parseArgs(["--ground-live"])).toThrow(/Unknown argument/);
     expect(() => parseArgs(["--bogus"])).toThrow(/Unknown argument/);
   });
 
@@ -308,6 +310,9 @@ describe("arguments", () => {
     const rec = recordedFromJson({ synthetic: true, fixtureId: "g3", sheet: { planId: "p", mode: "fixture", cards: {} } }, "file.json");
     expect(rec?.presetId).toBe("g3");
     expect(rec?.result.budget.qlooFresh).toBe(0);
+    // An older stored sheet's Google Places list is dropped, as the product does on output.
+    const old = recordedFromJson({ fixtureId: "g3", sheet: { planId: "p", mode: "live", cards: {}, control: { arm: "F", places: [], overlapWithQloo: [], ledgerRefs: [] } } }, "old.json");
+    expect(old?.result.sheet?.control).toBeUndefined();
   });
 });
 
@@ -322,7 +327,7 @@ describe("recorded plans", () => {
   async function storeGoldens(store: PlanStore, prefix: string): Promise<void> {
     const rig = newRig({ store, idPrefix: prefix });
     for (const id of ["g1-a", "g1-b", "g2", "g3"]) {
-      const r = await runWithPick({ presetId: id }, rig.deps, { arms: ["F"] });
+      const r = await runWithPick({ presetId: id }, rig.deps);
       expect(r.final.status).toBe("complete");
     }
   }
@@ -331,7 +336,7 @@ describe("recorded plans", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("re-checks stored plans from JSON files: goldens only, tap and grounding skipped", async () => {
+  it("re-checks stored plans from JSON files: goldens only, the tap skipped", async () => {
     const store = createMemoryPlanStore();
     await storeGoldens(store, "rec");
     for (const p of await store.list(10)) writeFileSync(join(dir, `${p.planId}.json`), JSON.stringify(p), "utf8");
@@ -341,8 +346,10 @@ describe("recorded plans", () => {
     expect(score.unexpectedFailures).toBe(0);
     expect(score.skipped).toBe(14);
     const c01 = score.cases.find((c) => c.id === "C01")!;
-    expect(c01.checks.filter((x) => x.status === "skip").map((x) => x.clause).sort()).toEqual(["D3", "D4"]);
-    expect(score.clauses.find((c) => c.id === "D3")?.status).toBe("not verified");
+    // Grounding reads Qloo's place data on the sheet, so it runs on a recorded plan too; only the ID tap needs the world.
+    expect(c01.checks.filter((x) => x.status === "skip").map((x) => x.clause).sort()).toEqual(["D4"]);
+    expect(score.clauses.find((c) => c.id === "D3")?.status).toBe("verified");
+    expect(score.clauses.find((c) => c.id === "D4")?.status).toBe("not verified");
     expect(scoreMarkdown(score)).toContain("recorded plans");
     // A fixture sheet read as a recorded plan says so: it never reads as a live run.
     expect(score.recordedPlans?.map((p) => p.mode)).toEqual(["fixture", "fixture", "fixture", "fixture"]);

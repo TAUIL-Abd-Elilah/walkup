@@ -83,14 +83,14 @@ describe("run policy", () => {
       expect(rec.env.mode).toBe("recorded");
       const recSheet = rec.env.results as StreetSheet;
       expect(recSheet.mode).toBe("live");
-      // Served without its Google Places list: Places content is kept 30 days at most.
+      // Served without its Google Places list: the product no longer shows it.
       expect(recSheet.control).toBeUndefined();
       expect(rec.text).toContain("Mode: recorded (a live run recorded on 2026-10-30; Qloo is no longer available to this server, so it is not refreshed).");
-      // The same sheet on a live server is a live sheet, list included.
+      // The same sheet on a live server is a live sheet, still without the list.
       const asLive = await connect(services({ store: live.store }));
       try {
         const l = await asLive.call("get_sheet", { planId: "rec-live-1" });
-        expect([l.env.mode, (l.env.results as StreetSheet).control]).toEqual(["live", control]);
+        expect([l.env.mode, (l.env.results as StreetSheet).control]).toEqual(["live", undefined]);
       } finally {
         await asLive.close();
       }

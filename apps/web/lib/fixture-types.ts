@@ -1,6 +1,6 @@
 /**
  * Web-local shapes that wrap the shared contracts. A fixture file is a
- * StreetSheet plus the fair-control arm that the "Without Qloo" toggle shows.
+ * StreetSheet with a title and a note.
  * Generated fixtures (fixtures/synthetic/engine/, written by
  * packages/orchestrator/scripts/generate-fixture-sheets.ts) add a few
  * provenance fields; hand-built ones (fixtures/synthetic/*.sheet.json) do not.
@@ -18,8 +18,8 @@ export interface SheetFixture {
   /** Plan id of the other bill in the same room ("Swap the bill"). */
   pairedWith?: string;
   sheet: StreetSheet;
-  /** Arm F: same model + Google Places + ACS, same inputs. */
-  control: ControlArmResult;
+  /** Arm F's Google Places list on files written before Oct 20 2026. No longer produced or shown. */
+  control?: ControlArmResult;
   /** Generated fixtures: the script that wrote the file. */
   generatedBy?: string;
   /** Generated fixtures: the synthetic world's seed. */

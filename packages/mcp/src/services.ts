@@ -175,7 +175,7 @@ export interface FixtureServicesOptions extends FixtureDepsOptions {
   policy?: Partial<RunPolicy>;
 }
 
-/** The fixture world (synthetic Qloo, Ticketmaster and Places), memory plan store. Mode is always "fixture". */
+/** The fixture world (synthetic Qloo and Ticketmaster), memory plan store. Mode is always "fixture". */
 export function createFixtureServices(o: FixtureServicesOptions = {}): McpServices {
   const { limiter, rate, secrets, parseShow, policy, ...fixture } = o;
   const store = fixture.store ?? createMemoryPlanStore();

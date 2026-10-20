@@ -5,7 +5,7 @@
  * (`revisePlan`). This module imports no server code, so client components may
  * use it; server-only helpers live in lib/server/.
  */
-import { LIMITS_EVERY_SHEET, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet } from "@walkup/contracts";
+import { LIMITS_EVERY_SHEET, withoutControl, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet } from "@walkup/contracts";
 
 /** A JSON response that is never cached. */
 export function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
@@ -42,9 +42,10 @@ function rollupReason(sheet: StreetSheet, status: EnvelopeStatus): string | unde
 
 /**
  * `recorded`: the server serves recorded sheets only (Qloo is no longer available), so a live sheet's envelope
- * says mode "recorded"; the sheet itself keeps mode "live".
+ * says mode "recorded"; the sheet itself keeps mode "live". An older stored sheet's Google Places list is dropped.
  */
-export function sheetEnvelope(sheet: StreetSheet, origin: string, opts: { recorded?: boolean } = {}) {
+export function sheetEnvelope(stored: StreetSheet, origin: string, opts: { recorded?: boolean } = {}) {
+  const sheet = withoutControl(stored);
   const status = sheetStatus(sheet);
   const reason = rollupReason(sheet, status);
   return {

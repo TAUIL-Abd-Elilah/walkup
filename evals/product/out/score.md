@@ -1,7 +1,7 @@
 # Product eval score
 
-Source: fixture world (synthetic stand-in for Qloo, Ticketmaster and Google Places; seed `houselights-world-v1`). No live API was called.
-Generated: 2026-10-20T05:03:28.635Z
+Source: fixture world (synthetic stand-in for Qloo and Ticketmaster; seed `houselights-world-v1`). No live API was called.
+Generated: 2026-10-20T05:32:06.577Z
 
 **20 passed, 0 failed (0 on known product gaps only, 0 unexpected), 0 skipped, of 20 cases.**
 
@@ -11,9 +11,9 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 
 | Clause | Status | Cases | Checks (pass / fail / skip) |
 |---|---|---|---|
-| D1. For the three goldens, the Street Sheet renders. | verified (outside the goldens: 110 pass, 0 fail) | C01, C02, C03, C04 | 55 / 0 / 0 |
+| D1. For the three goldens, the Street Sheet renders. | verified (outside the goldens: 110 pass, 0 fail) | C01, C02, C03, C04 | 54 / 0 / 0 |
 | D2. Zero guard drops in a citation field. | verified (outside the goldens: 66 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
-| D3. Every partner is open on the street-team day per Google Places. | verified (partners with no hours in Google Places, passed as "call ahead" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
+| D3. Every partner is open on the street-team day per the hours Qloo returns for it. | verified (partners with no hours from Qloo, passed as "call ahead" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
 | D4. Every cited ID appears in this run's ledger (ID validator). | verified (outside the goldens: 117 pass, 0 fail) | C01, C02, C03, C04 | 20 / 0 / 0 |
 | D5. The CI job re-runs the 20-case eval on fixtures. | ci (evals/product/product.eval.test.ts runs this eval under vitest; CI runs it once the root vitest include covers evals/product (see evals/product/README.md).) | - | 0 / 0 / 0 |
 | D6. The CI job re-runs the P1 analysis on fixtures. | ci (The P1 analysis tests run in the Python CI job (python evals/p1/test_analyze.py); not part of this eval.) | - | 0 / 0 / 0 |
@@ -27,7 +27,7 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 
 | Case | Status | Checks (pass / fail / skip) | Clauses |
 |---|---|---|---|
-| C01 Golden G1, bill A: The Truth, Nashville (hero sheet) | passed | 54 / 0 / 0 | D1, D2, D3, D4, S1, S2, S3 |
+| C01 Golden G1, bill A: The Truth, Nashville (hero sheet) | passed | 53 / 0 / 0 | D1, D2, D3, D4, S1, S2, S3 |
 | C02 Golden G1, bill B: same room, all-ages bill of a distant genre | passed | 50 / 0 / 0 | D1, D2, D3, D4, S1, S2, S3 |
 | C03 Golden G2: Hampton Coliseum comedy bill (honesty demo) | passed | 54 / 0 / 0 | D1, D2, D3, D4, S1, S2, S3 |
 | C04 Golden G3: Super Funny, Tacoma (thin signal: each fallback is labelled) | passed | 51 / 0 / 0 | D1, D2, D3, D4, S1, S2, S3 |
@@ -79,4 +79,4 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 | C20 | g1-a, model error | 24 | 8 | - | - | 29 | 14 | 6 | 0 | 0 | 0 |
 | C20 | g1-a, off-schema draft | 24 | 8 | - | - | 29 | 14 | 6 | 0 | 0 | 0 |
 
-Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding looks every partner and pre/post spot up by name near its point in Google Places (here the fixture world's Places transport).
+Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.

@@ -8,8 +8,10 @@
  *   wherever a tag list appears;
  * - secrets: ledger params and copy-as-curl strings keep only "$ENV_VAR"
  *   references; any literal key-like value is replaced with "[redacted]".
+ * An older stored sheet's Google Places list (`control`) is dropped first
+ * (withoutControl): the product no longer shows it.
  */
-import type { StreetSheet } from "@walkup/contracts";
+import { withoutControl, type StreetSheet } from "@walkup/contracts";
 import { isDeniedTag, isPersonEntity } from "@walkup/engine";
 import { FIXTURE_NOTICE } from "./format";
 
@@ -112,7 +114,8 @@ export function sanitizeSheet(sheet: StreetSheet): { sheet: StreetSheet; tagsRem
   return { sheet: clean, ...counts };
 }
 
-export function sheetJsonDocument(sheet: StreetSheet, opts: SheetJsonOptions = {}): SheetJsonDocument {
+export function sheetJsonDocument(stored: StreetSheet, opts: SheetJsonOptions = {}): SheetJsonDocument {
+  const sheet = withoutControl(stored);
   const doSanitize = opts.sanitize ?? true;
   const s = doSanitize ? sanitizeSheet(sheet) : null;
   const body: StreetSheet = s ? s.sheet : { ...sheet, ledger: sheet.ledger ?? [] };

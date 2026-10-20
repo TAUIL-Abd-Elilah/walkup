@@ -16,7 +16,6 @@ The same content is served by the app at `/system-card`. The probe outcomes belo
 |---|---|---|
 | Narration (summary, why-this-tile, partner one-liners, 3 copy hooks) | `claude-opus-5-5`, through OpenRouter (`anthropic/claude-opus-5.5`, Chat Completions) when `OPENROUTER_API_KEY` is set, else the Anthropic Messages API (`@anthropic-ai/sdk`) | `output_config.effort: "low"`; structured output (JSON schema) whose ID and number fields are enums built from this run; adaptive thinking (always on for this model); prompt caching on the frozen system prompt. On the OpenRouter route effort is sent as `verbosity`, the schema as `response_format`, and there is no server-side refusal fallback |
 | Free-text intake (parse "Artist @ Venue, Date" into a Ticketmaster query) | `claude-opus-5-5` | `effort: "low"`; output is a query only, resolved by Ticketmaster |
-| Fair-control arm F | `claude-opus-5-5`, same system prompt and output schema as the product | `effort: "medium"`; tools: Google Places (New) Text Search, Census ACS lookup |
 | Revisions (an operator's change note, e.g. "All ages: no bars") | `claude-opus-5-5` | `effort: "medium"`; `tool_choice: auto`; six strict tools (`set_all_ages`, `exclude_partner_categories`, `exclude_areas`, `set_street_team_days`, `set_radius` 5-60 km, `ask_operator`) whose allowed values come from the sheet being revised. The tools only set operator inputs; the plan then runs again through Qloo and the same code. Without a model key, or on a refusal, outage or the spend cap, fixed rules read common phrasings into the same tools and the sheet says so; anything they can't read gets a question and no change |
 | Refusals and outages | Server-side fallback (`fallbacks: "default"`); `stop_reason` checked before content is read | Above the daily spend cap or on failure, narration uses a deterministic template, labelled as such |
 | Ranking, lift, scoring, guard | No model. Deterministic TypeScript in `packages/engine` | Unit-tested |
@@ -80,12 +79,12 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 |---|---|---|
 | Qloo Insights API | All taste decisions (Q1-Q16) | Key server-side only. Response bodies are never committed (git-ignored private cache, CI check). Only IDs, counts and derived metrics appear in the repo |
 | Ticketmaster Discovery API | Event, venue coordinates, age policy, the venue's upcoming roster, attraction Spotify IDs | Attribution and deep links; within published rate limits |
-| Google Places API (New) | Fair-control arm F and the grounding checks only | Attribution displayed; place content cached 30 days or less (place IDs may be kept) |
+| Google Places API (New) | Nothing in the product since Oct 20 2026, when the "Without Qloo" comparison list was removed. Only the P1 research harness (not run) would call it | Sheets stored before then are shown without their Places list; their ledgers keep the request records (queries and counts, no place content) |
 | OpenStreetMap via OpenFreeMap, Nominatim, Overpass | Base map and neighbourhood names | ODbL attribution; cached; polite request rates |
 | US Census ACS 5-year, TIGER/Line | Adults per ZCTA for the budget heuristic and tile floor | Public domain |
 | Official supporters'-club pages | P1 ground truth (collected; P1 itself was not run) | Facts only (club, metro, bar, address, source URL, fetch date); robots.txt respected; 1 request/second; derived metrics and a 20-row sample published, never the full table |
 | Spotify IDs | Join keys taken from Ticketmaster attractions | Not fetched from Spotify |
-| OpenRouter (when `OPENROUTER_API_KEY` is set), which forwards to a host of the Claude model, or the Anthropic Messages API | Narration, free-text parsing, arm F, change notes | No personal data is sent |
+| OpenRouter (when `OPENROUTER_API_KEY` is set), which forwards to a host of the Claude model, or the Anthropic Messages API | Narration, free-text parsing, change notes | No personal data is sent |
 | Resend | The confirm-gated send | Test inbox is the default recipient |
 
 ## What we store and what we don't
@@ -94,12 +93,12 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 
 **We don't store or collect:** fan, buyer or viewer data; names, emails or phone numbers of anyone the operator did not type; accounts or logins; cookies beyond one functional cookie; the optional "send a copy to me" address (used once, then discarded); person-entity tags (stripped before anything is persisted); tags from denied namespaces.
 
-**We never send to Qloo, OpenRouter, Anthropic or Google:** personal data of any kind, or operator contact details (typed email addresses stay with the confirm-gated send).
+**We never send to Qloo, OpenRouter or Anthropic:** personal data of any kind, or operator contact details (typed email addresses stay with the confirm-gated send).
 
 **What each provider receives:**
 - **Qloo:** act, venue and partner names (for typed search and pick lists), entity IDs, tag IDs, coordinates, radii, weekdays and filters. "Already reached" ZIP counts are never sent to Qloo; they only down-weight tiles in our own code.
-- **OpenRouter / Anthropic:** the show's public listing facts, the operator's what-ifs and declared partner names, and this run's results for narration. For a revision: the operator's note and a short summary of the sheet (acts, venue, date, age policy, settings, area names and geohashes, place types with counts), with no partner names and no contact details. The fair-control arm F gets the same inputs as the Qloo arm, including the aggregate "already reached" ZIP counts (ZIP and count, no names), so the two arms stay comparable.
-- **Google Places:** text queries (the ones arm F chooses, and place names for the grounding checks) with a search circle near the venue.
+- **OpenRouter / Anthropic:** the show's public listing facts, the operator's what-ifs and declared partner names, and this run's results for narration. For a revision: the operator's note and a short summary of the sheet (acts, venue, date, age policy, settings, area names and geohashes, place types with counts), with no partner names and no contact details.
+- **Google:** nothing. The product makes no Google Places request.
 
 ## Evals
 
@@ -151,7 +150,6 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 | Qloo | Month guard at 1,500 remaining; fresh runs capped at 3 per IP per day and 15 per day in total; cached presets unlimited |
 | Claude (OpenRouter or Anthropic) | Daily spend counter capped at $5/day, at Anthropic list rates; narration cached per plan; template narration above the cap |
 | Revisions | 12 per network per hour on a live server (30 in sample mode); unchanged Qloo requests come from the cache, so only requests whose inputs changed are sent |
-| Google Places | Quota cap of 300 requests/day |
 | Resend | Free tier (100/day); test inbox by default |
 | Hosting | One small always-on instance (configured in `fly.toml`; not deployed yet) |
 

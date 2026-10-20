@@ -1,6 +1,6 @@
 # @walkup/narrator
 
-Every place Walkup calls Claude (`claude-opus-5-5`), and nothing else:
+Every place Walkup calls Claude (`claude-opus-5-5`), and nothing else. `runControlArm` and `runLlmOnlyArm` are called by nothing since the product's arm F was removed on Oct 20 2026 (the P1 research harness has its own model arms in `evals/p1/arms/model-arms.ts`); they stay, with their tests, until the owner decides.
 
 | Function | What it does | Effort |
 |---|---|---|

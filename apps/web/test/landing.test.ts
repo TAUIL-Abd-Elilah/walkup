@@ -77,8 +77,9 @@ describe("recorded mode copy (Qloo unavailable)", () => {
   it("credits the data in the footer without claiming sample data or a live call", () => {
     const recorded = dataSourcesLine("recorded");
     expect(recorded).toBe("Affinity data from Qloo, events and age rules from Ticketmaster, as recorded on live runs; neither service is called now.");
-    // Recorded sheets are served without their Google Places list, so the credit does not name Places.
-    expect(recorded).not.toMatch(/\bsample\b|made-up|Google/i);
+    // Google Places is no longer a source, so no credit names it.
+    expect(recorded).not.toMatch(/\bsample\b|made-up/i);
+    for (const m of ["live", "fixture", "recorded"] as const) expect(dataSourcesLine(m)).not.toMatch(/Google|Places/);
     expect(dataSourcesLine("fixture")).toMatch(/^Sample data /);
     expect(dataSourcesLine("live")).not.toMatch(/recorded|sample/i);
     for (const m of ["live", "fixture", "recorded"] as const) expect(dataSourcesLine(m)).not.toMatch(/!|\bAI\b|powered/);

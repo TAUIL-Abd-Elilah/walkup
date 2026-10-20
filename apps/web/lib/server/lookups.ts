@@ -91,10 +91,10 @@ async function recordedPresets(): Promise<Record<string, { planId: string; creat
 export async function health(): Promise<ServiceResponse> {
   const mode = runtimeMode();
   const keys = keyPresence();
-  const services: Service[] = ["qloo", "ticketmaster", "places", "anthropic"];
+  const services: Service[] = ["qloo", "ticketmaster", "anthropic"];
   let quota: { remaining: number | null; limit: number | null; floor: number; guardTripped: boolean } | null = null;
   if (mode.kind === "live") {
-    const wanted = services.filter((s) => (s === "qloo" ? keys.qloo : s === "ticketmaster" ? keys.ticketmaster : s === "places" ? keys.places : keys.llm !== null));
+    const wanted = services.filter((s) => (s === "qloo" ? keys.qloo : s === "ticketmaster" ? keys.ticketmaster : keys.llm !== null));
     const urls = keys.llm === "openrouter" ? { ...PROBE_URLS, anthropic: OPENROUTER_PROBE_URL } : PROBE_URLS;
     void refreshProbes(wanted, fetch, Date.now(), urls);
     try {

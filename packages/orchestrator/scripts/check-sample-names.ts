@@ -19,14 +19,14 @@ const METRO: Record<string, MetroKey> = { "g1-a": "nashville", "g1-b": "nashvill
 
 async function preset(id: string): Promise<StreetSheet> {
   const deps = createFixtureDeps({ clock: () => Date.parse("2026-10-30T15:00:00Z"), idGen: () => id });
-  let r: PlanResult = await planShow({ presetId: id, planId: id }, deps, { arms: ["F"] });
+  let r: PlanResult = await planShow({ presetId: id, planId: id }, deps);
   if (r.status === "needs_input" && r.pause) {
     const resolutions: Record<string, string> = {};
     for (const p of r.pause.pending) {
       const pick = p.candidates.find((c) => c.subtype === "urn:entity:person") ?? p.candidates[0];
       if (pick) resolutions[p.input] = pick.entityId;
     }
-    r = await planShow({ presetId: id, planId: id, resolutions }, deps, { arms: ["F"] });
+    r = await planShow({ presetId: id, planId: id, resolutions }, deps);
   }
   if (!r.sheet) throw new Error(`${id}: ${r.status}`);
   return r.sheet;
@@ -36,7 +36,7 @@ async function revision(parent: StreetSheet): Promise<StreetSheet> {
   const deps = createFixtureDeps({ clock: () => Date.parse("2026-10-30T15:00:00Z"), idGen: () => "g1-a-rev" });
   const request = parentRequest(parent, { presetId: "g1-a" });
   if (!request) throw new Error("no parent request");
-  const r = await revisePlan({ sheet: parent, request }, "All ages, no bars", deps, { arms: ["F"] });
+  const r = await revisePlan({ sheet: parent, request }, "All ages, no bars", deps);
   if (r.status === "question" || !r.result.sheet) throw new Error("revision did not complete");
   return r.result.sheet;
 }

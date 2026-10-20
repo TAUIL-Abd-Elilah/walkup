@@ -12,8 +12,8 @@ import { deps, runPreset, sheetOf } from "./helpers";
 
 describe("determinism", () => {
   it("gives the same sheet for the same inputs", async () => {
-    const a = await runPreset("g1-a", deps(), { arms: ["F"] });
-    const b = await runPreset("g1-a", deps(), { arms: ["F"] });
+    const a = await runPreset("g1-a", deps());
+    const b = await runPreset("g1-a", deps());
     expect(JSON.stringify(sheetOf(a.final))).toBe(JSON.stringify(sheetOf(b.final)));
     expect(a.final.budget).toEqual(b.final.budget);
   });

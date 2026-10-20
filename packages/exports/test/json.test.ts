@@ -34,6 +34,23 @@ describe("toSheetJson", () => {
   it("is deterministic", () => {
     expect(toSheetJson(makeSheet())).toBe(toSheetJson(makeSheet()));
   });
+
+  it("drops an older sheet's Google Places list, its step and its limits line", () => {
+    const old: StreetSheet = {
+      ...makeSheet(),
+      control: { arm: "F", places: [{ placeId: "gp-1", name: "Example Tavern", query: "bar" }], overlapWithQloo: [], ledgerRefs: ["P1"] },
+      steps: [{ id: "control", kind: "other", label: "Without Qloo", decision: "Built a list without Qloo from 1 Google Places search", status: "ok", ledgerRefs: ["P1"] }],
+      limits: [...makeSheet().limits, "The Google Places list used fixed searches because no model key is set."],
+    };
+    const text = toSheetJson(old);
+    expect(text).not.toContain("Example Tavern");
+    expect(text).not.toContain("Without Qloo");
+    expect(text).not.toContain("The Google Places list");
+    const doc = JSON.parse(text) as SheetJsonDocument;
+    expect(doc.sheet.control).toBeUndefined();
+    expect(doc.sheet.steps).toEqual([]);
+    expect(doc.sheet.limits).toEqual(makeSheet().limits);
+  });
 });
 
 describe("sanitizeSheet", () => {

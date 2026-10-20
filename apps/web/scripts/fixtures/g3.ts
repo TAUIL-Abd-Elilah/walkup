@@ -15,19 +15,15 @@ import {
   ACS_NOTE,
   acsCurl,
   acsParams,
-  anthropicCurl,
   envelope,
   makeBudget,
-  makeControl,
   makeMedia,
   makePartners,
   makeSpots,
   makeTiles,
-  placesCurl,
   rng,
   synId,
   tag,
-  type ControlSpec,
   type PlaceContext,
   type Seed,
   type SpotSpec,
@@ -89,25 +85,6 @@ const SPOTS: SpotSpec[] = [
   { name: "Callback Coffee", category: "cafe", street: "S 9th St", northM: 960, eastM: 120, deltaRank: null, share: 0.1, capacity: 35 },
   { name: "Opening Act Pizza", category: "restaurant", street: "S Fawcett Ave", northM: -1450, eastM: -700, deltaRank: null, share: 0.14, capacity: 55 },
   { name: "Mic Drop Pub", category: "bar", street: "Commerce St", northM: 1800, eastM: 900, deltaRank: null, share: 0.12, capacity: 90 },
-];
-
-const SIXTH = { lat: 47.2555, lon: -122.4705 };
-const DOWNTOWN = { lat: 47.2535, lon: -122.4405 };
-const MALL = { lat: 47.217, lon: -122.468 };
-
-const CONTROL: ControlSpec[] = [
-  { name: "Tacoma Mall Laugh Lounge", street: "S Steele St", query: "comedy club Tacoma", near: MALL },
-  { name: "Pacific Avenue Comedy Cellar", street: "Pacific Ave", query: "comedy club Tacoma", near: DOWNTOWN },
-  { name: "Puget Sound Open Mic Room", street: "Commerce St", query: "comedy club Tacoma", near: DOWNTOWN },
-  { name: "Pinball Parlor Taproom", street: "6th Ave", query: "bar near Sixth Avenue Tacoma", near: SIXTH },
-  { name: "Sixth Ave Sports Bar", street: "6th Ave", query: "bar near Sixth Avenue Tacoma", near: SIXTH },
-  { name: "Union Station Brewhouse", street: "Pacific Ave", query: "bar near Sixth Avenue Tacoma", near: DOWNTOWN },
-  { name: "Waterfront Wings & Taps", street: "Ruston Way", query: "bar near Sixth Avenue Tacoma", near: { lat: 47.285, lon: -122.475 } },
-  { name: "Fern Hollow Coffee", street: "6th Ave", query: "coffee shop Tacoma", near: SIXTH },
-  { name: "Downtown Daily Grind", street: "Broadway", query: "coffee shop Tacoma", near: DOWNTOWN },
-  { name: "Mall Court Espresso", street: "S Steele St", query: "coffee shop Tacoma", near: MALL },
-  { name: "Freighthouse Coffee Bar", street: "E D St", query: "coffee shop Tacoma", near: { lat: 47.2445, lon: -122.4285 } },
-  { name: "Theater District Taphouse", street: "Broadway", query: "bar near Sixth Avenue Tacoma", near: DOWNTOWN },
 ];
 
 export function buildG3(): SheetFixture {
@@ -205,9 +182,6 @@ export function buildG3(): SheetFixture {
 
   const zctas = [...new Set(top.flatMap((t) => t.zctas ?? []))];
   const c1 = L.add("acs", "GET", ACS_ENDPOINT, acsParams(zctas), { resultCount: zctas.length, curl: acsCurl(zctas), note: ACS_NOTE });
-  const queries = ["comedy club Tacoma", "bar near Sixth Avenue Tacoma", "coffee shop Tacoma"];
-  const placeRefs = queries.map((q) => L.add("places", "POST", "/v1/places:searchText", { textQuery: q, "locationBias.radiusM": 50000, pageSize: 20 }, { resultCount: 20, curl: placesCurl(q, VENUE.lat, VENUE.lon, 50000), note: "Arm F: query chosen by the model. Location bias capped at the Places maximum of 50 km (the run radius is 60 km)." }));
-  const lControl = L.add("anthropic", "POST", "/v1/messages", { model: "claude-opus-5-5", "output_config.effort": "medium", tools: ["places_search", "acs_lookup"], max_tokens: 16000 }, { resultCount: 1, latencyMs: 12900, bytes: 15_200, curl: anthropicCurl(), note: "Arm F: same model, same schema, Google Places + ACS tools." });
 
   const bill: Bill = {
     acts: [
@@ -337,6 +311,5 @@ export function buildG3(): SheetFixture {
     title: "Super Funny, Tacoma",
     note: "Synthetic fixture. Acts, partner businesses, ids, scores and ledger timings are invented; neighbourhood names and ZIPs are real places used for layout only. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
     sheet,
-    control: makeControl(CONTROL, { city: "Tacoma", state: "WA", key: planId }, r, ["Pinball Parlor Taproom", "Fern Hollow Coffee"], [...placeRefs, lControl, c1]),
   };
 }

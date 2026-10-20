@@ -6,6 +6,7 @@ import {
   LIMITS_EVERY_SHEET,
   REVISION_CHANGE_KINDS,
   TRACE_STEP_KINDS,
+  withoutControl,
   type Envelope,
   type EnvelopeStatus,
   type LedgerEntry,
@@ -211,5 +212,29 @@ describe("wave 3 shapes", () => {
     expect(sheet.steps?.map((s) => s.kind).every((k) => (TRACE_STEP_KINDS as readonly string[]).includes(k))).toBe(true);
     expect(sheet.revision?.changes.every((c) => (REVISION_CHANGE_KINDS as readonly string[]).includes(c.kind))).toBe(true);
     expect(JSON.parse(JSON.stringify(sheet))).toEqual(sheet);
+  });
+});
+
+describe("withoutControl", () => {
+  const steps = [
+    { id: "guard", kind: "guard" as const, label: "Checks", decision: "Nothing had to go.", status: "ok" as const, ledgerRefs: [] },
+    { id: "control", kind: "other" as const, label: "Without Qloo", decision: "Built a list without Qloo from 2 Google Places searches", status: "ok" as const, ledgerRefs: ["P1"] },
+  ];
+  const limits = [...LIMITS_EVERY_SHEET, "The Google Places list used fixed searches because no model key is set."];
+  const control = { arm: "F" as const, places: [{ placeId: "gp-1", name: "Example Tavern", query: "bar" }], overlapWithQloo: [], ledgerRefs: ["P1"] };
+
+  it("drops an older sheet's Google Places list, its step and its limits line, without touching the input", () => {
+    const old = { control, steps, limits };
+    const out = withoutControl(old);
+    expect(out.control).toBeUndefined();
+    expect(out.steps?.map((s) => s.id)).toEqual(["guard"]);
+    expect(out.limits).toEqual([...LIMITS_EVERY_SHEET]);
+    expect(old.control).toBe(control);
+    expect(old.steps).toHaveLength(2);
+  });
+
+  it("returns a sheet with nothing to drop as it is", () => {
+    const fresh = { steps: steps.slice(0, 1), limits: [...LIMITS_EVERY_SHEET] };
+    expect(withoutControl(fresh)).toBe(fresh);
   });
 });

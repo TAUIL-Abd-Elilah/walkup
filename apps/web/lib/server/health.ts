@@ -10,7 +10,7 @@
  */
 import type { LedgerEntry } from "@walkup/contracts";
 
-export type Service = "qloo" | "ticketmaster" | "places" | "anthropic";
+export type Service = "qloo" | "ticketmaster" | "anthropic";
 
 export interface LastCall {
   httpStatus: number | null;
@@ -33,14 +33,13 @@ export const PROBE_TIMEOUT_MS = 2500;
 export const PROBE_URLS: Record<Service, string> = {
   qloo: "https://hackathon.api.qloo.com/",
   ticketmaster: "https://app.ticketmaster.com/discovery/v2/",
-  places: "https://places.googleapis.com/",
   anthropic: "https://api.anthropic.com/",
 };
 
 /** The LLM probe follows the configured route (OpenRouter or Anthropic). */
 export const OPENROUTER_PROBE_URL = "https://openrouter.ai/api/v1/";
 
-const KIND_TO_SERVICE: Partial<Record<LedgerEntry["kind"], Service>> = { qloo: "qloo", tm: "ticketmaster", places: "places", anthropic: "anthropic" };
+const KIND_TO_SERVICE: Partial<Record<LedgerEntry["kind"], Service>> = { qloo: "qloo", tm: "ticketmaster", anthropic: "anthropic" };
 
 interface HealthState {
   last: Partial<Record<Service, LastCall>>;

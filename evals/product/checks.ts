@@ -4,8 +4,9 @@
  *
  * A "subject" is one plan result to check. The universal checks are:
  * renders, card statuses, guard drops by field, ledger refs, entity citations,
- * the ID validator (fixture runs), grounding against Google Places, the call
- * budget and the policy invariants. Case-specific checks live in cases.ts.
+ * the ID validator (fixture runs), grounding against Qloo's own place data
+ * on the sheet (closed flag and hours), the call budget and the policy
+ * invariants. Case-specific checks live in cases.ts.
  */
 import { existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -18,10 +19,9 @@ import {
   type StreetSheet,
   type Weekday,
 } from "@walkup/contracts";
-import { findAlcoholTerm, findDeniedTerm, isBarCategory, isDeniedTag } from "@walkup/engine";
+import { findAlcoholTerm, findDeniedTerm, hoursOnDay, isBarCategory, isClosedEntity, isDeniedTag } from "@walkup/engine";
 import { buildSheetModel, renderStreetSheetPdf, sanitizeSheet } from "@walkup/exports";
 import { BUDGET_TARGET, CARD_ORDER, type CallBudget, type CardKey, type PlanResult } from "@walkup/orchestrator";
-import { isOpenOn, isOperational, matchPlaces, type PlaceRecord, type PlacesClient } from "@walkup/places";
 import type { IdTap } from "./harness";
 
 // ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ export interface Clause {
 export const CLAUSES: readonly Clause[] = [
   { id: "D1", text: "For the three goldens, the Street Sheet renders.", source: "Definition of done", checkedBy: "eval", scope: "goldens" },
   { id: "D2", text: "Zero guard drops in a citation field.", source: "Definition of done; agent loop step 7", checkedBy: "eval", scope: "goldens" },
-  { id: "D3", text: "Every partner is open on the street-team day per Google Places.", source: "Definition of done", checkedBy: "eval", scope: "goldens" },
+  { id: "D3", text: "Every partner is open on the street-team day per the hours Qloo returns for it.", source: "Definition of done", checkedBy: "eval", scope: "goldens" },
   { id: "D4", text: "Every cited ID appears in this run's ledger (ID validator).", source: "Definition of done", checkedBy: "eval", scope: "goldens" },
   { id: "D5", text: "The CI job re-runs the 20-case eval on fixtures.", source: "Definition of done", checkedBy: "ci", scope: "all" },
   { id: "D6", text: "The CI job re-runs the P1 analysis on fixtures.", source: "Definition of done", checkedBy: "ci", scope: "all" },
@@ -113,7 +113,7 @@ export class Checks {
 // Sheet walkers
 // ---------------------------------------------------------------------------
 
-/** Every Qloo entity anywhere in a value (deep). Google control places have no entityId and are not included. */
+/** Every Qloo entity anywhere in a value (deep). */
 export function allEntities(v: unknown, out: QlooEntity[] = []): QlooEntity[] {
   if (Array.isArray(v)) {
     for (const x of v) allEntities(x, out);
@@ -134,14 +134,13 @@ function deepLedgerRefs(v: unknown, out: string[]): void {
   }
 }
 
-/** Ledger refs cited anywhere on the sheet: card provenance, chips, resolution rows, the control arm. */
+/** Ledger refs cited anywhere on the sheet: card provenance, chips, resolution rows. */
 export function citedRefs(sheet: StreetSheet): string[] {
   const refs: string[] = [];
   for (const card of Object.values(sheet.cards)) {
     refs.push(...card.provenance);
     deepLedgerRefs(card.results, refs);
   }
-  if (sheet.control) refs.push(...sheet.control.ledgerRefs);
   return refs;
 }
 
@@ -214,7 +213,7 @@ export interface BudgetBounds {
   typedMax: number;
   /** Trust checks: up to 4 split-half heatmaps and one house twin per partner pool (3). */
   checksMax: number;
-  /** Qloo calls by comparison arms. None remain (arm F uses Google Places only), so this stays 0. */
+  /** Qloo calls by comparison arms. None run, so this stays 0. */
   armsMax: number;
   /** Exact number of fresh Qloo calls, when the case pins it (e.g. 0 when served from cache). */
   freshExact?: number;
@@ -307,7 +306,7 @@ export function readBudget(b: CallBudget): BudgetReading {
 }
 
 // ---------------------------------------------------------------------------
-// Grounding against Google Places
+// Grounding against Qloo's own place data on the sheet
 // ---------------------------------------------------------------------------
 
 export interface GroundingRow {
@@ -315,43 +314,46 @@ export interface GroundingRow {
   entityId: string;
   name: string;
   day: Weekday;
-  found: boolean;
-  operational: boolean | null;
+  /** Qloo marks the place closed (`properties.is_closed`). */
+  closed: boolean;
+  /** From `properties.hours` for the day; null when Qloo lists no hours for it. */
   openOnDay: boolean | null;
   /** Open on every street-team day (partners only; informational). */
   openAllDays: boolean | null;
   /** The sheet already says the hours are unknown ("call ahead"). */
   sheetSaysUnknown: boolean;
-  /** Found and not closed, Places lists no hours for the day, yet the sheet presents it as open. */
+  /** Not closed, Qloo lists no hours for the day, yet the sheet presents it as open. */
   shownOpenWithoutHours: boolean;
   ok: boolean;
   why?: string;
 }
 
-async function lookup(places: PlacesClient, name: string, loc: { lat: number; lon: number }): Promise<PlaceRecord | null> {
-  const res = await places.searchText({ textQuery: name, center: loc, radiusM: 500, maxResultCount: 20 });
-  const m = matchPlaces(
-    res.places.map((p) => ({ name: p.name, location: p.location ?? null })),
-    [{ name, location: loc }],
-  )[0];
-  return m ? (res.places[m.controlIndex] ?? null) : null;
-}
+export const PARTNERS_OPEN_CHECK = "every partner open on the street-team day per Qloo's hours";
+export const SPOTS_OPEN_CHECK = "every pre/post spot open on show night per Qloo's hours";
 
 export interface GroundingOptions {
-  /** Count a place with no hours in Places as a failure even when the sheet says "call ahead". Default false. */
+  /** Count a place with no hours from Qloo as a failure even when the sheet says "call ahead". Default false. */
   strictHours?: boolean;
+}
+
+function openOn(e: QlooEntity, day: Weekday): boolean | null {
+  const h = hoursOnDay(e.properties?.hours, day);
+  return h.status === "unknown" ? null : h.status === "open";
 }
 
 /**
  * Every partner (street-team day: the first one, which Q9 filters on) and
- * every pre/post spot (show night) is looked up by name near its point; it
- * must match one Places result (name similarity >= 0.85, <= 150 m), be
- * OPERATIONAL and be open that day. A place with no hours in Places passes
- * only when the sheet already says its hours are unknown: a partner row with
- * no hours for the day (shown as "call ahead"), or a pre/post card that says
+ * every pre/post spot (show night) is checked against the place data Qloo
+ * returned for it, as stored on the sheet: not marked closed, and open that
+ * day per `properties.hours`. A place with no hours for the day passes only
+ * when the sheet already says its hours are unknown: a partner row with no
+ * hours for the day (shown as "call ahead"), or a pre/post card that says
  * some hours are unknown. With strictHours it never passes.
+ *
+ * This checks the sheet against its own source, not an independent one: the
+ * Google Places lookup that used to stand here was removed with Places.
  */
-export async function groundSheet(sheet: StreetSheet, places: PlacesClient, opts: GroundingOptions = {}): Promise<GroundingRow[]> {
+export function groundSheet(sheet: StreetSheet, opts: GroundingOptions = {}): GroundingRow[] {
   const rows: GroundingRow[] = [];
   const days = sheet.operator.streetTeamDays.length > 0 ? sheet.operator.streetTeamDays : [sheet.bill.weekday];
   const prePostSaysUnknown = /unknown hours|call ahead/i.test(`${sheet.cards.prePost.summary} ${sheet.cards.prePost.reason ?? ""}`);
@@ -361,39 +363,23 @@ export async function groundSheet(sheet: StreetSheet, places: PlacesClient, opts
   ];
   for (const it of items) {
     const day = it.days[0] as Weekday;
+    const all = it.days.map((d) => openOn(it.e, d));
     const row: GroundingRow = {
       kind: it.kind,
       entityId: it.e.entityId,
       name: it.e.name,
       day,
-      found: false,
-      operational: null,
-      openOnDay: null,
-      openAllDays: null,
+      closed: isClosedEntity(it.e),
+      openOnDay: openOn(it.e, day),
+      openAllDays: all.some((x) => x === null) ? null : all.every((x) => x === true),
       sheetSaysUnknown: it.unknown,
       shownOpenWithoutHours: false,
       ok: false,
     };
-    if (!it.e.location) {
-      row.why = "no location on the sheet, so it cannot be looked up";
-      rows.push(row);
-      continue;
-    }
-    const place = await lookup(places, it.e.name, it.e.location);
-    if (!place) {
-      row.why = "not found in Google Places near its point";
-      rows.push(row);
-      continue;
-    }
-    row.found = true;
-    row.operational = isOperational(place);
-    row.openOnDay = isOpenOn(place, day);
-    const all = it.days.map((d) => isOpenOn(place, d));
-    row.openAllDays = all.some((x) => x === null) ? null : all.every((x) => x === true);
-    if (row.operational === false) row.why = `business status ${place.businessStatus ?? "unknown"}`;
+    if (row.closed) row.why = "Qloo marks it closed";
     else if (row.openOnDay === false) row.why = `closed on ${day}`;
     else if (row.openOnDay === null && (opts.strictHours || !it.unknown)) {
-      row.why = it.unknown ? `no hours in Places for ${day} (strict hours)` : `no hours in Places, but the sheet presents it as open on ${day}`;
+      row.why = it.unknown ? `no hours from Qloo for ${day} (strict hours)` : `no hours from Qloo, but the sheet presents it as open on ${day}`;
       row.shownOpenWithoutHours = !it.unknown;
     }
     row.ok = !row.why;
@@ -447,7 +433,7 @@ export interface SubjectExpect {
   budget?: Partial<BudgetBounds> | false;
   /** Also render the one-page PDF (goldens). */
   pdf?: boolean;
-  /** Run the Places grounding check. Default true. */
+  /** Run the grounding check. Default true. */
   grounding?: boolean;
 }
 
@@ -458,8 +444,6 @@ export interface Subject {
   first?: PlanResult;
   /** ID tap of the case's world (fixture runs only). */
   tap?: IdTap;
-  /** Places client for grounding; null skips it (no key on a recorded run). */
-  places?: PlacesClient | null;
   expect: SubjectExpect;
 }
 
@@ -470,7 +454,7 @@ export interface SubjectMetrics {
   grounded: number | null;
   groundingFailures: number | null;
   hoursUnverified: number | null;
-  /** Partners with no hours in Google Places that passed because the sheet shows them as "call ahead". */
+  /** Partners with no hours from Qloo that passed because the sheet shows them as "call ahead". */
   partnersCallAhead: number | null;
   openAllStreetDays: number | null;
   ledgerEntries: number;
@@ -622,36 +606,34 @@ export async function checkSubject(s: Subject, opts: CheckOptions = {}): Promise
     c.skip("ID validator: every entity and tag id on the sheet came back in a Qloo response", "no transport tap (recorded run): the ledger checks above still apply", "D4");
   }
 
-  // ---- D3: grounding against Google Places ---------------------------------------------
+  // ---- D3: grounding against Qloo's place data -----------------------------------------
   let grounding: GroundingRow[] | null = null;
   if (e.grounding === false) {
     // Not part of this subject (the case grounds a sibling sheet of the same plan).
-  } else if (!s.places) {
-    c.skip("every partner open on the street-team day per Google Places", "no Places client (no GOOGLE_PLACES_API_KEY for a recorded run)", "D3");
   } else {
-    grounding = await groundSheet(sheet, s.places, { strictHours: opts.strictHours === true });
+    grounding = groundSheet(sheet, { strictHours: opts.strictHours === true });
     const bad = grounding.filter((r) => !r.ok);
     const partnerRows = grounding.filter((r) => r.kind === "partner");
     c.ok(
-      "every partner open on the street-team day per Google Places",
+      PARTNERS_OPEN_CHECK,
       bad.filter((r) => r.kind === "partner").length === 0,
       bad.some((r) => r.kind === "partner")
         ? list(bad.filter((r) => r.kind === "partner").map((r) => `${r.name}: ${r.why}`))
-        : `${partnerRows.length} partners checked for ${partnerRows[0]?.day ?? "the street-team day"}; ${partnerRows.filter((r) => r.found && r.openOnDay === null).length} with no hours in Places, shown as call ahead`,
+        : `${partnerRows.length} partners checked for ${partnerRows[0]?.day ?? "the street-team day"}; ${partnerRows.filter((r) => r.openOnDay === null).length} with no hours from Qloo, shown as call ahead`,
       "D3",
     );
     // Two checks for pre/post spots, so a known gap on spots without hours (known-gaps.ts)
-    // never hides a spot that Places cannot find, lists as closed, or shows closed that night.
+    // never hides a spot Qloo marks closed or lists as closed that night.
     const badSpots = bad.filter((r) => r.kind === "prePost" && !r.shownOpenWithoutHours);
     const unmarkedSpots = bad.filter((r) => r.kind === "prePost" && r.shownOpenWithoutHours);
     c.ok(
-      "every pre/post spot open on show night per Google Places",
+      SPOTS_OPEN_CHECK,
       badSpots.length === 0,
       badSpots.length ? list(badSpots.map((r) => `${r.name}: ${r.why}`)) : `${grounding.length - partnerRows.length} spots checked`,
       "D3",
     );
     c.ok(
-      "every pre/post spot without hours in Google Places is marked call ahead",
+      "every pre/post spot without hours from Qloo is marked call ahead",
       unmarkedSpots.length === 0,
       unmarkedSpots.length ? list(unmarkedSpots.map((r) => `${r.name}: ${r.why}`)) : "none presented as open without hours",
       "D3",
@@ -733,8 +715,8 @@ export async function checkSubject(s: Subject, opts: CheckOptions = {}): Promise
     prePost: sheet.cards.prePost.results.length,
     grounded: grounding ? grounding.filter((r) => r.ok).length : null,
     groundingFailures: grounding ? grounding.filter((r) => !r.ok).length : null,
-    hoursUnverified: grounding ? grounding.filter((r) => r.found && r.openOnDay === null).length : null,
-    partnersCallAhead: grounding ? grounding.filter((r) => r.kind === "partner" && r.ok && r.found && r.openOnDay === null).length : null,
+    hoursUnverified: grounding ? grounding.filter((r) => r.openOnDay === null).length : null,
+    partnersCallAhead: grounding ? grounding.filter((r) => r.kind === "partner" && r.ok && r.openOnDay === null).length : null,
     openAllStreetDays: grounding ? grounding.filter((r) => r.kind === "partner" && r.openAllDays === true).length : null,
     ledgerEntries: sheet.ledger.length,
     qlooFresh: b.fresh,

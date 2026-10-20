@@ -8,13 +8,13 @@ Each criterion below is meant to be checkable: by a test, by CI, or by a person 
 
 ## Definition of done
 
-> For the three goldens, the Street Sheet renders with zero guard drops, every partner is open on the street-team day per Google Places, every cited ID appears in this run's ledger, and the CI job re-runs the 20-case eval and the P1 analysis on fixtures and commits the score file.
+> For the three goldens, the Street Sheet renders with zero guard drops, every partner is open on the street-team day per the hours Qloo returns for it, every cited ID appears in this run's ledger, and the CI job re-runs the 20-case eval and the P1 analysis on fixtures and commits the score file.
 
 ## Goldens
 
 All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are operator what-ifs with a `HYPOTHETICAL COUNT` watermark; no sales data about any real show is known or shown.
 
-- **G1. The Truth, Nashville: "Same room. Two crowds."** Two bills at the same room in the same window, chosen by a fixed rule (the first Americana, country or folk headliner on the room's Ticketmaster calendar, and the bill whose genre is most distant from it). Both headliners resolve exactly. The house baseline is the room's next 60 Ticketmaster events. If the room is not yet a Qloo place, the run uses the Ticketmaster `POINT(lon lat)`. Expected: named lift tiles, 20 partners across the top 3 tiles, 6-8 pre/post spots, podcasts, one sponsor, three copy hooks, the "Without Qloo" diff and the swap to the second bill. The first screen never shows `needs_input`. The live hero applies this rule at one independent room over Dec 20 2026 to Feb 28 2027 (`HERO_RULE`, `HERO_WINDOW` in `packages/orchestrator/src/presets.ts`); key day puts the two real bills in the `live` blocks of the g1-a and g1-b presets (`npm run tm:room` prints the picks), and until then a live run of those presets stops with "This preset has no live show yet." The fixture presets keep their invented bills at The Truth on the fixture world, picked by the same rule over Nov 20 to Dec 20 2026.
+- **G1. The Truth, Nashville: "Same room. Two crowds."** Two bills at the same room in the same window, chosen by a fixed rule (the first Americana, country or folk headliner on the room's Ticketmaster calendar, and the bill whose genre is most distant from it). Both headliners resolve exactly. The house baseline is the room's next 60 Ticketmaster events. If the room is not yet a Qloo place, the run uses the Ticketmaster `POINT(lon lat)`. Expected: named lift tiles, 20 partners across the top 3 tiles, 6-8 pre/post spots, podcasts, one sponsor, three copy hooks and the swap to the second bill. The first screen never shows `needs_input`. The live hero applies this rule at one independent room over Dec 20 2026 to Feb 28 2027 (`HERO_RULE`, `HERO_WINDOW` in `packages/orchestrator/src/presets.ts`); key day puts the two real bills in the `live` blocks of the g1-a and g1-b presets (`npm run tm:room` prints the picks), and until then a live run of those presets stops with "This preset has no live show yet." The fixture presets keep their invented bills at The Truth on the fixture world, picked by the same rule over Nov 20 to Dec 20 2026.
 - **G2. Hampton Coliseum, an invented multi-act comedy bill (Sat Dec 19 2026).** Every act and title is made up. Demonstrates exact resolution, `needs_input` on a one-word act name, a thin act handled as `partial` with a film/TV proxy seed shown in the receipts, operator-declared community partners ranked as places with unresolved ones "declared, not scored", and denied tags counted on the receipt.
 - **G3. Super Funny Comedy Club, Tacoma, an invented two-night bill (Fri-Sat Dec 4-5 2026).** Thin regional signal: a tag baseline when the room's roster is not on Ticketmaster (`degraded: tag baseline`), a heatmap radius widened to 60 km when fewer than 200 cells come back, 10-12 partners, each degraded card with its reason, and the banner "thin signal: treat as a starting list".
 
@@ -26,7 +26,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 2. The mode is said in words, never in a pill: live ("Live data" with the Qloo calls left this month); fixture, with a strip on every page saying the sheets use made-up places and numbers; or recorded, with a strip saying since when Qloo has been unavailable, that new plans are off, and that sheets recorded from live runs show the date of the run and are not refreshed. A recorded sheet says "Recorded <date>" where a live one says "Planned <date>".
 3. Three preset chips (the goldens) and a search box for any Ticketmaster show.
 4. Opening a sheet shows the cards in order, each with a status badge (`ok`, `empty`, `needs_input`, `partial`, `degraded`, `error`) and a reason when not `ok`: resolution, lift map with top 5 named tiles, partners, pre/post, media and sponsor, copy hooks.
-5. The "Without Qloo" toggle shows the fair-control list beside the Qloo list with the overlap count and Qloo-only picks marked.
+5. Removed on Oct 20 2026: the "Without Qloo" toggle and its Google Places list. Qloo is the core; the list added a key, a quota and a 30-day storage limit for little decision value ([what we tried](what-we-tried.md)).
 6. "Swap the bill" replaces bill A with bill B; the map and partners change.
 7. Any chip opens the receipt drawer: request ID, params with the key redacted, copy-as-curl, explainability contributions, cache flag.
 8. "Send to street team" opens a confirm dialog listing recipients and attachments; the default recipient is a test inbox so no typing is needed. After Confirm, the dialog shows the message ID and the ledger gains an `A1` entry. An optional "also send a copy to me" address is used once and never stored.
@@ -74,7 +74,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 
 ### G. Ledger
 
-1. Every Qloo, Ticketmaster, Places, Census, LLM and action call gets a numbered entry (`Q1…`, `T1…`, `P1…`, `C1…`, `L1…`, `A1…`).
+1. Every Qloo, Ticketmaster, Census, LLM and action call gets a numbered entry (`Q1…`, `T1…`, `C1…`, `L1…`, `A1…`). Sheets made before Oct 20 2026 also carry `P1…` entries for Google Places.
 2. Each entry has endpoint, params (key replaced by `$QLOO_API_KEY`), HTTP status, envelope status, latency, bytes, cache hit, result count and copy-as-curl.
 3. Every chip links to its entry; the ledger exports as JSON with the sheet.
 4. No response body is ever stored in the repo; CI fails if one is found.
@@ -96,8 +96,8 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 
 ### J. Fixture and recorded modes
 
-1. **Fixture: sample data.** Without a Qloo or a Ticketmaster key, or with `WALKUP_MODE=fixture`, the presets run on a synthetic stand-in for Qloo, Ticketmaster and Google Places and no API is called. Every page, sheet, file and email says it is sample data (made-up places and numbers), and free-form runs answer 503 with an explanation. `npm ci && npm run dev` works with an empty `.env`.
-2. **Recorded: live runs, Qloo unavailable.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date and without their Google Places comparison list (Places content is kept 30 days at most); their envelope says `mode: "recorded"`. Sample sheets stay sample, and when no live run was recorded the landing page calls its sheets sample sheets. New plans, searches, picks, revisions and every MCP tool but `get_sheet` answer with `mode: "recorded"` and one plain reason (503 on the REST routes); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
+1. **Fixture: sample data.** Without a Qloo or a Ticketmaster key, or with `WALKUP_MODE=fixture`, the presets run on a synthetic stand-in for Qloo and Ticketmaster and no API is called. Every page, sheet, file and email says it is sample data (made-up places and numbers), and free-form runs answer 503 with an explanation. `npm ci && npm run dev` works with an empty `.env`.
+2. **Recorded: live runs, Qloo unavailable.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date; their envelope says `mode: "recorded"`. Sample sheets stay sample, and when no live run was recorded the landing page calls its sheets sample sheets. New plans, searches, picks, revisions and every MCP tool but `get_sheet` answer with `mode: "recorded"` and one plain reason (503 on the REST routes); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
 3. A rejected key with no live sheet stored falls back to fixture mode. Recorded data is never shown as sample data, and sample data never as recorded.
 
 ### K. Agents
@@ -113,4 +113,4 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 
 ### M. Cost caps
 
-Qloo month guard at 1,500; 3 fresh runs per IP and 15 per day; Anthropic $5/day; Google Places 300 requests/day; Resend free tier with the test inbox by default.
+Qloo month guard at 1,500; 3 fresh runs per IP and 15 per day; Anthropic $5/day; Resend free tier with the test inbox by default.

@@ -132,10 +132,6 @@ export default function SystemCardPage() {
               numbers returned in that run; a deterministic guard drops anything else and the sheet shows the count.
             </li>
             <li>
-              Fair control (arm F): effort <span className="font-semibold">medium</span>, the same system prompt and output schema, with two tools: Google Places text
-              search and a Census ACS lookup. The model picks its own queries.
-            </li>
-            <li>
               Revisions: effort <span className="font-semibold">medium</span>. The model reads the operator&apos;s change note and a short summary of the sheet
               (no partner names or contacts) and chooses among six strict tools: all ages, leave out place types, skip areas on the sheet, street-team days,
               search radius (5 to 60 km), or ask one question. The tools only set inputs; the plan then runs again through Qloo and the same code, and
@@ -148,7 +144,7 @@ export default function SystemCardPage() {
             </li>
             <li>Above the daily spend cap, narration falls back to a deterministic template, labelled on the sheet.</li>
             <li>
-              The model is called only to parse free-text show input, to narrate, in arm F, and to read a change note. Resolution, lift, partner
+              The model is called only to parse free-text show input, to narrate and to read a change note. Resolution, lift, partner
               ranking and scoring are Qloo responses plus deterministic code.
             </li>
           </ul>
@@ -210,10 +206,6 @@ export default function SystemCardPage() {
             </li>
             <li>
               <strong>Ticketmaster Discovery</strong>: bill, venue, date, age policy and the venue roster. Attribution and deep links, within rate limits.
-            </li>
-            <li>
-              <strong>Google Places</strong>: the comparison arm and grounding checks only. Content is cached for 30 days or less; place ids may be kept; attribution
-              shown.
             </li>
             <li>
               <strong>OpenStreetMap via OpenFreeMap</strong>: base map tiles, ODbL attribution on every map.
@@ -317,7 +309,6 @@ export default function SystemCardPage() {
               Revisions: on a live server a revision that runs again counts as a fresh run (same caps), and at most 12 per connection per hour; 30 per hour
               in sample mode.
             </li>
-            <li>Google Places: a daily request cap on the comparison arm.</li>
             <li>Email: the provider&apos;s free tier, test inbox by default.</li>
           </ul>
         </Section>

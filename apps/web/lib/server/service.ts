@@ -16,8 +16,7 @@
  * bundled sample sheet, and every fresh path answers 503 (recordedRefusal).
  */
 import { randomUUID } from "node:crypto";
-import type { Bill, ControlArmResult, Envelope, LedgerEntry, OperatorInputs, Resolution, StreetSheet } from "@walkup/contracts";
-import { asRecordedSheet } from "@walkup/mcp";
+import { withoutControl, type Bill, type Envelope, type LedgerEntry, type OperatorInputs, type Resolution, type StreetSheet } from "@walkup/contracts";
 import { planShow, presetById, presetFor, presetShowOf, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
 import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, RECORDED_REASON, sheetEnvelope } from "../api";
 import { runtimeMode } from "../mode";
@@ -75,7 +74,6 @@ export interface SheetView {
   kind: "sheet";
   planId: string;
   sheet: StreetSheet;
-  control: ControlArmResult | null;
   /** About-this-sheet note (fixtures). */
   note: string | null;
   /** preset = a bundled preset sheet; store = a stored run; run = a run of this process. */
@@ -220,7 +218,6 @@ function sheetFromStored(s: StoredPlan, source: SheetView["source"]): SheetView 
     kind: "sheet",
     planId: s.planId,
     sheet: s.sheet,
-    control: s.sheet.control ?? null,
     note: null,
     source,
     ...(presetId ? { presetId } : {}),
@@ -249,11 +246,8 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
   const mode = runtimeMode().kind;
   const withActions = (v: LoadedPlan): LoadedPlan => {
     if (v.kind !== "sheet") return v;
-    // Recorded state: a live sheet is served without its Google Places list (asRecordedSheet).
-    if (mode === "recorded" && v.sheet.mode === "live") {
-      return { ...v, sheet: withSessionActions(asRecordedSheet(v.sheet), opts.sessionId ?? null), control: null };
-    }
-    return { ...v, sheet: withSessionActions(v.sheet, opts.sessionId ?? null) };
+    // An older stored sheet may carry a Google Places list; it is no longer shown or handed out.
+    return { ...v, sheet: withSessionActions(withoutControl(v.sheet), opts.sessionId ?? null) };
   };
 
   if (isPresetId(id)) {
@@ -272,7 +266,6 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
       kind: "sheet",
       planId: id,
       sheet: fx.sheet,
-      control: fx.sheet.control ?? fx.control ?? null,
       note: fx.note,
       source: "preset",
       fixtureSource: fx.source,
@@ -296,7 +289,7 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
       // The stored copy carries actions recorded after the run (A# sends).
       const stored = await stores().plans.get(id);
       const sheet = stored?.sheet ?? run.sheet;
-      return withActions({ kind: "sheet", ...base, sheet, control: sheet.control ?? null, note: null, source: "run" });
+      return withActions({ kind: "sheet", ...base, sheet, note: null, source: "run" });
     }
   }
 

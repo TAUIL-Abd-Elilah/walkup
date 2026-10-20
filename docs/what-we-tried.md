@@ -58,7 +58,15 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Considered:** giving the fair-control arm Google Trends and Spotify's top cities.
 
-**Decision:** excluded, because neither has an official API. The fair control uses the same model with Google Places Text Search and Census ACS lookups. This is stated on the System Card.
+**Decision:** excluded, because neither has an official API. The fair control used the same model with Google Places Text Search and Census ACS lookups, until the whole list was removed (next section).
+
+## Google Places comparison list ("Without Qloo")
+
+**Built:** a "Without Qloo" list beside the partners: the same model with Google Places Text Search and Census ACS lookups as its tools, or, without a model key, fixed category searches ranked by Google rating. The overlap with the Qloo list was marked.
+
+**Found:** it needed its own key and a daily request cap, and Google's terms let us keep Places content for 30 days at most, so recorded sheets had to drop it. It showed where two lists differ, not which one sells tickets, so it did not change what a street team does.
+
+**Decision:** removed from the product on Oct 20 2026. Qloo is the core, and Walkup works without the list. Partner hours and the closed check already came from Qloo. Sheets stored before then open without their list. The Places client stays for the P1 research harness only.
 
 ## Ticket-outlet recall (attempted, gated)
 

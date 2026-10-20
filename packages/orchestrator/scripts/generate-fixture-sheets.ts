@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_WORLD_SEED } from "@walkup/qloo-world";
-import { createFixtureDeps, planShow, presetFor, PRESETS, PRESET_IDS, type ArmKey, type PlanResult, type Preset } from "../src/index";
+import { createFixtureDeps, planShow, presetFor, PRESETS, PRESET_IDS, type PlanResult, type Preset } from "../src/index";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..");
@@ -37,11 +37,11 @@ const NOTE =
   "Made with Walkup's sample data; no live service was called. The venue and area names are real; " +
   "every act, business, podcast, brand and number is made up. Phone numbers use the reserved 555-01xx lines and websites the .example domain.";
 
-async function runOne(preset: Preset, arms: ArmKey[]): Promise<{ result: PlanResult; picked: string[] }> {
+async function runOne(preset: Preset): Promise<{ result: PlanResult; picked: string[] }> {
   // These sheets are always the fixture show, made on the fixture world.
   const clock = () => Date.parse(`${presetFor(preset, "fixture").asOf}T15:00:00Z`);
   const deps = createFixtureDeps({ clock, idGen: () => preset.id });
-  let result = await planShow({ presetId: preset.id, planId: preset.id }, deps, { arms });
+  let result = await planShow({ presetId: preset.id, planId: preset.id }, deps);
   const picked: string[] = [];
   if (result.status === "needs_input" && result.pause) {
     // The generator answers the pause the way an operator would: the comedian candidate.
@@ -53,7 +53,7 @@ async function runOne(preset: Preset, arms: ArmKey[]): Promise<{ result: PlanRes
         picked.push(p.input);
       }
     }
-    result = await planShow({ presetId: preset.id, planId: preset.id, resolutions }, deps, { arms });
+    result = await planShow({ presetId: preset.id, planId: preset.id, resolutions }, deps);
   }
   return { result, picked };
 }
@@ -61,12 +61,10 @@ async function runOne(preset: Preset, arms: ArmKey[]): Promise<{ result: PlanRes
 async function main(): Promise<void> {
   const out = resolve(arg("--out") ?? DEFAULT_OUT);
   if (sameDir(out, HAND_BUILT)) throw new Error("Refusing to write into fixtures/synthetic (hand-built sheets live there); use fixtures/synthetic/engine.");
-  // The fixture wrapper carries the "Without Qloo" control: arm F.
-  const arms: ArmKey[] = ["F"];
   mkdirSync(out, { recursive: true });
   for (const id of PRESET_IDS) {
     const preset = PRESETS[id];
-    const { result, picked } = await runOne(preset, arms);
+    const { result, picked } = await runOne(preset);
     if (result.status !== "complete" || !result.sheet) throw new Error(`${id}: ${result.status} ${result.error ?? ""}`);
     const sheet = result.sheet;
     const wrapper: Record<string, unknown> = {
@@ -79,7 +77,6 @@ async function main(): Promise<void> {
       worldSeed: DEFAULT_WORLD_SEED,
       budget: result.budget,
       sheet,
-      ...(sheet.control ? { control: sheet.control } : {}),
     };
     const file = join(out, `${id}.sheet.json`);
     writeFileSync(file, `${JSON.stringify(wrapper, null, 2)}\n`, "utf8");
