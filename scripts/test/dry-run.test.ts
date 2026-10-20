@@ -124,7 +124,8 @@ describe("dry-run plan (shipped config)", () => {
 
   it("writes every WKT as POINT(lon lat) and every /search point as lat,lon", () => {
     const pts = knownPoints(cfg);
-    const isKnown = (lat: number, lon: number): boolean => pts.some((p) => p.lat === lat && p.lon === lon);
+    // Requests carry 7 decimals (about 1 cm); configured points can carry more.
+    const isKnown = (lat: number, lon: number): boolean => pts.some((p) => Math.abs(p.lat - lat) < 5e-8 && Math.abs(p.lon - lon) < 5e-8);
     let seen = 0;
     for (const r of all) {
       for (const loc of locations(r)) {

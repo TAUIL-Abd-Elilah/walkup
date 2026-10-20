@@ -12,14 +12,15 @@
       "name": "The Truth",
       "city": "Nashville",
       "state": "TN",
-      "lat": null,
-      "lon": null,
-      "note": "Opened Oct 2026; no OpenStreetMap match on 2026-10-13. fill from Ticketmaster venue on key day",
+      "lat": 36.14397875,
+      "lon": -86.77037483,
+      "note": "Point from the Ticketmaster venue record KovZ917ASBh, read 2026-10-20 with npm run tm:room.",
       "source": {
-        "provider": "OpenStreetMap Nominatim",
-        "query": "The Truth, Nashville (also bounded searches near Nashville)",
-        "result": "no match",
-        "retrieved": "2026-10-13"
+        "provider": "Ticketmaster Discovery API v2",
+        "query": "venues.json keyword=\"The Truth\" stateCode=TN countryCode=US",
+        "url": "https://www.ticketmaster.com/the-truth-tickets-nashville/venue/222931",
+        "result": "KovZ917ASBh",
+        "retrieved": "2026-10-20"
       },
       "searchAnchor": {
         "lat": 36.1612473,
@@ -110,8 +111,23 @@
   },
   "roster": {
     "venue": "the-truth",
-    "spotifyIds": [],
-    "note": "fill on key day: Spotify artist ids from the room's next 60 Ticketmaster events (attractions[].externalLinks.spotify). Used for the house set (#2, #13) and probe #18"
+    "spotifyIds": [
+      "3gAnduA93Ykv75yNrwXhz5",
+      "0Ty63ceoRnnJKVEYP0VQpk",
+      "5QNm7E7RU2m64l6Gliu8Oy",
+      "40Yq4vzPs9VNUrIBG5Jr2i",
+      "1gPhS1zisyXr5dHTYZyiMe",
+      "0EyhkwP3UnwGFBy6xwKjSy",
+      "3vbKDsSS70ZX9D2OcvbZmS",
+      "3ltFy7g6KKQPPttsdOMlq3",
+      "6MwPCCR936cYfM1dLsGVnl",
+      "6PXS4YHDkKvl1wkIl4V8DL",
+      "3Ayl7mCk0nScecqOzvNp6s",
+      "3NJ94iuAmmMjbszODYT6pO",
+      "77SW9BnxLY8rJ0RciFqkHh",
+      "46auOkH1pk28rWrSoUNhLo"
+    ],
+    "note": "Spotify artist ids of the headliners on the room's next 49 Ticketmaster events from 2026-10-20 (venue KovZ917ASBh), in house-set order (top 20 by recency and frequency). Used for the house set (#2, #13) and probe #18"
   },
   "kg1": {
     "note": "probe-only test pairs, not product claims: well-known acts with dense audiences in contrasting genres; nothing here says they are booked at these rooms",
