@@ -26,6 +26,16 @@ export interface PlanStore {
   /** Most recent complete plan for a preset (quota-guard fallback). */
   latestForPreset(presetId: string): StoredPlan | null | Promise<StoredPlan | null>;
   list(limit?: number): StoredPlan[] | Promise<StoredPlan[]>;
+  /**
+   * Complete plans, newest first, at most `limit`, narrowed to one preset and/or one mode (the web
+   * app's recorded state reads its live runs this way).
+   */
+  listComplete(filter: CompleteFilter, limit: number): StoredPlan[] | Promise<StoredPlan[]>;
+}
+
+export interface CompleteFilter {
+  presetId?: string;
+  mode?: StoredPlan["mode"];
 }
 
 export function createMemoryPlanStore(): PlanStore {
@@ -48,6 +58,13 @@ export function createMemoryPlanStore(): PlanStore {
     list(limit = 50) {
       return [...plans.values()]
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+        .slice(0, limit)
+        .map(clone);
+    },
+    listComplete(filter, limit) {
+      return [...plans.values()]
+        .filter((p) => p.status === "complete" && (filter.presetId === undefined || p.presetId === filter.presetId) && (filter.mode === undefined || p.mode === filter.mode))
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0))
         .slice(0, limit)
         .map(clone);
     },

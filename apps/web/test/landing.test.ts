@@ -1,5 +1,5 @@
 /**
- * The landing page's worked example ("Same room, two crowds") and the map colour scale.
+ * The landing page's worked example ("Same room, two crowds"), the map colour scale and the recorded-mode copy.
  * The comparison is read from the preset sheets, so these tests check how the sentence
  * follows the sheets, never fixed numbers: regenerating fixtures never fights them.
  */
@@ -10,7 +10,8 @@ import type { StreetSheet } from "@walkup/contracts";
 import { headlinerName } from "../lib/format";
 import { LIFT_LEGEND, TOP_LIFT, liftAlpha, liftBand, liftColor } from "../lib/lift";
 import { liftInWords } from "@walkup/engine";
-import { compareBills, comparisonSentence, compassDirection, distanceKm, formatKm, liftPhrase, normalizeName, topTiles } from "../lib/sheet-utils";
+import { dataSourcesLine } from "../lib/labels";
+import { compareBills, comparisonSentence, compassDirection, distanceKm, formatKm, liftPhrase, normalizeName, recordedSheetsSection, topTiles } from "../lib/sheet-utils";
 import { OPENFREEMAP_STYLE } from "../lib/webgl";
 
 const ENGINE = fileURLToPath(new URL("../../../fixtures/synthetic/engine/", import.meta.url));
@@ -50,6 +51,37 @@ describe("compareBills on the paired preset sheets", () => {
       expect(s).not.toMatch(/\d\.\d+x/);
     }
     expect(s).not.toMatch(/\bAI\b|powered|insight|!/);
+  });
+});
+
+describe("recorded mode copy (Qloo unavailable)", () => {
+  it("says on the landing page that new plans are off, and calls the sheets recordings only when they are", () => {
+    expect(recordedSheetsSection([{ mode: "live" }, { mode: "live" }])).toEqual({
+      heading: "Recorded sheets",
+      intro: "Qloo is no longer available, so new plans are off. These sheets were recorded from live runs on the dates shown.",
+    });
+    const mixed = recordedSheetsSection([{ mode: "live" }, { mode: "fixture" }]);
+    expect(mixed.heading).toBe("Recorded sheets");
+    expect(mixed.intro).toBe(
+      "Qloo is no longer available, so new plans are off. The sheets not marked sample were recorded from live runs on the dates shown. A sheet marked sample uses made-up places and numbers.",
+    );
+    // Nothing was recorded before Qloo went away: every preset shows its sample sheet, and the section says so.
+    const none = recordedSheetsSection([{ mode: "fixture" }, { mode: "fixture" }, { mode: "fixture" }, { mode: "fixture" }]);
+    expect(none).toEqual({
+      heading: "Sample sheets",
+      intro: "Qloo is no longer available, so new plans are off. No live run was recorded before it went away, so these are sample sheets with made-up places and numbers.",
+    });
+    expect(none.intro).not.toMatch(/were recorded/);
+  });
+
+  it("credits the data in the footer without claiming sample data or a live call", () => {
+    const recorded = dataSourcesLine("recorded");
+    expect(recorded).toBe("Affinity data from Qloo, events and age rules from Ticketmaster, as recorded on live runs; neither service is called now.");
+    // Recorded sheets are served without their Google Places list, so the credit does not name Places.
+    expect(recorded).not.toMatch(/\bsample\b|made-up|Google/i);
+    expect(dataSourcesLine("fixture")).toMatch(/^Sample data /);
+    expect(dataSourcesLine("live")).not.toMatch(/recorded|sample/i);
+    for (const m of ["live", "fixture", "recorded"] as const) expect(dataSourcesLine(m)).not.toMatch(/!|\bAI\b|powered/);
   });
 });
 

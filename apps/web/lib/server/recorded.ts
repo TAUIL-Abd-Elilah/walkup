@@ -1,0 +1,71 @@
+/**
+ * Recorded state (Qloo is no longer available; lib/mode.ts decides when): which
+ * stored live run stands for each preset, the check a recording must pass to be
+ * served, and whether the plan store holds any live sheet at all. Server-only.
+ */
+import type { StreetSheet } from "@walkup/contracts";
+import { presetById, presetShowOf, type StoredPlan } from "@walkup/orchestrator";
+import { stores, type Stores } from "./engine";
+import { qlooRefusedKey } from "./key-status";
+import { isCanonicalRequest, type WebPlanRequest } from "./runs";
+
+/** Complete live runs of a preset read, newest first, to find one worth serving. */
+export const RECORDED_LOOKBACK = 10;
+
+/**
+ * A stored live sheet good enough to stand for its preset once Qloo is gone. It fails when Qloo refused the key
+ * on it (the rule that switches the server off live mode, key-status.ts qlooRefusedKey), or when at least half
+ * of its cards are errors.
+ */
+export function usableRecording(sheet: StreetSheet): boolean {
+  if (qlooRefusedKey(sheet.ledger)) return false;
+  const cards = Object.values(sheet.cards);
+  return cards.filter((c) => c.status === "error").length * 2 < cards.length;
+}
+
+/**
+ * The recording a preset shows in recorded state: the latest live run of the preset's current live show made with
+ * the preset's own inputs (the run live mode serves) that passes usableRecording. Null leaves the bundled sample
+ * sheet in place.
+ */
+export async function recordedPresetRun(id: string): Promise<StoredPlan | null> {
+  const preset = presetById(id);
+  if (!preset) return null;
+  const runs = await stores().plans.listComplete({ presetId: id, mode: "live" }, RECORDED_LOOKBACK);
+  return (
+    runs.find(
+      (s) =>
+        s.sheet &&
+        isCanonicalRequest(s.request as WebPlanRequest) &&
+        presetShowOf(preset, "live", s.sheet.bill) !== null &&
+        usableRecording(s.sheet),
+    ) ?? null
+  );
+}
+
+/**
+ * Read once per rejection and plan store: it is asked only after Qloo rejected the key, and no live sheet can be
+ * added while the server is not live. A store that answers asynchronously counts as empty until it has answered.
+ */
+let memo: { stores: Stores; rejectedAt: string; value: boolean } | null = null;
+
+/**
+ * True when the plan store holds at least one complete live sheet: the rejected-key rule in runtimeMode.
+ * `rejectedAt` is the time of the rejection being asked about.
+ */
+export function liveSheetStored(rejectedAt: string): boolean {
+  let st: Stores;
+  try {
+    st = stores();
+  } catch {
+    return false;
+  }
+  if (memo?.stores === st && memo.rejectedAt === rejectedAt) return memo.value;
+  const found = st.plans.listComplete({ mode: "live" }, 1);
+  if (found instanceof Promise) {
+    void found.then((runs) => (memo = { stores: st, rejectedAt, value: runs.length > 0 }), () => undefined);
+    return false;
+  }
+  memo = { stores: st, rejectedAt, value: found.length > 0 };
+  return memo.value;
+}

@@ -60,7 +60,7 @@ export {
 } from "./presets";
 export type { Preset, LivePreset, PresetShow, GenreClass, G1Candidate, G1Pick, G1Explanation } from "./presets";
 export { createMemoryPlanStore, createMemoryChoiceStore, getPlan, choiceKey, CHOICE_TTL_MS } from "./store";
-export type { PlanStore, StoredPlan, ChoiceStore } from "./store";
+export type { PlanStore, StoredPlan, ChoiceStore, CompleteFilter } from "./store";
 export { createFixtureDeps, createDepsFromEnv, liveKeysPresent } from "./deps";
 export type { FixtureDeps, FixtureDepsOptions, EnvDepsOptions } from "./deps";
 export { loadTagPins, defaultTagsFile, categoryUrns, baselineTagFor, EMPTY_PINS, DEFAULT_PARTNER_CATEGORIES, PREPOST_CATEGORIES } from "./tags";

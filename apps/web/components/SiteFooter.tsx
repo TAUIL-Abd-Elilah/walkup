@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { dataSourcesLine } from "@/lib/labels";
 import { runtimeMode } from "@/lib/mode";
 
 export function SiteFooter() {
-  const sample = runtimeMode().kind === "fixture";
+  const kind = runtimeMode().kind;
   return (
     <footer className="no-print mt-16 border-t border-rule">
       <div className="wrap-wide space-y-2 py-8 text-sm text-muted">
@@ -14,9 +15,7 @@ export function SiteFooter() {
           affiliated.
         </p>
         <p>
-          {sample
-            ? "Sample data shaped like Qloo, Ticketmaster and Google Places responses; none of those services is called."
-            : "Affinity data from Qloo. Events and age rules from Ticketmaster. The comparison list comes from Google Places."}{" "}
+          {dataSourcesLine(kind)}{" "}
           Area names and adult counts from the US Census and OpenStreetMap. Map data ©{" "}
           <a className="underline underline-offset-2 hover:text-ink" href="https://www.openstreetmap.org/copyright">
             OpenStreetMap

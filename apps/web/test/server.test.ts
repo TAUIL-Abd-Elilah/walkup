@@ -1,7 +1,8 @@
 /**
  * The web wiring end to end, without a server: the plan service on the
  * synthetic fixture world (memory plan store, temp data dir, no keys), the SSE
- * frames, the confirm-gated send in demo mode, exports, caps and /healthz.
+ * frames, the confirm-gated send in demo mode, exports, caps, /healthz, and
+ * recorded mode (Qloo unavailable) on runs stored by the live-mode harness.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -11,8 +12,10 @@ import { createMemoryLedger, type LedgerEntry, type StreetSheet } from "@walkup/
 import { CARD_ORDER, createFixtureDeps, PRESETS, type LivePreset } from "@walkup/orchestrator";
 import { createWorld, WORLD_EVENT_IDS } from "@walkup/qloo-world";
 import { createMemorySendStore, resolveSendConfig } from "@walkup/send";
-import { runtimeMode } from "../lib/mode";
+import { RECORDED_REASON } from "../lib/api";
+import { qlooUntil, runtimeMode } from "../lib/mode";
 import { presetForPlan } from "../lib/presets";
+import { restoreLiveShows, useWorldLiveShows } from "./live-presets";
 import { validateSheet } from "../lib/validate";
 import { resetActionsForTests, sessionActions } from "../lib/server/actions";
 import { depsFor, resetEngineForTests, setEngineForTests, stores } from "../lib/server/engine";
@@ -20,10 +23,12 @@ import { exportKind, exportResponse } from "../lib/server/exports";
 import type { RequestContext } from "../lib/server/http";
 import { clientIp, parseCookies, sessionCookie } from "../lib/server/http";
 import { parseOperator, parsePlanBody, POLITICAL_REFUSAL, tmEventIdFrom } from "../lib/server/input";
-import { noteQlooRejection, qlooKeyRejection, resetKeyStatusMemo } from "../lib/server/key-status";
+import { noteQlooRejection, qlooKeyRejection, qlooRefusedKey, resetKeyStatusMemo } from "../lib/server/key-status";
 import { FreshRunLimiter, rateLimit, resetRateWindowsForTests, setFreshRunsForTests } from "../lib/server/limits";
-import { health } from "../lib/server/lookups";
+import { health, limitsFor, proxySearch, showSearch } from "../lib/server/lookups";
 import { applyProxyPicks } from "../lib/server/proxy";
+import { recordedPresetRun, usableRecording } from "../lib/server/recorded";
+import { revisePlanFor } from "../lib/server/revise";
 import { getRun, resetRunsForTests } from "../lib/server/runs";
 import { searchShows } from "../lib/server/search";
 import { confirmSendFor, prepareSendFor } from "../lib/server/send";
@@ -31,7 +36,7 @@ import { loadPlan, planSnapshot, resolvePlan, startPlan, storedPresetRun } from 
 import { planEventStream, staticFrames } from "../lib/server/stream";
 import { addPartnerHouseRanks, continueLedger, houseSignalOf, TWIN_CHIP_PREFIX, twinChipLabel } from "../lib/server/twin";
 
-const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE"];
+const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE", "WALKUP_QLOO_UNTIL"];
 const saved: Record<string, string | undefined> = {};
 let dir = "";
 
@@ -116,6 +121,50 @@ describe("mode", () => {
     expect(noteQlooRejection([entry("Q1", 200, true), entry("Q2", 403)], env)).toBe(true);
     expect(qlooKeyRejection(env)?.httpStatus).toBe(403);
     expect(runtimeMode(env).kind).toBe("fixture");
+    resetKeyStatusMemo();
+  });
+
+  it("is recorded on WALKUP_MODE=recorded, once WALKUP_QLOO_UNTIL has passed, or on a rejected key with a live sheet stored", () => {
+    const NOV2 = Date.parse("2026-11-02T00:00:00Z");
+    const DAY = 86_400_000;
+    const keys = { QLOO_API_KEY: "k-four", TICKETMASTER_API_KEY: "t", WALKUP_DATA_DIR: dir };
+    const stored = (has: boolean) => () => has;
+    const kind = (env: Record<string, string>, now = NOV2 - DAY, has = false) => runtimeMode(env, { now, liveSheetStored: stored(has) }).kind;
+    resetKeyStatusMemo();
+    // WALKUP_MODE is read as @walkup/qloo reads it: case and an inline comment don't matter.
+    expect(kind(keys)).toBe("live");
+    expect(kind({ WALKUP_MODE: "recorded" })).toBe("recorded");
+    expect(kind({ ...keys, WALKUP_MODE: "Recorded   # auto | live | fixture | recorded" })).toBe("recorded");
+    expect(kind({ ...keys, WALKUP_MODE: "fixture # sample" })).toBe("fixture");
+    // WALKUP_QLOO_UNTIL: a date is 00:00 UTC that day, a time without an offset is UTC; unreadable is ignored.
+    const until = { ...keys, WALKUP_QLOO_UNTIL: "2026-11-02" };
+    expect(kind(until, NOV2 - 1)).toBe("live");
+    expect(kind(until, NOV2)).toBe("recorded");
+    expect(kind({ WALKUP_QLOO_UNTIL: "2026-11-02" }, NOV2 + DAY)).toBe("recorded");
+    expect(kind({ ...keys, WALKUP_QLOO_UNTIL: "2026-11-02T12:00" }, NOV2 + 11 * 3_600_000)).toBe("live");
+    expect(kind({ ...keys, WALKUP_QLOO_UNTIL: "2026-11-02T12:00" }, NOV2 + 12 * 3_600_000)).toBe("recorded");
+    expect(kind({ ...keys, WALKUP_QLOO_UNTIL: "after the hackathon" }, NOV2 + DAY)).toBe("live");
+    expect(qlooUntil({ WALKUP_QLOO_UNTIL: "2026-11-02T05:00:00-05:00   # Eastern" })).toBe(Date.parse("2026-11-02T10:00:00Z"));
+    expect(qlooUntil({})).toBeNull();
+    // An explicit WALKUP_MODE=fixture keeps the synthetic world whatever the date.
+    expect(kind({ ...until, WALKUP_MODE: "fixture" }, NOV2 + DAY)).toBe("fixture");
+    // A rejected key: recorded when the store holds a live sheet, else fixture as before.
+    const dead: LedgerEntry = {
+      id: "Q1", kind: "qloo", method: "GET", endpoint: "/search", params: {}, httpStatus: 401, envelopeStatus: "error",
+      latencyMs: 1, bytes: 0, cacheHit: false, resultCount: 0, curl: "curl", startedAt: new Date(NOV2 + DAY).toISOString(),
+    };
+    expect(noteQlooRejection([dead], keys, () => NOV2 + DAY)).toBe(true);
+    expect(kind(keys, NOV2 + 2 * DAY, false)).toBe("fixture");
+    expect(kind(keys, NOV2 + 2 * DAY, true)).toBe("recorded");
+    // What the site strip says, with the date Qloo went away when it is known.
+    const words = (env: Record<string, string>, now: number, has = false) => runtimeMode(env, { now, liveSheetStored: stored(has) });
+    expect(words(keys, NOV2 + 2 * DAY, true)).toMatchObject({
+      label: "RECORDED · Qloo unavailable",
+      liveSearch: false,
+      detail: "Qloo has been unavailable since Nov 3 2026. New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.",
+    });
+    expect(words(until, NOV2 + 5 * DAY).detail).toMatch(/^Qloo has been unavailable since Nov 2 2026\. /);
+    expect(words({ WALKUP_MODE: "recorded" }, NOV2).detail).toMatch(/^Qloo is no longer available to this server\. New plans are off\. /);
     resetKeyStatusMemo();
   });
 });
@@ -563,9 +612,187 @@ describe("live mode (keys present; the fixture world stands in for the live tran
   });
 });
 
+describe("recorded mode (Qloo unavailable; the live-mode harness records the runs first)", () => {
+  type Health = Record<string, unknown> & {
+    qloo: { keyRejected: { httpStatus: number; at: string } | null; until: string | null };
+    recorded: { presets: Record<string, { planId: string; createdAt: string } | null> } | null;
+  };
+  const recordedIds: Record<string, string> = {};
+  let customId = "";
+  let refusedId = "";
+
+  /** A copy of a stored run, newer, under another id, changed by `change`. */
+  async function storeVariant(fromId: string, planId: string, change: (sheet: StreetSheet) => StreetSheet): Promise<void> {
+    const from = await stores().plans.get(fromId);
+    if (!from?.sheet) throw new Error(`no stored sheet ${fromId}`);
+    const createdAt = new Date(Date.parse(from.createdAt) + 60_000).toISOString();
+    await stores().plans.put({ ...from, planId, createdAt, sheet: change({ ...from.sheet, planId, createdAt }) });
+  }
+
+  beforeAll(async () => {
+    process.env.QLOO_API_KEY = "test-not-a-key";
+    process.env.TICKETMASTER_API_KEY = "test-not-a-key";
+    const st = stores();
+    // The deps say live, so these runs are stored as live runs, as on the host before the key goes.
+    setEngineForTests({ live: { ...createFixtureDeps({ world: createWorld(), store: st.plans, choices: st.choices }), mode: "live" } });
+    setFreshRunsForTests(new FreshRunLimiter({ file: null }));
+    useWorldLiveShows();
+    for (const [i, id] of ["g1-a", "g1-b", "g3"].entries()) {
+      const r = await startPlan({ presetId: id }, ctx({ ip: `198.51.100.16${i}` }));
+      expect((r.body as Body).mode, id).toBe("live");
+      recordedIds[id] = String((r.body as Body).planId);
+    }
+    const custom = await startPlan({ presetId: "g1-a", operator: { seatsLeft: 99 } }, ctx({ ip: "198.51.100.169" }));
+    customId = String((custom.body as Body).planId);
+    // Newer runs a recording must not use: g1-b once Qloo refused the key, g3 with most cards failed.
+    refusedId = "rec-g1-b-refused";
+    await storeVariant(recordedIds["g1-b"]!, refusedId, (s) => ({
+      ...s,
+      ledger: s.ledger.map((e) => (e.kind === "qloo" ? { ...e, httpStatus: 401, envelopeStatus: "error" as const, cacheHit: false } : e)),
+    }));
+    const failed = await stores().plans.get(recordedIds.g3!);
+    const cards = Object.fromEntries(Object.entries(failed!.sheet!.cards).map(([k, c], i) => [k, i < 5 ? { ...c, status: "error" } : c]));
+    await stores().plans.put({ ...failed!, sheet: { ...failed!.sheet!, cards: cards as unknown as StreetSheet["cards"] } });
+  });
+
+  afterAll(() => {
+    delete process.env.QLOO_API_KEY;
+    delete process.env.TICKETMASTER_API_KEY;
+    delete process.env.WALKUP_MODE;
+    delete process.env.WALKUP_QLOO_UNTIL;
+    setEngineForTests({ live: null });
+    setFreshRunsForTests(new FreshRunLimiter({ file: null }));
+    resetKeyStatusMemo();
+    restoreLiveShows();
+  });
+
+  it("checks a recording: no key refused by Qloo, fewer than half the cards failed", async () => {
+    const good = (await stores().plans.get(recordedIds["g1-a"]!))!.sheet!;
+    expect(usableRecording(good)).toBe(true);
+    expect(usableRecording((await stores().plans.get(refusedId))!.sheet!)).toBe(false);
+    expect(usableRecording((await stores().plans.get(recordedIds.g3!))!.sheet!)).toBe(false);
+    // One 403 among fresh accepted calls is a filter the key may not use, not a dead key.
+    const first = good.ledger.findIndex((x) => x.kind === "qloo");
+    const one403 = {
+      ...good,
+      ledger: good.ledger.map((e, i) => (e.kind !== "qloo" ? e : { ...e, cacheHit: false, httpStatus: i === first ? 403 : 200 })),
+    };
+    expect(usableRecording(one403)).toBe(true);
+    const all403 = { ...good, ledger: good.ledger.map((e) => (e.kind === "qloo" ? { ...e, httpStatus: 403 } : e)) };
+    expect(usableRecording(all403)).toBe(false);
+    // A run made after the key was switched off: every fresh call refused, the rest answered from the Qloo cache.
+    // Cached answers say nothing about the key, so this is a refused key, as key-status reads it.
+    let n = 0;
+    const halfCached = {
+      ...good,
+      ledger: good.ledger.map((e) => (e.kind !== "qloo" ? e : n++ % 2 === 0 ? { ...e, httpStatus: 200, cacheHit: true } : { ...e, httpStatus: 403, cacheHit: false })),
+    };
+    expect(n).toBeGreaterThan(1);
+    expect(usableRecording(halfCached)).toBe(false);
+    expect(qlooRefusedKey(halfCached.ledger)?.httpStatus).toBe(403);
+  });
+
+  it("lists in /healthz, while still live, what recorded mode will serve", async () => {
+    expect(runtimeMode().kind).toBe("live");
+    const b = (await health()).body as Health;
+    expect(b.mode).toBe("live");
+    expect(b.recorded?.presets).toEqual({
+      "g1-a": { planId: recordedIds["g1-a"], createdAt: expect.any(String) },
+      "g1-b": { planId: recordedIds["g1-b"], createdAt: expect.any(String) },
+      g2: null,
+      g3: null,
+    });
+    expect(b.qloo).toEqual({ keyRejected: null, until: null });
+  });
+
+  it("switches to recorded when a live run sees Qloo refuse the key and the store holds a live sheet", async () => {
+    resetKeyStatusMemo();
+    // The key is switched off: Qloo answers 401 to everything, so the run stops before a sheet.
+    const world = createWorld();
+    const refused = { ...world, qlooFetch: (async () => new Response(JSON.stringify({ error: { message: "Invalid key" } }), { status: 401 })) as typeof fetch };
+    const st = stores();
+    setEngineForTests({ live: { ...createFixtureDeps({ world: refused, store: st.plans, choices: st.choices }), mode: "live" } });
+    const r = await startPlan({ tmEventId: WORLD_EVENT_IDS.g2 }, ctx({ ip: "198.51.100.168" }));
+    expect((r.body as Body).status).toBe("error");
+    expect(qlooKeyRejection()?.httpStatus).toBe(401);
+    const m = runtimeMode();
+    expect(m.kind).toBe("recorded");
+    expect(m.detail).toMatch(/^Qloo has been unavailable since \w{3} \d{1,2} \d{4}\. /);
+  });
+
+  describe("with WALKUP_MODE=recorded", () => {
+    beforeAll(() => {
+      process.env.WALKUP_MODE = "recorded";
+    });
+
+    it("serves each preset from its latest usable live run, else its sample sheet; stored sheets load as they are", async () => {
+      expect(runtimeMode().kind).toBe("recorded");
+      const g1a = await loadPlan("g1-a", { view: "page" });
+      expect(g1a?.kind === "sheet" && [g1a.planId, g1a.source, g1a.sheet.mode]).toEqual([recordedIds["g1-a"], "store", "live"]);
+      // The newer g1-b run saw Qloo refuse the key: the run before it stands.
+      const g1b = await loadPlan("g1-b", { view: "api" });
+      expect(g1b?.kind === "sheet" && g1b.planId).toBe(recordedIds["g1-b"]);
+      expect((await recordedPresetRun("g1-b"))?.planId).toBe(recordedIds["g1-b"]);
+      // g3's only live run mostly failed, and g2 was never recorded: their sample sheets, labelled sample.
+      for (const id of ["g3", "g2"]) {
+        const v = await loadPlan(id, { view: "page" });
+        expect(v?.kind === "sheet" && [v.source, v.sheet.mode], id).toEqual(["preset", "fixture"]);
+      }
+      // A caller's own live run is never a preset, but opens at its own id; a stored live run's snapshot says it is a recording.
+      const own = await loadPlan(customId, { view: "page" });
+      expect(own?.kind === "sheet" && [own.sheet.mode, own.sheet.operator.seatsLeft]).toEqual(["live", 99]);
+      expect(((await planSnapshot(recordedIds["g1-a"]!, ctx())).body as Body).mode).toBe("recorded");
+    });
+
+    it("refuses every fresh path with one reason, 503 and mode recorded", async () => {
+      const refused = { status: 503, body: { mode: "recorded", reason: RECORDED_REASON } };
+      const c = ctx({ ip: "198.51.100.170" });
+      const before = (await stores().plans.list(1000)).length;
+      expect(await startPlan({ presetId: "g1-a" }, c)).toEqual(refused);
+      expect(await startPlan({ presetId: "g2", wait: "none" }, c)).toEqual(refused);
+      expect(await startPlan({ event: "Hollis Creek String Band, Nov 20 2026" }, c)).toEqual(refused);
+      expect(await startPlan({ tmEventId: WORLD_EVENT_IDS.g1a }, c)).toEqual(refused);
+      expect(await startPlan({ presetId: "g1-b", partners: ["Bellhop Records"] }, c, { rankPartners: true })).toEqual(refused);
+      expect(await resolvePlan("g2", { picks: [{ input: "Sidecar", entityId: "00002bea-860e-4dac-80f3-aa013b0ccb5b", proxy: true }] }, c)).toEqual(refused);
+      expect(await revisePlanFor(recordedIds["g1-a"]!, { instruction: "only Saturday" }, c)).toEqual(refused);
+      expect(await showSearch("Hollis Creek", c)).toEqual(refused);
+      expect(await proxySearch("Neon Orchard", null, c)).toEqual(refused);
+      expect(limitsFor(c).body).toMatchObject({ mode: "recorded", freshRunsEnabled: false, reason: RECORDED_REASON });
+      // Nothing was run or stored by any of it.
+      expect((await stores().plans.list(1000)).length).toBe(before);
+    });
+
+    it("keeps reading, streaming, downloads and the confirm-gated send open", async () => {
+      const id = recordedIds["g1-a"]!;
+      const frames = await readFrames((await planEventStream(id, null))!);
+      expect(frames.at(-1)).toMatchObject({ event: "done", data: { status: "complete" } });
+      const v = await loadPlan(id, { view: "api" });
+      if (v?.kind !== "sheet") throw new Error("recorded g1-a");
+      const ics = await exportResponse(v.sheet, "ics", { recorded: true });
+      expect(ics.headers.get("content-disposition")).toBe('attachment; filename="street-team.ics"');
+      const prepare = { config: resolveSendConfig({ WALKUP_SIGNING_SECRET: "x".repeat(40) }), store: createMemorySendStore() };
+      const prep = await prepareSendFor({ planId: id }, ctx(), { prepare });
+      expect(prep.status).toBe(200);
+    });
+
+    it("says in /healthz which runs it serves, the rejected key and WALKUP_QLOO_UNTIL, never a key value", async () => {
+      process.env.WALKUP_QLOO_UNTIL = "2026-11-02";
+      const b = (await health()).body as Health & { reachability: Record<string, { status: string }> };
+      delete process.env.WALKUP_QLOO_UNTIL;
+      expect(b.mode).toBe("recorded");
+      expect(b.detail).toMatch(/^Qloo has been unavailable since /);
+      expect(b.qloo).toEqual({ keyRejected: { httpStatus: 401, at: expect.any(String) }, until: "2026-11-02T00:00:00.000Z" });
+      expect(b.recorded?.presets["g1-b"]?.planId).toBe(recordedIds["g1-b"]);
+      expect(b.recorded?.presets.g3).toBeNull();
+      expect(b.reachability.qloo?.status).toBe("not checked in recorded mode");
+      expect(JSON.stringify(b)).not.toContain("test-not-a-key");
+    });
+  });
+});
+
 describe("/healthz", () => {
-  it("answers ok in fixture mode with key presence only and no reachability calls", () => {
-    const r = health();
+  it("answers ok in fixture mode with key presence only and no reachability calls", async () => {
+    const r = await health();
     expect(r.status).toBe(200);
     const b = r.body as Record<string, unknown> & { reachability: Record<string, { status: string }>; configured: Record<string, boolean> };
     expect(b.ok).toBe(true);
@@ -573,6 +800,8 @@ describe("/healthz", () => {
     expect(b.configured.qloo).toBe(false);
     expect(b.reachability.qloo?.status).toBe("not checked in fixture mode");
     expect(b.qlooMonthlyRemaining).toBeNull();
+    expect(b.qloo).toEqual({ keyRejected: null, until: null });
+    expect(b.recorded).toBeNull();
     expect(JSON.stringify(b)).not.toMatch(/api[_-]?key"\s*:\s*"[^$]/i);
   });
 });

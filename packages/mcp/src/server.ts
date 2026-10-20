@@ -24,6 +24,7 @@ export const SERVER_INSTRUCTIONS = [
   "Seat counts are what-ifs: pass them only if the user offers them, and never call a real show soft or selling badly.",
   "Send only what the user typed: event text, partner names, what-if numbers. Never send personal data, buyer data or contact details. Sending the sheet to anyone happens only in the Walkup web app after the user confirms.",
   "Fresh runs are capped per caller per day; presets and existing plans are not. Without a live Qloo key the data is synthetic (mode fixture), and a hosted server then runs presets only.",
+  "If a tool answers with mode recorded, Qloo is no longer available to the server: only get_sheet works, and it returns sheets recorded from earlier live runs, with their dates.",
 ].join("\n");
 
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true } as const;

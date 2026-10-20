@@ -11,7 +11,7 @@ import { clientIp } from "@/lib/server/http";
 import { freshRuns } from "@/lib/server/limits";
 import { freshRunsBody, loadPlan, presetPausedInRecording, presetSheet } from "@/lib/server/service";
 import { decodeBbox, unionBbox } from "@/lib/geohash";
-import { allTiles, baselineName, compareBills, comparisonSentence, topTiles } from "@/lib/sheet-utils";
+import { allTiles, baselineName, compareBills, comparisonSentence, recordedSheetsSection, topTiles } from "@/lib/sheet-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -112,7 +112,8 @@ export default async function Home() {
   const a = await sheetFor(HERO_PLAN_ID);
   const [b, links] = await Promise.all([sheetFor(a?.pairedPlanId ?? HERO_PAIR_FALLBACK), sheetLinks(fixture)]);
   const fresh = mode.kind === "live" ? freshRunsBody(freshRuns().status(clientIp(await headers()))) : null;
-  const cmp = a && b ? compareBills(a, b) : null;
+  // A live (or recorded) sheet beside a sample one would set real numbers against made-up ones: no worked example then.
+  const cmp = a && b && a.mode === b.mode ? compareBills(a, b) : null;
   // One frame for both maps: every numbered area of both bills, and the venue(s), so the two scales match.
   const heroA = a ? side(a, "Bill A") : null;
   const heroB = b ? side(b, "Bill B") : null;
@@ -128,6 +129,7 @@ export default async function Home() {
     return `Fans compared with ${ba}`;
   })();
   const recorded = links.some((l) => l.sheet.mode === "live");
+  const recordedSection = mode.kind === "recorded" ? recordedSheetsSection(links.map((l) => l.sheet)) : null;
 
   return (
     <div className="wrap-wide">
@@ -167,7 +169,7 @@ export default async function Home() {
               b={heroB}
               extent={extent}
               legendCaption={legendCaption}
-              source={sample ? "Data: made-up sample data in Qloo's format." : "Data: Qloo."}
+              source={sample ? "Data: made-up sample data in Qloo's format." : mode.kind === "recorded" ? "Data: Qloo, recorded on live runs." : "Data: Qloo."}
             />
           </div>
         </section>
@@ -180,6 +182,13 @@ export default async function Home() {
           <p className="mt-2 max-w-[760px]">
             Live search needs Qloo and Ticketmaster keys, and this copy of Walkup runs without them. Open a sample sheet:
           </p>
+          <SheetList links={links} />
+        </section>
+      ) : recordedSection ? (
+        // Nothing new runs, so the recorded sheets take the search's place, as the sample sheets do without keys.
+        <section id="sheets" className="section scroll-mt-4" aria-labelledby="sheets-title">
+          <h2 id="sheets-title">{recordedSection.heading}</h2>
+          <p className="mt-2 max-w-[760px]">{recordedSection.intro}</p>
           <SheetList links={links} />
         </section>
       ) : (

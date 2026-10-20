@@ -19,11 +19,13 @@ swap_size_mb = 512
   PORT = "3000"
   NEXT_TELEMETRY_DISABLED = "1"
   QLOO_BASE_URL = "https://hackathon.api.qloo.com"
-  # auto = live while QLOO_API_KEY is set, fixture replay once it is unset.
+  # auto = live while QLOO_API_KEY and TICKETMASTER_API_KEY are set, sample data without them.
+  # recorded = stored live sheets only, no new plans (docs/deploy.md, "Recorded mode").
+  # WALKUP_QLOO_UNTIL (a secret or here) switches to recorded mode at that time, e.g. "2026-11-02".
   WALKUP_MODE = "auto"
   # Everything the server writes: SQLite cache, plans, month quota, spend files.
   WALKUP_DATA_DIR = "/data"
-  # Recorded runs: /data/fixtures/raw (copied in with `fly ssh sftp`, never committed).
+  # Raw Qloo bodies recorded with WALKUP_RECORD=1: /data/fixtures/raw (never committed). Recorded mode does not use them.
   WALKUP_FIXTURES_DIR = "/data/fixtures"
   WALKUP_GAZETTEER_DIR = "/app/data/gazetteer/out"
   # Pinned Qloo tag URNs read by the orchestrator.

@@ -84,7 +84,7 @@ Output:
 
 Server: WALKUP_URL (default ${DEFAULT_URL}). No API keys are read or sent.
 Exit codes: 0 ok, 1 error, 2 usage, 3 needs_input, 4 server unreachable,
-            5 limit reached, 6 server in fixture mode.`;
+            5 limit reached, 6 server in fixture or recorded mode (no new plans).`;
 
 class CliError extends Error {
   /** @param {string} message @param {number} code */
@@ -336,6 +336,11 @@ function isFixture(data) {
   return data?.mode === "fixture" || /fixture/i.test(reasonOf(data) ?? "");
 }
 
+/** @param {string} text */
+function withoutStop(text) {
+  return text.replace(/\.+$/, "");
+}
+
 /** @param {Response} res @param {Json | null} data @param {string} base */
 function httpError(res, data, base) {
   const reason = reasonOf(data);
@@ -343,6 +348,12 @@ function httpError(res, data, base) {
     return new CliError(
       `Limit reached: ${reason ?? "fresh runs are capped per IP and per day"}. Cached presets still open in the web app.`,
       EXIT.LIMIT,
+    );
+  }
+  if (res.status === 503 && data?.mode === "recorded") {
+    return new CliError(
+      `Recorded sheets only: ${withoutStop(reason ?? "Qloo is no longer available to this server, so new plans are off")}. Read one with: walkup sheet <plan-id>`,
+      EXIT.FIXTURE,
     );
   }
   if (res.status === 503 && isFixture(data)) {
@@ -446,6 +457,10 @@ function report(data, opts, base, resumeEvent) {
   /** @type {string[]} */
   const lines = [];
   if ((data.mode ?? sheet?.mode) === "fixture") lines.push("FIXTURE: sample data (synthetic), not a live run.");
+  else if (data.mode === "recorded" && sheet) {
+    const day = typeof sheet.createdAt === "string" ? ` on ${sheet.createdAt.slice(0, 10)}` : "";
+    lines.push(`RECORDED: a live run recorded${day}. Qloo is no longer available to the server, so it is not refreshed.`);
+  }
   if (sheet?.hypothetical) lines.push("HYPOTHETICAL COUNT: seats left and capacity are what-ifs.");
   lines.push(`Status: ${status}${data.planId ? ` · plan ${data.planId}` : ""}`);
   if (data.summary) lines.push(String(data.summary));

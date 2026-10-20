@@ -56,7 +56,7 @@ A revision makes a new sheet under a new plan id and lists what changed (`revisi
 | `plan <ticketmaster-event-url \| "Artist @ Venue, Date">` | Builds a Street Sheet for the show. A fresh run makes 15 to 30 Qloo calls, so give it time. Options: `--seats-left`, `--capacity`, `--radius-km` (default 40), `--street-days`, `--pick "<input>=<id>"` | `POST /api/plan` |
 | `rank-partners <event> <partner names...>` | Ranks the user's own partner list (up to 20 names) by this bill's crowd. Names not in Qloo's catalog come back unranked ("not in Qloo's catalog, kept in your order") | `POST /api/rank-partners` |
 | `sheet <plan-id>` | Fetches an existing sheet's summary. `--pdf` saves the one-page PDF (`--out <file>` to choose where) | `GET /api/sheet/<plan-id>`, `GET /api/sheet/<plan-id>/pdf` |
-| `health` | Server mode (live or fixture) and reachability | `GET /healthz` |
+| `health` | Server mode (live, fixture or recorded) and reachability | `GET /healthz` |
 
 Add `--json` to print the server's envelope unchanged.
 
@@ -77,13 +77,14 @@ claude mcp add --transport http walkup "$WALKUP_URL/mcp"
 
 ## Reading the result
 
-The server returns one envelope: `status`, `summary`, `planId`, `sheetUrl`, `mode` (`live` or `fixture`), `results` (the Street Sheet: cards, ledger, guard report), `resolution`, `provenance`, `limits`.
+The server returns one envelope: `status`, `summary`, `planId`, `sheetUrl`, `mode` (`live` or `fixture`; `recorded` from a server that serves recorded sheets only, on its refusals and on a live sheet it serves), `results` (the Street Sheet: cards, ledger, guard report), `resolution`, `provenance`, `limits`.
 
 - Each card has its own status: `ok`, `empty`, `needs_input`, `partial`, `degraded` or `error`. Relay the reason for anything that isn't `ok`.
 - Cite places and numbers exactly as returned, with their receipt (`[Q9]`). Do not add places, rankings or numbers of your own.
 - Partners are **suggested, not affiliated**: no business has agreed to anything.
 - Always pass on the `limits` lines ("What this does not establish").
 - If `mode` is `fixture`, say the data is sample data (synthetic), not live.
+- If the server answered with `mode` `recorded` (or `health` says so), Qloo is no longer available to it: a sheet it returns is a live run recorded on the sheet's `createdAt` date and is not refreshed. Say that date.
 
 ## What this sends
 
@@ -110,7 +111,8 @@ In full: the event text or URL, partner names, any what-if numbers you pass (sea
 | `needs_input` (3) | An act, venue or partner name matches more than one entity (often a one-word name) | Show the candidates to the user. For `plan`, re-run with the `--pick "<input>=<id>"` they choose; for `rank-partners`, retype the name more specifically or pick in the web app. Never pick for them |
 | `server unreachable` (4) | `WALKUP_URL` is wrong or the server is down | Check the URL. For a local server run `npm run dev` in the repository |
 | `limit reached` (5, HTTP 429) | Fresh runs are capped per IP and per day, or the server's monthly Qloo quota guard is on | Use a cached preset in the web app, or try again tomorrow |
-| `fixture mode` (6, HTTP 503) | The server has no live Qloo key (or it was deactivated) | Sample presets still open; fresh runs are disabled |
+| `fixture mode` (6, HTTP 503) | The server has no live Qloo key (or it was deactivated before any live run was stored) | Sample presets still open; fresh runs are disabled |
+| `Recorded sheets only` (6, HTTP 503, `mode: "recorded"`) | Qloo is no longer available to the server; it serves sheets recorded from earlier live runs | `sheet <plan-id>` and the PDF still work; new plans, rank-partners and revisions are off |
 | `partial` / `degraded` card (0) | Thin signal, a new venue not yet in the catalog, generic compare results | Relay the card's reason; treat the list as a starting point |
 | `empty` card (0) | Nothing survived the filters (for example, no sponsor on an all-ages show) | Say so; don't fill the gap |
 | `Not found (HTTP 404)` (1) | Unknown plan id, or the URL is not a Walkup server | Check the plan id and `WALKUP_URL` |

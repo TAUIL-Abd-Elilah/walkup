@@ -6,8 +6,9 @@
  * It runs on the web app's own engine, so both front doors behave alike: the
  * same orchestrator deps and plan store (plans made here open at /s/<planId>),
  * the same preset sheets, the same per-IP fresh-run allowance, the same
- * fixture-mode rule (presets only), and the same quota and rejected-key
- * bookkeeping after live runs.
+ * fixture-mode rule (presets only), the same recorded-mode rule (Qloo is no
+ * longer available: only get_sheet answers), and the same quota and
+ * rejected-key bookkeeping after live runs.
  *
  * Add it to Claude Code with: claude mcp add --transport http walkup <origin>/mcp
  */
@@ -21,7 +22,8 @@ import {
   type McpServices,
   type PlanView,
 } from "@walkup/mcp";
-import { runtimeMode } from "@/lib/mode";
+import { RECORDED_REASON } from "@/lib/api";
+import { runtimeMode, type RuntimeMode } from "@/lib/mode";
 import { depsFor, publishLiveQuota, stores } from "@/lib/server/engine";
 import { clientIp, requestOrigin } from "@/lib/server/http";
 import { noteQlooRejection } from "@/lib/server/key-status";
@@ -31,7 +33,7 @@ import { loadPlan } from "@/lib/server/service";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Mode = "live" | "fixture";
+type Mode = RuntimeMode["kind"];
 
 /** The web app's per-IP limiter behind the MCP interface: REST and MCP draw on one allowance. */
 function webLimiter(): FreshRunLimiter {
@@ -76,23 +78,26 @@ async function presetView(presetId: string, view: "page" | "api"): Promise<PlanV
 function afterRun(mode: Mode, result: PlanResult, deps: PlanDeps): void {
   if (mode !== "live") return;
   publishLiveQuota(deps);
-  noteQlooRejection(result.sheet?.ledger ?? result.pause?.ledger ?? []);
+  noteQlooRejection(result.sheet?.ledger ?? result.pause?.ledger ?? result.ledger ?? []);
 }
 
 const SERVICES_KEY = Symbol.for("walkup.web.mcpServices");
 
-/** One set of MCP services per runtime mode, shared by every request in this process. */
+/**
+ * One set of MCP services per runtime mode, shared by every request in this process. Recorded mode runs
+ * nothing: its services sit on the fixture deps and every tool but get_sheet refuses.
+ */
 function servicesFor(mode: Mode): McpServices {
   const g = globalThis as unknown as Record<symbol, Partial<Record<Mode, McpServices>> | undefined>;
   const cache = (g[SERVICES_KEY] ??= {});
   let s = cache[mode];
   if (!s) {
     s = createMcpServices({
-      deps: depsFor(mode),
+      deps: depsFor(mode === "live" ? "live" : "fixture"),
       store: stores().plans,
       limiter: webLimiter(),
       secrets: secretsFromEnv(process.env),
-      policy: { fixtureEventRuns: false, capFixtureRuns: false },
+      policy: { fixtureEventRuns: false, capFixtureRuns: false, recorded: mode === "recorded" ? RECORDED_REASON : null },
       presetView,
       afterRun: (result, deps) => afterRun(mode, result, deps),
     });

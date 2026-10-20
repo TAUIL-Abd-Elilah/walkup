@@ -16,7 +16,7 @@ import {
   searchTypeUrn,
   wktPoint,
 } from "../src/builders";
-import { DEFAULT_MONTH_GUARD_FLOOR, assertAllowedBaseUrl, envValue, loadConfig } from "../src/config";
+import { DEFAULT_MONTH_GUARD_FLOOR, assertAllowedBaseUrl, envValue, loadConfig, walkupModeValue } from "../src/config";
 import { QlooConfigError, QlooHostRefusedError } from "../src/errors";
 
 const P = { lat: 36.1612, lon: -86.7785 };
@@ -171,6 +171,10 @@ describe("config", () => {
     expect(loadConfig({ WALKUP_MODE: "auto   # auto | live | fixture" }, cwd).mode).toBe("fixture");
     expect(() => loadConfig({ WALKUP_MODE: "live" }, cwd)).toThrow(QlooConfigError);
     expect(() => loadConfig({ WALKUP_MODE: "sometimes" }, cwd)).toThrow(QlooConfigError);
+    // Recorded (Qloo no longer available): the client never calls Qloo, even with a key set.
+    expect(loadConfig({ QLOO_API_KEY: "k-123456", WALKUP_MODE: "Recorded  # Qloo is off" }, cwd)).toMatchObject({ requestedMode: "recorded", mode: "fixture" });
+    expect(walkupModeValue({ WALKUP_MODE: " FIXTURE # sample" })).toBe("fixture");
+    expect(walkupModeValue({})).toBe("auto");
     expect(loadConfig({ WALKUP_RECORD: "1", QLOO_API_KEY: "k-123456" }, cwd).record).toBe(true);
     expect(loadConfig({ WALKUP_DATA_DIR: "/srv/data", WALKUP_FIXTURES_DIR: "fx" }, cwd)).toMatchObject({
       dataDir: resolve("/srv/data"),

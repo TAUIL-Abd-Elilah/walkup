@@ -17,7 +17,7 @@ Server-side only: it runs `@walkup/orchestrator`, which loads `better-sqlite3`.
 The envelope (`ToolEnvelope`, the same keys as `GET /api/sheet/<planId>`) has these fields:
 
 - `status`: one of `ok`, `empty`, `needs_input`, `partial`, `degraded`, `error`.
-- `summary`, `planId`, `mode` (`live` or `fixture`), `results`, `resolution`, `reason`, `provenance` (ledger ids), `limits` ("What this does not establish").
+- `summary`, `planId`, `mode` (`live` or `fixture`; `recorded` from a server that serves recorded sheets only, on its refusals and on a live sheet `get_sheet` returns, which is then sent without its Google Places list), `results`, `resolution`, `reason`, `provenance` (ledger ids), `limits` ("What this does not establish").
 - `sheetUrl` (`/s/<planId>`) and `planUrl` (`/plan/<planId>`).
 - `cards`: each card's status.
 - Paused plans add `pending` (`[{input, candidates}]`).
@@ -78,6 +78,7 @@ The route runs on the web app's engine:
 - the same preset sheets;
 - the same per-IP limiter;
 - the same fixture-mode rule: without live keys only presets run, and preset what-ifs are free;
+- the same recorded-mode rule: once Qloo is no longer available, `get_sheet` reads recorded sheets (envelope `mode: "recorded"`, the sheet's own mode stays `live`) and every other tool answers 503 with `mode: "recorded"`;
 - the same quota and rejected-key bookkeeping after live runs.
 
 `handleMcpHttpRequest(request, services, {origin?, clientIp?})` works with any fetch-style server.
@@ -173,7 +174,7 @@ const res = await handleMcpHttpRequest(request, services, { origin, clientIp });
 - `McpServices`, which has these hooks:
   - `presetView(presetId, "page" | "api")`: the host's own preset sheets.
   - `afterRun(result, deps)`
-  - `policy`: `{fixtureEventRuns, capFixtureRuns, fixtureRefusal}`
+  - `policy`: `{fixtureEventRuns, capFixtureRuns, fixtureRefusal, recorded}` (`recorded`: the reason every tool but `get_sheet` refuses with, or null)
 - `PLANS_DB_FILE` (`plans.sqlite`)
 
 **Envelopes**

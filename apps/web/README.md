@@ -11,18 +11,23 @@ The mode is read per request (the image is built without secrets), never at buil
 | Mode | When | What runs |
 |---|---|---|
 | **Live** | `QLOO_API_KEY` and `TICKETMASTER_API_KEY` are set, `WALKUP_MODE` is not `fixture`, and Qloo has not rejected the key | Fresh runs call Qloo, Ticketmaster, Google Places (arm F, when `GOOGLE_PLACES_API_KEY` is set) and Claude (narration, through OpenRouter when `OPENROUTER_API_KEY` is set, else Anthropic when `ANTHROPIC_API_KEY` is set). Presets are served from the latest stored live run made with the preset's own inputs (a run with someone's what-ifs, partner list, up-front picks or a proxy stand-in stays that caller's sheet); before one exists, the bundled fixture sheet is shown with a "Sample sheet" strip. |
+| **Recorded** | `WALKUP_MODE=recorded`; or the time in `WALKUP_QLOO_UNTIL` (an ISO date or date and time, UTC) has passed; or Qloo rejected the configured key and the plan store holds a live sheet | Qloo is unavailable: nothing runs and no API is called. Each preset shows its latest stored live run made with the preset's own inputs that passes `usableRecording` (`lib/server/recorded.ts`: no key refused by Qloo on it, by the rule `qlooRefusedKey` in `lib/server/key-status.ts` applies to live runs; fewer than half its cards failed); a preset without one shows its bundled sheet with the "Sample sheet" strip. Stored live sheets open at their ids, without their Google Places comparison list (Places content is kept 30 days at most); their envelope (`/api/sheet/<id>`, `GET /api/plan/<id>`, MCP `get_sheet`) says `mode: "recorded"`. A strip on every page says since when Qloo has been unavailable, that new plans are off, and that sheets recorded from live runs show their date and are not refreshed; the landing page calls its sheets recorded, or sample sheets when nothing was recorded; a live sheet says "Recorded <date>" (page, print view and PDF). Every fresh path (`POST /api/plan`, rank-partners, resolve, revise, show and title search, MCP tools but `get_sheet`) answers with `mode: "recorded"` and `RECORDED_REASON` (`lib/api.ts`; 503 on the REST routes). Reading, streaming finished plans, downloads and the confirm-gated send still work. |
 | **Fixture** | Anything else | The four presets run end to end through the orchestrator on `@walkup/qloo-world`, a labelled synthetic stand-in for Qloo, Ticketmaster and Places (no network, no keys, template narration). Free-form search stays disabled with its message; `POST /api/plan` with an event answers 503. Every page and sheet says "Sample data", exported files start with `fixture-` and carry the sample sentence, and emails say FIXTURE. |
+
+`WALKUP_MODE=fixture` keeps fixture mode whatever the date or the stored sheets. `WALKUP_MODE` is read the same way here,
+in `@walkup/qloo`'s config and in the orchestrator's `liveKeysPresent` (`walkupModeValue`: an inline `# comment` and case
+don't matter).
 
 A live run that sees Qloo answer 401, or 403 with no fresh Qloo call accepted in the same run (Qloo also answers 403 for
 one request whose `filter.type` the key may not use), writes `${WALKUP_DATA_DIR}/qloo-key-status.json` (date, status
-and a 12-hex hash of the key, never the key) and the server stays in fixture mode, after restarts too, until a different
-key is set.
+and a 12-hex hash of the key, never the key), also when the run stopped before a sheet. The server then stays in
+recorded mode, or in fixture mode when no live sheet is stored, after restarts too, until a different key is set.
 
 ## Routes
 
 | Route | What it is |
 |---|---|
-| `/` | Landing: "Same room, two crowds" (the G1 pair's maps and one comparison sentence computed from the two sheets by `compareBills`), show search (live only; fresh runs left today are shown), the preset sheets as plain links, how it works. Fixture mode shows the sample strip at the top of every page instead of a watermark. |
+| `/` | Landing: "Same room, two crowds" (the G1 pair's maps and one comparison sentence computed from the two sheets by `compareBills`), show search (live only; fresh runs left today are shown), the preset sheets as plain links, how it works. Fixture mode shows the sample strip at the top of every page instead of a watermark; recorded mode shows its own strip and lists the recorded sheets where the search would be. |
 | `/plan/[id]` | A preset id (`g1-a`, `g1-b`, `g2`, `g3`) or a run's id. A finished sheet renders as a plain document (see "Plan page" below); a running plan lists its sections as they stream; a paused plan shows the candidates for the ambiguous name. `/plan/g2` in fixture mode opens on the Sidecar pick (the recorded sheet is at `/plan/g2?recorded=1`). |
 | `/s/[id]` | The one-page print sheet, with a server PDF download. It renders `buildSheetModel` from `@walkup/exports/sheet-model`, the same strings the PDF prints: black on white, thin rules, receipts as one quiet superscript group per line, a "Sample data" label and one light watermark on fixture sheets, the discovery line, and the partner table as a form (tick box, number, place and address, area, hours, why, blank Notes); under 640px each partner is a two-line block. The paper stays light in dark mode (`.paper` sets the colour tokens to their light values). Prints on one US Letter page in Edge and Chrome. |
 | `/system-card`, `/eval` | Plain documents. The system card lists the Q9 house twin. The eval page reads its counts and case list from `evals/product/out/score.json` at build time (nothing typed by hand) and says the Fan-Bar Test was designed, not run. |
@@ -39,7 +44,7 @@ key is set.
 | `GET /api/limits` | Fresh runs left today for this network and in total. |
 | `GET /api/events/search?q=` | Ticketmaster events for the search box (live only). |
 | `GET /api/proxy-search?q=&type=` | Film and TV titles to stand in for an act. |
-| `GET /healthz` | Always 200 with `ok: true`, fast, no API call on the request path: mode, key presence (never values), reachability (last real call per service, plus a keyless background probe at most every 10 minutes in live mode), Qloo month quota and the quota guard, fresh runs left today, plan store. |
+| `GET /healthz` | Always 200 with `ok: true`, fast, no API call on the request path: mode (`live`, `fixture` or `recorded`), key presence (never values), `qloo: {keyRejected: {httpStatus, at} or null, until}` (`WALKUP_QLOO_UNTIL` as an ISO time, or null), `recorded: {presets: {<id>: {planId, createdAt} or null}}` in live and recorded mode (what recorded mode serves for each preset; null in fixture mode), reachability (last real call per service, plus a keyless background probe at most every 10 minutes in live mode), Qloo month quota and the quota guard, fresh runs left today, plan store. |
 | `/mcp` | The MCP endpoint (`@walkup/mcp`): tools `plan_show`, `rank_partners`, `bill_vs_house`, `get_sheet`, `revise_plan` on the same engine, stores and caps as the REST routes. |
 
 Inputs (`lib/server/input.ts`): only known fields pass, with bounds. Operator inputs also take `allAges` (boolean),
@@ -52,7 +57,8 @@ labels that contain an email address, or that name a political candidate or camp
 - Fresh runs: 3 per network per UTC day and 15 per day in total (`WALKUP_FRESH_RUNS_PER_IP`, `WALKUP_FRESH_RUNS_PER_DAY`).
   Counted when a live run starts; refunded when it fails before sending any Qloo call. IPs are kept only as a keyed hash.
   Counts live in `${WALKUP_DATA_DIR}/fresh-runs.json`.
-- Presets are unlimited: stored live runs in live mode, the bundled sheets in fixture mode. A fresh run of a preset on the
+- Presets are unlimited: stored live runs in live mode, recorded live runs (or the bundled sheets) in recorded mode, the
+  bundled sheets in fixture mode. Nothing runs in recorded mode, so it has no caps. A fresh run of a preset on the
   fixture world ("Run it again", `POST /api/plan {presetId}`) is stored, so those are limited to 30 per network per hour.
   Resuming a paused plan does not count again.
 - Fresh runs stop with 429 when Qloo's month quota is below the guard floor (1,500).
@@ -75,6 +81,7 @@ labels that contain an email address, or that name a political candidate or camp
 | `twin.ts` | The partner usual-crowd rank for older sheets (below). |
 | `proxy.ts` | Relabels an operator-chosen film/TV stand-in as a proxy seed. |
 | `send.ts`, `exports.ts`, `lookups.ts` | Send wrappers, downloads, limits, search, `/healthz`. |
+| `recorded.ts` | Recorded mode: `recordedPresetRun` (the stored live run a preset shows), `usableRecording` (the check it must pass), `liveSheetStored` (the rejected-key rule in `lib/mode.ts`). |
 | `limits.ts`, `key-status.ts`, `health.ts`, `actions.ts`, `input.ts`, `http.ts`, `env.ts` | Caps and rate windows, the rejected-key record, reachability, where `A#` entries are kept, request validation, cookies and IPs, data paths. |
 
 Every file the server writes goes under `WALKUP_DATA_DIR` (`./.cache` locally): `plans.sqlite`, `fresh-runs.json`,
@@ -109,7 +116,7 @@ page with `react-dom/server` (the map pieces and `next/*` are mocked there).
 | `PlanCard.tsx` | One section (heading, status word, summary with footnotes, reason, body, limits). The yellow row is only for a pause the operator must answer. |
 | `PartnersCard.tsx` | Partners as a table: name (address, phone, website), type, area (with its map number), open on the first street-team day, why (chips as plain words with footnotes). `partner.explain` adds a "Why this place" row; `houseRank` and `ubiquityPenalty` are said in it. "Without Qloo" adds the arm F places as an attributed text list under the table, never on the map. |
 | `SheetExtras.tsx` | Only when the sheet has the field: `discovery` (one callout near the top, linked to its row or tile), `steps` ("What Walkup decided"), `revision` (banner, the instruction, grouped changes, the question when one was asked, tool calls). |
-| `ReviseBox.tsx` | "Change something". `app/plan/[id]/page.tsx` passes `revisable` (every finished sheet except a live sheet on a fixture server), and `PlanView` then calls `revisePlan` from `lib/api.ts`; an `onRevise` prop (`(instruction) => Promise<{planId?, question?, reason?}>`) overrides it in tests. A new plan id opens the revised run, which streams its steps and then shows the revision banner; a question is shown under the box and nothing changes. |
+| `ReviseBox.tsx` | "Change something". `app/plan/[id]/page.tsx` passes `revisable` (every finished sheet except a live sheet on a fixture server, and none in recorded mode), and `PlanView` then calls `revisePlan` from `lib/api.ts`; an `onRevise` prop (`(instruction) => Promise<{planId?, question?, reason?}>`) overrides it in tests. A new plan id opens the revised run, which streams its steps and then shows the revision banner; a question is shown under the box and nothing changes. |
 | `LiftCard.tsx`, `ResolutionCard.tsx`, `MoreCards.tsx` | Map and areas (plus `liftDiagnostics` when present), acts and venue, your list, before and after, podcasts and a sponsor, copy lines, how this crowd differs. |
 | `ReceiptDrawer.tsx`, `SendModal.tsx`, `useDialog.ts` | The receipt side panel (request line, parameters with keys as env var names, status, time, cache, curl) and the confirm-gated send dialog. |
 | `model.ts` | Pure helpers: discovery targets, revision grouping, step parsing and merging, chip wording, instruction checks. |
@@ -153,7 +160,7 @@ npx tsc -p apps/web/tsconfig.json --noEmit
 ## Known limits
 
 - Live mode is wired but unexercised: no keys exist. The live paths (free-text search, caps, stored presets, the quota
-  guard) are tested with the fixture world standing in for the live transports. No preset has a live show until the
+  guard, recorded mode on stored live runs) are tested with the fixture world standing in for the live transports. No preset has a live show until the
   key-day selection fills `live` for g1-a and g1-b (`presetFor` in `@walkup/orchestrator`); until then a live run of a
   preset stops with "This preset has no live show yet." before any call, and in live mode the preset pages show the
   bundled fixture until a stored run of the live show's event exists. A live sheet of a preset takes its line and

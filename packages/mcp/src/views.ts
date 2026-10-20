@@ -26,10 +26,11 @@ export function viewOfResult(r: PlanResult): PlanView {
   return { kind: "error", planId: r.planId, mode: r.mode, reason: r.error ?? "The plan could not be built." };
 }
 
-export function envelopeOfView(v: PlanView, origin: string | null): ToolEnvelope {
+/** `recorded`: the server serves recorded sheets only (sheetEnvelope). */
+export function envelopeOfView(v: PlanView, origin: string | null, opts: { recorded?: boolean } = {}): ToolEnvelope {
   switch (v.kind) {
     case "sheet":
-      return sheetEnvelope(v.sheet, origin);
+      return sheetEnvelope(v.sheet, origin, opts);
     case "paused":
       return pausedEnvelope(v.planId, v.pause, v.mode, origin);
     case "error":

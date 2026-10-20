@@ -5,8 +5,8 @@
  *   transports. Mode is always "fixture". Used by tests, the fixture
  *   generator and the web app while no keys exist.
  * - createDepsFromEnv(): live clients when QLOO_API_KEY and
- *   TICKETMASTER_API_KEY are set (and WALKUP_MODE is not "fixture");
- *   otherwise the fixture deps. Server-side only.
+ *   TICKETMASTER_API_KEY are set (and WALKUP_MODE is not "fixture" or
+ *   "recorded"); otherwise the fixture deps. Server-side only.
  */
 import { join, resolve } from "node:path";
 import { createMemoryLedger, type LedgerSink } from "@walkup/contracts";
@@ -20,6 +20,7 @@ import {
   noLimiter,
   QLOO_DEFAULT_BASE_URL,
   QlooClient,
+  walkupModeValue,
   type QlooCache,
 } from "@walkup/qloo";
 import { createWorld, WORLD_TAG_PINS, type Scenario, type World } from "@walkup/qloo-world";
@@ -102,10 +103,13 @@ export interface EnvDepsOptions {
   clock?: () => number;
 }
 
-/** True when the environment has what a live run needs. Reads key presence only. */
+/**
+ * True when the environment has what a live run needs. Reads key presence only. WALKUP_MODE=recorded
+ * (Qloo is no longer available) never runs live, like fixture.
+ */
 export function liveKeysPresent(env: Record<string, string | undefined> = process.env): boolean {
-  const mode = (env.WALKUP_MODE ?? "auto").trim().toLowerCase();
-  return mode !== "fixture" && !!env.QLOO_API_KEY && !!env.TICKETMASTER_API_KEY;
+  const mode = walkupModeValue(env);
+  return mode !== "fixture" && mode !== "recorded" && !!env.QLOO_API_KEY && !!env.TICKETMASTER_API_KEY;
 }
 
 export function createDepsFromEnv(env: Record<string, string | undefined> = process.env, o: EnvDepsOptions = {}): PlanDeps & { world?: World } {

@@ -25,7 +25,7 @@ export interface QlooConfig {
   /** Absolute directory holding raw/ and synthetic/. */
   fixturesDir: string;
   requestedMode: RequestedMode;
-  /** Effective mode: auto resolves to live when a key is present, else fixture. */
+  /** Effective mode: auto resolves to live when a key is present, else fixture; recorded is fixture. */
   mode: QlooMode;
   /** WALKUP_RECORD=1: write live bodies to fixtures/raw (git-ignored). */
   record: boolean;
@@ -57,10 +57,18 @@ export function assertAllowedBaseUrl(baseUrl: string, allowHost: boolean): strin
   return `${url.origin}${url.pathname}`.replace(/\/+$/, "");
 }
 
-function parseMode(v: string | undefined): RequestedMode {
-  const m = (v ?? "auto").split(/\s+/)[0]?.toLowerCase() ?? "auto";
-  if (m === "auto" || m === "live" || m === "fixture") return m;
-  throw new QlooConfigError(`WALKUP_MODE must be auto, live or fixture (got "${v}")`);
+/**
+ * WALKUP_MODE as one lower-case word ("auto" when unset), read the same way by this config, the
+ * orchestrator's liveKeysPresent and the web app's runtime mode. Not validated here.
+ */
+export function walkupModeValue(env: EnvLike): string {
+  return (envValue(env, "WALKUP_MODE") ?? "auto").split(/\s+/)[0]?.toLowerCase() ?? "auto";
+}
+
+function parseMode(env: EnvLike): RequestedMode {
+  const m = walkupModeValue(env);
+  if (m === "auto" || m === "live" || m === "fixture" || m === "recorded") return m;
+  throw new QlooConfigError(`WALKUP_MODE must be auto, live, fixture or recorded (got "${envValue(env, "WALKUP_MODE")}")`);
 }
 
 /** Walks up from `start` looking for a checkout root (a dir with fixtures/ and packages/). */
@@ -79,8 +87,9 @@ export function loadConfig(env: EnvLike = process.env, cwd: string = process.cwd
   const apiKey = envValue(env, "QLOO_API_KEY") ?? null;
   const allowHost = truthy(envValue(env, "QLOO_ALLOW_HOST"));
   const baseUrl = assertAllowedBaseUrl(envValue(env, "QLOO_BASE_URL") ?? QLOO_DEFAULT_BASE_URL, allowHost);
-  const requestedMode = parseMode(envValue(env, "WALKUP_MODE"));
-  const mode: QlooMode = requestedMode === "auto" ? (apiKey ? "live" : "fixture") : requestedMode;
+  const requestedMode = parseMode(env);
+  // "recorded" serves stored sheets only: like fixture mode, the client never calls Qloo.
+  const mode: QlooMode = requestedMode === "auto" ? (apiKey ? "live" : "fixture") : requestedMode === "recorded" ? "fixture" : requestedMode;
   if (mode === "live" && !apiKey) {
     throw new QlooConfigError("WALKUP_MODE=live needs QLOO_API_KEY; use fixture or auto");
   }

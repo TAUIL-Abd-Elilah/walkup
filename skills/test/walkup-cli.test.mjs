@@ -96,6 +96,9 @@ function handle(req, res, body) {
     const input = JSON.parse(body);
     if (input.event.includes("Busy")) return send(res, 429, { status: "error", reason: "3 fresh runs per IP per day" });
     if (input.event.includes("Recorded")) return send(res, 503, { status: "error", mode: "fixture", reason: "fresh runs are disabled" });
+    if (input.event.includes("Unavailable")) {
+      return send(res, 503, { mode: "recorded", reason: "Qloo is no longer available, so new plans, searches and revisions are off. Recorded sheets and their downloads still open." });
+    }
     if (input.event.includes("Ambiguous") && !input.picks) {
       return send(res, 200, {
         status: "needs_input",
@@ -154,6 +157,11 @@ function handle(req, res, body) {
     });
   }
   if (req.method === "GET" && url === "/api/sheet/plan_abc123") return send(res, 200, okPlan());
+  if (req.method === "GET" && url === "/api/sheet/plan_rec456") {
+    // A server that serves recorded sheets only: the sheet is a live run, the envelope says recorded.
+    const sheet = { ...syntheticSheet(), planId: "plan_rec456", mode: "live", hypothetical: false, createdAt: "2026-10-30T15:00:00.000Z" };
+    return send(res, 200, { ...okPlan(), planId: "plan_rec456", sheetUrl: `${base}/s/plan_rec456`, mode: "recorded", results: sheet });
+  }
   if (req.method === "GET" && url === "/api/sheet/plan_abc123/pdf") return send(res, 200, "%PDF-1.4\n% synthetic\n", "application/pdf");
   if (req.method === "GET" && url === "/healthz") return send(res, 200, { mode: "fixture", qloo: "no key" });
   return send(res, 404, { status: "error", reason: "no such route or plan" });
@@ -278,6 +286,13 @@ test("fixture mode exits 6", async () => {
   assert.match(r.stderr, /fixture mode/);
 });
 
+test("recorded mode (Qloo no longer available) exits 6 with the server's reason", async () => {
+  const r = await run(["plan", "Unavailable @ Test Hall, Nov 28 2026"]);
+  assert.equal(r.code, 6);
+  assert.match(r.stderr, /^walkup: Recorded sheets only: Qloo is no longer available, so new plans, searches and revisions are off\. Recorded sheets and their downloads still open\. Read one with: walkup sheet <plan-id>/);
+  assert.doesNotMatch(r.stderr, /fixture|\.\./);
+});
+
 test("rank-partners prints call order and the declared-not-scored list", async () => {
   const r = await run(["rank-partners", "Synthetic Band @ Test Hall", "Partner Two", "Unknown Spot"]);
   assert.equal(r.code, 0, r.stderr);
@@ -343,6 +358,13 @@ test("sheet prints the envelope summary; --json prints it unchanged", async () =
   const raw = await run(["sheet", "plan_abc123", "--json"]);
   assert.equal(raw.code, 0, raw.stderr);
   assert.equal(JSON.parse(raw.stdout).planId, "plan_abc123");
+});
+
+test("sheet says a sheet from a server in recorded mode is a recording, with its date", async () => {
+  const r = await run(["sheet", "plan_rec456"]);
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stdout, /^RECORDED: a live run recorded on 2026-10-30\. Qloo is no longer available to the server, so it is not refreshed\.\n/);
+  assert.doesNotMatch(r.stdout, /FIXTURE/);
 });
 
 test("sheet rejects plan ids that are not plain tokens", async () => {

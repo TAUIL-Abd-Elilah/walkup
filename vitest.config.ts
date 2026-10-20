@@ -1,5 +1,8 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 export default defineConfig({
+  // The web app's "@/" path alias (apps/web/tsconfig.json), so tests can import its pages and route handlers.
+  resolve: { alias: [{ find: /^@\//, replacement: fileURLToPath(new URL("./apps/web/", import.meta.url)) }] },
   test: {
     include: [
       "packages/*/test/**/*.test.ts",

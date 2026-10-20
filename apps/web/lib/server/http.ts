@@ -4,7 +4,7 @@
  * session id that scopes the operator's remembered picks and preset actions).
  */
 import { randomBytes } from "node:crypto";
-import { FIXTURE_FRESH_RUNS_REASON, json } from "../api";
+import { FIXTURE_FRESH_RUNS_REASON, json, RECORDED_REASON } from "../api";
 import { runtimeMode } from "../mode";
 
 export const SESSION_COOKIE = "hl_sid";
@@ -84,9 +84,10 @@ export function contextOf(request: Request, ensureSession = false): RequestConte
 
 export { json };
 
-/** Free-form runs need live keys; the skill maps 503 + mode "fixture" to its fixture-mode exit code. */
+/** Free-form runs need live keys; the skill maps 503 + mode "fixture" or "recorded" to its exit code 6. */
 export function freshRunsDisabled(): Response {
-  return json({ mode: runtimeMode().kind, reason: FIXTURE_FRESH_RUNS_REASON }, 503);
+  const mode = runtimeMode().kind;
+  return json({ mode, reason: mode === "recorded" ? RECORDED_REASON : FIXTURE_FRESH_RUNS_REASON }, 503);
 }
 
 /** Adds the session cookie to a response when the context created one. */

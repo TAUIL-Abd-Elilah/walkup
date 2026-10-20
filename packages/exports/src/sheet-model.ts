@@ -69,6 +69,11 @@ export interface SheetModelOptions {
   showName?: string;
   /** ISO time the sheet is printed, for the footer line. Default: now. */
   printedAt?: string;
+  /**
+   * The server serves recorded sheets only (Qloo is no longer available): a live sheet's header adds
+   * "Recorded <date>", as the plan page says. Ignored on fixture sheets, which say "Sample data".
+   */
+  recorded?: boolean;
 }
 
 /** Blanks the paper says out loud instead of leaving a cell empty. */
@@ -191,7 +196,10 @@ export interface SheetModel {
   /** "All ages · street team Thu and Sat · 40 km radius". */
   subline: string;
   tMinus: string;
-  /** Short header labels in reading order: "Sample data", and "Counts are what-ifs" when no what-if line says so. */
+  /**
+   * Short header labels in reading order: "Sample data", "Recorded <date>" on a recorded live sheet, and "Counts are
+   * what-ifs" when no what-if line says so.
+   */
   labels: string[];
   /** Light page watermarks: "Sample data" on fixture sheets, "What-if counts" on live what-if sheets. */
   watermarks: string[];
@@ -421,6 +429,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   if (fixture) {
     labels.push(SAMPLE_LABEL);
     watermarks.push(SAMPLE_LABEL);
+  } else if (opts.recorded) {
+    labels.push(`Recorded ${formatShowDate(sheet.createdAt.slice(0, 10))}`);
   }
   const whatIf = sheet.hypothetical ? " (assumed)" : "";
   const seats = seatsText(sheet.operator.seatsLeft, sheet.operator.capacity);

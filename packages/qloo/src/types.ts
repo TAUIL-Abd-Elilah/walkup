@@ -37,7 +37,8 @@ export interface QlooRequest {
 }
 
 export type QlooMode = "live" | "fixture";
-export type RequestedMode = "auto" | QlooMode;
+/** WALKUP_MODE. "recorded": Qloo is no longer available to this server, so the client never calls it (as in fixture mode). */
+export type RequestedMode = "auto" | QlooMode | "recorded";
 
 export type ResponseSource = "live" | "cache" | "inflight" | "fixture-raw" | "fixture-synthetic";
 

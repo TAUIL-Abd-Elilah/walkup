@@ -36,6 +36,8 @@ const { PartnerWhy, controlOverlapLine } = await import("../components/plan/Part
 const { ReceiptContext } = await import("../components/plan/receipts");
 const model = await import("../components/plan/model");
 const utils = await import("../lib/sheet-utils");
+const { RecordedStrip } = await import("../components/RecordedStrip");
+const { runtimeMode } = await import("../lib/mode");
 
 const ENGINE = fileURLToPath(new URL("../../../fixtures/synthetic/engine/", import.meta.url));
 const fixture = (id: string): { sheet: StreetSheet; control: ControlArmResult } => JSON.parse(readFileSync(`${ENGINE}${id}.sheet.json`, "utf8"));
@@ -326,6 +328,38 @@ describe("the plan page as a document", () => {
     const { sheet } = fixture("g3");
     expect(renderView(sheet, { runtimeLive: true })).toContain("Sample sheet.");
     expect(renderView(sheet, { runtimeLive: false })).not.toContain("Sample sheet.");
+  });
+
+  it("says when a live sheet was recorded once Qloo is unavailable, and keeps a sample sheet a sample", () => {
+    const metaLine = (html: string) => visibleText(/data-testid="meta-line">([\s\S]*?)<\/p>/.exec(html)?.[1] ?? "").trim();
+    // A live copy of a preset sheet, standing in for a run recorded mode serves from the plan store.
+    const live: StreetSheet = { ...structuredClone(fixture("g1-a").sheet), mode: "live" };
+    const html = renderView(live, { recorded: true, canRerun: false, revisable: false });
+    expect(metaLine(html)).toMatch(/^Street sheet · Draft, not sent · Recorded Oct 30 2026, 15:00 UTC from \d+ requests in \d+ steps$/);
+    expect(visibleText(html)).toContain("Recorded from a live run on Oct 30 2026, 15:00 UTC and not refreshed since.");
+    for (const gone of ["Sample sheet.", "Sample street sheet", "A live run.", "Run it again", 'id="revise"']) expect(html).not.toContain(gone);
+    // A recording is served without its Google Places list, so there is no comparison to open.
+    expect(html).not.toContain("Compare with Google Places");
+    // Live mode keeps saying when the sheet was planned.
+    expect(metaLine(renderView(live, { runtimeLive: true, canRerun: false }))).toMatch(/· Planned Oct 30 2026, 15:00 UTC from/);
+    // A preset with no recording shows its sample sheet, said as such.
+    const sample = renderView(fixture("g3").sheet, { recorded: true, canRerun: false, revisable: false });
+    expect(sample).toContain("Sample sheet.");
+    expect(visibleText(sample)).toContain("This sheet uses made-up places and numbers. No live run of this show was recorded.");
+    expect(metaLine(sample)).toMatch(/^Sample street sheet · /);
+    expect(sample).toContain("Compare with Google Places");
+    expect(visibleText(html + sample)).not.toMatch(BANNED);
+  });
+
+  it("puts recorded mode in one plain strip at the top, with the date Qloo went away", () => {
+    const mode = runtimeMode({ WALKUP_MODE: "recorded", WALKUP_QLOO_UNTIL: "2026-11-02" }, { now: Date.parse("2026-11-10T00:00:00Z") });
+    const text = visibleText(renderToStaticMarkup(createElement(RecordedStrip, { mode })));
+    expect(text.trim()).toBe(
+      "Qloo has been unavailable since Nov 2 2026. New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.",
+    );
+    expect(text).not.toMatch(/\bsample\b|made-up|\bfresh\b|live data/i);
+    // The first sentence is the strip's bold lead.
+    expect(renderToStaticMarkup(createElement(RecordedStrip, { mode }))).toContain('<strong class="font-semibold">Qloo has been unavailable since Nov 2 2026.</strong> New plans');
   });
 });
 

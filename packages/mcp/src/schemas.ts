@@ -107,7 +107,7 @@ export const EnvelopeOutput = z.looseObject({
   planId: z.string().nullable(),
   sheetUrl: z.string().nullable(),
   planUrl: z.string().nullable().optional(),
-  mode: z.enum(["live", "fixture"]),
+  mode: z.enum(["live", "fixture", "recorded"]),
   results: z.unknown().describe("plan_show / get_sheet: the Street Sheet; rank_partners: the declared partners in call order; bill_vs_house: lift tiles, compare and demographics; null on needs_input or error."),
   resolution: z.array(ResolutionOut),
   cards: z.record(z.string(), z.enum(["ok", "empty", "needs_input", "partial", "degraded", "error"])).optional().describe("Each card's status, in stream order."),

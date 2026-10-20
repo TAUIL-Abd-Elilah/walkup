@@ -76,7 +76,7 @@ fly volumes create walkup_data --region iad --size 1 --snapshot-retention 14 --y
   WALKUP_POSTAL_ADDRESS='Street address, City, ST 00000'
 ```
 
-The last two are read by `@walkup/send` and are not in `.env.example` yet (see
+The last two are read by `@walkup/send` (see
 [Variables the send step reads](#variables-the-send-step-reads)). Without the postal address every real send is
 refused.
 
@@ -96,19 +96,19 @@ curl -s https://walkup.fly.dev/healthz
 fly logs -a walkup
 ```
 
-`/healthz` answers `{"ok":true,"mode":...,"configured":{...}}`. `configured` shows which keys are present, never their
-values. Until the web app is connected to the engine, `mode` stays `"fixture"` even with every key set.
+`/healthz` answers `{"ok":true,"mode":...,"configured":{...},"qloo":{...},"recorded":{...}}`. `mode` is `live`,
+`fixture` or `recorded` (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)).
+`configured` shows which keys are present, never their values; `qloo` shows a key Qloo rejected (status and time) and
+`WALKUP_QLOO_UNTIL`; `recorded` lists the stored live run each preset shows in recorded mode.
 
-The image is built without secrets, so the mode pill and the layout watermark on pages that `next build` prerenders
-(the landing page and the preset sheets) show what the build saw ("No keys configured"), not the machine's secrets.
-`/healthz` is rendered per request and is the one to trust. Request 8 in
-The web app reads the mode per request.
+The image is built without secrets. The web app reads the mode per request (the layout opts out of prerendering and the
+pages are dynamic), so every page and `/healthz` show the machine's own mode.
 
 ### Every variable in `.env.example`
 
 | Variable | Set on the host as | Value or note |
 |---|---|---|
-| `QLOO_API_KEY` | secret | Unset it when the key is deactivated (see [Fixture mode](#fixture-mode-after-the-qloo-key-is-deactivated)). |
+| `QLOO_API_KEY` | secret | Can stay set after the key is switched off: recorded mode calls nothing (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). |
 | `QLOO_BASE_URL` | `fly.toml` `[env]` | `https://hackathon.api.qloo.com`. Any other host is refused. |
 | `TICKETMASTER_API_KEY` | secret | |
 | `GOOGLE_PLACES_API_KEY` | secret | Also set a 300 requests/day quota on the Google Cloud project. |
@@ -118,7 +118,8 @@ The web app reads the mode per request.
 | `RESEND_API_KEY` | secret | |
 | `RESEND_FROM` | secret | A sender on a domain verified in Resend. Not sensitive, but set per deployment. |
 | `WALKUP_DATA_DIR` | `fly.toml` `[env]` and the image | `/data` (the volume). |
-| `WALKUP_MODE` | `fly.toml` `[env]` and the image | `auto`: live while `QLOO_API_KEY` is set, fixture replay once it is unset. |
+| `WALKUP_MODE` | `fly.toml` `[env]` and the image | `auto`: live while `QLOO_API_KEY` and `TICKETMASTER_API_KEY` are set, the synthetic sample world (fixture) without them. `recorded`: stored live sheets only, no new plans. `fixture`: the sample world whatever else is set. |
+| `WALKUP_QLOO_UNTIL` | secret or `fly.toml` `[env]`, from late October | The time Qloo stops answering, e.g. `2026-11-02` (00:00 UTC). From then on the server is in recorded mode. Unset: no date. |
 | `QLOO_MONTH_GUARD_FLOOR` | `fly.toml` `[env]` | `1500`: fresh Qloo calls stop below 1,500 calls left this month. |
 | `WALKUP_RECORD` | secret, only while recording | `1` writes Qloo bodies to `/data/fixtures/raw`. Unset it afterwards. |
 | `WALKUP_FIXTURES_DIR` | `fly.toml` `[env]` and the image | `/data/fixtures` (`raw/` recorded on the volume, `synthetic/` from the image). |
@@ -190,29 +191,59 @@ restarts, especially during PDF exports, and go back to 2 GB if they appear.
 | Google Places | 300 requests/day | The client's daily cap, plus a quota on the Google Cloud project as a backstop. |
 | Resend | free tier, 100/day; 10 confirmed sends per requester per day | Resend's plan; `WALKUP_SEND_DAILY_CAP` in `packages/send`. Every send needs a human confirm in the app. |
 
-## Fixture mode after the Qloo key is deactivated
+## Recorded mode after the Qloo key is switched off (Nov 2 2026)
 
-How the mode is chosen today: with `WALKUP_MODE=auto`, the app is live while `QLOO_API_KEY` is set and in
-fixture mode when it is not. In fixture mode the Qloo client never calls Qloo. It reads
-`/data/fixtures/raw/<sha256>.json` first, then `/data/fixtures/synthetic/`, and reports a request that was never
-recorded as a missing fixture (`QlooFixtureMissingError`) instead of calling Qloo. The plan runner is required to show
-that as a `degraded` card, not an error page, to mark every sheet produced this way `mode: "fixture"` with the fixture
-watermark, and to disable fresh runs with an explanation (the web app already answers fresh runs with 503 in fixture
-mode).
+The Qloo hackathon key stops working on Nov 2 2026. From then on the site serves the sheets it recorded on live runs
+and makes nothing new. The web app calls this **recorded** mode:
 
-1. **Before the key goes away, record.** Run each preset plan that has a live show once in live mode with recording on
-   (g1-a and g1-b once key day fills their `live` blocks; a preset without one stops with "This preset has no live show
-   yet." and records nothing). On the host:
+- Each preset (`g1-a`, `g1-b`, `g2`, `g3`) shows its latest stored live run made with the preset's own inputs, skipping
+  a run on which Qloo refused the key (401, or 403 with no fresh Qloo call answered; answers from the Qloo cache do not
+  count) and one with at least half of its cards failed. A preset with no such run shows its bundled sample sheet, labelled "Sample sheet".
+- Any stored live sheet still opens at `/plan/<id>`, `/s/<id>` and `/api/sheet/<id>`, with its downloads. Sample
+  sheets stored earlier stay labelled sample. The send step stays as it is (confirm first, test inbox by default).
+  A recorded sheet is served without its Google Places comparison list (Places content is kept 30 days at most), and
+  its envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps `"mode": "live"`.
+- A strip on every page says since when Qloo has been unavailable, that new plans are off, and that sheets recorded
+  from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
+  sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
+  "Planned <date>", on the page and in the PDF.
+- New plans, the show and title searches, picks, revisions and the MCP tools other than `get_sheet` answer with
+  `"mode": "recorded"` and one plain reason (HTTP 503 on the REST routes). Nothing calls Qloo, Ticketmaster or Google
+  Places.
+
+The server is in recorded mode when `WALKUP_MODE=recorded`, when the time in `WALKUP_QLOO_UNTIL` has passed, or when
+Qloo has rejected the configured key and the plan store holds a live sheet. A rejected key with no live sheet stored
+falls back to fixture mode (the synthetic sample world), as before. The stored sheets live in `/data/plans.sqlite` on
+the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
+
+1. **Before Nov 2, record each preset live on the host.** Only a preset with a live show (its `live` block, filled on
+   key day) can be recorded; one without stops with "This preset has no live show yet." and records nothing. While the
+   server is live, a preset page shows the bundled sample until a live run of that preset's live show is stored. Start one per preset with the preset's own inputs (no what-ifs,
+   no partner list, no picks sent up front). Each is a fresh run and counts against the caps (3 per network and 15 per
+   day), so run the fourth from another network or the next day; answering a pick does not count again.
 
    ```bash
-   fly secrets set WALKUP_RECORD=1 -a walkup      # restarts the machine
-   # run each preset plan once in the hosted app
-   fly secrets unset WALKUP_RECORD -a walkup
-   fly ssh console -a walkup -C "sh -c 'ls /data/fixtures/raw | wc -l'"
+   for p in g1-a g1-b g2; do      # g3 the same way, from another network or the next day
+     curl -sS -X POST https://walkup.fly.dev/api/plan -H 'content-type: application/json' -d "{\"presetId\":\"$p\"}" | head -c 400; echo
+   done
    ```
 
-   Bodies recorded on the host go straight to `/data/fixtures/raw` and never touch a laptop or git. Bodies recorded
-   locally are copied up as described in the next section.
+   A preset that stops at `needs_input` (G2's one-word act) lists its candidates under `pending`. Pick one, as an
+   operator would, with the `planId` it returned:
+
+   ```bash
+   curl -sS -X POST https://walkup.fly.dev/api/plan/<planId>/resolve -H 'content-type: application/json' \
+     -d '{"picks":[{"input":"<the pending input>","entityId":"<one of its candidates>"}],"wait":"complete"}'
+   ```
+
+   Then check that every preset has its recording:
+
+   ```bash
+   curl -s https://walkup.fly.dev/healthz    # "recorded": {"presets": {"g1-a": {"planId": ..., "createdAt": ...}, ...}}
+   ```
+
+   A preset that shows `null` has no usable live run yet. Open each `/plan/<preset>` and read the sheet before the key
+   goes: this is what visitors will see until Dec 31.
 2. **Snapshot the volume.**
 
    ```bash
@@ -220,19 +251,23 @@ mode).
    fly volumes snapshots create <volume-id> -a walkup
    ```
 
-3. **Switch.** The day the key is deactivated (or the day before):
+3. **Switch.** Either set the date ahead of time, and the server switches itself at 00:00 UTC that day:
 
    ```bash
-   fly secrets unset QLOO_API_KEY -a walkup             # restarts; auto now resolves to fixture
+   fly secrets set WALKUP_QLOO_UNTIL=2026-11-02 -a walkup   # restarts; a date means 00:00 UTC, a time without an offset is UTC
    ```
 
-   Equivalent: set `WALKUP_MODE = "fixture"` in `fly.toml` and run `fly deploy`.
-4. **Check.** `curl -s https://walkup.fly.dev/healthz` shows `"mode":"fixture"` and `"qloo":false`. Open each
-   preset plan and confirm the fixture watermark and the recorded date.
+   or, on the day, set `WALKUP_MODE = "recorded"` under `[env]` in `fly.toml` and run `fly deploy`. Keep the volume:
+   it holds the recordings. The keys can stay set; nothing calls Qloo in recorded mode. `WALKUP_MODE=fixture` would
+   show the synthetic sample world instead.
+4. **Check.** `curl -s https://walkup.fly.dev/healthz` shows `"mode":"recorded"`, `"qloo":{"keyRejected":...,"until":...}`
+   and a `planId` for each recorded preset. Open each preset: the strip at the top, "Recorded <date>" in the header,
+   and no "Run it again" or "Change something".
 
-A deactivated key that is still set looks like live mode to the app: every Qloo call fails and the cards show
-`error`. Until the app detects a rejected key on its own (request 5 in
-the deploy notes above), unset the key the same day.
+If neither variable is set, the first fresh run after the key is switched off sees Qloo refuse it (401, or 403 on every
+call), records that in `/data/qloo-key-status.json`, and the server switches to recorded mode from then on (fixture
+mode if no live sheet is stored). That run stops with an error, or its sheet fails the recording check, so it never
+stands in for a preset.
 
 ## Copying recorded fixtures onto the volume
 
@@ -294,8 +329,8 @@ fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup
 | Symptom | Cause and fix |
 |---|---|
 | Build stops at `apps/web/.next/standalone/apps/web/server.js is missing` | `output: "standalone"` is not set in `apps/web/next.config.ts`. |
-| `better-sqlite3` fails to load at runtime | It must stay a server external (Next lists it by default; request 1 lists it explicitly) and `@walkup/qloo` must be imported from server code only. The image carries the Linux binary: `fly ssh console -a walkup -C "ls /app/node_modules/better-sqlite3/prebuilds"` should show `linux-x64.node` (or check `build/Release/better_sqlite3.node` if the build compiled it). |
+| `better-sqlite3` fails to load at runtime | It must stay a server external (Next lists it by default; `serverExternalPackages` in `apps/web/next.config.ts` lists it too) and `@walkup/qloo` must be imported from server code only. The image carries the Linux binary: `fly ssh console -a walkup -C "ls /app/node_modules/better-sqlite3/prebuilds"` should show `linux-x64.node` (or check `build/Release/better_sqlite3.node` if the build compiled it). |
 | Health check fails, logs show the server listening | The port must be 3000 (`PORT`, `internal_port`); the entrypoint sets `HOSTNAME=0.0.0.0`. |
 | `EACCES` under `/data` | Files were copied in as root after the last start: `fly apps restart walkup`. |
 | Restarts with `Out of memory` in `fly logs` | `fly scale memory 2048 -a walkup`. |
-| Cards show `error` on every Qloo call | The key was deactivated but is still set: `fly secrets unset QLOO_API_KEY -a walkup`. |
+| Cards show `error` on every Qloo call | The key was deactivated but is still set. The run that saw it switches the server to recorded mode (fixture mode if no live sheet is stored); set `WALKUP_QLOO_UNTIL` or `WALKUP_MODE=recorded` so no visitor gets that run (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). |

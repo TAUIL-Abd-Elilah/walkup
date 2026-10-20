@@ -360,6 +360,24 @@ export function comparisonSentence(c: BillComparison, names: { a: string; b: str
   );
 }
 
+/**
+ * The landing's sheets section in recorded mode (Qloo is no longer available): its heading and why nothing new
+ * runs, said from what is served. Recordings are called recordings; a sheet marked sample is not one, and when no
+ * live run was recorded the section says they are all samples.
+ */
+export function recordedSheetsSection(sheets: readonly Pick<StreetSheet, "mode">[]): { heading: string; intro: string } {
+  const lead = "Qloo is no longer available, so new plans are off.";
+  const live = sheets.filter((s) => s.mode === "live").length;
+  if (live === 0) {
+    return {
+      heading: "Sample sheets",
+      intro: `${lead} No live run was recorded before it went away, so these are sample sheets with made-up places and numbers.`,
+    };
+  }
+  const intro = `${lead} ${live === sheets.length ? "These sheets were" : "The sheets not marked sample were"} recorded from live runs on the dates shown.`;
+  return { heading: "Recorded sheets", intro: live === sheets.length ? intro : `${intro} A sheet marked sample uses made-up places and numbers.` };
+}
+
 // ---------------------------------------------------------------------------
 // The sheet page: send status, section source lines, partner wording, where the areas sit
 // ---------------------------------------------------------------------------

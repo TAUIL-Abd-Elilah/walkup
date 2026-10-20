@@ -2,16 +2,19 @@
  * Small read-only endpoints: remaining fresh runs, the Ticketmaster show
  * search behind the search box, the film/TV proxy search, and /healthz.
  */
-import { FIXTURE_FRESH_RUNS_REASON } from "../api";
-import { runtimeMode } from "../mode";
+import { FIXTURE_FRESH_RUNS_REASON, RECORDED_REASON } from "../api";
+import { qlooUntil, runtimeMode } from "../mode";
+import { PRESET_PLAN_IDS } from "../plans";
 import { depsFor, stores } from "./engine";
 import { keyPresence } from "./env";
 import { lastCalls, OPENROUTER_PROBE_URL, probes, PROBE_URLS, refreshProbes, type Service } from "./health";
 import type { RequestContext } from "./http";
 import { cleanText } from "./input";
+import { qlooKeyRejection } from "./key-status";
 import { freshRuns, rateLimit } from "./limits";
+import { recordedPresetRun } from "./recorded";
 import { searchProxyTitles, searchShows, type ProxyType } from "./search";
-import { freshRunsBody, type ServiceResponse } from "./service";
+import { freshRunsBody, recordedRefusal, type ServiceResponse } from "./service";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -27,14 +30,15 @@ export function limitsFor(ctx: RequestContext): ServiceResponse {
       mode: mode.kind,
       freshRunsEnabled: mode.kind === "live",
       freshRuns: freshRunsBody(st),
-      presets: "unlimited (served from stored runs or the fixture world)",
-      ...(mode.kind === "fixture" ? { reason: FIXTURE_FRESH_RUNS_REASON } : {}),
+      presets: mode.kind === "recorded" ? "unlimited (recorded live runs, or the bundled sample sheets)" : "unlimited (served from stored runs or the fixture world)",
+      ...(mode.kind === "fixture" ? { reason: FIXTURE_FRESH_RUNS_REASON } : mode.kind === "recorded" ? { reason: RECORDED_REASON } : {}),
     },
   };
 }
 
 export async function showSearch(q: string | null, ctx: RequestContext): Promise<ServiceResponse> {
   const mode = runtimeMode();
+  if (mode.kind === "recorded") return recordedRefusal();
   if (mode.kind !== "live") return { status: 503, body: { mode: "fixture", reason: FIXTURE_FRESH_RUNS_REASON } };
   const text = cleanText(q ?? "", 200);
   if (!text || text.length < 2) return { status: 400, body: { reason: "Type at least two characters." } };
@@ -53,6 +57,7 @@ export async function proxySearch(q: string | null, type: string | null, ctx: Re
   if (!text || text.length < 2) return { status: 400, body: { reason: "Type a film or TV title (at least two characters)." } };
   const t: ProxyType | "both" = type === "movie" || type === "tv_show" ? type : "both";
   const mode = runtimeMode();
+  if (mode.kind === "recorded") return recordedRefusal();
   const rl = rateLimit("proxy-search", ctx.ip, mode.kind === "live" ? 20 : 120, HOUR);
   if (!rl.ok) return { status: 429, body: { reason: `Too many title searches; try again in ${rl.retryAfterS} s.` } };
   if (mode.kind === "live") {
@@ -68,11 +73,22 @@ export async function proxySearch(q: string | null, type: string | null, ctx: Re
   }
 }
 
+/** For /healthz: the recorded run each preset shows (or would show) in recorded state; null for none. */
+async function recordedPresets(): Promise<Record<string, { planId: string; createdAt: string } | null>> {
+  const rows = await Promise.all(
+    PRESET_PLAN_IDS.map(async (id) => {
+      const s = await recordedPresetRun(id).catch(() => null);
+      return [id, s ? { planId: s.planId, createdAt: s.createdAt } : null] as const;
+    }),
+  );
+  return Object.fromEntries(rows);
+}
+
 /**
- * GET /healthz: always 200 with ok: true (fixture and degraded states included),
+ * GET /healthz: always 200 with ok: true (fixture, recorded and degraded states included),
  * within a second, without calling Qloo or any other API on the request path.
  */
-export function health(): ServiceResponse {
+export async function health(): Promise<ServiceResponse> {
   const mode = runtimeMode();
   const keys = keyPresence();
   const services: Service[] = ["qloo", "ticketmaster", "places", "anthropic"];
@@ -93,7 +109,7 @@ export function health(): ServiceResponse {
   const probed = probes();
   const reachability = Object.fromEntries(
     services.map((s) => {
-      if (mode.kind !== "live") return [s, { status: "not checked in fixture mode" }];
+      if (mode.kind !== "live") return [s, { status: `not checked in ${mode.kind} mode` }];
       const p = probed[s];
       const l = last[s];
       const status = p ? (p.reachable ? "reachable" : "unreachable") : "checking";
@@ -107,6 +123,8 @@ export function health(): ServiceResponse {
     store = "unavailable";
   }
   const st = freshRuns().status(null);
+  const rejected = qlooKeyRejection();
+  const until = qlooUntil();
   return {
     status: 200,
     body: {
@@ -114,6 +132,12 @@ export function health(): ServiceResponse {
       mode: mode.kind,
       detail: mode.detail,
       configured: keys,
+      qloo: {
+        keyRejected: rejected ? { httpStatus: rejected.httpStatus, at: rejected.at } : null,
+        until: until === null ? null : new Date(until).toISOString(),
+      },
+      // Live mode lists what recorded state would serve, so the recordings can be checked before the key goes.
+      recorded: mode.kind === "fixture" ? null : { presets: await recordedPresets() },
       reachability,
       qlooMonthlyRemaining: quota?.remaining ?? null,
       qlooMonthlyLimit: quota?.limit ?? null,
