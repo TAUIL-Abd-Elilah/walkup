@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { guardNarration, isAllowedNumber, policyProblem, prepareRun, templateNarrate } from "../src/index";
+import { readableForPromoter } from "../src/narrate";
 import { makeInput } from "./helpers";
 
 describe("templateNarrate", () => {
@@ -56,6 +57,15 @@ describe("policy helpers", () => {
     expect(isAllowedNumber("12", allowed)).toBe(true); // 0.12 as a percent
     expect(isAllowedNumber("1801", allowed)).toBe(true);
     expect(isAllowedNumber("37", allowed)).toBe(false);
+  });
+
+  it("allows a value written rounded half up, which toFixed would round down for some floats", () => {
+    const allowed = { values: [1.65, 2.7844], literals: new Set<string>() };
+    expect(isAllowedNumber("1.7", allowed)).toBe(true); // (1.65).toFixed(1) is "1.6"
+    expect(isAllowedNumber("1.6", allowed)).toBe(true);
+    expect(isAllowedNumber("2.8", allowed)).toBe(true);
+    expect(isAllowedNumber("1.8", allowed)).toBe(false);
+    expect(isAllowedNumber("2.9", allowed)).toBe(false);
   });
 
   it("ignores policy words inside protected names", () => {
@@ -133,5 +143,15 @@ describe("denylist shared with the engine", () => {
     expect(p).not.toBeNull();
     expect(p!.toLowerCase()).not.toContain("hispanic");
     expect(policyProblem("Americana fans cluster near the river.", [])).toBeNull();
+  });
+});
+
+describe("readableForPromoter", () => {
+  const show = { date: "2027-02-17", dateText: "Wednesday, Feb 17" };
+  it("writes the ISO show date and USD amounts the way the sheet does", () => {
+    expect(readableForPromoter("Work Fairlawn ahead of Wednesday, 2027-02-17.", show)).toBe("Work Fairlawn ahead of Wednesday, Feb 17.");
+    expect(readableForPromoter("The Anthem, 2027-02-17.", show)).toBe("The Anthem, Wednesday, Feb 17.");
+    expect(readableForPromoter("53% of the media budget of 6000 USD", show)).toBe("53% of the media budget of $6,000");
+    expect(readableForPromoter("Nothing to change on 2027-03-01.", show)).toBe("Nothing to change on 2027-03-01.");
   });
 });

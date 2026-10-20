@@ -7,7 +7,7 @@ import type { ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from 
 import { SampleStrip } from "../SampleStrip";
 import { actsLine, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
 import { streetDaysText } from "@walkup/exports/format";
-import { entityIndex, isThinSignal, sendStatus, sendSteps, sheetTitle } from "../../lib/sheet-utils";
+import { entityIndex, guardNoteText, isThinSignal, sendStatus, sendSteps, sheetTitle } from "../../lib/sheet-utils";
 import { CopyHooksCard, DeclaredCard, DifferentCard, MediaCard, PrePostCard } from "./MoreCards";
 import { LedgerSection } from "./LedgerSection";
 import { LiftCard } from "./LiftCard";
@@ -417,7 +417,7 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
           {guardNotes.length > 0 ? (
             <ul className="mt-1 max-w-[760px] list-disc space-y-1 pl-5 text-muted">
               {guardNotes.map((r) => (
-                <li key={r}>{r}</li>
+                <li key={r}>{guardNoteText(r)}</li>
               ))}
             </ul>
           ) : null}

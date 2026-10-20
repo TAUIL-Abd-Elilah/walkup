@@ -71,7 +71,29 @@ export interface GuardedNarration {
  * unless the ticketing age policy says 21+), copy hooks must use allowlisted
  * tags by name and no act names. Failing lines are dropped and counted.
  */
-export function guardNarration(draft: NarrationDraft, prepared: PreparedRun): GuardedNarration {
+/**
+ * Writes the run's ISO show date and "<n> USD" the way the sheet does ("Wednesday, Feb 17", "$6,000"), for a
+ * model that copied them from the facts. Nothing else in the text changes.
+ */
+export function readableForPromoter(text: string, show: { date?: unknown; dateText?: unknown }): string {
+  let out = text;
+  if (typeof show.date === "string" && typeof show.dateText === "string" && show.date) {
+    // "on Wednesday, 2027-02-17" would repeat the weekday: drop a weekday written just before the date.
+    out = out.replace(new RegExp(`(?:\\b[A-Z][a-z]+day,?\\s+)?${show.date.replace(/-/g, "\\-")}`, "g"), show.dateText);
+  }
+  return out.replace(/\b(\d{1,3}(?:,\d{3})+|\d+)\s*USD\b/g, (_m, n: string) => `$${Number(n.replace(/,/g, "")).toLocaleString("en-US")}`);
+}
+
+export function guardNarration(rawDraft: NarrationDraft, prepared: PreparedRun): GuardedNarration {
+  const show = (prepared.facts["show"] ?? {}) as { date?: unknown; dateText?: unknown };
+  const fix = (t: string) => readableForPromoter(t, show);
+  const draft: NarrationDraft = {
+    ...rawDraft,
+    summary: fix(rawDraft.summary),
+    tileWhy: rawDraft.tileWhy.map((t) => ({ ...t, text: fix(t.text) })),
+    partnerLines: rawDraft.partnerLines.map((l) => ({ ...l, text: fix(l.text) })),
+    copyHooks: rawDraft.copyHooks.map((h) => ({ ...h, text: fix(h.text) })),
+  };
   const reasons: string[] = [];
   const geos = new Set(prepared.ids.geohashes);
   const ents = new Set(prepared.ids.entityIds);

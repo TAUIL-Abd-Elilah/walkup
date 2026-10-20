@@ -156,6 +156,34 @@ function clock(hh: number, mm: number): string {
  * 24-hour times inside a sentence ("open 17:00 to 02:00") in the hours column's style ("open 5 pm to 2 am"). For the
  * narration's partner lines, which quote the run's hours as the data has them.
  */
+/**
+ * A narration check's note in plain words: "tileWhy[4]: number 1.7 is not in this run" becomes
+ * "Claude's line for area 5 was left out: it had a number (1.7) that isn't from this run." Notes it does not
+ * recognise come back unchanged.
+ */
+export function guardNoteText(note: string): string {
+  const m = /^(summary|tileWhy|partnerLines|copyHooks)(?:\[(\d+)\])?: (.+)$/.exec(note.trim());
+  if (!m) return note;
+  const [, field, idx, why] = m;
+  const n = idx === undefined ? null : Number(idx) + 1;
+  const what =
+    field === "summary"
+      ? "Claude's summary"
+      : field === "tileWhy"
+        ? `Claude's line for area ${n}`
+        : field === "partnerLines"
+          ? "One of Claude's partner lines"
+          : "One of Claude's copy lines";
+  const num = /^number (\S+) is not in this run$/.exec(why!);
+  const reason = num
+    ? `it had a number (${num[1]}) that isn't from this run`
+    : why!
+        .replace(/geohash not in this run/, "it named an area that isn't on this sheet")
+        .replace(/entityId not in this run/, "it named a place that isn't on this sheet")
+        .replace(/^duplicate (tile|entity)$/, "it repeated another line");
+  return `${what} was left out: ${reason}.`;
+}
+
 export function humanTimes(text: string): string {
   return text.replace(/\b([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\b/g, (_m, h: string, m: string) => clock(Number(h), Number(m)));
 }

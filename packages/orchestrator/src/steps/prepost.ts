@@ -136,6 +136,8 @@ export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet
     ledgerRef: billRef,
     ...(twinRef ? { houseLedgerRef: twinRef } : {}),
     weekday: ctx.bill.weekday,
+    // Before and after an evening show: a spot that closes in the afternoon is no use.
+    eveningOnly: true,
     maxSpots: 8,
     excludeEntityIds: exclude,
     categoryTags: categoryTagMap(ctx.pins),
@@ -167,6 +169,7 @@ export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet
         : " Ticketmaster doesn't list an age policy, so bars stay on your list but off anything fans see.";
   }
   if (report.droppedClosed > 0) summary += ` Dropped ${plural(report.droppedClosed, "place")} marked closed.`;
+  if (report.droppedNotEvening > 0) summary += ` Left out ${plural(report.droppedNotEvening, "place")} that ${report.droppedNotEvening === 1 ? "closes" : "close"} before the evening.`;
   const typeDrops = prePostTypeDrops(ctx);
   if (typeDrops) summary += ` ${plural(typeDrops.count, "place")} left out by type (${typeDrops.reason}).`;
   const chains = chainLine(report.chainsMovedDown, report.chainsOffList.length);

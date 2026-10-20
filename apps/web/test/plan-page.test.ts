@@ -148,6 +148,13 @@ describe("plan page helpers", () => {
     expect(utils.humanTimes("About 2.2 times the room's usual crowd, 58% of the budget.")).toBe("About 2.2 times the room's usual crowd, 58% of the budget.");
   });
 
+  it("says a narration check's note in plain words", () => {
+    expect(utils.guardNoteText("tileWhy[4]: number 1.7 is not in this run")).toBe("Claude's line for area 5 was left out: it had a number (1.7) that isn't from this run.");
+    expect(utils.guardNoteText("summary: banned word \"amazing\"")).toBe("Claude's summary was left out: banned word \"amazing\".");
+    expect(utils.guardNoteText("partnerLines[2]: entityId not in this run")).toBe("One of Claude's partner lines was left out: it named a place that isn't on this sheet.");
+    expect(utils.guardNoteText("Something else entirely")).toBe("Something else entirely");
+  });
+
   it("links the discovery callout to a row or tile on this sheet, and to nothing that is not there", () => {
     const d = sheet.discovery as SheetDiscovery;
     expect(model.discoveryTarget(sheet, d)?.href).toBe(`#${model.partnerAnchor(d.entityId!)}`);

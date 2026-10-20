@@ -43,6 +43,13 @@ describe("popularity check", () => {
     expect(r.check?.notInPopularTop).toBe(0);
   });
 
+  it("never suggests a place with the venue's name, even under another id", () => {
+    const diner = place("Anthem", { id: "diner", category: "restaurant" });
+    const other = place("Anthem Row Deli", { id: "deli", category: "restaurant" });
+    expect(eligiblePartnerIds([diner, other], { excludeNames: ["The Anthem"] })).toEqual(["deli"]);
+    expect(eligiblePartnerIds([diner, other])).toEqual(["diner", "deli"]);
+  });
+
   it("gives no number when an area with partners has no list or nothing eligible, and names the area", () => {
     const partners = [partner("a1", "aaaaaa"), partner("b1", "bbbbbb")];
     expect(popularityCheck(partners, [twin("aaaaaa", ["a1"], "Q20")])).toEqual({ check: null, missing: [{ tileGeohash: "bbbbbb", why: "no search" }] });

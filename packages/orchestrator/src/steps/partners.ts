@@ -349,7 +349,13 @@ export async function runPartners(
   for (const p of pools) if (p.house) twinByPool.set(p.ledgerRef, p.house);
   const excludedCats = excludedCategoriesFor(ctx);
   // The eligibility rules, shared by the scoring and the popularity list.
-  const eligibility: PartnerScoringOptions = { weekday: streetDay(ctx), categoryTags: categoryTagMap(ctx.pins), excludeEntityIds: excludeIds, excludeCategories: excludedCats };
+  const eligibility: PartnerScoringOptions = {
+    weekday: streetDay(ctx),
+    categoryTags: categoryTagMap(ctx.pins),
+    excludeEntityIds: excludeIds,
+    excludeNames: [ctx.bill.venue.name],
+    excludeCategories: excludedCats,
+  };
   const { partners, report } = scorePartnersWithReport(pools, top, {
     ...eligibility,
     chains: CHAINS,

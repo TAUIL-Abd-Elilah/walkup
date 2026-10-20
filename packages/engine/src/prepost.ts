@@ -10,7 +10,7 @@
 import type { Chip, PrePostSpot, QlooEntity, Weekday } from "@walkup/contracts";
 import { DEFAULT_BAR_CATEGORIES, isBarCategory, isClosedEntity, resolveCategory, type CategoryOptions } from "./category";
 import { chainIndex as toChainIndex, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
-import { hoursOnDay, type HoursOptions } from "./hours";
+import { hoursOnDay, openInEvening, type HoursOptions } from "./hours";
 import { loadBalance } from "./loadBalance";
 import { isFiniteNumber } from "./num";
 
@@ -56,6 +56,8 @@ export interface PrePostOptions extends CategoryOptions {
   houseLedgerRef?: string;
   /** Show weekday for the hours check. */
   weekday?: Weekday | null;
+  /** Leave out spots whose hours that day end before the evening (a café that closes at 3 pm). Needs `weekday`. */
+  eveningOnly?: boolean;
   /** Default 8. */
   maxSpots?: number;
   excludeEntityIds?: Iterable<string>;
@@ -69,6 +71,8 @@ export interface PrePostReport {
   candidates: number;
   droppedClosed: number;
   droppedHoursClosed: number;
+  /** Open that day, but only before the evening (with `eveningOnly`). */
+  droppedNotEvening: number;
   droppedExcluded: number;
   capacityApplied: boolean;
   unplaced: number;
@@ -89,6 +93,7 @@ export function buildPrePostSpots(entities: readonly QlooEntity[], opts: PrePost
     candidates: entities.length,
     droppedClosed: 0,
     droppedHoursClosed: 0,
+    droppedNotEvening: 0,
     droppedExcluded: 0,
     capacityApplied: false,
     unplaced: 0,
@@ -116,9 +121,16 @@ export function buildPrePostSpots(entities: readonly QlooEntity[], opts: PrePost
       report.droppedClosed++;
       return;
     }
-    if (opts.weekday && hoursOnDay(e.properties?.hours, opts.weekday, opts.hours ?? {}).status === "closed") {
-      report.droppedHoursClosed++;
-      return;
+    if (opts.weekday) {
+      const h = hoursOnDay(e.properties?.hours, opts.weekday, opts.hours ?? {});
+      if (h.status === "closed") {
+        report.droppedHoursClosed++;
+        return;
+      }
+      if (opts.eveningOnly && h.status === "open" && openInEvening(h.text) === false) {
+        report.droppedNotEvening++;
+        return;
+      }
     }
     seen.add(id);
     eligible.push({ e, rank: i + 1, weight: n > 0 ? 1 - i / n : 0, chain: chainIndex ? chainIndex.match(e.name) !== null : false });

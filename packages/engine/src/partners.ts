@@ -41,7 +41,7 @@
  */
 import type { Chip, LiftTile, Partner, QlooEntity, Weekday } from "@walkup/contracts";
 import { DEFAULT_BAR_CATEGORIES, distanceOf, isBarCategory, isClosedEntity, propString, resolveCategory, type CategoryOptions } from "./category";
-import { chainIndex as toChainIndex, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
+import { chainIndex as toChainIndex, normalizeChainName, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
 import { hoursOnDay, type HoursOptions } from "./hours";
 import { clamp, cmpNum, cmpStr, isFiniteNumber } from "./num";
 
@@ -97,6 +97,11 @@ export interface PartnerScoringOptions extends CategoryOptions {
   maxTotal?: number;
   /** Never suggested (the venue's own place id, operator exclusions). */
   excludeEntityIds?: Iterable<string>;
+  /**
+   * Names never suggested, compared the way chain names are ("The Anthem" = "Anthem"): the venue's own name, so a
+   * different place that shares it never reads as the room listed as its own partner.
+   */
+  excludeNames?: readonly string[];
   /** Category keys (as `resolveCategory` returns them) that are never suggested, e.g. bars on an all-ages show. */
   excludeCategories?: Iterable<string>;
   /** Ubiquity penalty knobs. Default `UBIQUITY`. */
@@ -207,6 +212,10 @@ function eligibility(entity: QlooEntity, opts: PartnerScoringOptions, excluded: 
   const id = entity && typeof entity.entityId === "string" ? entity.entityId.trim() : "";
   if (!id) return { ok: false, drop: "invalid" };
   if (excluded.has(id)) return { ok: false, drop: "excluded" };
+  if (opts.excludeNames?.length && typeof entity.name === "string") {
+    const n = normalizeChainName(entity.name);
+    if (n && opts.excludeNames.some((x) => normalizeChainName(x) === n)) return { ok: false, drop: "excluded" };
+  }
   if (isClosedEntity(entity)) return { ok: false, drop: "closed" };
   let hoursText: string | null = null;
   let hoursKnown = true;

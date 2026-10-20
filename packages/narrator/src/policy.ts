@@ -168,11 +168,13 @@ export function isAllowedNumber(token: string, allowed: AllowedNumbers): boolean
   const value = Number(clean);
   if (!Number.isFinite(value)) return false;
   const d = Math.min(decimalsOf(clean), 6);
-  const target = value.toFixed(d);
+  // Within half a step of the token's last digit: 1.65 may be written 1.7 (toFixed gives "1.6" for the float 1.65).
+  const half = 0.5 * 10 ** -d + 1e-9;
+  const target = Math.abs(value);
   for (const v of allowed.values) {
     const a = Math.abs(v);
-    if (a.toFixed(d) === target) return true;
-    if (a <= 1 && (a * 100).toFixed(d) === target) return true;
+    if (Math.abs(a - target) <= half) return true;
+    if (a <= 1 && Math.abs(a * 100 - target) <= half) return true;
   }
   return false;
 }

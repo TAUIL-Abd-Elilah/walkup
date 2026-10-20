@@ -216,6 +216,8 @@ export function prepareRun(input: NarrateInput): PreparedRun {
       acts: bill.acts.map((a) => ({ name: a.name, role: a.role })),
       venue: { name: bill.venue.name, city: bill.venue.city, state: bill.venue.state ?? null },
       date: bill.date,
+      // How prose writes the date ("Wednesday, Feb 17"); the ISO date is for reading, not for copying.
+      dateText: displayDate(bill.weekday, bill.date),
       weekday: bill.weekday,
       legalAgeEnforced: bill.legalAgeEnforced,
       classification: bill.classification ?? null,

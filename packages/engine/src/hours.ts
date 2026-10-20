@@ -413,3 +413,21 @@ export function hoursOnDay(hours: unknown, day: Weekday, opts: HoursOptions = {}
   }
   return UNKNOWN;
 }
+
+/**
+ * Whether a day's hours ("11:00-15:00", "17:00:00-02:00:00", "7:30-11, 17-22") reach the evening, 5 pm to
+ * midnight, when people go out before or after a show. Null when the text can't be read as clock ranges.
+ */
+export function openInEvening(text: string | null | undefined): boolean | null {
+  if (!text) return null;
+  const ranges = [...text.matchAll(/(\d{1,2})(?::(\d{2}))?(?::\d{2})?\s*[-–]\s*(\d{1,2})(?::(\d{2}))?(?::\d{2})?/g)];
+  if (ranges.length === 0) return null;
+  const EVENING = 17 * 60;
+  const MIDNIGHT = 24 * 60;
+  return ranges.some((r) => {
+    const start = Number(r[1]) * 60 + Number(r[2] ?? 0);
+    let end = Number(r[3]) * 60 + Number(r[4] ?? 0);
+    if (end <= start) end += MIDNIGHT; // past midnight, or open all day
+    return Math.max(start, EVENING) < Math.min(end, MIDNIGHT);
+  });
+}

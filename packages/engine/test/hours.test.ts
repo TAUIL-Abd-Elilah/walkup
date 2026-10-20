@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hoursOnDay, normalizeWeekday, parseDaySpec } from "../src/hours";
+import { hoursOnDay, normalizeWeekday, openInEvening, parseDaySpec } from "../src/hours";
 
 describe("normalizeWeekday / parseDaySpec", () => {
   it("normalises names and abbreviations", () => {
@@ -174,5 +174,20 @@ describe("hoursOnDay: a closed window is not a closed day", () => {
     expect(hoursOnDay(["Thursday: Closed 2-5", "Friday: 9-5"], "thursday").status).toBe("unknown");
     expect(hoursOnDay({ Thursday: "Closed", Friday: "11-2" }, "thursday").status).toBe("closed");
     expect(hoursOnDay("Mo-Fr 09:00-17:00; Su off", "sunday").status).toBe("closed");
+  });
+});
+
+describe("openInEvening", () => {
+  it("is true only when the day's hours reach 5 pm to midnight", () => {
+    expect(openInEvening("11:00-15:00")).toBe(false); // a lunch café
+    expect(openInEvening("07:30:00-14:30:00")).toBe(false);
+    expect(openInEvening("09:00-17:00")).toBe(false); // closes as the evening starts
+    expect(openInEvening("09:00-19:00")).toBe(true);
+    expect(openInEvening("17:00:00-02:00:00")).toBe(true);
+    expect(openInEvening("11:30-14:30, 17:00-22:00")).toBe(true);
+    expect(openInEvening("00:00-02:00")).toBe(false); // late-night tail of the day before
+    expect(openInEvening("00:00-00:00")).toBe(true); // all day
+    expect(openInEvening("by appointment")).toBeNull();
+    expect(openInEvening(null)).toBeNull();
   });
 });

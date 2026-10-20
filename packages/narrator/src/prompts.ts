@@ -23,7 +23,8 @@ Rules:
 6. Mention alcohol only when legalAgeEnforced is true.
 7. Copy hooks take their descriptive words from the allowlisted tag names, plus the venue name, weekday and date. No act names, no artist marks, no slogans.
 8. Do not use the words AI-powered, revolutionary, taste or culture.
-9. If a fact is missing, leave it out rather than guess.`;
+9. If a fact is missing, leave it out rather than guess.
+10. Write for a promoter, not a database: write the show date as show.dateText ("Wednesday, Feb 17"), never as 2027-02-17; money as "$6,000", never "6000 USD"; a lift with one decimal ("about 2.8 times"). Never use the words heuristic, geohash or tile, and call the budget split "a rough split of the budget".`;
 
 /** Shared by arm F (with tools) and arm L (without tools) so the arms differ only in tools. */
 export const CONTROL_SYSTEM_PROMPT = `You help a live-music promoter's street team find real local places near a venue where the audience for one booked show is likely to spend time: bars, restaurants, cafes, record stores, barbershops, bookstores, vintage shops and similar spots that could display a flyer or host a pre-show meetup.
