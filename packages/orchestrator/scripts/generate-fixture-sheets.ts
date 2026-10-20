@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_WORLD_SEED } from "@walkup/qloo-world";
-import { createFixtureDeps, planShow, PRESETS, PRESET_IDS, type ArmKey, type PlanResult, type Preset } from "../src/index";
+import { createFixtureDeps, planShow, presetFor, PRESETS, PRESET_IDS, type ArmKey, type PlanResult, type Preset } from "../src/index";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..");
@@ -38,7 +38,8 @@ const NOTE =
   "every act, business, podcast, brand and number is made up. Phone numbers use the reserved 555-01xx lines and websites the .example domain.";
 
 async function runOne(preset: Preset, arms: ArmKey[]): Promise<{ result: PlanResult; picked: string[] }> {
-  const clock = () => Date.parse(`${preset.asOf}T15:00:00Z`);
+  // These sheets are always the fixture show, made on the fixture world.
+  const clock = () => Date.parse(`${presetFor(preset, "fixture").asOf}T15:00:00Z`);
   const deps = createFixtureDeps({ clock, idGen: () => preset.id });
   let result = await planShow({ presetId: preset.id, planId: preset.id }, deps, { arms });
   const picked: string[] = [];
@@ -71,7 +72,7 @@ async function main(): Promise<void> {
     const wrapper: Record<string, unknown> = {
       synthetic: true,
       fixtureId: id,
-      title: preset.title,
+      title: presetFor(preset, "fixture").title,
       note: picked.length > 0 ? `${NOTE} Walkup's sample run picked ${picked.join(", ")} the way an operator would.` : NOTE,
       ...(preset.pairedWith ? { pairedWith: preset.pairedWith } : {}),
       generatedBy: "packages/orchestrator/scripts/generate-fixture-sheets.ts",

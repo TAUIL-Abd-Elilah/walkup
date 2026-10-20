@@ -33,7 +33,7 @@ import { callBudget } from "./budget";
 import { emit, failure, node, type RunContext } from "./context";
 import { createRunLedger } from "./ledger";
 import { deniedReceipt } from "./policy";
-import { presetById, type Preset } from "./presets";
+import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, type Preset, type PresetShow } from "./presets";
 import { runArmF } from "./steps/arms";
 import { splitBudget, type BudgetShare } from "./steps/budget";
 import { honestWording, runCopy } from "./steps/copy";
@@ -174,15 +174,19 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   if (sources !== 1) return errorResult("A plan request needs exactly one of tmEventId, presetId or bill.");
 
   let preset: Preset | null = null;
+  let show: PresetShow | null = null;
   if (request.presetId) {
     preset = presetById(request.presetId);
     if (!preset) return errorResult(`Unknown preset ${request.presetId}.`);
+    // A live run plans the preset's live show. Without one it stops here, before any call.
+    show = presetFor(preset, mode);
+    if (!show) return errorResult(NO_LIVE_SHOW);
   }
 
-  // Quota guard: fresh runs stop; a preset is served from the last stored sheet.
+  // Quota guard: fresh runs stop; a preset is served from the last stored sheet of its current show.
   if (preset && deps.store && deps.qloo.guardTripped() && opts.serveFromStoreWhenGuarded !== false) {
     const stored = await deps.store.latestForPreset(preset.id);
-    if (stored?.sheet) {
+    if (stored?.sheet && stored.sheet.mode === mode && presetShowOf(preset, mode, stored.sheet.bill)) {
       // Stream the stored cards too, so a listener sees the same order as a fresh run.
       for (const key of CARD_ORDER) {
         try {
@@ -214,7 +218,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
 
   // ---- 1. Intake -------------------------------------------------------------
   let bill: Bill | null = request.bill ?? null;
-  const tmEventId = request.tmEventId ?? preset?.tmEventId;
+  const tmEventId = request.tmEventId ?? show?.tmEventId;
   if (!bill && tmEventId) {
     if (!tm) return errorResult("A Ticketmaster event needs a Ticketmaster client.");
     ledger.node("T intake", "intake");
@@ -229,8 +233,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     }
   }
   if (!bill) return errorResult("No bill to plan.");
-  const operator = withoutContacts(mergeOperator(defaultOperator(bill), preset?.operator, request.operator));
-  const asOf = request.asOf ?? preset?.asOf ?? isoDate(now());
+  const operator = withoutContacts(mergeOperator(defaultOperator(bill), show?.operator, request.operator));
+  const asOf = request.asOf ?? show?.asOf ?? isoDate(now());
 
   const ctx: RunContext = {
     request,

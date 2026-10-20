@@ -8,10 +8,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createMemoryLedger, type LedgerEntry, type StreetSheet } from "@walkup/contracts";
-import { CARD_ORDER, createFixtureDeps } from "@walkup/orchestrator";
+import { CARD_ORDER, createFixtureDeps, PRESETS, type LivePreset } from "@walkup/orchestrator";
 import { createWorld, WORLD_EVENT_IDS } from "@walkup/qloo-world";
 import { createMemorySendStore, resolveSendConfig } from "@walkup/send";
 import { runtimeMode } from "../lib/mode";
+import { presetForPlan } from "../lib/presets";
 import { validateSheet } from "../lib/validate";
 import { resetActionsForTests, sessionActions } from "../lib/server/actions";
 import { depsFor, resetEngineForTests, setEngineForTests, stores } from "../lib/server/engine";
@@ -26,7 +27,7 @@ import { applyProxyPicks } from "../lib/server/proxy";
 import { getRun, resetRunsForTests } from "../lib/server/runs";
 import { searchShows } from "../lib/server/search";
 import { confirmSendFor, prepareSendFor } from "../lib/server/send";
-import { loadPlan, planSnapshot, resolvePlan, startPlan } from "../lib/server/service";
+import { loadPlan, planSnapshot, resolvePlan, startPlan, storedPresetRun } from "../lib/server/service";
 import { planEventStream, staticFrames } from "../lib/server/stream";
 import { addPartnerHouseRanks, continueLedger, houseSignalOf, TWIN_CHIP_PREFIX, twinChipLabel } from "../lib/server/twin";
 
@@ -507,6 +508,48 @@ describe("live mode (keys present; the fixture world stands in for the live tran
     const shared = await loadPlan("g1-b", { view: "page" });
     expect(shared?.kind === "sheet" && shared.planId).toBe(canonicalId);
     expect(((await startPlan({ presetId: "g1-b" }, ctx({ ip: "198.51.100.94" }))).body as Body).planId).toBe(canonicalId);
+  });
+
+  it("serves a recorded live run as the preset only while the preset's live show names its event", async () => {
+    // A live block for this test: fixture-world ids so the world can answer it.
+    const recorded: LivePreset = {
+      tmEventId: WORLD_EVENT_IDS.g3,
+      tmVenueId: PRESETS.g3.venue.tmVenueId,
+      asOf: PRESETS.g3.asOf,
+      title: "Recorded live show",
+      venue: { name: PRESETS.g3.venue.name, city: PRESETS.g3.venue.city, state: PRESETS.g3.venue.state },
+      selection: PRESETS.g3.selection,
+      operator: { ...PRESETS.g3.operator, declaredPartners: [] },
+      line: "The recorded show's line.",
+    };
+    const before = PRESETS.g3.live;
+    const st = stores();
+    setEngineForTests({ live: { ...createFixtureDeps({ world, store: st.plans, choices: st.choices }), mode: "live" } });
+    try {
+      PRESETS.g3.live = recorded;
+      const run = await startPlan({ presetId: "g3" }, ctx({ ip: "198.51.100.95" }));
+      expect(run.status).toBe(200);
+      const runId = String((run.body as Body).planId);
+      const served = await loadPlan("g3", { view: "api" });
+      expect(served?.kind === "sheet" && [served.source, served.planId, served.title]).toEqual(["store", runId, "Recorded live show"]);
+      const sheet = (served?.kind === "sheet" ? served.sheet : null) as StreetSheet;
+      expect(sheet.mode).toBe("live");
+      expect(presetForPlan("g3", "live", sheet.bill)).toMatchObject({ realShow: true, line: "The recorded show's line." });
+
+      // Key day picks another bill: the old run is no longer the preset, and keeps none of the new show's labels.
+      for (const live of [{ ...recorded, tmEventId: WORLD_EVENT_IDS.g1b, title: "The new pick", line: "The new pick's line." }, null]) {
+        PRESETS.g3.live = live;
+        expect(await storedPresetRun("g3")).toBeNull();
+        const preset = await loadPlan("g3", { view: "api" });
+        expect(preset?.kind === "sheet" && [preset.source, preset.sheet.mode]).toEqual(["preset", "fixture"]);
+        const own = await loadPlan(runId, { view: "api" });
+        expect(own?.kind === "sheet" && own.title).toBe(`${sheet.bill.acts.map((a) => a.name).join(", ")} at ${sheet.bill.venue.name}`);
+        expect(presetForPlan("g3", "live", sheet.bill)).toBeUndefined();
+      }
+    } finally {
+      PRESETS.g3.live = before;
+      setEngineForTests({ live: createFixtureDeps({ world, store: st.plans, choices: st.choices }) });
+    }
   });
 
   it("stops fresh runs when the Qloo month quota is at its floor", async () => {

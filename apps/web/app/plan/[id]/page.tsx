@@ -61,7 +61,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   if (v.kind !== "sheet") {
     // Running, waiting for a pick, or stopped: the live view streams the sections.
     const recordedSheet = v.kind === "paused" && v.source === "preset" && v.presetId ? await presetSheet(v.presetId) : null;
-    const pausedPreset = v.kind === "paused" && v.presetId ? presetForPlan(v.presetId) : undefined;
+    const pausedPreset = v.kind === "paused" && v.presetId ? presetForPlan(v.presetId, v.mode, v.pause.bill) : undefined;
     const pausedLine = pausedPreset ? presetLine(pausedPreset, null) : null;
     return (
       <PlanLive
@@ -80,7 +80,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   }
 
   const presetId = v.presetId ?? (v.source === "preset" ? id : undefined);
-  const preset = presetId ? presetForPlan(presetId) : undefined;
+  const preset = presetId ? presetForPlan(presetId, v.sheet.mode, v.sheet.bill) : undefined;
   const presetText = preset ? presetLine(preset, v.sheet.operator.seatsLeft) : null;
   const paired = await pairedFor(v.sheet.pairedPlanId ?? (v.source === "preset" ? getPlan(id)?.pairedWith : undefined));
   return (

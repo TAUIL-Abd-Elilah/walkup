@@ -44,8 +44,21 @@ export {
   REVISE_STEP_ID,
 } from "./revise/index";
 export type { RevisionReading, ReviseParent, ReviseResult, ParentRequestInput, ReviseStepInput } from "./revise/index";
-export { PRESETS, PRESET_IDS, presetById, applyG1Rule, genreClass } from "./presets";
-export type { Preset } from "./presets";
+export {
+  PRESETS,
+  PRESET_IDS,
+  presetById,
+  presetFor,
+  presetShowOf,
+  NO_LIVE_SHOW,
+  HERO_RULE,
+  HERO_WINDOW,
+  applyG1Rule,
+  explainG1Rule,
+  genreClass,
+  DISTANCE_FROM_ROOTS,
+} from "./presets";
+export type { Preset, LivePreset, PresetShow, GenreClass, G1Candidate, G1Pick, G1Explanation } from "./presets";
 export { createMemoryPlanStore, createMemoryChoiceStore, getPlan, choiceKey, CHOICE_TTL_MS } from "./store";
 export type { PlanStore, StoredPlan, ChoiceStore } from "./store";
 export { createFixtureDeps, createDepsFromEnv, liveKeysPresent } from "./deps";

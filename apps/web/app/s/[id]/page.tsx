@@ -319,7 +319,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
     );
   }
   const s = v.sheet;
-  const preset = presetForPlan(v.presetId ?? id);
+  const preset = presetForPlan(v.presetId ?? id, s.mode, s.bill);
   const m = buildSheetModel(s, preset?.showName ? { showName: preset.showName } : {});
   const partners = new Map(s.cards.partners.results.map((p) => [p.entity.entityId, p]));
   const d = m.discovery;

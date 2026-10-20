@@ -15,7 +15,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { Bill, ControlArmResult, Envelope, LedgerEntry, OperatorInputs, Resolution, StreetSheet } from "@walkup/contracts";
-import { planShow, presetById, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
+import { planShow, presetById, presetFor, presetShowOf, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
 import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, sheetEnvelope } from "../api";
 import { runtimeMode } from "../mode";
 import { getPlan, isPresetId, PRESET_PLAN_IDS, type PresetFixture } from "../plans";
@@ -111,8 +111,17 @@ export interface LoadOptions {
   sessionId?: string | null;
 }
 
-function presetTitle(id: string | undefined): string | undefined {
-  return id ? presetById(id)?.title : undefined;
+/**
+ * The title of the preset's show in this mode (its fixture title while it has
+ * no live show). Given the bill a run planned, only that show's own event
+ * takes the title: a run of an event the preset no longer names is titled by
+ * its bill.
+ */
+function presetTitle(id: string | undefined, mode: "live" | "fixture", bill?: Bill): string | undefined {
+  const preset = id ? presetById(id) : null;
+  if (!preset) return undefined;
+  if (bill) return presetShowOf(preset, mode, bill)?.title;
+  return (presetFor(preset, mode) ?? presetFor(preset, "fixture")).title;
 }
 
 function billTitle(bill: Bill | undefined): string {
@@ -181,7 +190,7 @@ export function presetPause(id: string): Promise<PauseData | null> {
       const preset = presetById(id);
       if (!preset) return null;
       try {
-        const deps = pinnedFixtureDeps(`pause:${id}`, Date.parse(`${preset.asOf}T15:00:00Z`));
+        const deps = pinnedFixtureDeps(`pause:${id}`, Date.parse(`${presetFor(preset, "fixture").asOf}T15:00:00Z`));
         const r = await planShow({ presetId: id, planId: id }, deps, { persist: false });
         if (r.status !== "needs_input" || !r.pause) return null;
         return { resolution: r.pause.resolution, pending: r.pause.pending, bill: r.pause.bill, operator: r.pause.operator, ledger: r.pause.ledger };
@@ -206,7 +215,7 @@ function sheetFromStored(s: StoredPlan, source: SheetView["source"]): SheetView 
     note: null,
     source,
     ...(presetId ? { presetId } : {}),
-    title: presetTitle(presetId) ?? billTitle(s.sheet.bill),
+    title: presetTitle(presetId, s.mode, s.sheet.bill) ?? billTitle(s.sheet.bill),
   };
 }
 
@@ -214,12 +223,16 @@ function sheetFromStored(s: StoredPlan, source: SheetView["source"]): SheetView 
  * The stored run every visitor sees as a preset in live mode: the latest complete run made by
  * the deps that run live presets now (a run stored while the server was in fixture mode does
  * not count), with the preset's own inputs (no what-ifs, partner lists or up-front picks, no
- * proxy). Anything else leaves the bundled sheet in place, or lets a fresh run start.
+ * proxy), of the event the preset's live show names now (a run recorded before that show
+ * changed does not count). Anything else leaves the bundled sheet in place, or lets a fresh
+ * run start.
  */
 export async function storedPresetRun(id: string): Promise<StoredPlan | null> {
-  const stored = await stores().plans.latestForPreset(id);
-  if (!stored?.sheet || !isCanonicalRequest(stored.request as WebPlanRequest)) return null;
-  return stored.mode === resolveMode(depsFor("live")) ? stored : null;
+  const preset = presetById(id);
+  const stored = preset ? await stores().plans.latestForPreset(id) : null;
+  if (!preset || !stored?.sheet || !isCanonicalRequest(stored.request as WebPlanRequest)) return null;
+  const mode = resolveMode(depsFor("live"));
+  return stored.mode === mode && presetShowOf(preset, mode, stored.sheet.bill) ? stored : null;
 }
 
 export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPlan | null> {
@@ -255,7 +268,8 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
 
   const run = getRun(id);
   if (run) {
-    const title = presetTitle(run.presetId) ?? run.title;
+    const runBill = run.sheet?.bill ?? run.bill;
+    const title = presetTitle(run.presetId, run.mode, runBill) ?? (run.presetId && runBill ? billTitle(runBill) : run.title);
     const base = { planId: id, mode: run.mode, title, ...(run.presetId ? { presetId: run.presetId } : {}) };
     if (run.status === "running") return { kind: "running", ...base, cards: [...run.cards] };
     if (run.status === "error") return { kind: "error", planId: id, mode: run.mode, title, error: run.error ?? "The run stopped." };
@@ -283,7 +297,7 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
       planId: id,
       mode: stored.mode,
       ...(stored.presetId ? { presetId: stored.presetId } : {}),
-      title: presetTitle(stored.presetId) ?? billTitle(stored.pause.bill),
+      title: presetTitle(stored.presetId, stored.mode, stored.pause.bill) ?? billTitle(stored.pause.bill),
       pause: { resolution: stored.pause.resolution, pending: stored.pause.pending, bill: stored.pause.bill, operator: stored.pause.operator, ledger: stored.pause.ledger },
       source: "store",
     };
@@ -487,7 +501,7 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
     ...(Object.keys(proxyPicks).length > 0 ? { proxyPicks } : {}),
     ...(overrides ? { customInputs: true } : {}),
   };
-  const title = presetTitle(presetId) ?? `Ticketmaster event ${tmEventId}`;
+  const title = presetTitle(presetId, mode.kind) ?? `Ticketmaster event ${tmEventId}`;
   const run = launch({ request, mode: mode.kind, ctx, title, counted });
   return respond(run, body.wait, ctx, counted, opts.rankPartners ? declaredOnly : undefined);
 }

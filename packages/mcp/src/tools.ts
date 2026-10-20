@@ -15,9 +15,12 @@
 import { createHash } from "node:crypto";
 import { createMemoryLedger, type DeclaredPartnerScore, type EnvelopeStatus, type OperatorInputs, type Resolution, type StreetSheet } from "@walkup/contracts";
 import {
+  NO_LIVE_SHOW,
   parentRequest,
   planShow,
   presetById,
+  presetFor,
+  presetShowOf,
   PRESET_IDS,
   questionRevision,
   readInstruction,
@@ -26,6 +29,7 @@ import {
   type PlanRequest,
   type PlanResult,
   type Preset,
+  type PresetShow,
   type StoredPlan,
 } from "@walkup/orchestrator";
 import { baseLimits, cardStatuses, errorEnvelope, planUrlFor, sheetUrlFor, worstStatus, type PauseLike, type PendingPick, type ToolEnvelope } from "./envelope";
@@ -113,6 +117,13 @@ function isFresh(services: McpServices, stored: StoredPlan): boolean {
   return Number.isFinite(at) && services.now() - at < PRESET_TTL_MS;
 }
 
+/** A fresh stored run of the preset's show as it is now: a run of an event the preset no longer names is not that preset. */
+function isCurrentPresetRun(services: McpServices, presetId: string, stored: StoredPlan): boolean {
+  const preset = presetById(presetId);
+  const bill = stored.sheet?.bill ?? stored.pause?.bill;
+  return isFresh(services, stored) && preset !== null && presetShowOf(preset, stored.mode, bill) !== null;
+}
+
 async function once<T>(services: McpServices, key: string, fn: () => Promise<T>): Promise<T> {
   const running = services.inflight.get(key) as Promise<T> | undefined;
   if (running) return running;
@@ -121,14 +132,14 @@ async function once<T>(services: McpServices, key: string, fn: () => Promise<T>)
   return p;
 }
 
-/** What a preset id shows: the host's loader when it has one, else the stored preset plan (plan id = preset id), else one run. Unlimited. */
+/** What a preset id shows: the host's loader when it has one, else the stored preset plan (plan id = preset id) of its current show, else one run. Unlimited. */
 async function presetView(services: McpServices, presetId: string, view: "page" | "api"): Promise<PlanView> {
   if (services.presetView) {
     const hosted = await services.presetView(presetId, view);
     if (hosted) return hosted;
   }
   const stored = await services.store.get(presetId);
-  if (stored && isFresh(services, stored)) return viewOfStored(stored);
+  if (stored && isCurrentPresetRun(services, presetId, stored)) return viewOfStored(stored);
   const r = await once(services, `preset:${presetId}`, () => run(services, { presetId, planId: presetId }, depsFor(services, null)));
   return viewOfResult(r);
 }
@@ -164,23 +175,29 @@ async function resumePreset(services: McpServices, presetId: string, picks: Pick
   if ("problem" in checked) return fail(services, 400, checked.problem, { planId: presetId, resolution: base.pause.resolution.results });
   const planId = `${presetId}-${picksHash(checked.resolutions)}`;
   const stored = await services.store.get(planId);
-  if (stored && isFresh(services, stored)) return ok(envelopeOfView(viewOfStored(stored), caller.origin));
+  if (stored && isCurrentPresetRun(services, presetId, stored)) return ok(envelopeOfView(viewOfStored(stored), caller.origin));
   const r = await once(services, `preset:${planId}`, () => run(services, { presetId, planId, resolutions: checked.resolutions }, depsFor(services, null)));
   return ok(envelopeOfView(viewOfResult(r), caller.origin));
 }
 
+/** The preset's show in this server's mode, or the 404 for a live server and a preset with no live show yet. */
+function showFor(services: McpServices, preset: Preset): { show: PresetShow } | { outcome: ToolOutcome<null> } {
+  const show = presetFor(preset, services.mode);
+  return show ? { show } : { outcome: fail(services, 404, NO_LIVE_SHOW) };
+}
+
 /**
  * A preset run with the caller's own changes (what-ifs, a partner list): the
- * preset's event, date, what-ifs and seeds, sent as an event request. It is not
- * stored under the preset's id, so it never becomes the sheet the preset shows
- * to everyone else, and the quota guard's "serve the stored preset" path cannot
- * hand back a sheet that ignores the caller's changes.
+ * event, date and what-ifs of the preset's show, and its seeds, sent as an
+ * event request. It is not stored under the preset's id, so it never becomes
+ * the sheet the preset shows to everyone else, and the quota guard's "serve the
+ * stored preset" path cannot hand back a sheet that ignores the caller's changes.
  */
-function presetAsEvent(preset: Preset, operator: Partial<OperatorInputs>, resolutions: Record<string, string> | undefined): PlanRequest {
+function presetAsEvent(preset: Preset, show: PresetShow, operator: Partial<OperatorInputs>, resolutions: Record<string, string> | undefined): PlanRequest {
   return {
-    tmEventId: preset.tmEventId,
-    asOf: preset.asOf,
-    operator: { ...preset.operator, ...operator },
+    tmEventId: show.tmEventId,
+    asOf: show.asOf,
+    operator: { ...show.operator, ...operator },
     ...(preset.seeds ? { seeds: preset.seeds } : {}),
     ...(preset.categories ? { categories: preset.categories } : {}),
     ...(preset.pairedWith ? { pairedPlanId: preset.pairedWith } : {}),
@@ -306,11 +323,13 @@ export async function planShowTool(services: McpServices, caller: Caller, args: 
     const preset = presetById(args.presetId);
     if (!preset) return unknownPreset(services, args.presetId);
     if (overrides) {
+      const shown = showFor(services, preset);
+      if ("outcome" in shown) return shown.outcome;
       const blocked = await peekCaps(services, caller);
       if (blocked) return blocked;
       const picked = await presetPicks(services, preset.id, args.picks);
       if ("problem" in picked) return fail(services, 400, picked.problem);
-      return freshRun(services, caller, presetAsEvent(preset, overrides, picked.resolutions));
+      return freshRun(services, caller, presetAsEvent(preset, shown.show, overrides, picked.resolutions));
     }
     if (args.picks) return resumePreset(services, preset.id, args.picks, caller);
     return ok(envelopeOfView(await presetView(services, preset.id, "page"), caller.origin));
@@ -397,9 +416,11 @@ export async function rankPartnersTool(services: McpServices, caller: Caller, ar
   if (presetId !== undefined) {
     const preset = presetById(presetId);
     if (!preset) return unknownPreset(services, presetId);
+    const shown = showFor(services, preset);
+    if ("outcome" in shown) return shown.outcome;
     const picked = await presetPicks(services, preset.id, args.picks);
     if ("problem" in picked) return fail(services, 400, picked.problem);
-    request = presetAsEvent(preset, { ...overrides, declaredPartners }, picked.resolutions);
+    request = presetAsEvent(preset, shown.show, { ...overrides, declaredPartners }, picked.resolutions);
   } else if (args.planId !== undefined) {
     const stored = await services.store.get(args.planId);
     if (!stored) return fail(services, 404, `No plan with id ${args.planId}.`);
@@ -416,7 +437,9 @@ export async function rankPartnersTool(services: McpServices, caller: Caller, ar
       // A plan made from a preset (e.g. a preset answered with a pick): rank on its event, never in the preset's slot.
       const fromPreset = presetById(storedPresetId);
       if (!fromPreset) return unknownPreset(services, storedPresetId);
-      request = { ...presetAsEvent(fromPreset, operator, undefined), ...rest, operator: { ...fromPreset.operator, ...operator } };
+      const shown = showFor(services, fromPreset);
+      if ("outcome" in shown) return shown.outcome;
+      request = { ...presetAsEvent(fromPreset, shown.show, operator, undefined), ...rest, operator: { ...shown.show.operator, ...operator } };
     }
   } else {
     const ev = await eventRequest(services, args.event as string, args.picks);
