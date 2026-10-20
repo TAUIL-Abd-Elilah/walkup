@@ -267,7 +267,7 @@ export default function SystemCardPage() {
           <p>
             <strong>Live, Oct 20 2026.</strong> Two real Ticketmaster bills at The Anthem, Washington DC (an independent room, I.M.P.), picked by a fixed
             rule: Rhiannon Giddens and FLO. Both were run live and recorded on the hosted site, about 30 Qloo calls per fresh run. The two sheets share none
-            of their top 5 areas and none of their suggested partners. 21 of their 26 partners are not in the popularity list for their area (the same Qloo
+            of their top 5 areas and none of their suggested partners. 20 of their 26 partners are not in the popularity list for their area (the same Qloo
             place search without the bill as the signal); that compares two lists, not ticket sales. The change note &ldquo;All ages, no bars&rdquo; was
             read by Claude as two tool calls, removed 8 partners and made no new Qloo call. The check that lift is not just foot traffic passed for two
             bills at The Truth, Nashville, with that room&apos;s real roster. One room and two bills show the pipeline runs on live data, not that a sheet

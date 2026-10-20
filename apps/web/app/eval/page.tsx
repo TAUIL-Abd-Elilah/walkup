@@ -93,7 +93,7 @@ function caseTitle(title: string): string {
 /** The two live hero bills at The Anthem, Washington DC, recorded on Oct 20 2026. */
 const LIVE_BILLS = [
   { name: "Rhiannon Giddens", date: "Sun Feb 28 2027", partners: 11, topArea: "Langston (H Street NE)", lift: "about 2.2x", notPopular: 8 },
-  { name: "FLO", date: "Wed Feb 17 2027", partners: 15, topArea: "Le Droit Park", lift: "about 2.8x", notPopular: 13 },
+  { name: "FLO", date: "Wed Feb 17 2027", partners: 15, topArea: "Le Droit Park", lift: "about 2.8x", notPopular: 12 },
 ] as const;
 
 /** The KG2 gate, re-run on Oct 20 2026 with The Truth's (Nashville) real Ticketmaster roster. */
