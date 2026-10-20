@@ -279,7 +279,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     return { status: "needs_input", planId, mode, pause, arms: {}, budget, citations: Object.fromEntries(ctx.citations), servedFromStore: false, ...(presetId ? { presetId } : {}) };
   }
   if (resolved.card.status === "error") {
-    return errorResult(resolved.card.reason ?? "Resolution failed.", { budget: callBudget(ledger.entries(), ledger) });
+    return errorResult(resolved.card.reason ?? "Resolution failed.", { budget: callBudget(ledger.entries(), ledger), ledger: ledger.entries() });
   }
   const seeds = resolved.seeds;
 

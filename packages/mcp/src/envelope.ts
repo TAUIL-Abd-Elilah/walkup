@@ -7,7 +7,11 @@
 import { LIMITS_EVERY_SHEET, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet, type StreetSheetCards } from "@walkup/contracts";
 import { FIXTURE_LIMITS } from "@walkup/orchestrator";
 
-export type PlanMode = "live" | "fixture";
+/**
+ * "recorded": the server serves recorded sheets only (Qloo is no longer available). Only its refusals carry
+ * it; a recorded sheet keeps its own mode ("live").
+ */
+export type PlanMode = "live" | "fixture" | "recorded";
 
 export interface PendingPick {
   input: string;

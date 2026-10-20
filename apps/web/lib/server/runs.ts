@@ -200,7 +200,7 @@ export function startRun(input: StartRunInput): RunState {
       };
       const result = input.run ? await input.run(opts) : await planShow(input.request, input.deps, opts);
       run.result = result;
-      const ledger = result.sheet?.ledger ?? result.pause?.ledger ?? [];
+      const ledger = result.sheet?.ledger ?? result.pause?.ledger ?? result.ledger ?? [];
       recordLedgerOutcomes(ledger);
       if (input.mode === "live") noteQlooRejection(ledger);
       if (result.status === "complete" && result.sheet) {

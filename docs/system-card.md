@@ -131,7 +131,8 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 | One headliner dominates the explainability | Balance check down-weights it and shows "headliner was dominating; rebalanced". Off: explainability scores are shares per place, not shown informative on Oct 15 |
 | LLM refusal, outage or spend cap reached | Deterministic template narration, labelled; revision notes read by fixed rules, labelled |
 | A change note Walkup can't read, an area not on the sheet, or a radius outside 5-60 km | One question back; the plan is not changed or re-run |
-| Qloo key deactivated or quota low | Stored or sample sheets only, marked as such on the page; fresh runs disabled with an explanation |
+| Qloo key deactivated (the hackathon key ends Nov 2 2026) | Recorded mode: sheets recorded from earlier live runs, each with its date, under a strip that says Qloo is unavailable and new plans are off; a preset with no usable recording shows its sample sheet, labelled sample. New plans, searches and revisions answer 503 with the reason. A rejected key with no live sheet stored falls back to the sample world |
+| Qloo month quota low (under 1,500 calls left) | Presets and stored sheets only; fresh runs stop with an explanation |
 
 ## Human gates
 

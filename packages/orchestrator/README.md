@@ -21,20 +21,20 @@ r.sheet;   // StreetSheet with cards, narration, ledger, guard, budgetSplit, lim
 r.budget;  // Qloo calls sent vs cached, bill-level vs venue-level
 ```
 
-With keys, `createDepsFromEnv()` returns live clients (`mode: "live"` only when `QLOO_API_KEY` and `TICKETMASTER_API_KEY` are set and `WALKUP_MODE` is not `fixture`); otherwise it returns the fixture deps. A sheet never says `live` unless real keys and live transports produced it.
+With keys, `createDepsFromEnv()` returns live clients (`mode: "live"` only when `QLOO_API_KEY` and `TICKETMASTER_API_KEY` are set and `WALKUP_MODE` is not `fixture` or `recorded`); otherwise it returns the fixture deps. A sheet never says `live` unless real keys and live transports produced it.
 
 ## Public API
 
 | Export | What it does |
 |---|---|
-| `planShow(request, deps, opts)` | One run. `request`: exactly one of `tmEventId`, `presetId` or `bill` (+ `operator`), optional `resolutions` (`{name: entityId}` to resume a pause), `seeds`, `categories`, `planId`, `pairedPlanId`, `asOf`. Returns `PlanResult` (`status: complete | needs_input | error`, `sheet`, `pause`, `arms`, `budget`, `citations`, `servedFromStore`). `opts` (`PlanOptions`): `onCard`, `arms`, `persist`, `serveFromStoreWhenGuarded`, `onStep` (each step of `sheet.steps` as the run reaches it; a paused run streams its pause step, which no sheet holds) and `revise` (set by the revise loop). |
+| `planShow(request, deps, opts)` | One run. `request`: exactly one of `tmEventId`, `presetId` or `bill` (+ `operator`), optional `resolutions` (`{name: entityId}` to resume a pause), `seeds`, `categories`, `planId`, `pairedPlanId`, `asOf`. Returns `PlanResult` (`status: complete | needs_input | error`, `sheet`, `pause`, `arms`, `budget`, `citations`, `servedFromStore`, and `ledger` when a run stopped with an error after making calls). `opts` (`PlanOptions`): `onCard`, `arms`, `persist`, `serveFromStoreWhenGuarded`, `onStep` (each step of `sheet.steps` as the run reaches it; a paused run streams its pause step, which no sheet holds) and `revise` (set by the revise loop). |
 | `revisePlan(parent, note, deps, opts)`, `readInstruction(sheet, note, deps)`, `runRevision(parent, reading, deps, opts)` | The revise loop (below). `parent` is `{sheet, request}`. |
 | `parentRequest(sheet, {stored?, presetId?})`, `revisedRequest`, `overridesFor`, `diffSheets`, `reviseSummary`, `sheetAreas`, `reviseStep`, `questionRevision`, `pausePicks` | Its pieces, exported for the web app, MCP and tests. |
 | `CARD_ORDER` | resolution, liftMap, partners, declared, prePost, media, demographics, whatsDifferent, copyHooks. |
 | `PRESETS`, `presetById`, `PRESET_IDS`, `applyG1Rule`, `genreClass` | G1-A, G1-B, G2, G3: venue, the bill the selection rule picked, operator what-ifs, seed plans. Every preset bill is invented and none carries a seats-left count. `applyG1Rule(events)` is the G1 rule as code. |
 | `createFixtureDeps(opts)` | Real clients on `@walkup/qloo-world` transports, in-memory SQLite Qloo cache, fixed or injected clock. |
 | `createDepsFromEnv(env, opts)`, `liveKeysPresent(env)` | Live deps when keys exist, else fixture deps. |
-| `createMemoryPlanStore()`, `getPlan(store, id)` | Plan storage (memory). |
+| `createMemoryPlanStore()`, `getPlan(store, id)` | Plan storage (memory). A `PlanStore` has `put`, `get`, `latestForPreset`, `list` and `listComplete({presetId?, mode?}, limit)` (complete plans, newest first). |
 | `createSqliteStores(file)`, `createSqlitePlanStore(file)` from `@walkup/orchestrator/sqlite` | SQLite: table `plans(planId, createdAt, mode, json)` and the operator's cached picks (`choices`). |
 | `createMemoryChoiceStore()` | Picks cached per (query, types) for 30 days. |
 | `loadTagPins(file)`, `defaultTagsFile(env)`, `TagPins` | Pinned URNs from `config/tags.json` (unpinned entries skipped). The file is `WALKUP_TAGS_FILE` when set, else the nearest `config/tags.json` above this module or the working directory (a bundled server finds the repository, or `/app` in the image, that way). |

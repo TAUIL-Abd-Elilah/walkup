@@ -200,7 +200,7 @@ cp .env.example .env        # Windows: copy .env.example .env
 npm run dev                 # http://localhost:3000
 ```
 
-**Sample mode works with no keys.** With `WALKUP_MODE=auto` (the default) and blank keys, the four preset shows run end to end through the same orchestrator on a synthetic stand-in for Qloo, Ticketmaster and Google Places (`packages/qloo-world`, no network). Every page, file and email is marked as sample (fixture) data, and free-form show search is disabled with an explanation. To run live, fill in `.env`:
+**Sample mode works with no keys.** With `WALKUP_MODE=auto` (the default) and blank keys, the four preset shows run end to end through the same orchestrator on a synthetic stand-in for Qloo, Ticketmaster and Google Places (`packages/qloo-world`, no network). Every page, file and email is marked as sample (fixture) data, and free-form show search is disabled with an explanation. Once Qloo is no longer available (`WALKUP_MODE=recorded`, or the time in `WALKUP_QLOO_UNTIL` has passed), the server is in recorded mode instead: it serves the sheets it stored on earlier live runs, dated and labelled as recordings, and makes no new plans ([`docs/deploy.md`](docs/deploy.md#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). To run live, fill in `.env`:
 
 | Variable | Used for | Without it |
 |---|---|---|

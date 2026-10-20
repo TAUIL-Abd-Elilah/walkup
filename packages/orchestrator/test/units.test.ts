@@ -17,6 +17,7 @@ import {
   baselineTagFor,
   callBudget,
   createMemoryChoiceStore,
+  createMemoryPlanStore,
   createRunLedger,
   deniedReceipt,
   genreClass,
@@ -35,7 +36,7 @@ function tile(geohash: string, lat: number, lon: number, lift: number, extra: Pa
 }
 
 describe("plan store (SQLite)", () => {
-  it("stores, reads and finds the latest plan for a preset", () => {
+  it("stores, reads, finds the latest plan for a preset and lists complete plans by preset and mode", () => {
     const dir = mkdtempSync(join(tmpdir(), "walkup-orch-"));
     try {
       const store = createSqlitePlanStore(join(dir, "plans.sqlite"));
@@ -50,6 +51,19 @@ describe("plan store (SQLite)", () => {
       expect(store.get("nope")).toBeNull();
       expect((store.latestForPreset("g1-a") as StoredPlan).planId).toBe("p2");
       expect((store.list(10) as StoredPlan[]).map((p) => p.planId)).toEqual(["p3", "p2", "p1"]);
+      const live: StoredPlan = { ...base, planId: "p4", createdAt: "2026-10-30T09:00:00.000Z", status: "complete", mode: "live" };
+      const other: StoredPlan = { ...base, planId: "p5", createdAt: "2026-10-30T13:00:00.000Z", status: "complete", mode: "live", presetId: "g2" };
+      store.put(live);
+      store.put(other);
+      const ids = (filter: Parameters<typeof store.listComplete>[0], limit = 10) => (store.listComplete(filter, limit) as StoredPlan[]).map((p) => p.planId);
+      expect(ids({ presetId: "g1-a" })).toEqual(["p2", "p1", "p4"]);
+      expect(ids({ presetId: "g1-a", mode: "live" })).toEqual(["p4"]);
+      expect(ids({ mode: "live" }, 1)).toEqual(["p5"]);
+      expect(ids({})).toEqual(["p5", "p2", "p1", "p4"]);
+      const memory = createMemoryPlanStore();
+      for (const p of [older, newer, paused, live, other]) memory.put(p);
+      expect((memory.listComplete({ presetId: "g1-a" }, 10) as StoredPlan[]).map((p) => p.planId)).toEqual(["p2", "p1", "p4"]);
+      expect((memory.listComplete({ mode: "live" }, 1) as StoredPlan[]).map((p) => p.planId)).toEqual(["p5"]);
       store.close();
       const reopened = createSqlitePlanStore(join(dir, "plans.sqlite"));
       expect((reopened.get("p2") as StoredPlan).status).toBe("complete");
@@ -204,6 +218,9 @@ describe("deps from the environment", () => {
     expect(liveKeysPresent({})).toBe(false);
     expect(liveKeysPresent({ QLOO_API_KEY: "x", TICKETMASTER_API_KEY: "y", WALKUP_MODE: "fixture" })).toBe(false);
     expect(liveKeysPresent({ QLOO_API_KEY: "x", TICKETMASTER_API_KEY: "y" })).toBe(true);
+    // Read like @walkup/qloo's config: an inline comment and case don't matter; recorded never runs live.
+    expect(liveKeysPresent({ QLOO_API_KEY: "x", TICKETMASTER_API_KEY: "y", WALKUP_MODE: "Fixture   # auto | live | fixture" })).toBe(false);
+    expect(liveKeysPresent({ QLOO_API_KEY: "x", TICKETMASTER_API_KEY: "y", WALKUP_MODE: "recorded" })).toBe(false);
     const d = createDepsFromEnv({ WALKUP_DATA_DIR: join(tmpdir(), "walkup-orch-env") });
     expect(d.mode).toBe("fixture");
     expect(d.world).toBeDefined();

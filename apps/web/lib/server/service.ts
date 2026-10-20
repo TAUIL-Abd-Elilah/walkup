@@ -11,12 +11,14 @@
  * Modes: in fixture mode the four presets run through the orchestrator on the
  * synthetic fixture world (free, unlimited); free-form runs are refused with
  * 503. In live mode fresh runs are capped per IP and per day; a preset with a
- * stored run is served from storage.
+ * stored run is served from storage. In recorded mode (Qloo is no longer
+ * available) nothing runs: presets show their recorded live run, or the
+ * bundled sample sheet, and every fresh path answers 503 (recordedRefusal).
  */
 import { randomUUID } from "node:crypto";
 import type { Bill, ControlArmResult, Envelope, LedgerEntry, OperatorInputs, Resolution, StreetSheet } from "@walkup/contracts";
 import { planShow, presetById, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
-import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, sheetEnvelope } from "../api";
+import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, RECORDED_REASON, sheetEnvelope } from "../api";
 import { runtimeMode } from "../mode";
 import { getPlan, isPresetId, PRESET_PLAN_IDS, type PresetFixture } from "../plans";
 import { withSessionActions } from "./actions";
@@ -24,6 +26,7 @@ import { depsFor, pinnedFixtureDeps, publishLiveQuota, sessionChoices, stores } 
 import type { RequestContext } from "./http";
 import { parsePicks, parsePlanBody, type Pick, type Wait } from "./input";
 import { freshRuns, rateLimit, type FreshRunStatus } from "./limits";
+import { recordedPresetRun } from "./recorded";
 import { getRun, isCanonicalRequest, startRun, type Pending, type RunState, type StreamCard, type WebPlanRequest } from "./runs";
 import { searchShows } from "./search";
 import { addPartnerHouseRanks } from "./twin";
@@ -42,6 +45,11 @@ export const SYNC_WAIT_MS = 85_000;
  */
 export const FIXTURE_RUNS_PER_HOUR = 30;
 const HOUR_MS = 60 * 60 * 1000;
+
+/** What every fresh path answers in recorded state: one plain reason, 503, mode "recorded". */
+export function recordedRefusal(): ServiceResponse {
+  return { status: 503, body: { mode: "recorded", reason: RECORDED_REASON } };
+}
 
 function fixtureRunAllowed(ctx: RequestContext): ServiceResponse | null {
   const rl = rateLimit("fixture-run", ctx.ip, FIXTURE_RUNS_PER_HOUR, HOUR_MS);
@@ -228,11 +236,10 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
   const withActions = (v: LoadedPlan): LoadedPlan => (v.kind === "sheet" ? { ...v, sheet: withSessionActions(v.sheet, opts.sessionId ?? null) } : v);
 
   if (isPresetId(id)) {
-    if (mode === "live") {
-      const stored = await storedPresetRun(id);
-      const v = stored ? sheetFromStored(stored, "store") : null;
-      if (v) return withActions(v);
-    }
+    // Live: the stored run live presets are served from. Recorded: the latest usable live recording.
+    const stored = mode === "live" ? await storedPresetRun(id) : mode === "recorded" ? await recordedPresetRun(id) : null;
+    const v = stored ? sheetFromStored(stored, "store") : null;
+    if (v) return withActions(v);
     const fxPromise = presetSheet(id);
     if (!fxPromise) return null;
     const fx = await fxPromise;
@@ -426,6 +433,7 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
   const body = parsed.value;
   if (opts.rankPartners && !body.partners) return { status: 400, body: { reason: "partners: list the partner names to rank (1 to 20)." } };
   const mode = runtimeMode();
+  if (mode.kind === "recorded") return recordedRefusal();
   const presetId = body.presetId;
 
   if (!presetId && mode.kind === "fixture") return { status: 503, body: { mode: "fixture", reason: FIXTURE_FRESH_RUNS_REASON } };
@@ -495,6 +503,8 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
 /** POST /api/plan/<id>/resolve: the operator's pick(s) for a paused plan. */
 export async function resolvePlan(id: string, raw: unknown, ctx: RequestContext): Promise<ServiceResponse> {
   if (!PLAN_ID_RE.test(id)) return { status: 400, body: { reason: "Plan ids match ^[A-Za-z0-9_-]{1,64}$." } };
+  const runtime = runtimeMode().kind;
+  if (runtime === "recorded") return recordedRefusal();
   const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const parsed = parsePicks(obj.picks ?? obj.resolutions);
   if (!parsed.ok) return { status: 400, body: { reason: parsed.reason } };
@@ -516,7 +526,6 @@ export async function resolvePlan(id: string, raw: unknown, ctx: RequestContext)
       return { status: 400, body: { reason: `Pick one of the candidates shown for "${p.input}", or choose "None of these: use a proxy".` } };
     }
   }
-  const runtime = runtimeMode().kind;
   if (loaded.mode === "live" && runtime !== "live") return { status: 409, body: { reason: "This live plan cannot resume while the server is in fixture mode." } };
 
   const { resolutions, proxyPicks } = splitPicks(picks);

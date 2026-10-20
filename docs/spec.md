@@ -23,7 +23,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 ### A. First visit (desktop and phone, no login, no email)
 
 1. The landing page renders from cache (G1) and is never empty.
-2. A status pill shows the mode: live with the last refresh time and Qloo calls left this month, or `FIXTURE (recorded <date>)` with a watermark.
+2. The mode is said in words, never in a pill: live ("Live data" with the Qloo calls left this month); fixture, with a strip on every page saying the sheets use made-up places and numbers; or recorded, with a strip saying Qloo is unavailable since a date, the sheets were recorded from live runs on the dates shown and are not refreshed, and new plans are off. A recorded sheet says "Recorded <date>" where a live one says "Planned <date>".
 3. Three preset chips (the goldens) and a search box for any Ticketmaster show.
 4. Opening a sheet shows the cards in order, each with a status badge (`ok`, `empty`, `needs_input`, `partial`, `degraded`, `error`) and a reason when not `ok`: resolution, lift map with top 5 named tiles, partners, pre/post, media and sponsor, copy hooks.
 5. The "Without Qloo" toggle shows the fair-control list beside the Qloo list with the overlap count and Qloo-only picks marked.
@@ -94,9 +94,11 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 
 `partners.csv`, `zips.csv` (ZIP, lift score, suggested weight), `pins.csv` (lat, lon, radius_mi of at least 1), `street-team.ics`, `offer-codes.csv` (labelled "create in your ticketing platform"), `sheet.json` with the ledger, and the PDF (US Letter or A4, readable on a phone). The share URL `/s/<plan-id>` is readable without login.
 
-### J. Fixture mode
+### J. Fixture and recorded modes
 
-When no Qloo key is set, or after it is deactivated, the app replays goldens and recorded runs, every card carries `FIXTURE: recorded <date>`, and fresh runs are disabled with an explanation. `npm ci && npm run dev` works with an empty `.env`.
+1. **Fixture: sample data.** Without a Qloo or a Ticketmaster key, or with `WALKUP_MODE=fixture`, the presets run on a synthetic stand-in for Qloo, Ticketmaster and Google Places and no API is called. Every page, sheet, file and email says it is sample data (made-up places and numbers), and free-form runs answer 503 with an explanation. `npm ci && npm run dev` works with an empty `.env`.
+2. **Recorded: live runs, Qloo unavailable.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date; sample sheets stay sample. New plans, searches, picks, revisions and every MCP tool but `get_sheet` answer with `mode: "recorded"` and one plain reason (503 on the REST routes); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
+3. A rejected key with no live sheet stored falls back to fixture mode. Recorded data is never shown as sample data, and sample data never as recorded.
 
 ### K. Agents
 

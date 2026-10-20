@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
 import "./globals.css";
+import { RecordedStrip } from "@/components/RecordedStrip";
 import { SampleStrip } from "@/components/SampleStrip";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -30,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <a href="#main" className="skip-link no-print">
           Skip to content
         </a>
-        {mode.kind === "fixture" ? <SampleStrip mode={mode} /> : null}
+        {mode.kind === "fixture" ? <SampleStrip mode={mode} /> : mode.kind === "recorded" ? <RecordedStrip mode={mode} /> : null}
         <SiteHeader mode={mode} />
         <main id="main">{children}</main>
         <SiteFooter />

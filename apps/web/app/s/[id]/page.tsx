@@ -9,6 +9,7 @@ import { PrintButton } from "@/components/sheet/PrintButton";
 import { StaticLiftMap } from "@/components/StaticLiftMap";
 import { telHref } from "@/lib/format";
 import { liftColor } from "@/lib/lift";
+import { runtimeMode } from "@/lib/mode";
 import { presetForPlan } from "@/lib/presets";
 import { SESSION_COOKIE } from "@/lib/server/http";
 import { loadPlan } from "@/lib/server/service";
@@ -320,7 +321,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
   }
   const s = v.sheet;
   const preset = presetForPlan(v.presetId ?? id);
-  const m = buildSheetModel(s, preset?.showName ? { showName: preset.showName } : {});
+  const m = buildSheetModel(s, { ...(preset?.showName ? { showName: preset.showName } : {}), recorded: runtimeMode().kind === "recorded" });
   const partners = new Map(s.cards.partners.results.map((p) => [p.entity.entityId, p]));
   const d = m.discovery;
   const discoveryId = d?.entityId && partners.has(d.entityId) ? d.entityId : null;

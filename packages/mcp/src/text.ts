@@ -138,7 +138,13 @@ function revisionLines(r: NonNullable<ToolEnvelope["revision"]>): string[] {
 export function envelopeText(tool: string, env: ToolEnvelope): string {
   const lines: string[] = [];
   lines.push(`Walkup ${tool}: ${env.status}. ${env.summary}`);
-  lines.push(env.mode === "fixture" ? "Mode: fixture (synthetic data; no live API was called)." : "Mode: live.");
+  lines.push(
+    env.mode === "fixture"
+      ? "Mode: fixture (synthetic data; no live API was called)."
+      : env.mode === "recorded"
+        ? "Mode: recorded (Qloo is no longer available; only recorded sheets can be read)."
+        : "Mode: live.",
+  );
   if (env.planId) lines.push(`Plan id: ${env.planId}${env.sheetUrl ? ` · Street Sheet: ${env.sheetUrl}` : ""}`);
   if (env.reason && env.reason !== env.summary) lines.push(`Reason: ${env.reason}`);
   if (env.freshRuns) lines.push(`Fresh runs left today: ${env.freshRuns.leftForCaller} for you, ${env.freshRuns.leftToday} on this server.`);

@@ -5,11 +5,12 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * GET /healthz: mode, key presence (never values), reachability, Qloo month quota and fresh runs left.
+ * GET /healthz: mode, key presence (never values), a rejected Qloo key and WALKUP_QLOO_UNTIL, the recorded
+ * run per preset, reachability, Qloo month quota and fresh runs left.
  * Always 200 with ok: true, fast, and never calls an API on the request path: reachability comes from
  * the last real calls and from a keyless background probe at most every 10 minutes (live mode only).
  */
 export async function GET(): Promise<Response> {
-  const res = health();
+  const res = await health();
   return json(res.body, res.status);
 }

@@ -41,6 +41,11 @@ export interface PlanViewProps {
   paired: { planId: string; headliner: string; date?: string } | null;
   /** The server is live: a fixture sheet then says it is a sample. */
   runtimeLive: boolean;
+  /**
+   * The server serves recorded sheets only (Qloo is no longer available): a live sheet says when it was recorded
+   * instead of when it was planned, and a fixture sheet says it is a sample.
+   */
+  recorded?: boolean;
   /** Show "Run it again" (a fresh run of this preset that streams step by step). */
   canRerun: boolean;
   /**
@@ -95,11 +100,12 @@ function contentsFor(opts: { revise: boolean; steps: boolean }): { href: string;
 }
 
 /** "About this sheet" in one sentence. */
-function aboutNote(p: PlanPayload): string {
+function aboutNote(p: PlanPayload, recorded: boolean): string {
   if (p.sheet.mode === "fixture") {
     return "Made with Walkup's sample data, so no live service was called; the venue and area names are real, and every act, business, podcast, brand and number is made up.";
   }
   if (p.source === "preset" && p.note) return p.note;
+  if (recorded) return `Recorded from a live run on ${formatStamp(p.sheet.createdAt)} and not refreshed since. Every footnote points to the request that produced the claim.`;
   return "A live run. Every footnote points to the request that produced the claim.";
 }
 
@@ -175,7 +181,7 @@ function RerunLink({ presetId }: { presetId: string }) {
   );
 }
 
-export function PlanView({ payload, line, realShow, showName, paired, runtimeLive, canRerun, onRevise, revisable = false }: PlanViewProps) {
+export function PlanView({ payload, line, realShow, showName, paired, runtimeLive, recorded = false, canRerun, onRevise, revisable = false }: PlanViewProps) {
   const router = useRouter();
   const sheet = payload.sheet;
   const control = payload.control ?? sheet.control ?? EMPTY_CONTROL;
@@ -257,7 +263,7 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
 
   return (
     <ReceiptContext.Provider value={ctx}>
-      {runtimeLive && sample ? <SampleStrip variant="sheet" /> : null}
+      {(runtimeLive || recorded) && sample ? <SampleStrip variant="sheet" recorded={recorded} /> : null}
       <div className="wrap-wide pt-6 pb-4">
         <nav aria-label="Breadcrumb" className="no-print text-sm text-muted">
           <Link href="/#sheets" className="underline-offset-2 hover:text-ink hover:underline">
@@ -280,7 +286,7 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
               {genre ? <span className="text-muted"> {genre}.</span> : null}
             </p>
             <p className="mt-1 text-sm text-muted" data-testid="meta-line">
-              {sample ? "Sample street sheet" : "Street sheet"} · {status.line} · Planned {formatStamp(sheet.createdAt)} from{" "}
+              {sample ? "Sample street sheet" : "Street sheet"} · {status.line} · {recorded && !sample ? "Recorded" : "Planned"} {formatStamp(sheet.createdAt)} from{" "}
               <a href="#ledger" className="underline underline-offset-2 hover:text-ink">
                 {requestCount} {requestCount === 1 ? "request" : "requests"}
               </a>
@@ -431,7 +437,7 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
             </ul>
           ) : null}
           <h3 className="mt-6 text-base">About this sheet</h3>
-          <p className="mt-1 max-w-[760px] text-muted">{aboutNote(payload)}</p>
+          <p className="mt-1 max-w-[760px] text-muted">{aboutNote(payload, recorded)}</p>
         </section>
 
         <section id="downloads" aria-labelledby="downloads-title" className="section no-print scroll-mt-4">

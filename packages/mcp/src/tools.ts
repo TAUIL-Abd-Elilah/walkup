@@ -10,7 +10,8 @@
  *
  * Presets (and picks among the candidates a preset showed) are unlimited;
  * anything else that runs the planner is a fresh run and takes one unit from
- * the per-caller and daily caps.
+ * the per-caller and daily caps. When the host serves recorded sheets only
+ * (policy.recorded), every tool but get_sheet refuses with 503.
  */
 import { createHash } from "node:crypto";
 import { createMemoryLedger, type DeclaredPartnerScore, type EnvelopeStatus, type OperatorInputs, type Resolution, type StreetSheet } from "@walkup/contracts";
@@ -46,7 +47,7 @@ export interface Caller {
 
 export interface ToolOutcome<T = unknown> {
   envelope: ToolEnvelope<T>;
-  /** What a REST twin answers with: 200, 400 (bad input or policy), 404, 422 (run failed), 429 (caps), 503 (fixture mode). */
+  /** What a REST twin answers with: 200, 400 (bad input or policy), 404, 422 (run failed), 429 (caps), 503 (fixture or recorded mode). */
   httpStatus: number;
 }
 
@@ -63,6 +64,12 @@ function ok<T>(envelope: ToolEnvelope<T>): ToolOutcome<T> {
 
 function fail(services: McpServices, httpStatus: number, reason: string, extras: Parameters<typeof errorEnvelope>[2] = {}): ToolOutcome<null> {
   return { envelope: errorEnvelope(reason, services.mode, extras), httpStatus };
+}
+
+/** Recorded state (Qloo is no longer available): the refusal every tool but get_sheet answers with, or null. */
+function recordedRefusal(services: McpServices): ToolOutcome<null> | null {
+  const reason = services.policy.recorded;
+  return reason ? { envelope: errorEnvelope(reason, "recorded"), httpStatus: 503 } : null;
 }
 
 function freshInfo(d: CapDecision): Freshness {
@@ -129,6 +136,8 @@ async function presetView(services: McpServices, presetId: string, view: "page" 
   }
   const stored = await services.store.get(presetId);
   if (stored && isFresh(services, stored)) return viewOfStored(stored);
+  // Recorded state never runs the planner, not even for a preset.
+  if (services.policy.recorded) return { kind: "error", planId: presetId, mode: "recorded", reason: services.policy.recorded };
   const r = await once(services, `preset:${presetId}`, () => run(services, { presetId, planId: presetId }, depsFor(services, null)));
   return viewOfResult(r);
 }
@@ -296,6 +305,8 @@ async function resumeStored(services: McpServices, caller: Caller, stored: Store
 }
 
 export async function planShowTool(services: McpServices, caller: Caller, args: PlanShowArgs): Promise<ToolOutcome> {
+  const off = recordedRefusal(services);
+  if (off) return off;
   const which = exactlyOne({ event: args.event, presetId: args.presetId, planId: args.planId });
   if (which) return fail(services, 400, which);
   const problem = inputProblem([{ field: "event", value: args.event }, ...(args.picks ?? []).map((p) => ({ field: "picks", value: p.input }))]);
@@ -377,6 +388,8 @@ function rankEnvelope(sheet: StreetSheet, caller: Caller): ToolEnvelope<Declared
 }
 
 export async function rankPartnersTool(services: McpServices, caller: Caller, args: RankPartnersArgs): Promise<ToolOutcome> {
+  const off = recordedRefusal(services);
+  if (off) return off;
   const which = exactlyOne({ planId: args.planId, event: args.event, presetId: args.presetId });
   if (which) return fail(services, 400, which);
   const names = cleanNames(args.partnerNames);
@@ -475,6 +488,8 @@ export function billVsHouseOf(sheet: StreetSheet): BillVsHouse {
 }
 
 export async function billVsHouseTool(services: McpServices, caller: Caller, args: PlanRefArgs): Promise<ToolOutcome> {
+  const off = recordedRefusal(services);
+  if (off) return off;
   const v = await readView(services, args.planId);
   if (!v) return fail(services, 404, `No plan with id ${args.planId}.`);
   if (v.kind !== "sheet") {
@@ -529,6 +544,8 @@ export const REVISE_QUESTION_REASON = "Nothing was changed. Put the question to 
  * Qloo cache answers every request whose inputs did not change).
  */
 export async function revisePlanTool(services: McpServices, caller: Caller, args: RevisePlanArgs): Promise<ToolOutcome> {
+  const off = recordedRefusal(services);
+  if (off) return off;
   const problem = inputProblem([{ field: "instruction", value: args.instruction }]);
   if (problem) return fail(services, 400, problem.reason);
   const v = await readView(services, args.planId);

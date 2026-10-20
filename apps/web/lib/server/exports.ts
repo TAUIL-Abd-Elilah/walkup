@@ -40,12 +40,14 @@ export interface ExportOptions {
   /** PDF only: show in the browser instead of downloading. */
   inline?: boolean;
   pageSize?: "LETTER" | "A4";
+  /** The server serves recorded sheets only: the PDF says "Recorded <date>" on a live sheet, as the plan page does. */
+  recorded?: boolean;
 }
 
 export async function exportResponse(sheet: StreetSheet, kind: ExportKind, opts: ExportOptions = {}): Promise<Response> {
   const [file] = await toExportFiles(sheet, {
     include: [kind],
-    pdf: { ...(opts.ledgerUrl ? { ledgerUrl: opts.ledgerUrl } : {}), ...(opts.pageSize ? { pageSize: opts.pageSize } : {}) },
+    pdf: { ...(opts.ledgerUrl ? { ledgerUrl: opts.ledgerUrl } : {}), ...(opts.pageSize ? { pageSize: opts.pageSize } : {}), ...(opts.recorded ? { recorded: true } : {}) },
   });
   if (!file) throw new Error(`export ${kind} produced no file`);
   const disposition = `${opts.inline && kind === "pdf" ? "inline" : "attachment"}; filename="${file.filename}"`;

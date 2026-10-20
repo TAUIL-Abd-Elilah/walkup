@@ -78,6 +78,18 @@ describe("header", () => {
     expect(fx.footer.fixtureNote).toBe("Sample data: made-up places and numbers, not a live run.");
   });
 
+  it("says when a live sheet was recorded once Qloo is unavailable, and never calls a sample sheet recorded", () => {
+    const rec = buildSheetModel(makeSheet(), { recorded: true, printedAt: "2026-11-14T10:00:00Z" });
+    expect(rec.labels).toEqual(["Recorded Fri Oct 9 2026"]);
+    expect(rec.watermarks).toEqual([]);
+    expect(rec.sampleLabel).toBeNull();
+    expect(rec.footer.printLine).toMatch(/ · data from Fri Oct 9 2026$/);
+    expect(sheetModelText(rec).join("\n")).not.toMatch(/Sample/);
+    const fx = buildSheetModel(makeSheet({ mode: "fixture" }), { recorded: true });
+    expect(fx.labels).toEqual(["Sample data"]);
+    expect(sheetModelText(fx).join("\n")).not.toMatch(/Recorded/);
+  });
+
   it("flags a thin signal in the web sheet's words, and says the planning-tool line once, in the header", () => {
     expect(THIN_SIGNAL_NOTE).toBe("The signal is thin here, so treat this as a starting list.");
     expect(buildSheetModel(makeSheet()).notes).toContain(THIN_SIGNAL_NOTE);

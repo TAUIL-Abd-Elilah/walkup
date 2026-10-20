@@ -38,6 +38,10 @@ export function createSqliteStores(file: string): SqliteStores {
     "SELECT json FROM plans WHERE json_extract(json, '$.presetId') = ? AND json_extract(json, '$.status') = 'complete' ORDER BY createdAt DESC LIMIT 1",
   );
   const list = db.prepare<[number], { json: string }>("SELECT json FROM plans ORDER BY createdAt DESC LIMIT ?");
+  // A null mode or preset matches every row. The mode column is tested first: it needs no JSON parse.
+  const listComplete = db.prepare<[string | null, string | null, string | null, string | null, number], { json: string }>(
+    "SELECT json FROM plans WHERE (? IS NULL OR mode = ?) AND (? IS NULL OR json_extract(json, '$.presetId') = ?) AND json_extract(json, '$.status') = 'complete' ORDER BY createdAt DESC LIMIT ?",
+  );
   const getChoice = db.prepare<[string], { entityId: string; chosenAt: number }>("SELECT entityId, chosenAt FROM choices WHERE key = ?");
   const setChoice = db.prepare<[string, string, number]>("INSERT OR REPLACE INTO choices (key, entityId, chosenAt) VALUES (?, ?, ?)");
   const deleteChoice = db.prepare<[string]>("DELETE FROM choices WHERE key = ?");
@@ -56,6 +60,11 @@ export function createSqliteStores(file: string): SqliteStores {
       },
       list(limit = 50) {
         return list.all(limit).map((r) => JSON.parse(r.json) as StoredPlan);
+      },
+      listComplete(filter, limit) {
+        const preset = filter.presetId ?? null;
+        const mode = filter.mode ?? null;
+        return listComplete.all(mode, mode, preset, preset, limit).map((r) => JSON.parse(r.json) as StoredPlan);
       },
     },
     choices: {

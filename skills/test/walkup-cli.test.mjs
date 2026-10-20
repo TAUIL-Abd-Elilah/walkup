@@ -96,6 +96,9 @@ function handle(req, res, body) {
     const input = JSON.parse(body);
     if (input.event.includes("Busy")) return send(res, 429, { status: "error", reason: "3 fresh runs per IP per day" });
     if (input.event.includes("Recorded")) return send(res, 503, { status: "error", mode: "fixture", reason: "fresh runs are disabled" });
+    if (input.event.includes("Unavailable")) {
+      return send(res, 503, { mode: "recorded", reason: "Qloo is no longer available, so new plans, searches and revisions are off. Recorded sheets and their downloads still open." });
+    }
     if (input.event.includes("Ambiguous") && !input.picks) {
       return send(res, 200, {
         status: "needs_input",
@@ -276,6 +279,13 @@ test("fixture mode exits 6", async () => {
   const r = await run(["plan", "Recorded @ Test Hall, Nov 28 2026"]);
   assert.equal(r.code, 6);
   assert.match(r.stderr, /fixture mode/);
+});
+
+test("recorded mode (Qloo no longer available) exits 6 with the server's reason", async () => {
+  const r = await run(["plan", "Unavailable @ Test Hall, Nov 28 2026"]);
+  assert.equal(r.code, 6);
+  assert.match(r.stderr, /^walkup: Recorded sheets only: Qloo is no longer available, so new plans, searches and revisions are off\. Recorded sheets and their downloads still open\. Read one with: walkup sheet <plan-id>/);
+  assert.doesNotMatch(r.stderr, /fixture|\.\./);
 });
 
 test("rank-partners prints call order and the declared-not-scored list", async () => {

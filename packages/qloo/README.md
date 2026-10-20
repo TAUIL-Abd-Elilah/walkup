@@ -35,7 +35,7 @@ if (act.status === "exact") {
 | `QLOO_API_KEY` | none | Key for the hackathon host. Never logged; ledger and curl show `$QLOO_API_KEY`. |
 | `QLOO_BASE_URL` | `https://hackathon.api.qloo.com` | Any other host is refused with `QlooHostRefusedError`... |
 | `QLOO_ALLOW_HOST` | unset | ...unless this is `1` (local mock servers only). |
-| `WALKUP_MODE` | `auto` | `auto` = live when a key is present, else fixture. `live` without a key is a `QlooConfigError`. |
+| `WALKUP_MODE` | `auto` | `auto` = live when a key is present, else fixture. `live` without a key is a `QlooConfigError`. `recorded` (Qloo is no longer available; the web app serves stored live sheets only) makes the client behave as in fixture mode: it never calls Qloo. Any other value is a `QlooConfigError`. |
 | `WALKUP_DATA_DIR` | `./.cache` | Private SQLite cache: `<dir>/qloo-cache.sqlite` (git-ignored). |
 | `WALKUP_RECORD` | unset | `1` in live mode writes bodies to `fixtures/raw/<sha256>.json` (git-ignored). |
 | `WALKUP_FIXTURES_DIR` | nearest `fixtures/` above the cwd | Where `raw/` and `synthetic/` live. |

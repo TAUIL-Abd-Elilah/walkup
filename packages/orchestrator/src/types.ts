@@ -237,4 +237,9 @@ export interface PlanResult {
   /** True when a stored sheet was served because the quota guard tripped. */
   servedFromStore: boolean;
   presetId?: string;
+  /**
+   * The calls a run made before it stopped with an error (a sheet or a pause carries its own ledger), so a host
+   * can see why: e.g. Qloo refusing the key on every search.
+   */
+  ledger?: LedgerEntry[];
 }

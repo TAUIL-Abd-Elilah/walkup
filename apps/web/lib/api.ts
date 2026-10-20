@@ -102,6 +102,9 @@ export function errorEnvelope(planId: string | null, mode: "live" | "fixture", r
 export const FIXTURE_FRESH_RUNS_REASON =
   "Fresh runs are disabled in fixture mode. Presets run on the synthetic fixture world: POST {\"presetId\": \"g1-a\"} (g1-a, g1-b, g2, g3), or open GET /api/sheet/<planId>.";
 
+/** Every fresh path answers 503 with this in recorded state (mode "recorded"): the web API and MCP alike. */
+export const RECORDED_REASON = "Qloo is no longer available, so new plans, searches and revisions are off. Recorded sheets and their downloads still open.";
+
 // ---------------------------------------------------------------------------
 // Revisions: POST /api/plan/<id>/revise (browser helper)
 // ---------------------------------------------------------------------------

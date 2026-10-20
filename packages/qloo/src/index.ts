@@ -9,6 +9,7 @@ export {
   loadConfig,
   assertAllowedBaseUrl,
   envValue,
+  walkupModeValue,
   findFixturesDir,
   QLOO_DEFAULT_BASE_URL,
   QLOO_ALLOWED_HOST,

@@ -143,6 +143,17 @@ describe("requests and mode", () => {
     expect(s.hypothetical).toBe(true);
   });
 
+  it("hands back the calls a run made before it stopped, so a refused key can be seen", async () => {
+    const d = deps();
+    const refused = { ...d.world, qlooFetch: (async () => new Response(JSON.stringify({ error: { message: "Invalid key" } }), { status: 401 })) as typeof fetch };
+    const r = await planShow({ presetId: "g1-a" }, deps({ world: refused }));
+    expect(r.status).toBe("error");
+    expect(r.sheet ?? r.pause).toBeUndefined();
+    const qloo = (r.ledger ?? []).filter((e) => e.kind === "qloo");
+    expect(qloo.length).toBeGreaterThan(0);
+    expect(qloo.every((e) => e.httpStatus === 401)).toBe(true);
+  });
+
   it("rejects ambiguous or unknown requests", async () => {
     const d = deps();
     expect((await planShow({}, d)).status).toBe("error");

@@ -34,6 +34,50 @@ describe("run policy", () => {
     expect(ranked.envelope.status).not.toBe("error");
     expect(calls).toEqual([]);
   }, 120_000);
+
+  it("serves recorded sheets only when the host says Qloo is gone: get_sheet reads, every other tool refuses with 503", async () => {
+    const live = services();
+    const made = await planShowTool(live, caller(), { event: "Hollis Creek String Band @ The Truth, Nov 20 2026" });
+    const planId = made.envelope.planId as string;
+    const runs: string[] = [];
+    const reason = "Qloo is no longer available. Recorded sheets still open.";
+    const s = createMcpServices({
+      deps: live.deps,
+      store: live.store,
+      limiter: live.limiter,
+      rate: null,
+      secrets: [],
+      now: live.now,
+      idGen: live.idGen,
+      policy: { recorded: reason },
+      afterRun: (r: PlanResult) => void runs.push(r.planId),
+    });
+    const c = await connect(s);
+    try {
+      for (const [tool, args] of [
+        ["plan_show", { presetId: "g1-a" }],
+        ["plan_show", { event: "Hollis Creek String Band @ The Truth, Nov 20 2026" }],
+        ["rank_partners", { planId, partnerNames: ["Bellhop Records"] }],
+        ["bill_vs_house", { planId }],
+        ["revise_plan", { planId, instruction: "only Saturday" }],
+      ] as const) {
+        const r = await c.call(tool, args);
+        expect(r.result.isError, tool).toBe(true);
+        expect(r.env).toMatchObject({ status: "error", mode: "recorded", reason, results: null });
+        expect(r.text).toMatch(/Mode: recorded/);
+      }
+      expect((await planShowTool(s, caller(), { presetId: "g1-a" })).httpStatus).toBe(503);
+      // A stored sheet still reads; a preset with nothing stored is not run.
+      const stored = await c.call("get_sheet", { planId });
+      expect(stored.env.status).not.toBe("error");
+      expect(stored.env.planId).toBe(planId);
+      const preset = await c.call("get_sheet", { planId: "g3" });
+      expect(preset.env).toMatchObject({ status: "error", mode: "recorded", reason });
+      expect(runs).toEqual([]);
+    } finally {
+      await c.close();
+    }
+  }, 120_000);
 });
 
 describe("host hooks", () => {

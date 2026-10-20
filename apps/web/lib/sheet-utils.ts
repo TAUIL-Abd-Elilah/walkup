@@ -360,6 +360,15 @@ export function comparisonSentence(c: BillComparison, names: { a: string; b: str
   );
 }
 
+/**
+ * The landing's sheets section in recorded mode (Qloo is no longer available): why nothing new runs, and that a
+ * sheet marked sample is not a recording.
+ */
+export function recordedSheetsIntro(sheets: readonly Pick<StreetSheet, "mode">[]): string {
+  const lead = "Qloo is no longer available, so new plans are off. These sheets were recorded from live runs on the dates shown.";
+  return sheets.some((s) => s.mode === "fixture") ? `${lead} A sheet marked sample uses made-up places and numbers.` : lead;
+}
+
 // ---------------------------------------------------------------------------
 // The sheet page: send status, section source lines, partner wording, where the areas sit
 // ---------------------------------------------------------------------------

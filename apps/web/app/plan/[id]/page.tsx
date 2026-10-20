@@ -91,9 +91,10 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
       {...(preset?.showName ? { showName: preset.showName } : {})}
       paired={paired}
       runtimeLive={mode.kind === "live"}
+      recorded={mode.kind === "recorded"}
       canRerun={mode.kind === "fixture" && Boolean(presetId)}
-      // A live sheet can't be re-run on a fixture server; the route would refuse it.
-      revisable={!(v.sheet.mode === "live" && mode.kind !== "live")}
+      // A live sheet can't be re-run on a fixture server, and nothing is re-run in recorded mode; the route would refuse it.
+      revisable={mode.kind !== "recorded" && !(v.sheet.mode === "live" && mode.kind !== "live")}
     />
   );
 }

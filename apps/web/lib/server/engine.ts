@@ -24,7 +24,6 @@ import {
 } from "@walkup/orchestrator";
 import { createSqliteStores } from "@walkup/orchestrator/sqlite";
 import { createWorld, type World } from "@walkup/qloo-world";
-import { publishQuota } from "../mode";
 import { dataDir, ensureGazetteerDir } from "./env";
 
 export interface Stores {
@@ -127,11 +126,23 @@ export function sessionChoices(base: ChoiceStore, sessionId: string | null): Cho
   };
 }
 
+/** Latest Qloo month quota seen by a live run (the header note reads it through runtimeMode). */
+export interface QuotaSlot {
+  remaining: number | null;
+  limit: number | null;
+}
+const QUOTA_KEY = "__walkupQlooQuota";
+
+export function lastQuota(): QuotaSlot | null {
+  const v = (globalThis as Record<string, unknown>)[QUOTA_KEY];
+  return v && typeof v === "object" ? (v as QuotaSlot) : null;
+}
+
 /** After a live run: remember the month quota for the pill and /healthz. */
 export function publishLiveQuota(deps: PlanDeps): void {
   try {
     const q = deps.qloo.quota();
-    publishQuota({ remaining: q.remaining, limit: q.limit });
+    (globalThis as Record<string, unknown>)[QUOTA_KEY] = { remaining: q.remaining, limit: q.limit } satisfies QuotaSlot;
   } catch {
     // The quota is informational.
   }

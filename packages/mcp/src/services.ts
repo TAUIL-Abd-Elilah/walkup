@@ -53,6 +53,11 @@ export interface RunPolicy {
   capFixtureRuns: boolean;
   /** The reason given when fixtureEventRuns is off. */
   fixtureRefusal: string;
+  /**
+   * Set when the host serves recorded sheets only (Qloo is no longer available): every tool but get_sheet
+   * answers 503 with this reason and mode "recorded". Default null.
+   */
+  recorded: string | null;
 }
 
 export const DEFAULT_FIXTURE_REFUSAL =
@@ -154,7 +159,7 @@ export function createMcpServices(o: ServicesOptions): McpServices {
     choicesFor: choiceCaches(),
     inflight: new Map(),
     mode: resolveMode(deps),
-    policy: { fixtureEventRuns: true, capFixtureRuns: true, fixtureRefusal: DEFAULT_FIXTURE_REFUSAL, ...o.policy },
+    policy: { fixtureEventRuns: true, capFixtureRuns: true, fixtureRefusal: DEFAULT_FIXTURE_REFUSAL, recorded: null, ...o.policy },
   };
   if (o.presetView) services.presetView = o.presetView;
   if (o.afterRun) services.afterRun = o.afterRun;

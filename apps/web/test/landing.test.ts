@@ -1,5 +1,5 @@
 /**
- * The landing page's worked example ("Same room, two crowds") and the map colour scale.
+ * The landing page's worked example ("Same room, two crowds"), the map colour scale and the recorded-mode copy.
  * The comparison is read from the preset sheets, so these tests check how the sentence
  * follows the sheets, never fixed numbers: regenerating fixtures never fights them.
  */
@@ -10,7 +10,8 @@ import type { StreetSheet } from "@walkup/contracts";
 import { headlinerName } from "../lib/format";
 import { LIFT_LEGEND, TOP_LIFT, liftAlpha, liftBand, liftColor } from "../lib/lift";
 import { liftInWords } from "@walkup/engine";
-import { compareBills, comparisonSentence, compassDirection, distanceKm, formatKm, liftPhrase, normalizeName, topTiles } from "../lib/sheet-utils";
+import { dataSourcesLine } from "../lib/labels";
+import { compareBills, comparisonSentence, compassDirection, distanceKm, formatKm, liftPhrase, normalizeName, recordedSheetsIntro, topTiles } from "../lib/sheet-utils";
 import { OPENFREEMAP_STYLE } from "../lib/webgl";
 
 const ENGINE = fileURLToPath(new URL("../../../fixtures/synthetic/engine/", import.meta.url));
@@ -50,6 +51,24 @@ describe("compareBills on the paired preset sheets", () => {
       expect(s).not.toMatch(/\d\.\d+x/);
     }
     expect(s).not.toMatch(/\bAI\b|powered|insight|!/);
+  });
+});
+
+describe("recorded mode copy (Qloo unavailable)", () => {
+  it("says on the landing page that new plans are off and the sheets are recordings, and names any sample among them", () => {
+    expect(recordedSheetsIntro([{ mode: "live" }, { mode: "live" }])).toBe(
+      "Qloo is no longer available, so new plans are off. These sheets were recorded from live runs on the dates shown.",
+    );
+    expect(recordedSheetsIntro([{ mode: "live" }, { mode: "fixture" }])).toMatch(/ A sheet marked sample uses made-up places and numbers\.$/);
+  });
+
+  it("credits the data in the footer without claiming sample data or a live call", () => {
+    const recorded = dataSourcesLine("recorded");
+    expect(recorded).toMatch(/^Affinity data from Qloo, .* as recorded on live runs; none of those services is called now\.$/);
+    expect(recorded).not.toMatch(/\bsample\b|made-up/i);
+    expect(dataSourcesLine("fixture")).toMatch(/^Sample data /);
+    expect(dataSourcesLine("live")).not.toMatch(/recorded|sample/i);
+    for (const m of ["live", "fixture", "recorded"] as const) expect(dataSourcesLine(m)).not.toMatch(/!|\bAI\b|powered/);
   });
 });
 

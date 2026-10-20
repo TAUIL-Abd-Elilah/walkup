@@ -2,7 +2,8 @@
  * POST /api/plan/<id>/revise: the operator's note about a finished sheet.
  *
  *   1. Validate the note and the plan (a finished sheet; a paused or running
- *      plan answers 409; a sheet from the other mode answers 409). Rate-limited
+ *      plan answers 409; a sheet from the other mode answers 409; nothing is
+ *      revised in recorded mode: 503). Rate-limited
  *      per network (lib/server/limits.ts); in live mode a revision that re-runs
  *      also takes a fresh-run unit, refunded when no fresh Qloo call was made.
  *   2. The orchestrator reads the note: the model with strict tools when an
@@ -22,7 +23,7 @@ import type { RequestContext } from "./http";
 import { parseReviseBody } from "./input";
 import { freshRuns, reviseAllowed } from "./limits";
 import { startRun, type RunState, type WebPlanRequest } from "./runs";
-import { freshRunsBody, loadPlan, SYNC_WAIT_MS, type ServiceResponse, type SheetView } from "./service";
+import { freshRunsBody, loadPlan, recordedRefusal, SYNC_WAIT_MS, type ServiceResponse, type SheetView } from "./service";
 import { addPartnerHouseRanks } from "./twin";
 
 /** The revision as it stands before the re-run: who read the note and which tools they chose. */
@@ -93,6 +94,8 @@ export async function revisePlanFor(id: string, raw: unknown, ctx: RequestContex
   const parsed = parseReviseBody(raw);
   if (!parsed.ok) return { status: 400, body: { reason: parsed.reason } };
   const { instruction, wait } = parsed.value;
+  const mode = runtimeMode().kind;
+  if (mode === "recorded") return recordedRefusal();
 
   const v = await loadPlan(id, { view: "api", sessionId: ctx.sessionId });
   if (!v) return { status: 404, body: { reason: `No plan with id ${id}.` } };
@@ -100,7 +103,6 @@ export async function revisePlanFor(id: string, raw: unknown, ctx: RequestContex
   if (v.kind === "paused") return { status: 409, body: { reason: "This plan is waiting for a pick. Answer it first, then revise the sheet." } };
   if (v.kind === "error") return { status: 409, body: { reason: `This run stopped: ${v.error}` } };
 
-  const mode = runtimeMode().kind;
   // Never mix modes: a live parent on a fixture server, or a sample parent (with sample ids) on a live server.
   if (v.sheet.mode !== mode) {
     return {
