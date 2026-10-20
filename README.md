@@ -6,7 +6,7 @@ Walkup is an agent for one booked show that still has seats to sell. Give it the
 
 > Your email list reaches people who already come to this room. Most of this bill's fans aren't on it; Walkup looks for the places they already go.
 
-**Try it:** not hosted yet. [Run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
+**Try it:** https://walkup-agent.fly.dev (no login). Until the hero runs are recorded on the host, its preset sheets are the labelled sample sheets. Or [run it yourself](#run-it-yourself-setup-from-a-clean-environment): sample mode needs no keys or signup.
 
 **Status:** the whole pipeline runs end to end today on labelled sample data (a synthetic stand-in for Qloo and Ticketmaster), with no keys. On Oct 15 2026 every request shape a run sends was checked against the live Qloo host ([what we found](#verified-on-hackathonapiqloocom-oct-15-2026)); no full live sheet has been recorded yet, so this page reports no live sheet results.
 

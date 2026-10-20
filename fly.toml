@@ -3,7 +3,7 @@
 # Setup, secrets and operations: docs/deploy.md. Nothing in this file is secret;
 # API keys are set with `fly secrets`, never here.
 
-app = "walkup"
+app = "walkup-agent"
 primary_region = "iad"
 # Next's standalone server exits as soon as it gets SIGTERM; kill_timeout is the
 # upper bound before Fly sends SIGKILL (see docs/deploy.md, "Deploys and restarts").

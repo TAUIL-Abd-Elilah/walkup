@@ -46,25 +46,25 @@ the server as `node` with `setpriv`.
 
 ```bash
 # 1. Create the app from fly.toml without deploying.
-fly launch --no-deploy --copy-config --name walkup --region iad --org personal
+fly launch --no-deploy --copy-config --name walkup-agent --region iad --org personal
 ```
 
-- Fly app names are global. If `walkup` is taken, pick another name; `fly launch` writes it into `app` in
-  `fly.toml`, and every `-a walkup` below changes with it.
+- Fly app names are global. `walkup` was taken, so the hosted app is `walkup-agent`. If that is taken too, pick another name; `fly launch` writes it into `app` in
+  `fly.toml`, and every `-a walkup-agent` below changes with it.
 - Decline the database, Redis and object-storage offers.
 - Run `git diff fly.toml` afterwards. `fly launch` can rewrite settings; keep `auto_stop_machines = "off"`,
   `min_machines_running = 1`, the `[[mounts]]` block and the `/healthz` check.
-- Non-interactive alternative: `fly apps create walkup --org personal`.
+- Non-interactive alternative: `fly apps create walkup-agent --org personal`.
 
 ```bash
 # 2. The volume: 1 GB, daily snapshots kept for 14 days. One volume means one machine.
-fly volumes create walkup_data --region iad --size 1 --snapshot-retention 14 --yes -a walkup
+fly volumes create walkup_data --region iad --size 1 --snapshot-retention 14 --yes -a walkup-agent
 ```
 
 ```bash
 # 3. Secrets, staged so the first deploy applies them all at once.
 #    The leading space keeps the line out of bash history when HISTCONTROL includes ignorespace.
- fly secrets set --stage -a walkup \
+ fly secrets set --stage -a walkup-agent \
   QLOO_API_KEY=... \
   TICKETMASTER_API_KEY=... \
   CENSUS_API_KEY=... \
@@ -80,19 +80,19 @@ The last two are read by `@walkup/send` (see
 refused.
 
 To keep keys off the command line entirely, write `NAME=value` lines to a file outside the repository, run
-`fly secrets import --stage -a walkup < that-file`, then delete the file.
+`fly secrets import --stage -a walkup-agent < that-file`, then delete the file.
 
 ```bash
 # 4. Deploy. Fly's remote builder builds the image; nothing is built or pushed from this machine.
-fly deploy -a walkup --ha=false
+fly deploy -a walkup-agent --ha=false
 ```
 
 ```bash
 # 5. Check.
-fly status -a walkup
-fly volumes list -a walkup
-curl -s https://walkup.fly.dev/healthz
-fly logs -a walkup
+fly status -a walkup-agent
+fly volumes list -a walkup-agent
+curl -s https://walkup-agent.fly.dev/healthz
+fly logs -a walkup-agent
 ```
 
 `/healthz` answers `{"ok":true,"mode":...,"configured":{...},"qloo":{...},"recorded":{...}}`. `mode` is `live`,
@@ -123,13 +123,13 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `WALKUP_FIXTURES_DIR` | `fly.toml` `[env]` and the image | `/data/fixtures` (`raw/` recorded on the volume, `synthetic/` from the image). |
 
 `GOOGLE_PLACES_API_KEY` is no longer read: Google Places was removed from the product on Oct 20 2026. A host that
-still has it set can drop it with `fly secrets unset GOOGLE_PLACES_API_KEY -a walkup`.
+still has it set can drop it with `fly secrets unset GOOGLE_PLACES_API_KEY -a walkup-agent`.
 | `WALKUP_GAZETTEER_DIR` | `fly.toml` `[env]` and the image | `/app/data/gazetteer/out`. |
 | `WALKUP_TAGS_FILE` | `fly.toml` `[env]` and the image | `/app/config/tags.json`: the pinned Qloo tag URNs the orchestrator reads. |
 | `WALKUP_FRESH_RUNS_PER_IP`, `WALKUP_FRESH_RUNS_PER_DAY` | optional, `fly.toml` `[env]` | Fresh live runs per network and in total per UTC day; defaults 3 and 15. |
 | `WALKUP_PLAN_STORE` | not on the host | `memory` keeps plans in memory (tests); the host uses `/data/plans.sqlite`. |
 | `QLOO_ALLOW_HOST` | never | Local mock servers only. |
-| `WALKUP_URL` | not on the host | For the agent skill CLI on a user's machine: `https://walkup.fly.dev`. |
+| `WALKUP_URL` | not on the host | For the agent skill CLI on a user's machine: `https://walkup-agent.fly.dev`. |
 
 ### Variables the send step reads
 
@@ -147,9 +147,13 @@ Changing a secret (`fly secrets set` or `fly secrets unset` without `--stage`) r
 
 - **Always on.** `min_machines_running = 1` and `auto_stop_machines = "off"` keep the machine running when idle;
   `[[restart]] policy = "always"` restarts it after a crash. Keep exactly one machine
-  (`fly scale count 1 -a walkup`): a second one would need its own volume and would split the cache and quota
+  (`fly scale count 1 -a walkup-agent`): a second one would need its own volume and would split the cache and quota
   files.
-- **UptimeRobot, every 5 minutes.** Add a monitor of type *Keyword*, URL `https://walkup.fly.dev/healthz`,
+- **GitHub Actions, every 5 minutes.** `.github/workflows/uptime.yml` GETs `/healthz` (3 tries, 20 s apart) and fails
+  unless it answers `"ok":true`; a failed run shows in the Actions tab and GitHub emails the owner. GitHub can start
+  a scheduled run a few minutes late and pauses schedules after 60 days without repository activity. Run it by hand
+  from the Actions tab (`workflow_dispatch`).
+- **UptimeRobot, every 5 minutes (optional second monitor).** Add a monitor of type *Keyword*, URL `https://walkup-agent.fly.dev/healthz`,
   keyword `"ok":true` (alert when it is missing), interval 5 minutes, alerting the owner's email. The free plan
   allows a 5-minute interval; check that its current terms fit this use. `/healthz` never calls Qloo or any other
   upstream API, so these 8,640 checks a month, plus Fly's own check every 30 seconds, cost no API quota.
@@ -160,8 +164,8 @@ Changing a secret (`fly secrets set` or `fly secrets unset` without `--stage`) r
 - **Deploys take the site offline briefly** (about 20-60 seconds: with one machine and one volume, Fly stops the
   machine, swaps the image and starts it again, keeping the same volume). Do not deploy while someone is using the
   hosted sheet.
-- **After Dec 31 2026**, the owner chooses: keep it running; stop compute with `fly scale count 0 -a walkup`
-  (the volume is still billed); or download what is worth keeping and run `fly apps destroy walkup`, which
+- **After Dec 31 2026**, the owner chooses: keep it running; stop compute with `fly scale count 0 -a walkup-agent`
+  (the volume is still billed); or download what is worth keeping and run `fly apps destroy walkup-agent`, which
   deletes the volume and its snapshots for good.
 
 ## Cost estimate
@@ -179,7 +183,7 @@ Approximate, from Fly's published pay-as-you-go prices for `iad`. Check
 | UptimeRobot | free plan | $0 |
 | **Total** | | **about $11-13** (under $15 with a $2 dedicated IPv4) |
 
-With 1 GB RAM (`fly scale memory 1024 -a walkup`) the total is about $6-7. Watch `fly logs` for out-of-memory
+With 1 GB RAM (`fly scale memory 1024 -a walkup-agent`) the total is about $6-7. Watch `fly logs` for out-of-memory
 restarts, especially during PDF exports, and go back to 2 GB if they appear.
 
 ### Cost caps
@@ -223,7 +227,7 @@ the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
 
    ```bash
    for p in g1-a g1-b g2; do      # g3 the same way, from another network or the next day
-     curl -sS -X POST https://walkup.fly.dev/api/plan -H 'content-type: application/json' -d "{\"presetId\":\"$p\"}" | head -c 400; echo
+     curl -sS -X POST https://walkup-agent.fly.dev/api/plan -H 'content-type: application/json' -d "{\"presetId\":\"$p\"}" | head -c 400; echo
    done
    ```
 
@@ -231,14 +235,14 @@ the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
    operator would, with the `planId` it returned:
 
    ```bash
-   curl -sS -X POST https://walkup.fly.dev/api/plan/<planId>/resolve -H 'content-type: application/json' \
+   curl -sS -X POST https://walkup-agent.fly.dev/api/plan/<planId>/resolve -H 'content-type: application/json' \
      -d '{"picks":[{"input":"<the pending input>","entityId":"<one of its candidates>"}],"wait":"complete"}'
    ```
 
    Then check that every preset has its recording:
 
    ```bash
-   curl -s https://walkup.fly.dev/healthz    # "recorded": {"presets": {"g1-a": {"planId": ..., "createdAt": ...}, ...}}
+   curl -s https://walkup-agent.fly.dev/healthz    # "recorded": {"presets": {"g1-a": {"planId": ..., "createdAt": ...}, ...}}
    ```
 
    A preset that shows `null` has no usable live run yet. Open each `/plan/<preset>` and read the sheet before the key
@@ -246,20 +250,20 @@ the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
 2. **Snapshot the volume.**
 
    ```bash
-   fly volumes list -a walkup                           # note the volume id
-   fly volumes snapshots create <volume-id> -a walkup
+   fly volumes list -a walkup-agent                           # note the volume id
+   fly volumes snapshots create <volume-id> -a walkup-agent
    ```
 
 3. **Switch.** Either set the date ahead of time, and the server switches itself at 00:00 UTC that day:
 
    ```bash
-   fly secrets set WALKUP_QLOO_UNTIL=2026-11-02 -a walkup   # restarts; a date means 00:00 UTC, a time without an offset is UTC
+   fly secrets set WALKUP_QLOO_UNTIL=2026-11-02 -a walkup-agent   # restarts; a date means 00:00 UTC, a time without an offset is UTC
    ```
 
    or, on the day, set `WALKUP_MODE = "recorded"` under `[env]` in `fly.toml` and run `fly deploy`. Keep the volume:
    it holds the recordings. The keys can stay set; nothing calls Qloo in recorded mode. `WALKUP_MODE=fixture` would
    show the synthetic sample world instead.
-4. **Check.** `curl -s https://walkup.fly.dev/healthz` shows `"mode":"recorded"`, `"qloo":{"keyRejected":...,"until":...}`
+4. **Check.** `curl -s https://walkup-agent.fly.dev/healthz` shows `"mode":"recorded"`, `"qloo":{"keyRejected":...,"until":...}`
    and a `planId` for each recorded preset. Open each preset: the strip at the top, "Recorded <date>" in the header,
    and no "Run it again" or "Change something".
 
@@ -279,7 +283,7 @@ From the repository root, on the machine that holds them:
 ```bash
 ls fixtures/raw | wc -l
 tar -czf "$HOME/walkup-raw.tgz" -C fixtures/raw .       # the archive goes outside the repository
-fly ssh sftp shell -a walkup
+fly ssh sftp shell -a walkup-agent
 ```
 
 In the sftp shell (`put` takes an absolute local path; on Windows, for example `C:/Users/you/walkup-raw.tgz`):
@@ -291,7 +295,7 @@ put /home/you/walkup-raw.tgz /data/walkup-raw.tgz
 Leave the shell with Ctrl-D, then unpack, hand the files to `node` and count them:
 
 ```bash
-fly ssh console -a walkup -C "sh -c 'tar -xzf /data/walkup-raw.tgz -C /data/fixtures/raw && rm /data/walkup-raw.tgz && chown -R node:node /data/fixtures && ls /data/fixtures/raw | wc -l'"
+fly ssh console -a walkup-agent -C "sh -c 'tar -xzf /data/walkup-raw.tgz -C /data/fixtures/raw && rm /data/walkup-raw.tgz && chown -R node:node /data/fixtures && ls /data/fixtures/raw | wc -l'"
 rm "$HOME/walkup-raw.tgz"
 ```
 
@@ -303,18 +307,18 @@ existing file, remove it first with `fly ssh console -C "rm /data/<file>"`. Anyt
 To take a copy off the host (keep it outside the repository):
 
 ```bash
-fly ssh console -a walkup -C "sh -c 'tar -czf /tmp/walkup-data.tgz -C /data fixtures/raw'"
-fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup
+fly ssh console -a walkup-agent -C "sh -c 'tar -czf /tmp/walkup-data.tgz -C /data fixtures/raw'"
+fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup-agent
 ```
 
 ## Deploys and restarts
 
 - `fly deploy` rebuilds the image and updates the machine in place (same machine, same volume). The health check on
   `GET /healthz` has to pass within 30 seconds of start. If it does not, `fly deploy` reports the failure;
-  `fly releases -a walkup --image` lists earlier images and `fly deploy -a walkup --image <image>` goes back
+  `fly releases -a walkup-agent --image` lists earlier images and `fly deploy -a walkup-agent --image <image>` goes back
   to one.
 - On `SIGTERM` the Next.js server exits at once, so a plan run in progress stops and has to be run again.
-- `fly apps restart walkup` re-runs the entrypoint, which re-owns `/data` for `node`.
+- `fly apps restart walkup-agent` re-runs the entrypoint, which re-owns `/data` for `node`.
 
 ## Security notes
 
@@ -325,11 +329,28 @@ fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup
 
 ## Troubleshooting
 
+### Building the image without a remote builder
+
+Fly's remote builder is reached over WireGuard, or over plain HTTP when WireGuard is off. A machine behind an
+HTTPS-only proxy can reach neither. There, build the app on the host and package it with the runtime stage only
+(this is how the first deploy on Oct 20 2026 was made):
+
+1. `npm ci && cd apps/web && npx next build` on a Linux x64 host (better-sqlite3's bundled `linux-x64` binary needs
+   glibc 2.34 or newer; the runtime image has 2.36).
+2. Put next to each other, in an empty directory: `standalone/` (`apps/web/.next/standalone`), `static/`
+   (`apps/web/.next/static`), an empty `public/`, `out/node_modules/better-sqlite3/` (its `package.json`, `lib/` and
+   `prebuilds/linux-x64.node`), `gazetteer-out/` (`data/gazetteer/out`), `config/` and `fixtures-synthetic/`
+   (`fixtures/synthetic`). Check that no `.env`, SQLite file or `fixtures/raw` body is in it.
+3. Copy the `runtime` stage of the `Dockerfile` into `Dockerfile.runtime` and point each `COPY --from=build` at those
+   directories. Build it with `docker build --build-arg NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim`
+   (the mirror avoids Docker Hub's anonymous pull limit) and tag it `registry.fly.io/walkup-agent:<commit>-host`.
+4. `fly auth docker`, `docker push <tag>`, then `fly deploy -a walkup-agent --image <tag>`.
+
 | Symptom | Cause and fix |
 |---|---|
 | Build stops at `apps/web/.next/standalone/apps/web/server.js is missing` | `output: "standalone"` is not set in `apps/web/next.config.ts`. |
-| `better-sqlite3` fails to load at runtime | It must stay a server external (Next lists it by default; `serverExternalPackages` in `apps/web/next.config.ts` lists it too) and `@walkup/qloo` must be imported from server code only. The image carries the Linux binary: `fly ssh console -a walkup -C "ls /app/node_modules/better-sqlite3/prebuilds"` should show `linux-x64.node` (or check `build/Release/better_sqlite3.node` if the build compiled it). |
+| `better-sqlite3` fails to load at runtime | It must stay a server external (Next lists it by default; `serverExternalPackages` in `apps/web/next.config.ts` lists it too) and `@walkup/qloo` must be imported from server code only. The image carries the Linux binary: `fly ssh console -a walkup-agent -C "ls /app/node_modules/better-sqlite3/prebuilds"` should show `linux-x64.node` (or check `build/Release/better_sqlite3.node` if the build compiled it). |
 | Health check fails, logs show the server listening | The port must be 3000 (`PORT`, `internal_port`); the entrypoint sets `HOSTNAME=0.0.0.0`. |
-| `EACCES` under `/data` | Files were copied in as root after the last start: `fly apps restart walkup`. |
-| Restarts with `Out of memory` in `fly logs` | `fly scale memory 2048 -a walkup`. |
+| `EACCES` under `/data` | Files were copied in as root after the last start: `fly apps restart walkup-agent`. |
+| Restarts with `Out of memory` in `fly logs` | `fly scale memory 2048 -a walkup-agent`. |
 | Cards show `error` on every Qloo call | The key was deactivated but is still set. The run that saw it switches the server to recorded mode (fixture mode if no live sheet is stored); set `WALKUP_QLOO_UNTIL` or `WALKUP_MODE=recorded` so no visitor gets that run (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). |
