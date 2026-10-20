@@ -34,6 +34,8 @@ export interface NarrateInput {
   numbers: NarrationNumber[];
   /** True when seat counts are operator what-ifs on a real show. */
   hypothetical?: boolean;
+  /** The day each partner's hours are for (the first street-team day). Absent: the show's weekday. */
+  streetTeamDay?: string;
 }
 
 /** Usage and estimated cost of the Anthropic calls behind one result. */

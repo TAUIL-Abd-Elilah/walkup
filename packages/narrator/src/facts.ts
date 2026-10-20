@@ -110,6 +110,8 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     score: round(p.score, 3),
     qlooRank: p.qlooRank,
     hoursOnDay: p.hoursOnDay ?? null,
+    // Hours are for the street-team day, which is often not the show's weekday.
+    hoursDay: p.hoursOnDay ? (input.streetTeamDay ?? input.bill.weekday) : null,
     address: p.address ?? null,
     distanceM: p.entity.distanceM != null ? Math.round(p.entity.distanceM) : null,
   }));

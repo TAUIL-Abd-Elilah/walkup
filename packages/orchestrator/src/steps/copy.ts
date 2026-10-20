@@ -17,6 +17,7 @@ import { isAlcoholTag, narrate, type NarrationResult } from "@walkup/narrator";
 import type { RankedTag } from "@walkup/qloo";
 import { envelope, node, plural, seedIds, type RunContext, type Seed } from "../context";
 import type { BudgetShare } from "./budget";
+import { streetDay } from "./partners";
 
 export const Q14_TAG_TYPES = ["urn:tag:keyword:media", "urn:tag:genre:music", "urn:tag:theme:qloo", "urn:tag:audience:qloo"];
 const PARTNER_COPY_NAMESPACES = ["urn:tag:ambience:", "urn:tag:good_for:"];
@@ -160,6 +161,7 @@ export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyRes
       allowlistTags: allow.map((t) => ({ id: t.id, name: t.name })),
       numbers: [...whatIf, { label: "partners on the sheet", value: inp.partners.length }, ...shares],
       hypothetical: inp.hypothetical,
+      streetTeamDay: streetDay(ctx),
     },
     { client: ctx.narrator.client, ...(ctx.narrator.spend ? { spend: ctx.narrator.spend } : {}), ledger: ctx.ledger },
   );
