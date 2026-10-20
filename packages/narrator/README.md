@@ -42,7 +42,9 @@ The OpenRouter client takes the same Messages API request and returns the same m
 | Ledger | `/v1/messages`, curl with `$ANTHROPIC_API_KEY` | `/api/v1/chat/completions`, curl with `$OPENROUTER_API_KEY`, `provider: "openrouter"` in params |
 | Spend guard | Anthropic list rates | the same rates (the slug is mapped to `claude-opus-5-5` by `canonicalModel`); OpenRouter's own invoice can differ slightly |
 
-`npm run llm:check` sends three small synthetic requests through whichever route `.env` selects (a two-tool revision, a revision that needs a corrected tool call, and a schema-bound narration) and prints PASS/FAIL with the ledger. Run it after changing keys or the model slug.
+`npm run llm:check` sends three small synthetic requests through whichever route `.env` selects (a two-tool revision, a note naming an area that is not on the sheet, and a schema-bound narration) and prints PASS/FAIL with the ledger. Run it after changing keys or the model slug. Behind an HTTPS proxy, Node's `fetch` needs `NODE_USE_ENV_PROXY=1`.
+
+Checked live on Oct 20 2026 through OpenRouter (`anthropic/claude-opus-5.5`): "All ages, no bars" came back as two tool calls in one turn (`set_all_ages`, `exclude_partner_categories` with every bar key), the unknown area came back as `ask_operator`, and the narration parsed against the per-run schema with no guard drops; `verbosity` was accepted. The `is_error` correction turn is covered by tests only: the model made no invalid call live.
 
 ## Request shape (all calls)
 

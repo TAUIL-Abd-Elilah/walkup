@@ -8,7 +8,7 @@ Day-one API probe and repository hygiene.
 | `probe.config.json` | Probe inputs: venue points (with sources), test bills, clubs and metros, tag keywords, thresholds. |
 | `lib/stats.ts` | `kendallTau` (tau-b), `kendallTauFromOrders`, `spearman`, `pearson`, `ranks`, `pctRank`, `topKOverlap`, `jaccard`. Pure; NaN when undefined. |
 | `lib/probe/*` | Request builders, client, extractors, lift math, gate arithmetic, the 20 probes, runner, SUMMARY writer. |
-| `llm-check.ts` | `npm run llm:check`: three small synthetic requests through the LLM route `.env` selects (OpenRouter or Anthropic): two tool calls in one turn, a corrected call after an `is_error` result, and a schema-bound narration. PASS/FAIL plus the ledger; no Qloo call. |
+| `llm-check.ts` | `npm run llm:check`: three small synthetic requests through the LLM route `.env` selects (OpenRouter or Anthropic): two tool calls in one turn, a question for a note it cannot apply, and a schema-bound narration. PASS/FAIL plus the ledger; no Qloo call. |
 | `check-no-raw.mjs` | Fails when git would publish private data or raw API bodies (`npm run check:no-raw`). |
 | `../.githooks/pre-commit` | Runs `check-no-raw.mjs` before every commit. `../.githooks/.gitattributes` keeps it LF so `sh` can run it on Windows checkouts. |
 | `test/` | Vitest suites (offline; synthetic data only). |

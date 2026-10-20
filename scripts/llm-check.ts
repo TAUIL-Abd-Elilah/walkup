@@ -5,8 +5,8 @@
  *
  *   1. tools: readRevision() on "All ages, no bars" must come back from the model
  *      (not the rules) with set_all_ages and the bar exclusion;
- *   2. tool loop: an invalid area, then the model's correction after the
- *      is_error result (a second turn with the first turn echoed);
+ *   2. a question: a note naming an area that is not on the sheet must come
+ *      back as ask_operator from the model, with no change recorded;
  *   3. structured output: narrate() must parse the schema-bound JSON (not the template).
  *
  * Prints one line per check plus the ledger (endpoint, status, model, cost), and
@@ -92,8 +92,8 @@ async function main(): Promise<number> {
   const r2 = await readRevision(s, "Skip the area called Southside Example, and keep it within 10 miles", opts);
   results.push(
     line(
-      r2.interpreter === "model",
-      "tool loop",
+      r2.interpreter === "model" && r2.question !== null && r2.calls.length === 0,
+      "question instead of a guess",
       `interpreter=${r2.interpreter}; turns=${r2.ledgerRefs.length}; calls=${JSON.stringify(r2.calls)}; question=${r2.question ?? "none"}`,
     ),
   );
