@@ -1,0 +1,4528 @@
+{
+  "synthetic": true,
+  "fixtureId": "g1-b",
+  "title": "The Truth, Nashville: bill B",
+  "note": "Synthetic fixture. Acts, partner businesses, ids, scores and ledger timings are invented; neighbourhood names and ZIPs are real places used for layout only. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
+  "pairedWith": "g1-a",
+  "sheet": {
+    "planId": "g1-b",
+    "createdAt": "2026-11-14T16:20:00.000Z",
+    "mode": "fixture",
+    "hypothetical": true,
+    "bill": {
+      "acts": [
+        {
+          "name": "Neon Orchard",
+          "role": "headliner",
+          "tmAttractionId": "syn-tm-att-orchard"
+        },
+        {
+          "name": "Sable & Sun",
+          "role": "co",
+          "tmAttractionId": "syn-tm-att-sable"
+        },
+        {
+          "name": "Kites Over Concrete",
+          "role": "support",
+          "tmAttractionId": "syn-tm-att-kites"
+        }
+      ],
+      "venue": {
+        "name": "The Truth",
+        "lat": 36.1612,
+        "lon": -86.7745,
+        "city": "Nashville",
+        "state": "TN",
+        "country": "US",
+        "tmVenueId": "syn-tm-venue-truth",
+        "qlooEntityId": null
+      },
+      "date": "2026-12-05",
+      "weekday": "saturday",
+      "legalAgeEnforced": false,
+      "classification": "Music / Pop (Indie pop)",
+      "tmEventId": "syn-tm-event-g1b",
+      "tmUrl": "https://www.ticketmaster.com/event/syn-tm-event-g1b"
+    },
+    "operator": {
+      "seatsLeft": null,
+      "capacity": 4400,
+      "mediaBudgetUsd": 6000,
+      "streetTeamDays": [
+        "thursday",
+        "saturday"
+      ],
+      "radiusKm": 40,
+      "declaredPartners": [
+        {
+          "label": "Gallatin Pike Pizza Co.",
+          "qlooEntityId": "syn-place-05787b77"
+        },
+        {
+          "label": "Bellhop Records",
+          "qlooEntityId": "syn-place-b55b2062"
+        },
+        {
+          "label": "Tall Pines Tavern",
+          "qlooEntityId": "syn-place-c806b33e"
+        },
+        {
+          "label": "Cumberland Cup Coffee",
+          "qlooEntityId": "syn-place-b6c806ef"
+        },
+        {
+          "label": "Quarter Note Books",
+          "qlooEntityId": "syn-place-90493d92"
+        },
+        {
+          "label": "Row House Barbers",
+          "qlooEntityId": "syn-place-4126fa23"
+        },
+        {
+          "label": "Riverside Spoke Bike Co."
+        },
+        {
+          "label": "Westside Screen Printers"
+        }
+      ]
+    },
+    "cards": {
+      "resolution": {
+        "status": "ok",
+        "summary": "3 of 3 acts resolved exactly. Venue not in the catalog yet, so the run uses the Ticketmaster point. House set: 10 of 12 roster headliners.",
+        "results": [
+          {
+            "input": "Neon Orchard",
+            "role": "headliner",
+            "status": "exact",
+            "entity": {
+              "entityId": "syn-artist-f3172777",
+              "name": "Neon Orchard",
+              "subtype": "urn:entity:artist",
+              "popularity": 0.74,
+              "affinity": null,
+              "tags": [
+                {
+                  "id": "urn:tag:genre:music:indie_pop",
+                  "name": "Indie pop",
+                  "type": "urn:tag:genre:music"
+                },
+                {
+                  "id": "urn:tag:genre:music:synthpop",
+                  "name": "Synth-pop",
+                  "type": "urn:tag:genre:music"
+                }
+              ],
+              "properties": {
+                "short_description": "Fictional act for the synthetic fixture."
+              },
+              "external": {
+                "spotify": {
+                  "id": "synf57a800a"
+                }
+              }
+            },
+            "ledgerRef": "Q1"
+          },
+          {
+            "input": "Sable & Sun",
+            "role": "co",
+            "status": "exact",
+            "entity": {
+              "entityId": "syn-artist-c488998d",
+              "name": "Sable & Sun",
+              "subtype": "urn:entity:artist",
+              "popularity": 0.55,
+              "affinity": null,
+              "tags": [
+                {
+                  "id": "urn:tag:genre:music:dream_pop",
+                  "name": "Dream pop",
+                  "type": "urn:tag:genre:music"
+                }
+              ],
+              "properties": {
+                "short_description": "Fictional act for the synthetic fixture."
+              },
+              "external": {
+                "spotify": {
+                  "id": "syn2e887aea"
+                }
+              }
+            },
+            "ledgerRef": "Q1"
+          },
+          {
+            "input": "Kites Over Concrete",
+            "role": "support",
+            "status": "exact",
+            "entity": {
+              "entityId": "syn-artist-c76af4a9",
+              "name": "Kites Over Concrete",
+              "subtype": "urn:entity:artist",
+              "popularity": 0.39,
+              "affinity": null,
+              "tags": [
+                {
+                  "id": "urn:tag:genre:music:indie_rock",
+                  "name": "Indie rock",
+                  "type": "urn:tag:genre:music"
+                }
+              ],
+              "properties": {
+                "short_description": "Fictional act for the synthetic fixture."
+              },
+              "external": {
+                "spotify": {
+                  "id": "syn2302ecde"
+                }
+              }
+            },
+            "ledgerRef": "Q1"
+          },
+          {
+            "input": "The Truth",
+            "role": "venue",
+            "status": "unresolved",
+            "ledgerRef": "Q2"
+          },
+          {
+            "input": "House roster (next 60 Ticketmaster events)",
+            "role": "house",
+            "status": "exact",
+            "ledgerRef": "Q3"
+          }
+        ],
+        "provenance": [
+          "T1",
+          "Q1",
+          "Q2",
+          "Q3",
+          "Q4"
+        ],
+        "limits": [
+          "Resolution is by exact match on external ids or names; nothing was guessed."
+        ]
+      },
+      "liftMap": {
+        "status": "ok",
+        "summary": "5 tiles with lift of 1.3 or more against the house crowd; top tile The Nations at 2.05.",
+        "results": {
+          "tiles": [
+            {
+              "geohash": "dn6jxx",
+              "lat": 36.164246,
+              "lon": -86.852417,
+              "lift": 2.05,
+              "billPct": 0.609,
+              "housePct": 0.297,
+              "popularityPct": 0.65,
+              "name": "The Nations",
+              "zctas": [
+                "37209"
+              ],
+              "adultPopulation": 4700
+            },
+            {
+              "geohash": "dn6m9d",
+              "lat": 36.13678,
+              "lon": -86.764526,
+              "lift": 1.92,
+              "billPct": 0.426,
+              "housePct": 0.222,
+              "popularityPct": 0.701,
+              "name": "Wedgewood-Houston",
+              "zctas": [
+                "37203"
+              ],
+              "adultPopulation": 3900
+            },
+            {
+              "geohash": "dn6m8v",
+              "lat": 36.153259,
+              "lon": -86.797485,
+              "lift": 1.66,
+              "billPct": 0.309,
+              "housePct": 0.186,
+              "popularityPct": 0.555,
+              "name": "Midtown",
+              "zctas": [
+                "37203"
+              ],
+              "adultPopulation": 6100
+            },
+            {
+              "geohash": "dn6m8f",
+              "lat": 36.13678,
+              "lon": -86.797485,
+              "lift": 1.49,
+              "billPct": 0.416,
+              "housePct": 0.279,
+              "popularityPct": 0.67,
+              "name": "Hillsboro Village",
+              "zctas": [
+                "37212"
+              ],
+              "adultPopulation": 5100
+            },
+            {
+              "geohash": "dn6mc4",
+              "lat": 36.180725,
+              "lon": -86.786499,
+              "lift": 1.33,
+              "billPct": 0.352,
+              "housePct": 0.265,
+              "popularityPct": 0.498,
+              "name": "Germantown",
+              "zctas": [
+                "37208"
+              ],
+              "adultPopulation": 4100
+            },
+            {
+              "geohash": "dn6m90",
+              "lat": 36.125793,
+              "lon": -86.786499,
+              "lift": 1.22,
+              "billPct": 0.316,
+              "housePct": 0.259,
+              "popularityPct": 0.927,
+              "name": "12 South",
+              "zctas": [
+                "37204"
+              ],
+              "adultPopulation": 5300
+            },
+            {
+              "geohash": "dn6jxu",
+              "lat": 36.147766,
+              "lon": -86.841431,
+              "lift": 1.17,
+              "billPct": 0.197,
+              "housePct": 0.168,
+              "popularityPct": 0.488,
+              "name": "Sylvan Park",
+              "zctas": [
+                "37209"
+              ],
+              "adultPopulation": 6900
+            },
+            {
+              "geohash": "dn6mcc",
+              "lat": 36.175232,
+              "lon": -86.75354,
+              "lift": 1.08,
+              "billPct": 0.582,
+              "housePct": 0.539,
+              "popularityPct": 0.704,
+              "name": "East Nashville",
+              "zctas": [
+                "37206"
+              ],
+              "adultPopulation": 9800
+            },
+            {
+              "geohash": "dn6m5s",
+              "lat": 36.059875,
+              "lon": -86.676636,
+              "lift": 0.88,
+              "billPct": 0.443,
+              "housePct": 0.503,
+              "popularityPct": 0.392,
+              "name": "Antioch",
+              "zctas": [
+                "37013"
+              ],
+              "adultPopulation": 12400
+            },
+            {
+              "geohash": "dn6mfq",
+              "lat": 36.202698,
+              "lon": -86.731567,
+              "lift": 0.86,
+              "billPct": 0.429,
+              "housePct": 0.499,
+              "popularityPct": 0.91,
+              "name": "Inglewood",
+              "zctas": [
+                "37216"
+              ],
+              "adultPopulation": 7400
+            },
+            {
+              "geohash": "dn6mgb",
+              "lat": 36.169739,
+              "lon": -86.665649,
+              "lift": 0.79,
+              "billPct": 0.442,
+              "housePct": 0.559,
+              "popularityPct": 0.536,
+              "name": "Donelson",
+              "zctas": [
+                "37214"
+              ],
+              "adultPopulation": 8200
+            },
+            {
+              "geohash": "dn6jjy",
+              "lat": 36.070862,
+              "lon": -86.929321,
+              "lift": 0.74,
+              "billPct": 0.517,
+              "housePct": 0.699,
+              "popularityPct": 0.366,
+              "name": "Bellevue",
+              "zctas": [
+                "37221"
+              ],
+              "adultPopulation": 9100
+            },
+            {
+              "geohash": "dn6m9q",
+              "lat": 36.158752,
+              "lon": -86.775513,
+              "lift": 0.71,
+              "billPct": 0.581,
+              "housePct": 0.819,
+              "popularityPct": 0.749,
+              "name": "Downtown",
+              "zctas": [
+                "37219",
+                "37201"
+              ],
+              "adultPopulation": 3800
+            },
+            {
+              "geohash": "dn6q6b",
+              "lat": 36.257629,
+              "lon": -86.709595,
+              "lift": 0.69,
+              "billPct": 0.142,
+              "housePct": 0.206,
+              "popularityPct": 0.453,
+              "name": "Madison",
+              "zctas": [
+                "37115"
+              ],
+              "adultPopulation": 8800
+            }
+          ],
+          "diagnostics": {
+            "spearmanLiftVsHeat": 0.37,
+            "baseline": "house"
+          }
+        },
+        "provenance": [
+          "Q5",
+          "Q6",
+          "Q7",
+          "C1"
+        ],
+        "limits": [
+          "Lift compares percentile ranks inside two responses; it is not a count of fans.",
+          "Tile names come from the gazetteer, not from Qloo."
+        ]
+      },
+      "partners": {
+        "status": "ok",
+        "summary": "20 partners across the top 3 tiles, at most 2 per category per tile.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-place-b84d54b7",
+              "name": "Static Bloom Records",
+              "subtype": "urn:entity:place",
+              "popularity": 0.608,
+              "affinity": 0.968,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "51st Ave N, Nashville, TN",
+                "phone": "(615) 555-0150",
+                "website": "https://example.com/walkup-fixture/static-bloom-records",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "12:00-20:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.165751,
+                "lon": -86.847926,
+                "geohash": "dn6jxxz2b"
+              },
+              "distanceM": 437,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.49
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.38
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.13
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "record_store",
+            "score": 1,
+            "qlooRank": 1,
+            "hoursOnDay": "Thu 12:00-20:00",
+            "address": "51st Ave N, Nashville, TN",
+            "phone": "(615) 555-0150",
+            "website": "https://example.com/walkup-fixture/static-bloom-records",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-18f0770a",
+              "name": "Glasshouse Noodle Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.331,
+              "affinity": 0.952,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Centennial Blvd, Nashville, TN",
+                "phone": "(615) 555-0151",
+                "website": "https://example.com/walkup-fixture/glasshouse-noodle-bar",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-22:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.162955,
+                "lon": -86.857668,
+                "geohash": "dn6jxx20m"
+              },
+              "distanceM": 493,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.43
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.4
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "restaurant",
+            "score": 0.98,
+            "qlooRank": 2,
+            "hoursOnDay": "Thu 11:00-22:00",
+            "address": "Centennial Blvd, Nashville, TN",
+            "phone": "(615) 555-0151",
+            "website": "https://example.com/walkup-fixture/glasshouse-noodle-bar",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-f37ce748",
+              "name": "Afterglow Arcade Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.422,
+              "affinity": 0.923,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Delaware Ave, Nashville, TN",
+                "phone": "(615) 555-0152",
+                "website": "https://example.com/walkup-fixture/afterglow-arcade-bar",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-02:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.164276,
+                "lon": -86.854295,
+                "geohash": "dn6jxxd8h"
+              },
+              "distanceM": 169,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.47
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.19
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "bar",
+            "score": 0.94,
+            "qlooRank": 4,
+            "hoursOnDay": "Thu 16:00-02:00",
+            "address": "Delaware Ave, Nashville, TN",
+            "phone": "(615) 555-0152",
+            "website": "https://example.com/walkup-fixture/afterglow-arcade-bar",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-9471f38b",
+              "name": "Kiln Room Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.628,
+              "affinity": 0.958,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Martin St, Nashville, TN",
+                "phone": "(615) 555-0158",
+                "website": "https://example.com/walkup-fixture/kiln-room-coffee",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "07:00-16:00"
+                },
+                "neighborhood": "Wedgewood-Houston",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.139509,
+                "lon": -86.766535,
+                "geohash": "dn6m9dfxc"
+              },
+              "distanceM": 353,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.57
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.13
+                }
+              ]
+            },
+            "tileGeohash": "dn6m9d",
+            "tileName": "Wedgewood-Houston",
+            "category": "cafe",
+            "score": 0.937,
+            "qlooRank": 1,
+            "hoursOnDay": "Thu 07:00-16:00",
+            "address": "Martin St, Nashville, TN",
+            "phone": "(615) 555-0158",
+            "website": "https://example.com/walkup-fixture/kiln-room-coffee",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q11"
+              },
+              {
+                "label": "in a 1.92x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-319657d7",
+              "name": "Softwave Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.33,
+              "affinity": 0.92,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "51st Ave N, Nashville, TN",
+                "phone": "(615) 555-0153",
+                "website": "https://example.com/walkup-fixture/softwave-coffee",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "07:00-17:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.165714,
+                "lon": -86.849397,
+                "geohash": "dn6jxxy0w"
+              },
+              "distanceM": 316,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.61
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.22
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "cafe",
+            "score": 0.92,
+            "qlooRank": 5,
+            "hoursOnDay": "Thu 07:00-17:00",
+            "address": "51st Ave N, Nashville, TN",
+            "phone": "(615) 555-0153",
+            "website": "https://example.com/walkup-fixture/softwave-coffee",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-1e3def35",
+              "name": "Warehouse Nine Listening Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.271,
+              "affinity": 0.95,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Merritt Ave, Nashville, TN",
+                "phone": "(615) 555-0159",
+                "website": "https://example.com/walkup-fixture/warehouse-nine-listening-bar",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-01:00"
+                },
+                "neighborhood": "Wedgewood-Houston",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.142309,
+                "lon": -86.765084,
+                "geohash": "dn6m9ee85"
+              },
+              "distanceM": 617,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.51
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.2
+                }
+              ]
+            },
+            "tileGeohash": "dn6m9d",
+            "tileName": "Wedgewood-Houston",
+            "category": "bar",
+            "score": 0.918,
+            "qlooRank": 2,
+            "hoursOnDay": "Thu 16:00-01:00",
+            "address": "Merritt Ave, Nashville, TN",
+            "phone": "(615) 555-0159",
+            "website": "https://example.com/walkup-fixture/warehouse-nine-listening-bar",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q11"
+              },
+              {
+                "label": "in a 1.92x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-ece4b09b",
+              "name": "Second Skin Vintage",
+              "subtype": "urn:entity:place",
+              "popularity": 0.349,
+              "affinity": 0.901,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:clothing_store",
+                  "name": "Clothing Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Centennial Blvd, Nashville, TN",
+                "phone": "(615) 555-0154",
+                "website": "https://example.com/walkup-fixture/second-skin-vintage",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional clothing for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.162076,
+                "lon": -86.858693,
+                "geohash": "dn6jxrp7m"
+              },
+              "distanceM": 613,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.54
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.18
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "clothing_store",
+            "score": 0.9,
+            "qlooRank": 6,
+            "hoursOnDay": "Thu 10:00-19:00",
+            "address": "Centennial Blvd, Nashville, TN",
+            "phone": "(615) 555-0154",
+            "website": "https://example.com/walkup-fixture/second-skin-vintage",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-cd581bfc",
+              "name": "Loop & Lathe Records",
+              "subtype": "urn:entity:place",
+              "popularity": 0.383,
+              "affinity": 0.939,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Hagan St, Nashville, TN",
+                "phone": "(615) 555-0160",
+                "website": "https://example.com/walkup-fixture/loop-and-lathe-records",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "neighborhood": "Wedgewood-Houston",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.141661,
+                "lon": -86.764994,
+                "geohash": "dn6m9e7sm"
+              },
+              "distanceM": 544,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.45
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.4
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.15
+                }
+              ]
+            },
+            "tileGeohash": "dn6m9d",
+            "tileName": "Wedgewood-Houston",
+            "category": "record_store",
+            "score": 0.899,
+            "qlooRank": 3,
+            "hoursOnDay": "Thu 11:00-20:00",
+            "address": "Hagan St, Nashville, TN",
+            "phone": "(615) 555-0160",
+            "website": "https://example.com/walkup-fixture/loop-and-lathe-records",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q11"
+              },
+              {
+                "label": "in a 1.92x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-57f75153",
+              "name": "Brightside Dumpling Co.",
+              "subtype": "urn:entity:place",
+              "popularity": 0.395,
+              "affinity": 0.919,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Houston St, Nashville, TN",
+                "phone": "(615) 555-0161",
+                "website": "https://example.com/walkup-fixture/brightside-dumpling-co",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-21:00"
+                },
+                "neighborhood": "Wedgewood-Houston",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.131505,
+                "lon": -86.757575,
+                "geohash": "dn6m9c913"
+              },
+              "distanceM": 857,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.5
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.31
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.19
+                }
+              ]
+            },
+            "tileGeohash": "dn6m9d",
+            "tileName": "Wedgewood-Houston",
+            "category": "restaurant",
+            "score": 0.862,
+            "qlooRank": 5,
+            "hoursOnDay": "Thu 11:00-21:00",
+            "address": "Houston St, Nashville, TN",
+            "phone": "(615) 555-0161",
+            "website": "https://example.com/walkup-fixture/brightside-dumpling-co",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q11"
+              },
+              {
+                "label": "in a 1.92x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-6e787d63",
+              "name": "Tidal Paper Zines",
+              "subtype": "urn:entity:place",
+              "popularity": 0.825,
+              "affinity": 0.879,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:book_store",
+                  "name": "Book Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Alabama Ave, Nashville, TN",
+                "phone": "(615) 555-0155",
+                "website": "https://example.com/walkup-fixture/tidal-paper-zines",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-20:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional bookstore for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.158627,
+                "lon": -86.848762,
+                "geohash": "dn6jxwqxm"
+              },
+              "distanceM": 706,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.5
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.18
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "book_store",
+            "score": 0.86,
+            "qlooRank": 8,
+            "hoursOnDay": "Thu 10:00-20:00",
+            "address": "Alabama Ave, Nashville, TN",
+            "phone": "(615) 555-0155",
+            "website": "https://example.com/walkup-fixture/tidal-paper-zines",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-43d8c611",
+              "name": "Margin Notes Books",
+              "subtype": "urn:entity:place",
+              "popularity": 0.697,
+              "affinity": 0.889,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:book_store",
+                  "name": "Book Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Chestnut St, Nashville, TN",
+                "phone": "(615) 555-0162",
+                "website": "https://example.com/walkup-fixture/margin-notes-books",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-20:00"
+                },
+                "neighborhood": "Wedgewood-Houston",
+                "short_description": "Fictional bookstore for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.138983,
+                "lon": -86.764178,
+                "geohash": "dn6m9dukb"
+              },
+              "distanceM": 247,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.48
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.21
+                }
+              ]
+            },
+            "tileGeohash": "dn6m9d",
+            "tileName": "Wedgewood-Houston",
+            "category": "book_store",
+            "score": 0.824,
+            "qlooRank": 7,
+            "hoursOnDay": "Thu 10:00-20:00",
+            "address": "Chestnut St, Nashville, TN",
+            "phone": "(615) 555-0162",
+            "website": "https://example.com/walkup-fixture/margin-notes-books",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q11"
+              },
+              {
+                "label": "in a 1.92x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-b5c1148c",
+              "name": "Fade Theory Barbers",
+              "subtype": "urn:entity:place",
+              "popularity": 0.816,
+              "affinity": 0.853,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Delaware Ave, Nashville, TN",
+                "phone": "(615) 555-0156",
+                "website": "https://example.com/walkup-fixture/fade-theory-barbers",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-19:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.162825,
+                "lon": -86.854212,
+                "geohash": "dn6jxx4xw"
+              },
+              "distanceM": 226,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.55
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.3
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "barber_shop",
+            "score": 0.82,
+            "qlooRank": 10,
+            "hoursOnDay": "Thu 09:00-19:00",
+            "address": "Delaware Ave, Nashville, TN",
+            "phone": "(615) 555-0156",
+            "website": "https://example.com/walkup-fixture/fade-theory-barbers",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-5f4b2d5d",
+              "name": "Velvet Hour Cocktail Den",
+              "subtype": "urn:entity:place",
+              "popularity": 0.806,
+              "affinity": 0.948,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:date_night",
+                  "name": "Date night",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Division St, Nashville, TN",
+                "phone": "(615) 555-0164",
+                "website": "https://example.com/walkup-fixture/velvet-hour-cocktail-den",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-02:00"
+                },
+                "neighborhood": "Midtown",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.147844,
+                "lon": -86.795512,
+                "geohash": "dn6m8ut2m"
+              },
+              "distanceM": 628,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.55
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "tileGeohash": "dn6m8v",
+            "tileName": "Midtown",
+            "category": "bar",
+            "score": 0.794,
+            "qlooRank": 2,
+            "hoursOnDay": "Thu 16:00-02:00",
+            "address": "Division St, Nashville, TN",
+            "phone": "(615) 555-0164",
+            "website": "https://example.com/walkup-fixture/velvet-hour-cocktail-den",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q12"
+              },
+              {
+                "label": "in a 1.66x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-f96e8c72",
+              "name": "Thrift Theory Vintage",
+              "subtype": "urn:entity:place",
+              "popularity": 0.531,
+              "affinity": 0.864,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:clothing_store",
+                  "name": "Clothing Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Martin St, Nashville, TN",
+                "phone": "(615) 555-0163",
+                "website": "https://example.com/walkup-fixture/thrift-theory-vintage",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "Wedgewood-Houston",
+                "short_description": "Fictional clothing for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.139585,
+                "lon": -86.765336,
+                "geohash": "dn6m9e52m"
+              },
+              "distanceM": 320,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.56
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.27
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "tileGeohash": "dn6m9d",
+            "tileName": "Wedgewood-Houston",
+            "category": "clothing_store",
+            "score": 0.787,
+            "qlooRank": 9,
+            "hoursOnDay": "Thu 10:00-19:00",
+            "address": "Martin St, Nashville, TN",
+            "phone": "(615) 555-0163",
+            "website": "https://example.com/walkup-fixture/thrift-theory-vintage",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q11"
+              },
+              {
+                "label": "in a 1.92x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-1cafa470",
+              "name": "Pixel & Pour",
+              "subtype": "urn:entity:place",
+              "popularity": 0.301,
+              "affinity": 0.832,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Centennial Blvd, Nashville, TN",
+                "phone": "(615) 555-0157",
+                "website": "https://example.com/walkup-fixture/pixel-and-pour",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-01:00"
+                },
+                "neighborhood": "The Nations",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.158844,
+                "lon": -86.853094,
+                "geohash": "dn6jxwe88"
+              },
+              "distanceM": 604,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.53
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.13
+                }
+              ]
+            },
+            "tileGeohash": "dn6jxx",
+            "tileName": "The Nations",
+            "category": "bar",
+            "score": 0.78,
+            "qlooRank": 12,
+            "hoursOnDay": "Thu 16:00-01:00",
+            "address": "Centennial Blvd, Nashville, TN",
+            "phone": "(615) 555-0157",
+            "website": "https://example.com/walkup-fixture/pixel-and-pour",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q10"
+              },
+              {
+                "label": "in a 2.05x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-76f66d6d",
+              "name": "Paperlight Ramen",
+              "subtype": "urn:entity:place",
+              "popularity": 0.696,
+              "affinity": 0.935,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Elliston Pl, Nashville, TN",
+                "phone": "(615) 555-0165",
+                "website": "https://example.com/walkup-fixture/paperlight-ramen",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-22:00"
+                },
+                "neighborhood": "Midtown",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.150192,
+                "lon": -86.802507,
+                "geohash": "dn6m8ubq4"
+              },
+              "distanceM": 565,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.63
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.25
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.12
+                }
+              ]
+            },
+            "tileGeohash": "dn6m8v",
+            "tileName": "Midtown",
+            "category": "restaurant",
+            "score": 0.777,
+            "qlooRank": 3,
+            "hoursOnDay": "Thu 11:00-22:00",
+            "address": "Elliston Pl, Nashville, TN",
+            "phone": "(615) 555-0165",
+            "website": "https://example.com/walkup-fixture/paperlight-ramen",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q12"
+              },
+              {
+                "label": "in a 1.66x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-1447d0a6",
+              "name": "Satellite Record Shop",
+              "subtype": "urn:entity:place",
+              "popularity": 0.52,
+              "affinity": 0.928,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Elliston Pl, Nashville, TN",
+                "phone": "(615) 555-0166",
+                "website": "https://example.com/walkup-fixture/satellite-record-shop",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "neighborhood": "Midtown",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.156548,
+                "lon": -86.795462,
+                "geohash": "dn6m8yj7p"
+              },
+              "distanceM": 408,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.6
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.22
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.18
+                }
+              ]
+            },
+            "tileGeohash": "dn6m8v",
+            "tileName": "Midtown",
+            "category": "record_store",
+            "score": 0.761,
+            "qlooRank": 4,
+            "hoursOnDay": "Thu 11:00-20:00",
+            "address": "Elliston Pl, Nashville, TN",
+            "phone": "(615) 555-0166",
+            "website": "https://example.com/walkup-fixture/satellite-record-shop",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q12"
+              },
+              {
+                "label": "in a 1.66x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-b99d243d",
+              "name": "Little Orbit Cafe",
+              "subtype": "urn:entity:place",
+              "popularity": 0.61,
+              "affinity": 0.903,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Church St, Nashville, TN",
+                "phone": "(615) 555-0167",
+                "website": "https://example.com/walkup-fixture/little-orbit-cafe",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "07:00-17:00"
+                },
+                "neighborhood": "Midtown",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.147224,
+                "lon": -86.791798,
+                "geohash": "dn6m9h2hu"
+              },
+              "distanceM": 843,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.48
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "tileGeohash": "dn6m8v",
+            "tileName": "Midtown",
+            "category": "cafe",
+            "score": 0.729,
+            "qlooRank": 6,
+            "hoursOnDay": "Thu 07:00-17:00",
+            "address": "Church St, Nashville, TN",
+            "phone": "(615) 555-0167",
+            "website": "https://example.com/walkup-fixture/little-orbit-cafe",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q12"
+              },
+              {
+                "label": "in a 1.66x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-f78110d9",
+              "name": "Studio Cut Barbers",
+              "subtype": "urn:entity:place",
+              "popularity": 0.332,
+              "affinity": 0.869,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Hayes St, Nashville, TN",
+                "phone": "(615) 555-0168",
+                "website": "https://example.com/walkup-fixture/studio-cut-barbers",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-18:00"
+                },
+                "neighborhood": "Midtown",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.148443,
+                "lon": -86.803945,
+                "geohash": "dn6m8sx7c"
+              },
+              "distanceM": 789,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.54
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "tileGeohash": "dn6m8v",
+            "tileName": "Midtown",
+            "category": "barber_shop",
+            "score": 0.68,
+            "qlooRank": 9,
+            "hoursOnDay": "Thu 09:00-18:00",
+            "address": "Hayes St, Nashville, TN",
+            "phone": "(615) 555-0168",
+            "website": "https://example.com/walkup-fixture/studio-cut-barbers",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q12"
+              },
+              {
+                "label": "in a 1.66x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-f0a56882",
+              "name": "Polaroid Pocket Clothing",
+              "subtype": "urn:entity:place",
+              "popularity": 0.739,
+              "affinity": 0.845,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:clothing_store",
+                  "name": "Clothing Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "West End Ave, Nashville, TN",
+                "phone": "(615) 555-0169",
+                "website": "https://example.com/walkup-fixture/polaroid-pocket-clothing",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "Midtown",
+                "short_description": "Fictional clothing for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.152343,
+                "lon": -86.801256,
+                "geohash": "dn6m8v368"
+              },
+              "distanceM": 354,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.54
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.12
+                }
+              ]
+            },
+            "tileGeohash": "dn6m8v",
+            "tileName": "Midtown",
+            "category": "clothing_store",
+            "score": 0.648,
+            "qlooRank": 11,
+            "hoursOnDay": "Thu 10:00-19:00",
+            "address": "West End Ave, Nashville, TN",
+            "phone": "(615) 555-0169",
+            "website": "https://example.com/walkup-fixture/polaroid-pocket-clothing",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q12"
+              },
+              {
+                "label": "in a 1.66x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q10",
+          "Q11",
+          "Q12"
+        ],
+        "limits": [
+          "Suggested, not affiliated: no partner has agreed to anything.",
+          "Hours are for the street-team day and should be confirmed by phone."
+        ]
+      },
+      "declared": {
+        "status": "ok",
+        "summary": "6 of 8 of your partners ranked for this bill; 2 are not in Qloo's catalog, kept in your order.",
+        "results": [
+          {
+            "declared": {
+              "label": "Quarter Note Books",
+              "qlooEntityId": "syn-place-90493d92"
+            },
+            "rank": 1,
+            "entity": {
+              "entityId": "syn-place-90493d92",
+              "name": "Quarter Note Books",
+              "subtype": "urn:entity:place",
+              "popularity": 0.669,
+              "affinity": 0.85,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:book_store",
+                  "name": "Book Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "21st Ave S, Nashville, TN",
+                "phone": "(615) 555-0134",
+                "website": "https://example.com/walkup-fixture/quarter-note-books",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "short_description": "Fictional bookstore for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.135149,
+                "lon": -86.800091,
+                "geohash": "dn6m8f4n7"
+              },
+              "distanceM": null,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.53
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.31
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.16
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q15"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Bellhop Records",
+              "qlooEntityId": "syn-place-b55b2062"
+            },
+            "rank": 2,
+            "entity": {
+              "entityId": "syn-place-b55b2062",
+              "name": "Bellhop Records",
+              "subtype": "urn:entity:place",
+              "popularity": 0.517,
+              "affinity": 0.8,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Woodland St, Nashville, TN",
+                "phone": "(615) 555-0131",
+                "website": "https://example.com/walkup-fixture/bellhop-records",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.169285,
+                "lon": -86.755585,
+                "geohash": "dn6mcb6t2"
+              },
+              "distanceM": null,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.52
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.13
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q15"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Cumberland Cup Coffee",
+              "qlooEntityId": "syn-place-b6c806ef"
+            },
+            "rank": 3,
+            "entity": {
+              "entityId": "syn-place-b6c806ef",
+              "name": "Cumberland Cup Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.37,
+              "affinity": 0.75,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Rosa L Parks Blvd, Nashville, TN",
+                "phone": "(615) 555-0133",
+                "website": "https://example.com/walkup-fixture/cumberland-cup-coffee",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "07:00-17:00"
+                },
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.179166,
+                "lon": -86.787852,
+                "geohash": "dn6mc45nb"
+              },
+              "distanceM": null,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.42
+                },
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.41
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q15"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Row House Barbers",
+              "qlooEntityId": "syn-place-4126fa23"
+            },
+            "rank": 4,
+            "entity": {
+              "entityId": "syn-place-4126fa23",
+              "name": "Row House Barbers",
+              "subtype": "urn:entity:place",
+              "popularity": 0.392,
+              "affinity": 0.7,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Edgehill Ave, Nashville, TN",
+                "phone": "(615) 555-0135",
+                "website": "https://example.com/walkup-fixture/row-house-barbers",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-19:00"
+                },
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.14503,
+                "lon": -86.786739,
+                "geohash": "dn6m9h5b4"
+              },
+              "distanceM": null,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.5
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q15"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Tall Pines Tavern",
+              "qlooEntityId": "syn-place-c806b33e"
+            },
+            "rank": 5,
+            "entity": {
+              "entityId": "syn-place-c806b33e",
+              "name": "Tall Pines Tavern",
+              "subtype": "urn:entity:place",
+              "popularity": 0.625,
+              "affinity": 0.65,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Charlotte Ave, Nashville, TN",
+                "phone": "(615) 555-0132",
+                "website": "https://example.com/walkup-fixture/tall-pines-tavern",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-02:00"
+                },
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.157607,
+                "lon": -86.825682,
+                "geohash": "dn6m8nr3q"
+              },
+              "distanceM": null,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.6
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.11
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q15"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Gallatin Pike Pizza Co.",
+              "qlooEntityId": "syn-place-05787b77"
+            },
+            "rank": 6,
+            "entity": {
+              "entityId": "syn-place-05787b77",
+              "name": "Gallatin Pike Pizza Co.",
+              "subtype": "urn:entity:place",
+              "popularity": 0.456,
+              "affinity": 0.6,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Gallatin Pike, Nashville, TN",
+                "phone": "(615) 555-0130",
+                "website": "https://example.com/walkup-fixture/gallatin-pike-pizza-co",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "12:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.184556,
+                "lon": -86.742233,
+                "geohash": "dn6mf5hnr"
+              },
+              "distanceM": null,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.59
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.13
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q15"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Riverside Spoke Bike Co."
+            },
+            "rank": null,
+            "chips": []
+          },
+          {
+            "declared": {
+              "label": "Westside Screen Printers"
+            },
+            "rank": null,
+            "chips": []
+          }
+        ],
+        "provenance": [
+          "Q15"
+        ],
+        "limits": []
+      },
+      "prePost": {
+        "status": "ok",
+        "summary": "7 spots within 1.5 km open on show night, load-balanced against assumed capacities. All-ages show: bars are operator-only partners.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-place-8389248c",
+              "name": "Intermission Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.423,
+              "affinity": 0.95,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Peabody St, Nashville, TN",
+                "phone": "(615) 555-0143",
+                "website": "https://example.com/walkup-fixture/intermission-coffee",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "08:00-17:00"
+                },
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.162547,
+                "lon": -86.780286,
+                "geohash": "dn6m9r0w0"
+              },
+              "distanceM": 541,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.53
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.12
+                }
+              ]
+            },
+            "deltaRank": 6,
+            "expectedShare": 0.011,
+            "assumedCapacity": 50,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house +6 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-214893d0",
+              "name": "Curtain Call Pizza",
+              "subtype": "urn:entity:place",
+              "popularity": 0.733,
+              "affinity": 0.91,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Rutledge St, Nashville, TN",
+                "phone": "(615) 555-0146",
+                "website": "https://example.com/walkup-fixture/curtain-call-pizza",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "11:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.150869,
+                "lon": -86.77717,
+                "geohash": "dn6m9m4f1"
+              },
+              "distanceM": 1173,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.51
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.15
+                }
+              ]
+            },
+            "deltaRank": 4,
+            "expectedShare": 0.024,
+            "assumedCapacity": 110,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house +4 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-226cdfbc",
+              "name": "Encore Hot Chicken",
+              "subtype": "urn:entity:place",
+              "popularity": 0.739,
+              "affinity": 0.87,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Lea Ave, Nashville, TN",
+                "phone": "(615) 555-0144",
+                "website": "https://example.com/walkup-fixture/encore-hot-chicken",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "11:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.153295,
+                "lon": -86.767379,
+                "geohash": "dn6m9t9bj"
+              },
+              "distanceM": 1087,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.61
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.23
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.16
+                }
+              ]
+            },
+            "deltaRank": 3,
+            "expectedShare": 0.016,
+            "assumedCapacity": 70,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house +3 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-4a698129",
+              "name": "Overture Oyster Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.511,
+              "affinity": 0.83,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "2nd Ave S, Nashville, TN",
+                "phone": "(615) 555-0145",
+                "website": "https://example.com/walkup-fixture/overture-oyster-bar",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "17:00-01:00"
+                },
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.167488,
+                "lon": -86.782956,
+                "geohash": "dn6mc0ndf"
+              },
+              "distanceM": 1032,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.63
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.25
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.12
+                }
+              ]
+            },
+            "deltaRank": 2,
+            "expectedShare": 0.018,
+            "assumedCapacity": 80,
+            "fanFacingAllowed": false,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house +2 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-2e835606",
+              "name": "Marquee Supper Room",
+              "subtype": "urn:entity:place",
+              "popularity": 0.695,
+              "affinity": 0.79,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Hermitage Ave, Nashville, TN",
+                "phone": "(615) 555-0140",
+                "website": "https://example.com/walkup-fixture/marquee-supper-room",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "12:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.164614,
+                "lon": -86.768714,
+                "geohash": "dn6m9x8fn"
+              },
+              "distanceM": 643,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.44
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.38
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.17
+                }
+              ]
+            },
+            "deltaRank": -1,
+            "expectedShare": 0.03,
+            "assumedCapacity": 140,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house -1 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-5bd35376",
+              "name": "Stagedoor Diner",
+              "subtype": "urn:entity:place",
+              "popularity": 0.433,
+              "affinity": 0.75,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "4th Ave S, Nashville, TN",
+                "phone": "(615) 555-0142",
+                "website": "https://example.com/walkup-fixture/stagedoor-diner",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "12:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.15572,
+                "lon": -86.778172,
+                "geohash": "dn6m9mfn6"
+              },
+              "distanceM": 693,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.43
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.39
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.18
+                }
+              ]
+            },
+            "deltaRank": 0,
+            "expectedShare": 0.019,
+            "assumedCapacity": 90,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house 0 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-ec045396",
+              "name": "Ticket Stub Taproom",
+              "subtype": "urn:entity:place",
+              "popularity": 0.751,
+              "affinity": 0.71,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Lafayette St, Nashville, TN",
+                "phone": "(615) 555-0141",
+                "website": "https://example.com/walkup-fixture/ticket-stub-taproom",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "17:00-02:00"
+                },
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.157427,
+                "lon": -86.772163,
+                "geohash": "dn6m9qq2q"
+              },
+              "distanceM": 469,
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.64
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.23
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.13
+                }
+              ]
+            },
+            "deltaRank": -2,
+            "expectedShare": 0.03,
+            "assumedCapacity": 160,
+            "fanFacingAllowed": false,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "tonight vs house -2 ranks",
+                "ledgerRef": "Q14"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q13",
+          "Q14",
+          "T1"
+        ],
+        "limits": [
+          "Assumed capacities are guesses the operator can edit.",
+          "Alcohol rules come from the Ticketmaster age policy, never from Qloo."
+        ]
+      },
+      "media": {
+        "status": "ok",
+        "summary": "4 podcasts and 1 sponsor brand. Local ranking not checked yet, so all are national.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-podcast-6f907d19",
+              "name": "Bedroom Pop Diaries",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.714,
+              "affinity": 0.92,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.51
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q16"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-8cf2bc40",
+              "name": "Synth Club Radio Hour",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.411,
+              "affinity": 0.85,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.59
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.27
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q16"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-ae3f5c47",
+              "name": "Tape Hiss Weekly",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.351,
+              "affinity": 0.78,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.54
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.12
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q16"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-0495e48e",
+              "name": "Small Venue, Big Sound",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.476,
+              "affinity": 0.71,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.56
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q16"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-sponsor-e8b330dc",
+              "name": "Lumen Sparkling Water Co.",
+              "subtype": "urn:entity:brand",
+              "popularity": 0.718,
+              "affinity": 0.92,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional brand",
+                "short_description": "Fictional sponsor for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-artist-f3172777",
+                  "score": 0.57
+                },
+                {
+                  "entityId": "syn-artist-c488998d",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-artist-c76af4a9",
+                  "score": 0.14
+                }
+              ]
+            },
+            "kind": "sponsor",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "brand affinity for this bill, labelled national until the local probe runs",
+                "ledgerRef": "Q17"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q16",
+          "Q17"
+        ],
+        "limits": [
+          "Podcast reach and sponsor fit are not measured here."
+        ]
+      },
+      "demographics": {
+        "status": "ok",
+        "summary": "Age and gender skew for each act and the house set.",
+        "results": {
+          "bill": [
+            {
+              "entityId": "syn-artist-f3172777",
+              "age": {
+                "24_and_younger": 0.14,
+                "25_to_29": 0.16,
+                "30_to_34": 0.05,
+                "35_to_44": -0.06,
+                "45_to_54": -0.12,
+                "55_and_older": -0.17
+              },
+              "gender": {
+                "male": -0.02,
+                "female": 0.02
+              }
+            },
+            {
+              "entityId": "syn-artist-c488998d",
+              "age": {
+                "24_and_younger": 0.11,
+                "25_to_29": 0.13,
+                "30_to_34": 0.07,
+                "35_to_44": -0.03,
+                "45_to_54": -0.1,
+                "55_and_older": -0.16
+              },
+              "gender": {
+                "male": -0.04,
+                "female": 0.04
+              }
+            },
+            {
+              "entityId": "syn-artist-c76af4a9",
+              "age": {
+                "24_and_younger": 0.09,
+                "25_to_29": 0.12,
+                "30_to_34": 0.06,
+                "35_to_44": -0.02,
+                "45_to_54": -0.09,
+                "55_and_older": -0.15
+              },
+              "gender": {
+                "male": -0.06,
+                "female": 0.06
+              }
+            }
+          ],
+          "house": [
+            {
+              "entityId": "syn-artist-7da3cd05",
+              "age": {
+                "24_and_younger": 0.06,
+                "25_to_29": 0.08,
+                "30_to_34": 0.04,
+                "35_to_44": -0.01,
+                "45_to_54": -0.04,
+                "55_and_older": -0.08
+              },
+              "gender": {
+                "male": 0.01,
+                "female": -0.01
+              }
+            }
+          ]
+        },
+        "provenance": [
+          "Q8"
+        ],
+        "limits": [
+          "Skews describe aggregate audiences, never individuals.",
+          "Not used for radio format, alcohol or community inference."
+        ]
+      },
+      "whatsDifferent": {
+        "status": "ok",
+        "summary": "Tags distinctive to this bill versus the house crowd.",
+        "results": {
+          "shared": [
+            {
+              "id": "urn:tag:amenity:place:live_music",
+              "name": "Live music",
+              "type": "urn:tag:amenity:place",
+              "score": 0.4
+            },
+            {
+              "id": "urn:tag:keyword:media:concerts",
+              "name": "Concerts",
+              "type": "urn:tag:keyword:media",
+              "score": 0.36
+            }
+          ],
+          "a": [
+            {
+              "id": "urn:tag:genre:music:indie_pop",
+              "name": "Indie pop",
+              "type": "urn:tag:genre:music",
+              "score": 0.84
+            },
+            {
+              "id": "urn:tag:genre:music:synthpop",
+              "name": "Synth-pop",
+              "type": "urn:tag:genre:music",
+              "score": 0.77
+            },
+            {
+              "id": "urn:tag:genre:music:dream_pop",
+              "name": "Dream pop",
+              "type": "urn:tag:genre:music",
+              "score": 0.7
+            },
+            {
+              "id": "urn:tag:keyword:media:dance",
+              "name": "Dance",
+              "type": "urn:tag:keyword:media",
+              "score": 0.63
+            },
+            {
+              "id": "urn:tag:genre:music:bedroom_pop",
+              "name": "Bedroom pop",
+              "type": "urn:tag:genre:music",
+              "score": 0.58
+            },
+            {
+              "id": "urn:tag:keyword:place:vinyl",
+              "name": "Vinyl",
+              "type": "urn:tag:keyword:place",
+              "score": 0.51
+            }
+          ],
+          "b": [
+            {
+              "id": "urn:tag:genre:music:pop_country",
+              "name": "Pop country",
+              "type": "urn:tag:genre:music",
+              "score": 0.74
+            },
+            {
+              "id": "urn:tag:genre:music:southern_rock",
+              "name": "Southern rock",
+              "type": "urn:tag:genre:music",
+              "score": 0.65
+            },
+            {
+              "id": "urn:tag:genre:music:arena_rock",
+              "name": "Arena rock",
+              "type": "urn:tag:genre:music",
+              "score": 0.6
+            }
+          ],
+          "fromTagDiff": false
+        },
+        "provenance": [
+          "Q9"
+        ],
+        "limits": []
+      },
+      "copyHooks": {
+        "status": "ok",
+        "summary": "3 hooks built only from allowlisted tag words.",
+        "results": [
+          {
+            "text": "Indie pop and synth-pop, late night.",
+            "tagIds": [
+              "urn:tag:genre:music:indie_pop",
+              "urn:tag:genre:music:synthpop",
+              "urn:tag:good_for:place:late_night"
+            ]
+          },
+          {
+            "text": "Dream pop for the vinyl crowd.",
+            "tagIds": [
+              "urn:tag:genre:music:dream_pop",
+              "urn:tag:keyword:place:vinyl"
+            ]
+          },
+          {
+            "text": "Dance night. Good for groups.",
+            "tagIds": [
+              "urn:tag:keyword:media:dance",
+              "urn:tag:good_for:place:groups"
+            ]
+          }
+        ],
+        "provenance": [
+          "Q18"
+        ],
+        "limits": [
+          "No jokes, no artist voice, no artist marks in partner copy."
+        ]
+      }
+    },
+    "narration": {
+      "summary": "This bill's crowd over-indexes in The Nations, Wedgewood-Houston and Midtown versus The Truth's usual crowd. 20 partners across those three tiles; 7 pre/post spots within 1.5 km, bars listed for the operator only (all-ages show).",
+      "tileWhy": [
+        {
+          "geohash": "dn6jxx",
+          "text": "Lift 2.05: bill percentile 0.61 against a house percentile of 0.30."
+        },
+        {
+          "geohash": "dn6m9d",
+          "text": "Lift 1.92: bill percentile 0.43 against a house percentile of 0.22."
+        },
+        {
+          "geohash": "dn6m8v",
+          "text": "Lift 1.66: bill percentile 0.31 against a house percentile of 0.19."
+        },
+        {
+          "geohash": "dn6m8f",
+          "text": "Lift 1.49: bill percentile 0.42 against a house percentile of 0.28."
+        },
+        {
+          "geohash": "dn6mc4",
+          "text": "Lift 1.33: bill percentile 0.35 against a house percentile of 0.27."
+        }
+      ],
+      "partnerLines": [
+        {
+          "entityId": "syn-place-b84d54b7",
+          "text": "Rank 1 of 50 for this bill inside the The Nations tile."
+        },
+        {
+          "entityId": "syn-place-18f0770a",
+          "text": "Rank 2 of 50 for this bill inside the The Nations tile."
+        },
+        {
+          "entityId": "syn-place-f37ce748",
+          "text": "Rank 4 of 50 for this bill inside the The Nations tile."
+        },
+        {
+          "entityId": "syn-place-9471f38b",
+          "text": "Rank 1 of 50 for this bill inside the Wedgewood-Houston tile."
+        }
+      ],
+      "templated": false
+    },
+    "ledger": [
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events.json",
+        "params": {
+          "id": "syn-tm-event-g1b",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 971,
+        "bytes": 2109,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/events.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'id=syn-tm-event-g1b'",
+        "startedAt": "2026-11-14T16:20:00.000Z",
+        "note": "Bill, venue lat/lon, date and ageRestrictions.legalAgeEnforced.",
+        "id": "T1"
+      },
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events.json",
+        "params": {
+          "venueId": "syn-tm-venue-truth",
+          "size": 60,
+          "sort": "date,asc",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 3,
+        "bytes": 92160,
+        "cacheHit": true,
+        "resultCount": 60,
+        "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/events.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'venueId=syn-tm-venue-truth' --data-urlencode 'size=60' --data-urlencode 'sort=date,asc'",
+        "startedAt": "2026-11-14T16:20:01.258Z",
+        "note": "House roster: next 60 events at this venue (weekly cache).",
+        "id": "T2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/entities",
+        "params": {
+          "external.spotify.ids": [
+            "synf57a800a",
+            "syn2e887aea",
+            "syn2302ecde"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 901,
+        "bytes": 4062,
+        "cacheHit": false,
+        "resultCount": 3,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/entities' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'external.spotify.ids=synf57a800a,syn2e887aea,syn2302ecde'",
+        "startedAt": "2026-11-14T16:20:01.451Z",
+        "note": "Spotify ids from Ticketmaster attractions; exact matches only.",
+        "id": "Q1"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "The Truth",
+          "types": "urn:entity:place",
+          "filter.location": "36.1612,-86.7745",
+          "filter.radius": 1
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 273,
+        "bytes": 1200,
+        "cacheHit": false,
+        "resultCount": 0,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=The Truth' --data-urlencode 'types=urn:entity:place' --data-urlencode 'filter.location=36.1612,-86.7745' --data-urlencode 'filter.radius=1'",
+        "startedAt": "2026-11-14T16:20:02.609Z",
+        "note": "Venue not in catalog yet: using POINT(-86.7745 36.1612) from Ticketmaster.",
+        "id": "Q2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/entities",
+        "params": {
+          "external.spotify.ids": [
+            "syn-house-01",
+            "syn-house-02",
+            "syn-house-03",
+            "syn-house-04",
+            "syn-house-05",
+            "syn-house-06",
+            "syn-house-07",
+            "syn-house-08",
+            "syn-house-09",
+            "syn-house-10"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 8,
+        "bytes": 12330,
+        "cacheHit": true,
+        "resultCount": 10,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/entities' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'external.spotify.ids=syn-house-01,syn-house-02,syn-house-03,syn-house-04,syn-house-05,syn-house-06,syn-house-07,syn-house-08,syn-house-09,syn-house-10'",
+        "startedAt": "2026-11-14T16:20:02.990Z",
+        "note": "House set: roster headliners with Spotify ids (weekly cache).",
+        "id": "Q3"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "syn-house-roster-act",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 6,
+        "bytes": 1200,
+        "cacheHit": true,
+        "resultCount": 0,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=syn-house-roster-act' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
+        "startedAt": "2026-11-14T16:20:03.292Z",
+        "note": "2 roster acts had no Spotify id; typed search found no exact match. House set = 10 of 12.",
+        "id": "Q4"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "filter.location": "POINT(-86.7745 36.1612)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 203,
+        "bytes": 318400,
+        "cacheHit": false,
+        "resultCount": 2140,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'filter.location=POINT(-86.7745 36.1612)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-11-14T16:20:03.431Z",
+        "note": "Bill heat; GET (POST weights not verified yet).",
+        "id": "Q5"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.entities": [
+            "syn-artist-7da3cd05",
+            "syn-artist-7aa3c84c",
+            "syn-artist-7ba3c9df",
+            "syn-artist-78a3c526",
+            "syn-artist-79a3c6b9",
+            "syn-artist-76a3c200",
+            "syn-artist-77a3c393",
+            "syn-artist-84a3d80a",
+            "syn-artist-85a3d99d",
+            "syn-artist-fddc0a6f"
+          ],
+          "filter.location": "POINT(-86.7745 36.1612)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 5,
+        "bytes": 327900,
+        "cacheHit": true,
+        "resultCount": 2210,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-artist-7da3cd05,syn-artist-7aa3c84c,syn-artist-7ba3c9df,syn-artist-78a3c526,syn-artist-79a3c6b9,syn-artist-76a3c200,syn-artist-77a3c393,syn-artist-84a3d80a,syn-artist-85a3d99d,syn-artist-fddc0a6f' --data-urlencode 'filter.location=POINT(-86.7745 36.1612)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-11-14T16:20:03.865Z",
+        "note": "House heat (weekly cache per venue).",
+        "id": "Q6"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.tags": "urn:tag:category:place:restaurant",
+          "filter.location": "POINT(-86.7745 36.1612)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 6,
+        "bytes": 351200,
+        "cacheHit": true,
+        "resultCount": 2380,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.tags=urn:tag:category:place:restaurant' --data-urlencode 'filter.location=POINT(-86.7745 36.1612)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-11-14T16:20:03.976Z",
+        "note": "Generic baseline: diagnostic only (lift vs raw heat).",
+        "id": "Q7"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:demographics",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9",
+            "syn-artist-7da3cd05",
+            "syn-artist-7aa3c84c",
+            "syn-artist-7ba3c9df"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 959,
+        "bytes": 7254,
+        "cacheHit": false,
+        "resultCount": 6,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:demographics' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9,syn-artist-7da3cd05,syn-artist-7aa3c84c,syn-artist-7ba3c9df'",
+        "startedAt": "2026-11-14T16:20:04.047Z",
+        "id": "Q8"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/analysis/compare",
+        "params": {
+          "a.signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "b.signal.interests.entities": [
+            "syn-artist-7da3cd05",
+            "syn-artist-7aa3c84c",
+            "syn-artist-7ba3c9df",
+            "syn-artist-78a3c526",
+            "syn-artist-79a3c6b9",
+            "syn-artist-76a3c200",
+            "syn-artist-77a3c393",
+            "syn-artist-84a3d80a",
+            "syn-artist-85a3d99d",
+            "syn-artist-fddc0a6f"
+          ],
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 354,
+        "bytes": 30030,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/analysis/compare' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'a.signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'b.signal.interests.entities=syn-artist-7da3cd05,syn-artist-7aa3c84c,syn-artist-7ba3c9df,syn-artist-78a3c526,syn-artist-79a3c6b9,syn-artist-76a3c200,syn-artist-77a3c393,syn-artist-84a3d80a,syn-artist-85a3d99d,syn-artist-fddc0a6f' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-14T16:20:05.070Z",
+        "id": "Q9"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "filter.location": "POINT(-86.852417 36.164246)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:clothing_store"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "thursday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": "urn:tag:category:place:night_club",
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 754,
+        "bytes": 72750,
+        "cacheHit": false,
+        "resultCount": 50,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'filter.location=POINT(-86.852417 36.164246)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop,urn:tag:category:place:clothing_store' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=thursday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'filter.exclude.tags=urn:tag:category:place:night_club' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-14T16:20:05.603Z",
+        "note": "Partner pool for tile The Nations; diversity caps applied after scoring.",
+        "id": "Q10"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "filter.location": "POINT(-86.764526 36.13678)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:clothing_store"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "thursday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": "urn:tag:category:place:night_club",
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 626,
+        "bytes": 47300,
+        "cacheHit": false,
+        "resultCount": 50,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'filter.location=POINT(-86.764526 36.13678)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop,urn:tag:category:place:clothing_store' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=thursday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'filter.exclude.tags=urn:tag:category:place:night_club' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-14T16:20:06.622Z",
+        "note": "Partner pool for tile Wedgewood-Houston; diversity caps applied after scoring.",
+        "id": "Q11"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "filter.location": "POINT(-86.797485 36.153259)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:clothing_store"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "thursday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": "urn:tag:category:place:night_club",
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 500,
+        "bytes": 73500,
+        "cacheHit": false,
+        "resultCount": 50,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'filter.location=POINT(-86.797485 36.153259)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop,urn:tag:category:place:clothing_store' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=thursday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'filter.exclude.tags=urn:tag:category:place:night_club' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-14T16:20:07.387Z",
+        "note": "Partner pool for tile Midtown; diversity caps applied after scoring.",
+        "id": "Q12"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "filter.location": "POINT(-86.7745 36.1612)",
+          "filter.location.radius": 1500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "saturday",
+          "feature.explainability": true,
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 444,
+        "bytes": 46050,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'filter.location=POINT(-86.7745 36.1612)' --data-urlencode 'filter.location.radius=1500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=saturday' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-14T16:20:08.125Z",
+        "id": "Q13"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-artist-7da3cd05",
+            "syn-artist-7aa3c84c",
+            "syn-artist-7ba3c9df",
+            "syn-artist-78a3c526",
+            "syn-artist-79a3c6b9",
+            "syn-artist-76a3c200",
+            "syn-artist-77a3c393",
+            "syn-artist-84a3d80a",
+            "syn-artist-85a3d99d",
+            "syn-artist-fddc0a6f"
+          ],
+          "filter.location": "POINT(-86.7745 36.1612)",
+          "filter.location.radius": 1500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "saturday",
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 3,
+        "bytes": 44850,
+        "cacheHit": true,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-artist-7da3cd05,syn-artist-7aa3c84c,syn-artist-7ba3c9df,syn-artist-78a3c526,syn-artist-79a3c6b9,syn-artist-76a3c200,syn-artist-77a3c393,syn-artist-84a3d80a,syn-artist-85a3d99d,syn-artist-fddc0a6f' --data-urlencode 'filter.location=POINT(-86.7745 36.1612)' --data-urlencode 'filter.location.radius=1500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=saturday' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-14T16:20:08.688Z",
+        "note": "House-signal twin for the delta rank (weekly cache).",
+        "id": "Q14"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.results.entities": [
+            "syn-place-05787b77",
+            "syn-place-b55b2062",
+            "syn-place-c806b33e",
+            "syn-place-b6c806ef",
+            "syn-place-90493d92",
+            "syn-place-4126fa23"
+          ],
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 245,
+        "bytes": 7320,
+        "cacheHit": false,
+        "resultCount": 6,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'filter.results.entities=syn-place-05787b77,syn-place-b55b2062,syn-place-c806b33e,syn-place-b6c806ef,syn-place-90493d92,syn-place-4126fa23' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9'",
+        "startedAt": "2026-11-14T16:20:08.863Z",
+        "note": "6 of 8 declared partners were picked from a /search pick list; 2 are not in the catalog.",
+        "id": "Q15"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:podcast",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "signal.location": "POINT(-86.7745 36.1612)",
+          "feature.explainability": true,
+          "take": 15
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 203,
+        "bytes": 17415,
+        "cacheHit": false,
+        "resultCount": 15,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:podcast' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'signal.location=POINT(-86.7745 36.1612)' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
+        "startedAt": "2026-11-14T16:20:09.219Z",
+        "note": "signal.location probe pending: labelled national.",
+        "id": "Q16"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:brand",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "signal.location": "POINT(-86.7745 36.1612)",
+          "filter.exclude.tags": [
+            "urn:tag:category:brand:alcohol",
+            "urn:tag:category:brand:tobacco",
+            "urn:tag:category:brand:gambling"
+          ],
+          "feature.explainability": true,
+          "take": 15
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 210,
+        "bytes": 20865,
+        "cacheHit": false,
+        "resultCount": 15,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:brand' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'signal.location=POINT(-86.7745 36.1612)' --data-urlencode 'filter.exclude.tags=urn:tag:category:brand:alcohol,urn:tag:category:brand:tobacco,urn:tag:category:brand:gambling' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
+        "startedAt": "2026-11-14T16:20:09.567Z",
+        "id": "Q17"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:tag",
+          "signal.interests.entities": [
+            "syn-artist-f3172777",
+            "syn-artist-c488998d",
+            "syn-artist-c76af4a9"
+          ],
+          "filter.tag.types": [
+            "urn:tag:keyword:media",
+            "urn:tag:genre:music",
+            "urn:tag:theme:qloo",
+            "urn:tag:audience:qloo"
+          ],
+          "diversify.by": "subtype",
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 993,
+        "bytes": 35100,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.entities=syn-artist-f3172777,syn-artist-c488998d,syn-artist-c76af4a9' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:music,urn:tag:theme:qloo,urn:tag:audience:qloo' --data-urlencode 'diversify.by=subtype' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-14T16:20:09.828Z",
+        "note": "Denylist applied first; 6 tags survived to the copy allowlist.",
+        "id": "Q18"
+      },
+      {
+        "kind": "acs",
+        "method": "GET",
+        "endpoint": "/data/2024/acs/acs5",
+        "params": {
+          "get": [
+            "NAME",
+            "B01003_001E",
+            "B01002_001E",
+            "B19013_001E",
+            "B01001_001E",
+            "B01001_003E",
+            "B01001_004E",
+            "B01001_005E",
+            "B01001_006E",
+            "B01001_007E",
+            "B01001_008E",
+            "B01001_027E",
+            "B01001_028E",
+            "B01001_029E",
+            "B01001_030E",
+            "B01001_031E",
+            "B01001_032E"
+          ],
+          "for": "zip code tabulation area:37209,37203,37212,37208",
+          "key": "$CENSUS_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 259,
+        "bytes": 5196,
+        "cacheHit": false,
+        "resultCount": 4,
+        "curl": "curl -sG 'https://api.census.gov/data/2024/acs/acs5' --data-urlencode 'get=NAME,B01003_001E,B01002_001E,B19013_001E,B01001_001E,B01001_003E,B01001_004E,B01001_005E,B01001_006E,B01001_007E,B01001_008E,B01001_027E,B01001_028E,B01001_029E,B01001_030E,B01001_031E,B01001_032E' --data-urlencode 'for=zip code tabulation area:37209,37203,37212,37208' --data-urlencode \"key=$CENSUS_API_KEY\"",
+        "startedAt": "2026-11-14T16:20:10.868Z",
+        "note": "Adults 21+ per ZCTA (B01001 total minus the under-21 bins) for the budget heuristic and the tile floor.",
+        "id": "C1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "indie music bar Nashville",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 995,
+        "bytes": 22500,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"indie music bar Nashville\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":36.1612,\"longitude\":-86.7745},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-14T16:20:11.319Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "record store Nashville",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 755,
+        "bytes": 27360,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"record store Nashville\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":36.1612,\"longitude\":-86.7745},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-14T16:20:12.599Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P2"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "late night bar Nashville",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 458,
+        "bytes": 24800,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"late night bar Nashville\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":36.1612,\"longitude\":-86.7745},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-14T16:20:13.431Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P3"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "coffee shop near The Truth Nashville",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 845,
+        "bytes": 29960,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"coffee shop near The Truth Nashville\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":36.1612,\"longitude\":-86.7745},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-14T16:20:14.130Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P4"
+      },
+      {
+        "kind": "anthropic",
+        "method": "POST",
+        "endpoint": "/v1/messages",
+        "params": {
+          "model": "claude-opus-5-5",
+          "output_config.effort": "medium",
+          "tools": [
+            "places_search",
+            "acs_lookup"
+          ],
+          "max_tokens": 16000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 14200,
+        "bytes": 18400,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -s 'https://api.anthropic.com/v1/messages' -H \"x-api-key: $ANTHROPIC_API_KEY\" -H 'anthropic-version: 2023-06-01' -H 'content-type: application/json' -d @request.json",
+        "startedAt": "2026-11-14T16:20:15.221Z",
+        "note": "Arm F: same model, same schema, Google Places + ACS tools.",
+        "id": "L1"
+      },
+      {
+        "kind": "anthropic",
+        "method": "POST",
+        "endpoint": "/v1/messages",
+        "params": {
+          "model": "claude-opus-5-5",
+          "output_config.effort": "low",
+          "output_config.format": "json_schema:street_sheet_narration",
+          "max_tokens": 4000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 6100,
+        "bytes": 7900,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -s 'https://api.anthropic.com/v1/messages' -H \"x-api-key: $ANTHROPIC_API_KEY\" -H 'anthropic-version: 2023-06-01' -H 'content-type: application/json' -d @request.json",
+        "startedAt": "2026-11-14T16:20:29.621Z",
+        "note": "Narration may cite only ids and numbers from this run; guard dropped 0.",
+        "id": "L2"
+      }
+    ],
+    "guard": {
+      "dropped": 0,
+      "reasons": [],
+      "deniedTagCount": 0
+    },
+    "budgetSplit": [
+      {
+        "geohash": "dn6jxx",
+        "share": 0.22,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dn6m9d",
+        "share": 0.19,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dn6m8v",
+        "share": 0.23,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dn6m8f",
+        "share": 0.19,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dn6mc4",
+        "share": 0.17,
+        "label": "heuristic, not a forecast"
+      }
+    ],
+    "limits": [
+      "Whether this plan sells tickets: nothing here measures sales.",
+      "What fans will buy: these are tastes, not purchases.",
+      "Where buyers live: the areas show where this bill's fans stand out from the room's usual crowd.",
+      "Anything about one person, or whether a partner will move tickets.",
+      "Venue coordinates in this synthetic fixture are approximate; live runs take them from Ticketmaster."
+    ]
+  },
+  "control": {
+    "arm": "F",
+    "places": [
+      {
+        "placeId": "syn-gplace-890640d2",
+        "name": "Neon Lights Karaoke Bar",
+        "address": "Broadway, Nashville, TN",
+        "rating": 4.1,
+        "userRatingCount": 2801,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.162801,
+          "lon": -86.780157
+        },
+        "query": "late night bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-5850fe14",
+        "name": "Gulch Rooftop Lounge",
+        "address": "12th Ave S, Nashville, TN",
+        "rating": 4.7,
+        "userRatingCount": 85,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.153606,
+          "lon": -86.788379
+        },
+        "query": "late night bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-3ac95c12",
+        "name": "Lower Broad Boot Hall",
+        "address": "Broadway, Nashville, TN",
+        "rating": 4.4,
+        "userRatingCount": 5440,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.160474,
+          "lon": -86.775061
+        },
+        "query": "late night bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-95960f29",
+        "name": "Velvet Hour Cocktail Den",
+        "address": "Division St, Nashville, TN",
+        "rating": 4.1,
+        "userRatingCount": 4234,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.149373,
+          "lon": -86.796141
+        },
+        "query": "indie music bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-c076d939",
+        "name": "Demonbreun Dance Hall",
+        "address": "Demonbreun St, Nashville, TN",
+        "rating": 4.1,
+        "userRatingCount": 4362,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.15409,
+          "lon": -86.786363
+        },
+        "query": "indie music bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-9a1a1421",
+        "name": "Pixel Palace Arcade Bar",
+        "address": "2nd Ave N, Nashville, TN",
+        "rating": 4.4,
+        "userRatingCount": 4911,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.157151,
+          "lon": -86.775829
+        },
+        "query": "indie music bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-0223412e",
+        "name": "Midtown Mule Bar",
+        "address": "Division St, Nashville, TN",
+        "rating": 4.7,
+        "userRatingCount": 1225,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.151593,
+          "lon": -86.796174
+        },
+        "query": "indie music bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-f6237394",
+        "name": "Honeysuckle Hall Bar",
+        "address": "Demonbreun St, Nashville, TN",
+        "rating": 4,
+        "userRatingCount": 5062,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.155583,
+          "lon": -86.787914
+        },
+        "query": "late night bar Nashville"
+      },
+      {
+        "placeId": "syn-gplace-03856e46",
+        "name": "Downtown Vinyl Depot",
+        "address": "5th Ave N, Nashville, TN",
+        "rating": 4.8,
+        "userRatingCount": 2333,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.155629,
+          "lon": -86.776659
+        },
+        "query": "record store Nashville"
+      },
+      {
+        "placeId": "syn-gplace-58b18698",
+        "name": "Studio Row Records",
+        "address": "Music Square E, Nashville, TN",
+        "rating": 4.6,
+        "userRatingCount": 3392,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.153116,
+          "lon": -86.800944
+        },
+        "query": "record store Nashville"
+      },
+      {
+        "placeId": "syn-gplace-767b53f3",
+        "name": "Static Bloom Records",
+        "address": "51st Ave N, Nashville, TN",
+        "rating": 4.1,
+        "userRatingCount": 6051,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.167628,
+          "lon": -86.849408
+        },
+        "query": "record store Nashville"
+      },
+      {
+        "placeId": "syn-gplace-87df6dee",
+        "name": "Satellite Record Shop",
+        "address": "Elliston Pl, Nashville, TN",
+        "rating": 4.4,
+        "userRatingCount": 2618,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.153235,
+          "lon": -86.796115
+        },
+        "query": "record store Nashville"
+      },
+      {
+        "placeId": "syn-gplace-6a092201",
+        "name": "Hatch Mark Coffee",
+        "address": "Church St, Nashville, TN",
+        "rating": 4.7,
+        "userRatingCount": 4349,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.161483,
+          "lon": -86.780214
+        },
+        "query": "coffee shop near The Truth Nashville"
+      },
+      {
+        "placeId": "syn-gplace-11a09757",
+        "name": "Gulch Grind Coffee",
+        "address": "11th Ave S, Nashville, TN",
+        "rating": 4.6,
+        "userRatingCount": 2907,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.148513,
+          "lon": -86.782755
+        },
+        "query": "coffee shop near The Truth Nashville"
+      },
+      {
+        "placeId": "syn-gplace-a49ac5c8",
+        "name": "Midtown Taco Garage",
+        "address": "Broadway, Nashville, TN",
+        "rating": 4.7,
+        "userRatingCount": 736,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.152143,
+          "lon": -86.794251
+        },
+        "query": "late night bar Nashville"
+      }
+    ],
+    "overlapWithQloo": [
+      "Static Bloom Records",
+      "Velvet Hour Cocktail Den",
+      "Satellite Record Shop"
+    ],
+    "ledgerRefs": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "L1",
+      "C1"
+    ]
+  }
+}

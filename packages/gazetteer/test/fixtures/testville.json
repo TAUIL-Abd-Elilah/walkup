@@ -1,0 +1,29 @@
+{
+  "synthetic": true,
+  "metro": "testville",
+  "label": "Testville (synthetic fixture, open ocean)",
+  "center": { "lat": 10.0, "lon": -30.0 },
+  "bbox": { "south": 9.75, "west": -30.25, "north": 10.25, "east": -29.75 },
+  "generatedAt": "2026-01-01T00:00:00Z",
+  "sources": { "osm": { "status": "ok" }, "places": { "status": "ok" }, "acs": { "status": "ok" } },
+  "errors": [],
+  "attribution": { "osm": "© OpenStreetMap contributors, ODbL", "census": "U.S. Census Bureau, public domain" },
+  "neighbourhoods": [
+    { "name": "Lantern Row", "lat": 10.0, "lon": -30.0, "kind": "neighbourhood", "osmId": "node/1" },
+    { "name": "Millbrook", "lat": 10.03, "lon": -30.0, "kind": "suburb", "osmId": "way/2" },
+    { "name": "Ferry Quarter", "lat": 9.99, "lon": -29.99, "kind": "quarter", "osmId": "node/3" },
+    { "name": "", "lat": 10.2, "lon": -30.2, "kind": "neighbourhood", "osmId": "node/4" }
+  ],
+  "places": [
+    { "name": "Big City", "geoid": "9900001", "lat": 10.0, "lon": -30.01, "kind": "incorporated", "landKm2": 900 },
+    { "name": "Small Town", "geoid": "9900002", "lat": 10.1, "lon": -30.1, "kind": "incorporated", "landKm2": 12 },
+    { "name": "Outer Hamlet", "geoid": "9900003", "lat": 9.85, "lon": -29.85, "kind": "cdp", "landKm2": 3 }
+  ],
+  "zctas": [
+    { "zcta": "99901", "lat": 10.0, "lon": -30.0, "landKm2": 20.5, "totalPop": 13000, "adults21": 10000, "medianAge": 34.5, "medianIncome": 61000 },
+    { "zcta": "99902", "lat": 10.02, "lon": -30.0, "landKm2": 15.0, "totalPop": 6500, "adults21": 5000, "medianAge": 38.0, "medianIncome": 72000 },
+    { "zcta": "99903", "lat": 10.0, "lon": -30.04, "landKm2": 9.1, "totalPop": null, "adults21": null, "medianAge": null, "medianIncome": null },
+    { "zcta": "99904", "lat": 10.1, "lon": -30.1, "landKm2": 30.0, "totalPop": 2600, "adults21": 2000, "medianAge": 41.2, "medianIncome": 55000 },
+    { "zcta": "99905", "lat": 9.85, "lon": -29.85, "landKm2": 44.0, "totalPop": 1000, "adults21": 800, "medianAge": 45.0, "medianIncome": null }
+  ]
+}

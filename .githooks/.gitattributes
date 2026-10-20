@@ -1,0 +1,2 @@
+# Hooks run under sh: keep LF endings even where core.autocrlf=true.
+* text eol=lf

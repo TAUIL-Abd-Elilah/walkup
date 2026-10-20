@@ -1,0 +1,69 @@
+{
+  "synthetic": true,
+  "note": "Synthetic Discovery v2 /events.json?venueId= body written by hand for tests. Every name and id is invented.",
+  "body": {
+    "_embedded": {
+      "events": [
+        {
+          "id": "R01",
+          "name": "Marlow Pines",
+          "dates": { "start": { "localDate": "2026-11-20" }, "status": { "code": "onsale" } },
+          "_embedded": { "attractions": [{ "id": "A1", "name": "Marlow Pines" }] }
+        },
+        {
+          "id": "R02",
+          "name": "Marlow Pines",
+          "dates": { "start": { "localDate": "2026-11-21" }, "status": { "code": "onsale" } },
+          "_embedded": { "attractions": [{ "id": "A1", "name": "Marlow Pines" }] }
+        },
+        {
+          "id": "R03",
+          "name": "Premium Parking: Marlow Pines",
+          "dates": { "start": { "localDate": "2026-11-21" }, "status": { "code": "onsale" } },
+          "_embedded": { "attractions": [{ "id": "A1", "name": "Marlow Pines" }] }
+        },
+        {
+          "id": "R04",
+          "name": "Cass Okoro with Dell Ruiz",
+          "dates": { "start": { "localDate": "2026-11-25" }, "status": { "code": "onsale" } },
+          "_embedded": {
+            "attractions": [
+              { "id": "A2", "name": "Cass Okoro", "externalLinks": { "spotify": [{ "url": "https://open.spotify.com/artist/SynSpot000000000000003" }] } },
+              { "id": "A3", "name": "Dell Ruiz" }
+            ]
+          }
+        },
+        {
+          "id": "R05",
+          "name": "Wren Hollow",
+          "dates": { "start": { "localDate": "2026-12-01" }, "status": { "code": "canceled" } },
+          "_embedded": { "attractions": [{ "id": "A4", "name": "Wren Hollow" }] }
+        },
+        {
+          "id": "R06",
+          "name": "Holiday Market",
+          "dates": { "start": { "localDate": "2026-12-05" }, "status": { "code": "onsale" } }
+        },
+        {
+          "id": "R07",
+          "name": "Dell Ruiz",
+          "dates": { "start": { "localDate": "2027-03-20" }, "status": { "code": "onsale" } },
+          "_embedded": { "attractions": [{ "id": "A3", "name": "Dell Ruiz" }] }
+        },
+        {
+          "id": "R08",
+          "name": "Tamsin Vale",
+          "dates": { "start": { "localDate": "2027-01-19" }, "status": { "code": "onsale" } },
+          "_embedded": { "attractions": [{ "id": "A5", "name": "Tamsin Vale" }] }
+        },
+        {
+          "id": "R09",
+          "name": "No-ID Collective",
+          "dates": { "start": {} },
+          "_embedded": { "attractions": [{ "name": "No-ID Collective" }] }
+        }
+      ]
+    },
+    "page": { "size": 60, "totalElements": 9, "totalPages": 1, "number": 0 }
+  }
+}

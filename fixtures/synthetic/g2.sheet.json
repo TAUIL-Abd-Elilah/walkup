@@ -1,0 +1,4356 @@
+{
+  "synthetic": true,
+  "fixtureId": "g2",
+  "title": "Hampton Coliseum: Peninsula Comedy Night",
+  "note": "Synthetic fixture. The bill is invented; acts, titles, partner businesses, ids, scores and ledger timings are made up, and only the room is real. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
+  "sheet": {
+    "planId": "g2",
+    "createdAt": "2026-10-17T14:30:00.000Z",
+    "mode": "fixture",
+    "hypothetical": false,
+    "bill": {
+      "acts": [
+        {
+          "name": "Dorian Pike",
+          "role": "headliner",
+          "isComedian": true,
+          "tmAttractionId": "syn-tm-att-dorian-pike"
+        },
+        {
+          "name": "Sidecar",
+          "role": "co",
+          "isComedian": true,
+          "tmAttractionId": "syn-tm-att-sidecar"
+        },
+        {
+          "name": "Reggie Collier",
+          "role": "support",
+          "isComedian": true,
+          "tmAttractionId": "syn-tm-att-reggie-collier"
+        }
+      ],
+      "venue": {
+        "name": "Hampton Coliseum",
+        "lat": 37.0447,
+        "lon": -76.3889,
+        "city": "Hampton",
+        "state": "VA",
+        "country": "US",
+        "tmVenueId": "syn-tm-venue-hampton",
+        "qlooEntityId": "syn-place-eaad7f3b"
+      },
+      "date": "2026-12-19",
+      "weekday": "saturday",
+      "legalAgeEnforced": null,
+      "classification": "Arts & Theatre / Comedy",
+      "tmEventId": "syn-tm-event-g2",
+      "tmUrl": "https://www.ticketmaster.com/event/syn-tm-event-g2"
+    },
+    "operator": {
+      "seatsLeft": null,
+      "capacity": null,
+      "mediaBudgetUsd": null,
+      "streetTeamDays": [
+        "thursday",
+        "friday"
+      ],
+      "radiusKm": 40,
+      "declaredPartners": [
+        {
+          "label": "HBCU alumni chapter, Peninsula (operator contact)"
+        },
+        {
+          "label": "Divine Nine graduate chapter, Norfolk (operator contact)"
+        },
+        {
+          "label": "Congregation outreach team, Newport News (operator contact)"
+        },
+        {
+          "label": "Crown & Clipper Barbershop",
+          "qlooEntityId": "syn-place-2d582947"
+        },
+        {
+          "label": "Tidewater Fade Studio",
+          "qlooEntityId": "syn-place-331b953b"
+        },
+        {
+          "label": "Mercury Line Cuts",
+          "qlooEntityId": "syn-place-b5e9c7a5"
+        },
+        {
+          "label": "Southside Social Hall"
+        }
+      ]
+    },
+    "cards": {
+      "resolution": {
+        "status": "needs_input",
+        "summary": "1 act exact, 1 act on a proxy seed, 1 act waiting for your pick. Venue resolved; house set 8 of 12.",
+        "results": [
+          {
+            "input": "Dorian Pike",
+            "role": "headliner",
+            "status": "exact",
+            "entity": {
+              "entityId": "syn-person-516c9174",
+              "name": "Dorian Pike",
+              "subtype": "urn:entity:person",
+              "popularity": 0.88,
+              "affinity": null,
+              "tags": [],
+              "properties": {
+                "short_description": "Comedian and actor (fixture text).",
+                "occupation_check": "comedian tag present"
+              }
+            },
+            "ledgerRef": "Q1"
+          },
+          {
+            "input": "Sidecar",
+            "role": "co",
+            "status": "needs_input",
+            "candidates": [
+              {
+                "entityId": "syn-person-42906dc3",
+                "name": "Sidecar",
+                "subtype": "urn:entity:person",
+                "popularity": 0.62,
+                "shortDescription": "Stand-up comedian",
+                "externalUrl": "https://example.com/walkup-fixture/candidates/sidecar-person"
+              },
+              {
+                "entityId": "syn-movie-e3a26a7d",
+                "name": "Sidecar",
+                "subtype": "urn:entity:movie",
+                "popularity": 0.55,
+                "shortDescription": "Road movie",
+                "releaseYear": 1987,
+                "externalUrl": "https://example.com/walkup-fixture/candidates/sidecar-film"
+              },
+              {
+                "entityId": "syn-artist-151488ea",
+                "name": "Sidecar",
+                "subtype": "urn:entity:artist",
+                "popularity": 0.31,
+                "shortDescription": "Rock band",
+                "externalUrl": "https://example.com/walkup-fixture/candidates/sidecar-band"
+              },
+              {
+                "entityId": "syn-tv_show-3eae2a0d",
+                "name": "Sidecar",
+                "subtype": "urn:entity:tv_show",
+                "popularity": 0.12,
+                "shortDescription": "Documentary series",
+                "releaseYear": 2009,
+                "externalUrl": "https://example.com/walkup-fixture/candidates/sidecar-series"
+              }
+            ],
+            "ledgerRef": "Q2"
+          },
+          {
+            "input": "Reggie Collier",
+            "role": "support",
+            "status": "proxy",
+            "entity": {
+              "entityId": "syn-person-13dc188d",
+              "name": "Reggie Collier",
+              "subtype": "urn:entity:person",
+              "popularity": 0.33,
+              "affinity": null,
+              "tags": [],
+              "properties": {
+                "short_description": "Actor and comedian (fixture text)."
+              }
+            },
+            "proxy": {
+              "entity": {
+                "entityId": "syn-tv_show-5464849d",
+                "name": "Late Shift Diner",
+                "subtype": "urn:entity:tv_show",
+                "popularity": 0.86,
+                "affinity": null,
+                "tags": [
+                  {
+                    "id": "urn:tag:genre:media:comedy",
+                    "name": "Comedy",
+                    "type": "urn:tag:genre:media"
+                  }
+                ],
+                "properties": {
+                  "release_year": 1994,
+                  "short_description": "Title used as a proxy seed (fixture text)."
+                }
+              },
+              "reason": "Qloo has little on Reggie Collier, so his TV series stands in."
+            },
+            "ledgerRef": "Q4"
+          },
+          {
+            "input": "Saturday Night at the Pier",
+            "role": "headliner",
+            "status": "proxy",
+            "proxy": {
+              "entity": {
+                "entityId": "syn-movie-5dea891c",
+                "name": "Saturday Night at the Pier",
+                "subtype": "urn:entity:movie",
+                "popularity": 0.78,
+                "affinity": null,
+                "tags": [
+                  {
+                    "id": "urn:tag:genre:media:comedy",
+                    "name": "Comedy",
+                    "type": "urn:tag:genre:media"
+                  }
+                ],
+                "properties": {
+                  "release_year": 2001,
+                  "short_description": "Title used as a proxy seed (fixture text)."
+                }
+              },
+              "reason": "Dorian Pike's Qloo profile mostly reflects family films, so a stand-up special and a sitcom stand in for him."
+            },
+            "proxyFor": "Dorian Pike",
+            "ledgerRef": "Q5"
+          },
+          {
+            "input": "Corner House",
+            "role": "headliner",
+            "status": "proxy",
+            "proxy": {
+              "entity": {
+                "entityId": "syn-tv_show-85161ad8",
+                "name": "Corner House",
+                "subtype": "urn:entity:tv_show",
+                "popularity": 0.81,
+                "affinity": null,
+                "tags": [
+                  {
+                    "id": "urn:tag:genre:media:comedy",
+                    "name": "Comedy",
+                    "type": "urn:tag:genre:media"
+                  }
+                ],
+                "properties": {
+                  "release_year": 2018,
+                  "short_description": "Title used as a proxy seed (fixture text)."
+                }
+              },
+              "reason": "Dorian Pike's Qloo profile mostly reflects family films, so a stand-up special and a sitcom stand in for him."
+            },
+            "proxyFor": "Dorian Pike",
+            "ledgerRef": "Q6"
+          },
+          {
+            "input": "Hampton Coliseum",
+            "role": "venue",
+            "status": "exact",
+            "entity": {
+              "entityId": "syn-place-eaad7f3b",
+              "name": "Hampton Coliseum",
+              "subtype": "urn:entity:place",
+              "popularity": 0.88,
+              "affinity": null,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:arena",
+                  "name": "Arena",
+                  "type": "urn:tag:category:place"
+                }
+              ],
+              "properties": {
+                "address": "Coliseum Dr, Hampton, VA"
+              },
+              "location": {
+                "lat": 37.0447,
+                "lon": -76.3889
+              }
+            },
+            "ledgerRef": "Q7"
+          },
+          {
+            "input": "House roster (next 60 Ticketmaster events)",
+            "role": "house",
+            "status": "exact",
+            "ledgerRef": "Q8"
+          }
+        ],
+        "reason": "\"Sidecar\" matches 4 catalog entities. Pick one to add the act; the run continued on the resolved subset.",
+        "provenance": [
+          "T1",
+          "T2",
+          "Q1",
+          "Q2",
+          "Q3",
+          "Q4",
+          "Q5",
+          "Q6",
+          "Q7",
+          "Q8"
+        ],
+        "limits": [
+          "A one-word name is never resolved silently."
+        ]
+      },
+      "liftMap": {
+        "status": "partial",
+        "summary": "5 tiles with lift of 1.3 or more against the Coliseum's usual crowd; top tile Phoebus at 1.94.",
+        "results": {
+          "tiles": [
+            {
+              "geohash": "dq9dx5",
+              "lat": 37.021179,
+              "lon": -76.327515,
+              "lift": 1.94,
+              "billPct": 0.821,
+              "housePct": 0.423,
+              "popularityPct": 0.497,
+              "name": "Phoebus",
+              "zctas": [
+                "23663"
+              ],
+              "adultPopulation": 6200
+            },
+            {
+              "geohash": "dq9dsh",
+              "lat": 37.026672,
+              "lon": -76.459351,
+              "lift": 1.77,
+              "billPct": 0.382,
+              "housePct": 0.216,
+              "popularityPct": 0.547,
+              "name": "Hilton Village",
+              "zctas": [
+                "23601"
+              ],
+              "adultPopulation": 5400
+            },
+            {
+              "geohash": "dq99xy",
+              "lat": 36.861877,
+              "lon": -76.294556,
+              "lift": 1.61,
+              "billPct": 0.266,
+              "housePct": 0.165,
+              "popularityPct": 0.741,
+              "name": "Ghent",
+              "zctas": [
+                "23517"
+              ],
+              "adultPopulation": 7900
+            },
+            {
+              "geohash": "dq99x9",
+              "lat": 36.834412,
+              "lon": -76.305542,
+              "lift": 1.47,
+              "billPct": 0.525,
+              "housePct": 0.357,
+              "popularityPct": 0.83,
+              "name": "Olde Towne Portsmouth",
+              "zctas": [
+                "23704"
+              ],
+              "adultPopulation": 4600
+            },
+            {
+              "geohash": "dq9dws",
+              "lat": 37.026672,
+              "lon": -76.349487,
+              "lift": 1.34,
+              "billPct": 0.541,
+              "housePct": 0.404,
+              "popularityPct": 0.856,
+              "name": "Downtown Hampton",
+              "zctas": [
+                "23669"
+              ],
+              "adultPopulation": 3800
+            },
+            {
+              "geohash": "dq9dxy",
+              "lat": 37.037659,
+              "lon": -76.294556,
+              "lift": 1.21,
+              "billPct": 0.725,
+              "housePct": 0.599,
+              "popularityPct": 0.464,
+              "name": "Buckroe Beach",
+              "zctas": [
+                "23664"
+              ],
+              "adultPopulation": 4300
+            },
+            {
+              "geohash": "dq9e4w",
+              "lat": 37.125549,
+              "lon": -76.525269,
+              "lift": 1.15,
+              "billPct": 0.304,
+              "housePct": 0.264,
+              "popularityPct": 0.441,
+              "name": "Denbigh",
+              "zctas": [
+                "23602"
+              ],
+              "adultPopulation": 9600
+            },
+            {
+              "geohash": "dq9dgx",
+              "lat": 37.087097,
+              "lon": -76.481323,
+              "lift": 1.12,
+              "billPct": 0.493,
+              "housePct": 0.44,
+              "popularityPct": 0.876,
+              "name": "City Center",
+              "zctas": [
+                "23606"
+              ],
+              "adultPopulation": 6800
+            },
+            {
+              "geohash": "dq99xg",
+              "lat": 36.845398,
+              "lon": -76.294556,
+              "lift": 1.08,
+              "billPct": 0.827,
+              "housePct": 0.766,
+              "popularityPct": 0.647,
+              "name": "Downtown Norfolk",
+              "zctas": [
+                "23510"
+              ],
+              "adultPopulation": 5200
+            },
+            {
+              "geohash": "dq9f0y",
+              "lat": 36.949768,
+              "lon": -76.25061,
+              "lift": 0.97,
+              "billPct": 0.345,
+              "housePct": 0.356,
+              "popularityPct": 0.721,
+              "name": "Ocean View",
+              "zctas": [
+                "23503"
+              ],
+              "adultPopulation": 7100
+            },
+            {
+              "geohash": "dq9c1x",
+              "lat": 36.77948,
+              "lon": -76.217651,
+              "lift": 0.91,
+              "billPct": 0.477,
+              "housePct": 0.524,
+              "popularityPct": 0.402,
+              "name": "Greenbrier",
+              "zctas": [
+                "23320"
+              ],
+              "adultPopulation": 8700
+            },
+            {
+              "geohash": "dq9cee",
+              "lat": 36.845398,
+              "lon": -76.129761,
+              "lift": 0.83,
+              "billPct": 0.396,
+              "housePct": 0.477,
+              "popularityPct": 0.517,
+              "name": "Town Center",
+              "zctas": [
+                "23462"
+              ],
+              "adultPopulation": 9900
+            },
+            {
+              "geohash": "dq9dtz",
+              "lat": 37.043152,
+              "lon": -76.382446,
+              "lift": 0.78,
+              "billPct": 0.273,
+              "housePct": 0.35,
+              "popularityPct": 0.412,
+              "name": "Coliseum Central",
+              "zctas": [
+                "23666"
+              ],
+              "adultPopulation": 5600
+            }
+          ],
+          "diagnostics": {
+            "spearmanLiftVsHeat": 0.52,
+            "baseline": "house"
+          }
+        },
+        "reason": "Computed on the resolved subset: two stand-up/TV seeds with the headliner as anchor. Sidecar awaits your pick.",
+        "provenance": [
+          "Q9",
+          "Q10",
+          "Q11",
+          "C1"
+        ],
+        "limits": [
+          "Lift compares percentile ranks inside two responses; it is not a count of fans.",
+          "Lift tiles are where this bill's fans over-index versus the usual crowd, never where any group lives."
+        ]
+      },
+      "partners": {
+        "status": "partial",
+        "summary": "18 partners across the top 3 tiles in Hampton, Newport News and Norfolk.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-place-2d582947",
+              "name": "Crown & Clipper Barbershop",
+              "subtype": "urn:entity:place",
+              "popularity": 0.677,
+              "affinity": 0.961,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Mellen St, Hampton, VA",
+                "phone": "(757) 555-0100",
+                "website": "https://example.com/walkup-fixture/crown-and-clipper-barbershop",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.024051,
+                "lon": -76.327504,
+                "geohash": "dq9dxhh08"
+              },
+              "distanceM": 319,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.27
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.19
+                }
+              ]
+            },
+            "tileGeohash": "dq9dx5",
+            "tileName": "Phoebus",
+            "category": "barber_shop",
+            "score": 1,
+            "qlooRank": 1,
+            "hoursOnDay": "Thu 10:00-19:00",
+            "address": "Mellen St, Hampton, VA",
+            "phone": "(757) 555-0100",
+            "website": "https://example.com/walkup-fixture/crown-and-clipper-barbershop",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.94x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-3232a902",
+              "name": "Harborline Seafood Kitchen",
+              "subtype": "urn:entity:place",
+              "popularity": 0.534,
+              "affinity": 0.952,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "E Mercury Blvd, Hampton, VA",
+                "phone": "(757) 555-0101",
+                "website": "https://example.com/walkup-fixture/harborline-seafood-kitchen",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-22:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.015737,
+                "lon": -76.330197,
+                "geohash": "dq9dx4d03"
+              },
+              "distanceM": 650,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.46
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.22
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.21
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.1
+                }
+              ]
+            },
+            "tileGeohash": "dq9dx5",
+            "tileName": "Phoebus",
+            "category": "restaurant",
+            "score": 0.98,
+            "qlooRank": 2,
+            "hoursOnDay": "Thu 11:00-22:00",
+            "address": "E Mercury Blvd, Hampton, VA",
+            "phone": "(757) 555-0101",
+            "website": "https://example.com/walkup-fixture/harborline-seafood-kitchen",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.94x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-36ccd6fd",
+              "name": "Saltbox Records & Tapes",
+              "subtype": "urn:entity:place",
+              "popularity": 0.262,
+              "affinity": 0.928,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "E County St, Hampton, VA",
+                "phone": "(757) 555-0102",
+                "website": "https://example.com/walkup-fixture/saltbox-records-and-tapes",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.026804,
+                "lon": -76.322014,
+                "geohash": "dq9dxk80b"
+              },
+              "distanceM": 794,
+              "explainability": [
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.37
+                },
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.2
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.11
+                }
+              ]
+            },
+            "tileGeohash": "dq9dx5",
+            "tileName": "Phoebus",
+            "category": "record_store",
+            "score": 0.94,
+            "qlooRank": 4,
+            "hoursOnDay": "Thu 11:00-20:00",
+            "address": "E County St, Hampton, VA",
+            "phone": "(757) 555-0102",
+            "website": "https://example.com/walkup-fixture/saltbox-records-and-tapes",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.94x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-34786932",
+              "name": "Mallory Row Salon",
+              "subtype": "urn:entity:place",
+              "popularity": 0.251,
+              "affinity": 0.914,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:beauty_salon",
+                  "name": "Beauty Salon",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "N Mallory St, Hampton, VA",
+                "phone": "(757) 555-0103",
+                "website": "https://example.com/walkup-fixture/mallory-row-salon",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-18:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional salon for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.016802,
+                "lon": -76.326737,
+                "geohash": "dq9dx4swd"
+              },
+              "distanceM": 492,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.4
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.26
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.14
+                }
+              ]
+            },
+            "tileGeohash": "dq9dx5",
+            "tileName": "Phoebus",
+            "category": "beauty_salon",
+            "score": 0.92,
+            "qlooRank": 5,
+            "hoursOnDay": "Thu 09:00-18:00",
+            "address": "N Mallory St, Hampton, VA",
+            "phone": "(757) 555-0103",
+            "website": "https://example.com/walkup-fixture/mallory-row-salon",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.94x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-331b953b",
+              "name": "Tidewater Fade Studio",
+              "subtype": "urn:entity:place",
+              "popularity": 0.456,
+              "affinity": 0.962,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Warwick Blvd, Newport News, VA",
+                "phone": "(757) 555-0106",
+                "website": "https://example.com/walkup-fixture/tidewater-fade-studio",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-18:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.028804,
+                "lon": -76.459323,
+                "geohash": "dq9dshuh2"
+              },
+              "distanceM": 237,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.13
+                }
+              ]
+            },
+            "tileGeohash": "dq9dsh",
+            "tileName": "Hilton Village",
+            "category": "barber_shop",
+            "score": 0.912,
+            "qlooRank": 1,
+            "hoursOnDay": "Thu 09:00-18:00",
+            "address": "Warwick Blvd, Newport News, VA",
+            "phone": "(757) 555-0106",
+            "website": "https://example.com/walkup-fixture/tidewater-fade-studio",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q15"
+              },
+              {
+                "label": "in a 1.77x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-98803660",
+              "name": "Shipyard Shift Diner",
+              "subtype": "urn:entity:place",
+              "popularity": 0.788,
+              "affinity": 0.954,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Warwick Blvd, Newport News, VA",
+                "phone": "(757) 555-0107",
+                "website": "https://example.com/walkup-fixture/shipyard-shift-diner",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-21:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.032303,
+                "lon": -76.453667,
+                "geohash": "dq9dsm80u"
+              },
+              "distanceM": 804,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.41
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.27
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.2
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.12
+                }
+              ]
+            },
+            "tileGeohash": "dq9dsh",
+            "tileName": "Hilton Village",
+            "category": "restaurant",
+            "score": 0.894,
+            "qlooRank": 2,
+            "hoursOnDay": "Thu 11:00-21:00",
+            "address": "Warwick Blvd, Newport News, VA",
+            "phone": "(757) 555-0107",
+            "website": "https://example.com/walkup-fixture/shipyard-shift-diner",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q15"
+              },
+              {
+                "label": "in a 1.77x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-d1feda04",
+              "name": "Porchside Grill",
+              "subtype": "urn:entity:place",
+              "popularity": 0.364,
+              "affinity": 0.887,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "S Mallory St, Hampton, VA",
+                "phone": "(757) 555-0104",
+                "website": "https://example.com/walkup-fixture/porchside-grill",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-21:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.024288,
+                "lon": -76.32781,
+                "geohash": "dq9dxh5f1"
+              },
+              "distanceM": 347,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.36
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.31
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.18
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.15
+                }
+              ]
+            },
+            "tileGeohash": "dq9dx5",
+            "tileName": "Phoebus",
+            "category": "restaurant",
+            "score": 0.88,
+            "qlooRank": 7,
+            "hoursOnDay": "Thu 11:00-21:00",
+            "address": "S Mallory St, Hampton, VA",
+            "phone": "(757) 555-0104",
+            "website": "https://example.com/walkup-fixture/porchside-grill",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.94x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-e99a07e9",
+              "name": "Riverside Reel Records",
+              "subtype": "urn:entity:place",
+              "popularity": 0.811,
+              "affinity": 0.939,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Main St, Newport News, VA",
+                "phone": "(757) 555-0108",
+                "website": "https://example.com/walkup-fixture/riverside-reel-records",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.022526,
+                "lon": -76.45514,
+                "geohash": "dq9ds5xpf"
+              },
+              "distanceM": 594,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.39
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.11
+                }
+              ]
+            },
+            "tileGeohash": "dq9dsh",
+            "tileName": "Hilton Village",
+            "category": "record_store",
+            "score": 0.876,
+            "qlooRank": 3,
+            "hoursOnDay": "Thu 11:00-20:00",
+            "address": "Main St, Newport News, VA",
+            "phone": "(757) 555-0108",
+            "website": "https://example.com/walkup-fixture/riverside-reel-records",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q15"
+              },
+              {
+                "label": "in a 1.77x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-b5c770bb",
+              "name": "Lighthouse Lounge",
+              "subtype": "urn:entity:place",
+              "popularity": 0.581,
+              "affinity": 0.88,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Mellen St, Hampton, VA",
+                "phone": "(757) 555-0105",
+                "website": "https://example.com/walkup-fixture/lighthouse-lounge",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-02:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.026385,
+                "lon": -76.321444,
+                "geohash": "dq9dxk2qm"
+              },
+              "distanceM": 791,
+              "explainability": [
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.36
+                },
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.15
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.14
+                }
+              ]
+            },
+            "tileGeohash": "dq9dx5",
+            "tileName": "Phoebus",
+            "category": "bar",
+            "score": 0.86,
+            "qlooRank": 8,
+            "hoursOnDay": "Thu 16:00-02:00",
+            "address": "Mellen St, Hampton, VA",
+            "phone": "(757) 555-0105",
+            "website": "https://example.com/walkup-fixture/lighthouse-lounge",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.94x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-0b5a36fd",
+              "name": "Elm & Ember Bistro",
+              "subtype": "urn:entity:place",
+              "popularity": 0.613,
+              "affinity": 0.959,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "W 21st St, Norfolk, VA",
+                "phone": "(757) 555-0112",
+                "website": "https://example.com/walkup-fixture/elm-and-ember-bistro",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-21:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.864688,
+                "lon": -76.293278,
+                "geohash": "dq99xzhbm"
+              },
+              "distanceM": 333,
+              "explainability": [
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.13
+                }
+              ]
+            },
+            "tileGeohash": "dq99xy",
+            "tileName": "Ghent",
+            "category": "restaurant",
+            "score": 0.83,
+            "qlooRank": 1,
+            "hoursOnDay": "Thu 11:00-21:00",
+            "address": "W 21st St, Norfolk, VA",
+            "phone": "(757) 555-0112",
+            "website": "https://example.com/walkup-fixture/elm-and-ember-bistro",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.61x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-eedf1e8b",
+              "name": "Halyard Taproom",
+              "subtype": "urn:entity:place",
+              "popularity": 0.387,
+              "affinity": 0.899,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "River Rd, Newport News, VA",
+                "phone": "(757) 555-0109",
+                "website": "https://example.com/walkup-fixture/halyard-taproom",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-02:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.029353,
+                "lon": -76.452277,
+                "geohash": "dq9dskcps"
+              },
+              "distanceM": 695,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.4
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.2
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.12
+                }
+              ]
+            },
+            "tileGeohash": "dq9dsh",
+            "tileName": "Hilton Village",
+            "category": "bar",
+            "score": 0.821,
+            "qlooRank": 6,
+            "hoursOnDay": "Thu 16:00-02:00",
+            "address": "River Rd, Newport News, VA",
+            "phone": "(757) 555-0109",
+            "website": "https://example.com/walkup-fixture/halyard-taproom",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q15"
+              },
+              {
+                "label": "in a 1.77x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-b5e9c7a5",
+              "name": "Mercury Line Cuts",
+              "subtype": "urn:entity:place",
+              "popularity": 0.629,
+              "affinity": 0.947,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Colley Ave, Norfolk, VA",
+                "phone": "(757) 555-0113",
+                "website": "https://example.com/walkup-fixture/mercury-line-cuts",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.857065,
+                "lon": -76.298344,
+                "geohash": "dq99xv95z"
+              },
+              "distanceM": 632,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.37
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.16
+                }
+              ]
+            },
+            "tileGeohash": "dq99xy",
+            "tileName": "Ghent",
+            "category": "barber_shop",
+            "score": 0.813,
+            "qlooRank": 2,
+            "hoursOnDay": "Thu 10:00-19:00",
+            "address": "Colley Ave, Norfolk, VA",
+            "phone": "(757) 555-0113",
+            "website": "https://example.com/walkup-fixture/mercury-line-cuts",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.61x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-1289789c",
+              "name": "Gloss Theory Salon",
+              "subtype": "urn:entity:place",
+              "popularity": 0.725,
+              "affinity": 0.895,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:beauty_salon",
+                  "name": "Beauty Salon",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Hopkins St, Newport News, VA",
+                "phone": "(757) 555-0110",
+                "website": "https://example.com/walkup-fixture/gloss-theory-salon",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-18:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional salon for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.022512,
+                "lon": -76.454747,
+                "geohash": "dq9ds5xrg"
+              },
+              "distanceM": 617,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.16
+                }
+              ]
+            },
+            "tileGeohash": "dq9dsh",
+            "tileName": "Hilton Village",
+            "category": "beauty_salon",
+            "score": 0.803,
+            "qlooRank": 7,
+            "hoursOnDay": "Thu 09:00-18:00",
+            "address": "Hopkins St, Newport News, VA",
+            "phone": "(757) 555-0110",
+            "website": "https://example.com/walkup-fixture/gloss-theory-salon",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q15"
+              },
+              {
+                "label": "in a 1.77x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-9494ea61",
+              "name": "Wax Tidings Records",
+              "subtype": "urn:entity:place",
+              "popularity": 0.728,
+              "affinity": 0.942,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "Colley Ave, Norfolk, VA",
+                "phone": "(757) 555-0114",
+                "website": "https://example.com/walkup-fixture/wax-tidings-records",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-20:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.864786,
+                "lon": -76.287754,
+                "geohash": "dq9c8p0by"
+              },
+              "distanceM": 686,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.36
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.26
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.2
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.18
+                }
+              ]
+            },
+            "tileGeohash": "dq99xy",
+            "tileName": "Ghent",
+            "category": "record_store",
+            "score": 0.797,
+            "qlooRank": 3,
+            "hoursOnDay": "Thu 11:00-20:00",
+            "address": "Colley Ave, Norfolk, VA",
+            "phone": "(757) 555-0114",
+            "website": "https://example.com/walkup-fixture/wax-tidings-records",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.61x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-9f453703",
+              "name": "Anchor & Oak Cafe",
+              "subtype": "urn:entity:place",
+              "popularity": 0.593,
+              "affinity": 0.867,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Warwick Blvd, Newport News, VA",
+                "phone": "(757) 555-0111",
+                "website": "https://example.com/walkup-fixture/anchor-and-oak-cafe",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "07:00-17:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.021351,
+                "lon": -76.458617,
+                "geohash": "dq9ds5s91"
+              },
+              "distanceM": 595,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.39
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.18
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.11
+                }
+              ]
+            },
+            "tileGeohash": "dq9dsh",
+            "tileName": "Hilton Village",
+            "category": "cafe",
+            "score": 0.766,
+            "qlooRank": 9,
+            "hoursOnDay": "Thu 07:00-17:00",
+            "address": "Warwick Blvd, Newport News, VA",
+            "phone": "(757) 555-0111",
+            "website": "https://example.com/walkup-fixture/anchor-and-oak-cafe",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q15"
+              },
+              {
+                "label": "in a 1.77x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-395120a3",
+              "name": "Low Tide Lounge",
+              "subtype": "urn:entity:place",
+              "popularity": 0.795,
+              "affinity": 0.92,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Granby St, Norfolk, VA",
+                "phone": "(757) 555-0115",
+                "website": "https://example.com/walkup-fixture/low-tide-lounge",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "16:00-02:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.864616,
+                "lon": -76.291276,
+                "geohash": "dq99xyyru"
+              },
+              "distanceM": 422,
+              "explainability": [
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.19
+                }
+              ]
+            },
+            "tileGeohash": "dq99xy",
+            "tileName": "Ghent",
+            "category": "bar",
+            "score": 0.764,
+            "qlooRank": 5,
+            "hoursOnDay": "Thu 16:00-02:00",
+            "address": "Granby St, Norfolk, VA",
+            "phone": "(757) 555-0115",
+            "website": "https://example.com/walkup-fixture/low-tide-lounge",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.61x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-9d79b761",
+              "name": "Twenty-Second Street Salon",
+              "subtype": "urn:entity:place",
+              "popularity": 0.718,
+              "affinity": 0.884,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:beauty_salon",
+                  "name": "Beauty Salon",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "W 22nd St, Norfolk, VA",
+                "phone": "(757) 555-0116",
+                "website": "https://example.com/walkup-fixture/twenty-second-street-salon",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-17:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional salon for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.865164,
+                "lon": -76.288167,
+                "geohash": "dq9c8p0eh"
+              },
+              "distanceM": 676,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.26
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.23
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.15
+                }
+              ]
+            },
+            "tileGeohash": "dq99xy",
+            "tileName": "Ghent",
+            "category": "beauty_salon",
+            "score": 0.714,
+            "qlooRank": 8,
+            "hoursOnDay": "Thu 09:00-17:00",
+            "address": "W 22nd St, Norfolk, VA",
+            "phone": "(757) 555-0116",
+            "website": "https://example.com/walkup-fixture/twenty-second-street-salon",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.61x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-fa979497",
+              "name": "Bluefin Supper Club",
+              "subtype": "urn:entity:place",
+              "popularity": 0.671,
+              "affinity": 0.854,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Colonial Ave, Norfolk, VA",
+                "phone": "(757) 555-0117",
+                "website": "https://example.com/walkup-fixture/bluefin-supper-club",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "11:00-22:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.855632,
+                "lon": -76.288998,
+                "geohash": "dq9c8j259"
+              },
+              "distanceM": 852,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.2
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.14
+                }
+              ]
+            },
+            "tileGeohash": "dq99xy",
+            "tileName": "Ghent",
+            "category": "restaurant",
+            "score": 0.681,
+            "qlooRank": 10,
+            "hoursOnDay": "Thu 11:00-22:00",
+            "address": "Colonial Ave, Norfolk, VA",
+            "phone": "(757) 555-0117",
+            "website": "https://example.com/walkup-fixture/bluefin-supper-club",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.61x lift tile",
+                "ledgerRef": "Q9"
+              }
+            ]
+          }
+        ],
+        "reason": "Seeded on the resolved subset; 18 partners against a target of 20.",
+        "provenance": [
+          "Q14",
+          "Q15",
+          "Q16"
+        ],
+        "limits": [
+          "Suggested, not affiliated: no partner has agreed to anything."
+        ]
+      },
+      "declared": {
+        "status": "ok",
+        "summary": "3 of 7 of your partners ranked for this bill; 4 are not in Qloo's catalog, kept in your order.",
+        "results": [
+          {
+            "declared": {
+              "label": "Crown & Clipper Barbershop",
+              "qlooEntityId": "syn-place-2d582947"
+            },
+            "rank": 1,
+            "entity": {
+              "entityId": "syn-place-2d582947",
+              "name": "Crown & Clipper Barbershop",
+              "subtype": "urn:entity:place",
+              "popularity": 0.677,
+              "affinity": 0.961,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Mellen St, Hampton, VA",
+                "phone": "(757) 555-0100",
+                "website": "https://example.com/walkup-fixture/crown-and-clipper-barbershop",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "Phoebus",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.024051,
+                "lon": -76.327504,
+                "geohash": "dq9dxhh08"
+              },
+              "distanceM": 319,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.27
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.19
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q19"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Tidewater Fade Studio",
+              "qlooEntityId": "syn-place-331b953b"
+            },
+            "rank": 2,
+            "entity": {
+              "entityId": "syn-place-331b953b",
+              "name": "Tidewater Fade Studio",
+              "subtype": "urn:entity:place",
+              "popularity": 0.456,
+              "affinity": 0.962,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Warwick Blvd, Newport News, VA",
+                "phone": "(757) 555-0106",
+                "website": "https://example.com/walkup-fixture/tidewater-fade-studio",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "09:00-18:00"
+                },
+                "neighborhood": "Hilton Village",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.028804,
+                "lon": -76.459323,
+                "geohash": "dq9dshuh2"
+              },
+              "distanceM": 237,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.13
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q19"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "Mercury Line Cuts",
+              "qlooEntityId": "syn-place-b5e9c7a5"
+            },
+            "rank": 3,
+            "entity": {
+              "entityId": "syn-place-b5e9c7a5",
+              "name": "Mercury Line Cuts",
+              "subtype": "urn:entity:place",
+              "popularity": 0.629,
+              "affinity": 0.947,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Colley Ave, Norfolk, VA",
+                "phone": "(757) 555-0113",
+                "website": "https://example.com/walkup-fixture/mercury-line-cuts",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Thu": "10:00-19:00"
+                },
+                "neighborhood": "Ghent",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 36.857065,
+                "lon": -76.298344,
+                "geohash": "dq99xv95z"
+              },
+              "distanceM": 632,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.37
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.19
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.16
+                }
+              ]
+            },
+            "chips": [
+              {
+                "label": "ranked against this bill",
+                "ledgerRef": "Q19"
+              }
+            ]
+          },
+          {
+            "declared": {
+              "label": "HBCU alumni chapter, Peninsula (operator contact)"
+            },
+            "rank": null,
+            "chips": []
+          },
+          {
+            "declared": {
+              "label": "Divine Nine graduate chapter, Norfolk (operator contact)"
+            },
+            "rank": null,
+            "chips": []
+          },
+          {
+            "declared": {
+              "label": "Congregation outreach team, Newport News (operator contact)"
+            },
+            "rank": null,
+            "chips": []
+          },
+          {
+            "declared": {
+              "label": "Southside Social Hall"
+            },
+            "rank": null,
+            "chips": []
+          }
+        ],
+        "provenance": [
+          "Q19"
+        ],
+        "limits": []
+      },
+      "prePost": {
+        "status": "ok",
+        "summary": "6 spots within 1.5 km open on show night. Age policy is not set on the listing, so bars are operator-only partners.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-place-881359b1",
+              "name": "Front Row Fish Fry",
+              "subtype": "urn:entity:place",
+              "popularity": 0.563,
+              "affinity": 0.95,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Coliseum Dr, Hampton, VA",
+                "phone": "(757) 555-0118",
+                "website": "https://example.com/walkup-fixture/front-row-fish-fry",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "11:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.041556,
+                "lon": -76.384173,
+                "geohash": "dq9dtz4wx"
+              },
+              "distanceM": 546,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.16
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.16
+                }
+              ]
+            },
+            "deltaRank": 5,
+            "expectedShare": 0.025,
+            "assumedCapacity": 80,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q17"
+              },
+              {
+                "label": "tonight vs house +5 ranks",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-cb3ee4a4",
+              "name": "Box Office Burger Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.559,
+              "affinity": 0.91,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "W Mercury Blvd, Hampton, VA",
+                "phone": "(757) 555-0119",
+                "website": "https://example.com/walkup-fixture/box-office-burger-bar",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "11:00-21:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.049371,
+                "lon": -76.392389,
+                "geohash": "dq9dv8su0"
+              },
+              "distanceM": 605,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.38
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.18
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.12
+                }
+              ]
+            },
+            "deltaRank": 4,
+            "expectedShare": 0.03,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q17"
+              },
+              {
+                "label": "tonight vs house +4 ranks",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-41249743",
+              "name": "Mercury Blvd Wing Shack",
+              "subtype": "urn:entity:place",
+              "popularity": 0.824,
+              "affinity": 0.87,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "W Mercury Blvd, Hampton, VA",
+                "phone": "(757) 555-0120",
+                "website": "https://example.com/walkup-fixture/mercury-blvd-wing-shack",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "11:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.05018,
+                "lon": -76.385749,
+                "geohash": "dq9dvbc8g"
+              },
+              "distanceM": 670,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.35
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.23
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.12
+                }
+              ]
+            },
+            "deltaRank": 3,
+            "expectedShare": 0.028,
+            "assumedCapacity": 90,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q17"
+              },
+              {
+                "label": "tonight vs house +3 ranks",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-b90669aa",
+              "name": "Coliseum Crossing Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.551,
+              "affinity": 0.83,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Coliseum Dr, Hampton, VA",
+                "phone": "(757) 555-0121",
+                "website": "https://example.com/walkup-fixture/coliseum-crossing-coffee",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "08:00-17:00"
+                },
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.038232,
+                "lon": -76.390926,
+                "geohash": "dq9dtwtg6"
+              },
+              "distanceM": 741,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.29
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.21
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.17
+                }
+              ]
+            },
+            "deltaRank": 2,
+            "expectedShare": 0.012,
+            "assumedCapacity": 45,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q17"
+              },
+              {
+                "label": "tonight vs house +2 ranks",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-90865ae0",
+              "name": "Late Show Lounge",
+              "subtype": "urn:entity:place",
+              "popularity": 0.831,
+              "affinity": 0.79,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Cunningham Dr, Hampton, VA",
+                "phone": "(757) 555-0122",
+                "website": "https://example.com/walkup-fixture/late-show-lounge",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "16:00-01:00"
+                },
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.052785,
+                "lon": -76.381584,
+                "geohash": "dq9dvck8h"
+              },
+              "distanceM": 1109,
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.39
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.32
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.15
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.13
+                }
+              ]
+            },
+            "deltaRank": 1,
+            "expectedShare": 0.02,
+            "assumedCapacity": 140,
+            "fanFacingAllowed": false,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q17"
+              },
+              {
+                "label": "tonight vs house +1 ranks",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-4a8513ce",
+              "name": "Headliner Tap House",
+              "subtype": "urn:entity:place",
+              "popularity": 0.72,
+              "affinity": 0.75,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Power Plant Pkwy, Hampton, VA",
+                "phone": "(757) 555-0123",
+                "website": "https://example.com/walkup-fixture/headliner-tap-house",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Sat": "17:00-02:00"
+                },
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 37.034819,
+                "lon": -76.379671,
+                "geohash": "dq9dtvyp2"
+              },
+              "distanceM": 1370,
+              "explainability": [
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.33
+                },
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.24
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.15
+                }
+              ]
+            },
+            "deltaRank": -1,
+            "expectedShare": 0.018,
+            "assumedCapacity": 150,
+            "fanFacingAllowed": false,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q17"
+              },
+              {
+                "label": "tonight vs house -1 ranks",
+                "ledgerRef": "Q18"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q17",
+          "Q18",
+          "T1"
+        ],
+        "limits": [
+          "Assumed capacities are guesses the operator can edit.",
+          "Alcohol rules come from the Ticketmaster age policy, never from Qloo."
+        ]
+      },
+      "media": {
+        "status": "ok",
+        "summary": "4 podcasts and 1 sponsor brand. Local ranking not checked yet, so all are national.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-podcast-1a944023",
+              "name": "The Laugh Track Rewind",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.449,
+              "affinity": 0.92,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.38
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.23
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.2
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.19
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q20"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-cb30a3d5",
+              "name": "Sitcom Summit",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.769,
+              "affinity": 0.85,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.38
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.28
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.18
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.15
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q20"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-49c5cf7a",
+              "name": "Front Row Funny",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.495,
+              "affinity": 0.78,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.41
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.3
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.16
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.14
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q20"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-24464fcd",
+              "name": "Tidewater Talks",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.445,
+              "affinity": 0.71,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.42
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.31
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.14
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.13
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q20"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-sponsor-5982dca7",
+              "name": "Chesapeake Sweet Tea Co.",
+              "subtype": "urn:entity:brand",
+              "popularity": 0.606,
+              "affinity": 0.92,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional brand",
+                "short_description": "Fictional sponsor for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-movie-5dea891c",
+                  "score": 0.4
+                },
+                {
+                  "entityId": "syn-tv_show-85161ad8",
+                  "score": 0.34
+                },
+                {
+                  "entityId": "syn-person-516c9174",
+                  "score": 0.15
+                },
+                {
+                  "entityId": "syn-tv_show-5464849d",
+                  "score": 0.11
+                }
+              ]
+            },
+            "kind": "sponsor",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "brand affinity for this bill, labelled national until the local probe runs",
+                "ledgerRef": "Q21"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q20",
+          "Q21"
+        ],
+        "limits": [
+          "Podcast reach and sponsor fit are not measured here."
+        ]
+      },
+      "demographics": {
+        "status": "partial",
+        "summary": "Age and gender skew for the resolved acts, proxy seeds and the house set.",
+        "results": {
+          "bill": [
+            {
+              "entityId": "syn-person-516c9174",
+              "age": {
+                "24_and_younger": -0.12,
+                "25_to_29": -0.04,
+                "30_to_34": 0.05,
+                "35_to_44": 0.13,
+                "45_to_54": 0.12,
+                "55_and_older": 0.04
+              },
+              "gender": {
+                "male": 0.01,
+                "female": -0.01
+              }
+            },
+            {
+              "entityId": "syn-tv_show-5464849d",
+              "age": {
+                "24_and_younger": -0.15,
+                "25_to_29": -0.06,
+                "30_to_34": 0.04,
+                "35_to_44": 0.16,
+                "45_to_54": 0.14,
+                "55_and_older": 0.02
+              },
+              "gender": {
+                "male": 0.02,
+                "female": -0.02
+              }
+            },
+            {
+              "entityId": "syn-movie-5dea891c",
+              "age": {
+                "24_and_younger": -0.14,
+                "25_to_29": -0.05,
+                "30_to_34": 0.06,
+                "35_to_44": 0.15,
+                "45_to_54": 0.11,
+                "55_and_older": 0.03
+              },
+              "gender": {
+                "male": 0.03,
+                "female": -0.03
+              }
+            }
+          ],
+          "house": [
+            {
+              "entityId": "syn-artist-aca0dd6d",
+              "age": {
+                "24_and_younger": 0.04,
+                "25_to_29": 0.05,
+                "30_to_34": 0.03,
+                "35_to_44": 0,
+                "45_to_54": -0.04,
+                "55_and_older": -0.06
+              },
+              "gender": {
+                "male": 0.04,
+                "female": -0.04
+              }
+            }
+          ]
+        },
+        "reason": "Reggie Collier's block comes from his proxy seed.",
+        "provenance": [
+          "Q12"
+        ],
+        "limits": [
+          "Skews describe aggregate audiences, never individuals.",
+          "Not used for radio format, alcohol or community inference. The promoter picks the station format."
+        ]
+      },
+      "whatsDifferent": {
+        "status": "ok",
+        "summary": "Tags distinctive to this bill versus the house crowd.",
+        "results": {
+          "shared": [
+            {
+              "id": "urn:tag:keyword:media:live_events",
+              "name": "Live events",
+              "type": "urn:tag:keyword:media",
+              "score": 0.38
+            }
+          ],
+          "a": [
+            {
+              "id": "urn:tag:genre:media:stand_up_comedy",
+              "name": "Stand-up comedy",
+              "type": "urn:tag:genre:media",
+              "score": 0.81
+            },
+            {
+              "id": "urn:tag:genre:media:sitcom",
+              "name": "Sitcom",
+              "type": "urn:tag:genre:media",
+              "score": 0.76
+            },
+            {
+              "id": "urn:tag:keyword:media:classic_tv",
+              "name": "Classic TV",
+              "type": "urn:tag:keyword:media",
+              "score": 0.68
+            },
+            {
+              "id": "urn:tag:genre:media:comedy",
+              "name": "Comedy",
+              "type": "urn:tag:genre:media",
+              "score": 0.6
+            },
+            {
+              "id": "urn:tag:keyword:media:family",
+              "name": "Family",
+              "type": "urn:tag:keyword:media",
+              "score": 0.52
+            }
+          ],
+          "b": [
+            {
+              "id": "urn:tag:genre:music:arena_rock",
+              "name": "Arena rock",
+              "type": "urn:tag:genre:music",
+              "score": 0.7
+            },
+            {
+              "id": "urn:tag:genre:music:country",
+              "name": "Country",
+              "type": "urn:tag:genre:music",
+              "score": 0.64
+            },
+            {
+              "id": "urn:tag:keyword:media:motorsports",
+              "name": "Motorsports",
+              "type": "urn:tag:keyword:media",
+              "score": 0.55
+            }
+          ],
+          "fromTagDiff": false
+        },
+        "provenance": [
+          "Q13"
+        ],
+        "limits": []
+      },
+      "copyHooks": {
+        "status": "ok",
+        "summary": "3 hooks from partner ambience tags and the bill's media keywords.",
+        "results": [
+          {
+            "text": "Stand-up comedy and sitcom classics, one night.",
+            "tagIds": [
+              "urn:tag:genre:media:stand_up_comedy",
+              "urn:tag:genre:media:sitcom",
+              "urn:tag:keyword:media:classic_tv"
+            ]
+          },
+          {
+            "text": "Comedy night. Good for groups.",
+            "tagIds": [
+              "urn:tag:genre:media:comedy",
+              "urn:tag:good_for:place:groups"
+            ]
+          },
+          {
+            "text": "Classic TV, live. Walk-ins welcome at our partners.",
+            "tagIds": [
+              "urn:tag:keyword:media:classic_tv",
+              "urn:tag:amenity:place:walk_ins"
+            ]
+          }
+        ],
+        "provenance": [
+          "Q22"
+        ],
+        "limits": [
+          "No jokes, no artist voice, no artist marks in partner copy."
+        ]
+      }
+    },
+    "narration": {
+      "summary": "On the resolved subset, this bill's crowd over-indexes in Phoebus, Hilton Village and Ghent versus the Coliseum's usual crowd. 18 partners across those tiles; 6 pre/post spots near the venue. Sidecar still needs a pick.",
+      "tileWhy": [
+        {
+          "geohash": "dq9dx5",
+          "text": "Lift 1.94: bill percentile 0.82 against a house percentile of 0.42."
+        },
+        {
+          "geohash": "dq9dsh",
+          "text": "Lift 1.77: bill percentile 0.38 against a house percentile of 0.22."
+        },
+        {
+          "geohash": "dq99xy",
+          "text": "Lift 1.61: bill percentile 0.27 against a house percentile of 0.17."
+        },
+        {
+          "geohash": "dq99x9",
+          "text": "Lift 1.47: bill percentile 0.53 against a house percentile of 0.36."
+        },
+        {
+          "geohash": "dq9dws",
+          "text": "Lift 1.34: bill percentile 0.54 against a house percentile of 0.40."
+        }
+      ],
+      "partnerLines": [
+        {
+          "entityId": "syn-place-2d582947",
+          "text": "Rank 1 of 50 for this bill inside the Phoebus tile."
+        },
+        {
+          "entityId": "syn-place-3232a902",
+          "text": "Rank 2 of 50 for this bill inside the Phoebus tile."
+        },
+        {
+          "entityId": "syn-place-36ccd6fd",
+          "text": "Rank 4 of 50 for this bill inside the Phoebus tile."
+        },
+        {
+          "entityId": "syn-place-34786932",
+          "text": "Rank 5 of 50 for this bill inside the Phoebus tile."
+        }
+      ],
+      "templated": false
+    },
+    "ledger": [
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events.json",
+        "params": {
+          "id": "syn-tm-event-g2",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 212,
+        "bytes": 2201,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/events.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'id=syn-tm-event-g2'",
+        "startedAt": "2026-10-17T14:30:00.000Z",
+        "note": "Bill, venue and date from the listing. Age policy not set on the listing.",
+        "id": "T1"
+      },
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events.json",
+        "params": {
+          "venueId": "syn-tm-venue-hampton",
+          "size": 60,
+          "sort": "date,asc",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 7,
+        "bytes": 39576,
+        "cacheHit": true,
+        "resultCount": 41,
+        "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/events.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'venueId=syn-tm-venue-hampton' --data-urlencode 'size=60' --data-urlencode 'sort=date,asc'",
+        "startedAt": "2026-10-17T14:30:00.253Z",
+        "note": "House roster: 41 upcoming events (weekly cache).",
+        "id": "T2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Dorian Pike",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 994,
+        "bytes": 7835,
+        "cacheHit": false,
+        "resultCount": 5,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Dorian Pike' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
+        "startedAt": "2026-10-17T14:30:00.306Z",
+        "note": "Exact normalized-name match; comedian tag check passed.",
+        "id": "Q1"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Sidecar",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "needs_input",
+        "latencyMs": 680,
+        "bytes": 6872,
+        "cacheHit": false,
+        "resultCount": 4,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Sidecar' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
+        "startedAt": "2026-10-17T14:30:01.354Z",
+        "note": "One-word name: 4 candidates across types. Never resolved silently.",
+        "id": "Q2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Reggie Collier",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 600,
+        "bytes": 2279,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Reggie Collier' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
+        "startedAt": "2026-10-17T14:30:02.276Z",
+        "note": "Exact match but thin signal; proxy seed offered.",
+        "id": "Q3"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Late Shift Diner",
+          "types": [
+            "urn:entity:movie",
+            "urn:entity:tv_show"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 635,
+        "bytes": 7440,
+        "cacheHit": false,
+        "resultCount": 5,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Late Shift Diner' --data-urlencode 'types=urn:entity:movie,urn:entity:tv_show' --data-urlencode 'take=5'",
+        "startedAt": "2026-10-17T14:30:03.066Z",
+        "note": "Proxy checked against properties.release_year = 1994.",
+        "id": "Q4"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Saturday Night at the Pier",
+          "types": [
+            "urn:entity:movie",
+            "urn:entity:tv_show"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 389,
+        "bytes": 3616,
+        "cacheHit": false,
+        "resultCount": 2,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Saturday Night at the Pier' --data-urlencode 'types=urn:entity:movie,urn:entity:tv_show' --data-urlencode 'take=5'",
+        "startedAt": "2026-10-17T14:30:03.799Z",
+        "note": "Stand-up seed: headliner's raw profile is dominated by family-film audiences.",
+        "id": "Q5"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Corner House",
+          "types": [
+            "urn:entity:movie",
+            "urn:entity:tv_show"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 637,
+        "bytes": 6660,
+        "cacheHit": false,
+        "resultCount": 5,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Corner House' --data-urlencode 'types=urn:entity:movie,urn:entity:tv_show' --data-urlencode 'take=5'",
+        "startedAt": "2026-10-17T14:30:04.372Z",
+        "note": "TV seed, checked against release_year = 2018.",
+        "id": "Q6"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Hampton Coliseum",
+          "types": "urn:entity:place",
+          "filter.location": "37.0447,-76.3889",
+          "filter.radius": 1
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 708,
+        "bytes": 2290,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Hampton Coliseum' --data-urlencode 'types=urn:entity:place' --data-urlencode 'filter.location=37.0447,-76.3889' --data-urlencode 'filter.radius=1'",
+        "startedAt": "2026-10-17T14:30:05.297Z",
+        "id": "Q7"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/entities",
+        "params": {
+          "external.spotify.ids": [
+            "syn-house-01",
+            "syn-house-02",
+            "syn-house-03",
+            "syn-house-04",
+            "syn-house-05",
+            "syn-house-06",
+            "syn-house-07",
+            "syn-house-08"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 8,
+        "bytes": 9496,
+        "cacheHit": true,
+        "resultCount": 8,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/entities' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'external.spotify.ids=syn-house-01,syn-house-02,syn-house-03,syn-house-04,syn-house-05,syn-house-06,syn-house-07,syn-house-08'",
+        "startedAt": "2026-10-17T14:30:06.148Z",
+        "note": "House set: 8 of 12 roster headliners resolved (weekly cache).",
+        "id": "Q8"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "filter.location": "POINT(-76.3889 37.0447)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 699,
+        "bytes": 214800,
+        "cacheHit": false,
+        "resultCount": 1460,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'filter.location=POINT(-76.3889 37.0447)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-10-17T14:30:06.276Z",
+        "note": "Bill heat on the resolved subset and proxy seeds; GET (POST weights not verified yet).",
+        "id": "Q9"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.entities": [
+            "syn-artist-aca0dd6d",
+            "syn-artist-a9a0d8b4",
+            "syn-artist-aaa0da47",
+            "syn-artist-a7a0d58e",
+            "syn-artist-a8a0d721",
+            "syn-artist-a5a0d268",
+            "syn-artist-a6a0d3fb",
+            "syn-artist-a3a0cf42"
+          ],
+          "filter.location": "POINT(-76.3889 37.0447)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 9,
+        "bytes": 251300,
+        "cacheHit": true,
+        "resultCount": 1720,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-artist-aca0dd6d,syn-artist-a9a0d8b4,syn-artist-aaa0da47,syn-artist-a7a0d58e,syn-artist-a8a0d721,syn-artist-a5a0d268,syn-artist-a6a0d3fb,syn-artist-a3a0cf42' --data-urlencode 'filter.location=POINT(-76.3889 37.0447)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-10-17T14:30:07.056Z",
+        "note": "House heat (weekly cache per venue).",
+        "id": "Q10"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.tags": "urn:tag:category:place:restaurant",
+          "filter.location": "POINT(-76.3889 37.0447)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 5,
+        "bytes": 290100,
+        "cacheHit": true,
+        "resultCount": 1980,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.tags=urn:tag:category:place:restaurant' --data-urlencode 'filter.location=POINT(-76.3889 37.0447)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-10-17T14:30:07.187Z",
+        "note": "Generic baseline: diagnostic only.",
+        "id": "Q11"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:demographics",
+          "signal.interests.entities": [
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d",
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-artist-aca0dd6d"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 858,
+        "bytes": 8825,
+        "cacheHit": false,
+        "resultCount": 5,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:demographics' --data-urlencode 'signal.interests.entities=syn-person-516c9174,syn-tv_show-5464849d,syn-movie-5dea891c,syn-tv_show-85161ad8,syn-artist-aca0dd6d'",
+        "startedAt": "2026-10-17T14:30:07.297Z",
+        "note": "Reggie Collier's block comes from his proxy seed.",
+        "id": "Q12"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/analysis/compare",
+        "params": {
+          "a.signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "b.signal.interests.entities": [
+            "syn-artist-aca0dd6d",
+            "syn-artist-a9a0d8b4",
+            "syn-artist-aaa0da47",
+            "syn-artist-a7a0d58e",
+            "syn-artist-a8a0d721",
+            "syn-artist-a5a0d268",
+            "syn-artist-a6a0d3fb",
+            "syn-artist-a3a0cf42"
+          ],
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 1074,
+        "bytes": 36300,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/analysis/compare' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'a.signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'b.signal.interests.entities=syn-artist-aca0dd6d,syn-artist-a9a0d8b4,syn-artist-aaa0da47,syn-artist-a7a0d58e,syn-artist-a8a0d721,syn-artist-a5a0d268,syn-artist-a6a0d3fb,syn-artist-a3a0cf42' --data-urlencode 'take=30'",
+        "startedAt": "2026-10-17T14:30:08.409Z",
+        "id": "Q13"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "filter.location": "POINT(-76.327515 37.021179)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:beauty_salon"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "thursday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": "urn:tag:category:place:night_club",
+          "filter.exclude.entities": "syn-place-eaad7f3b",
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 1021,
+        "bytes": 73900,
+        "cacheHit": false,
+        "resultCount": 50,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'filter.location=POINT(-76.327515 37.021179)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=thursday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'filter.exclude.tags=urn:tag:category:place:night_club' --data-urlencode 'filter.exclude.entities=syn-place-eaad7f3b' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-10-17T14:30:09.656Z",
+        "note": "Partner pool for tile Phoebus. barber_shop and beauty_salon are probe-gated categories.",
+        "id": "Q14"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "filter.location": "POINT(-76.459351 37.026672)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:beauty_salon"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "thursday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": "urn:tag:category:place:night_club",
+          "filter.exclude.entities": "syn-place-eaad7f3b",
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 968,
+        "bytes": 73100,
+        "cacheHit": false,
+        "resultCount": 50,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'filter.location=POINT(-76.459351 37.026672)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=thursday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'filter.exclude.tags=urn:tag:category:place:night_club' --data-urlencode 'filter.exclude.entities=syn-place-eaad7f3b' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-10-17T14:30:10.847Z",
+        "note": "Partner pool for tile Hilton Village. barber_shop and beauty_salon are probe-gated categories.",
+        "id": "Q15"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "filter.location": "POINT(-76.294556 36.861877)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:beauty_salon"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "thursday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": "urn:tag:category:place:night_club",
+          "filter.exclude.entities": "syn-place-eaad7f3b",
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 594,
+        "bytes": 67200,
+        "cacheHit": false,
+        "resultCount": 50,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'filter.location=POINT(-76.294556 36.861877)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=thursday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'filter.exclude.tags=urn:tag:category:place:night_club' --data-urlencode 'filter.exclude.entities=syn-place-eaad7f3b' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-10-17T14:30:12.074Z",
+        "note": "Partner pool for tile Ghent. barber_shop and beauty_salon are probe-gated categories.",
+        "id": "Q16"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "filter.location": "POINT(-76.3889 37.0447)",
+          "filter.location.radius": 1500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "saturday",
+          "filter.exclude.entities": "syn-place-eaad7f3b",
+          "feature.explainability": true,
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 522,
+        "bytes": 41220,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'filter.location=POINT(-76.3889 37.0447)' --data-urlencode 'filter.location.radius=1500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=saturday' --data-urlencode 'filter.exclude.entities=syn-place-eaad7f3b' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=30'",
+        "startedAt": "2026-10-17T14:30:12.881Z",
+        "id": "Q17"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": [
+            "syn-artist-aca0dd6d",
+            "syn-artist-a9a0d8b4",
+            "syn-artist-aaa0da47",
+            "syn-artist-a7a0d58e",
+            "syn-artist-a8a0d721",
+            "syn-artist-a5a0d268",
+            "syn-artist-a6a0d3fb",
+            "syn-artist-a3a0cf42"
+          ],
+          "filter.location": "POINT(-76.3889 37.0447)",
+          "filter.location.radius": 1500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "saturday",
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 6,
+        "bytes": 40350,
+        "cacheHit": true,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-artist-aca0dd6d,syn-artist-a9a0d8b4,syn-artist-aaa0da47,syn-artist-a7a0d58e,syn-artist-a8a0d721,syn-artist-a5a0d268,syn-artist-a6a0d3fb,syn-artist-a3a0cf42' --data-urlencode 'filter.location=POINT(-76.3889 37.0447)' --data-urlencode 'filter.location.radius=1500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=saturday' --data-urlencode 'take=30'",
+        "startedAt": "2026-10-17T14:30:13.645Z",
+        "note": "House-signal twin for the delta rank (weekly cache).",
+        "id": "Q18"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.results.entities": [
+            "syn-place-2d582947",
+            "syn-place-331b953b",
+            "syn-place-b5e9c7a5"
+          ],
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ]
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 706,
+        "bytes": 5352,
+        "cacheHit": false,
+        "resultCount": 3,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'filter.results.entities=syn-place-2d582947,syn-place-331b953b,syn-place-b5e9c7a5' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d'",
+        "startedAt": "2026-10-17T14:30:13.722Z",
+        "note": "3 of 7 declared items were picked from a /search pick list; the rest are not places in the catalog.",
+        "id": "Q19"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:podcast",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "signal.location": "POINT(-76.3889 37.0447)",
+          "feature.explainability": true,
+          "take": 15
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 1076,
+        "bytes": 21180,
+        "cacheHit": false,
+        "resultCount": 15,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:podcast' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'signal.location=POINT(-76.3889 37.0447)' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
+        "startedAt": "2026-10-17T14:30:14.534Z",
+        "note": "signal.location probe pending: labelled national.",
+        "id": "Q20"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:brand",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "signal.location": "POINT(-76.3889 37.0447)",
+          "filter.exclude.tags": [
+            "urn:tag:category:brand:alcohol",
+            "urn:tag:category:brand:tobacco",
+            "urn:tag:category:brand:gambling",
+            "urn:tag:category:brand:political"
+          ],
+          "feature.explainability": true,
+          "take": 15
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 934,
+        "bytes": 17760,
+        "cacheHit": false,
+        "resultCount": 15,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:brand' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'signal.location=POINT(-76.3889 37.0447)' --data-urlencode 'filter.exclude.tags=urn:tag:category:brand:alcohol,urn:tag:category:brand:tobacco,urn:tag:category:brand:gambling,urn:tag:category:brand:political' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
+        "startedAt": "2026-10-17T14:30:15.822Z",
+        "note": "Age policy unknown: alcohol, tobacco, gambling and political brands excluded.",
+        "id": "Q21"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:tag",
+          "signal.interests.entities": [
+            "syn-movie-5dea891c",
+            "syn-tv_show-85161ad8",
+            "syn-person-516c9174",
+            "syn-tv_show-5464849d"
+          ],
+          "filter.tag.types": [
+            "urn:tag:keyword:media",
+            "urn:tag:genre:media",
+            "urn:tag:theme:qloo",
+            "urn:tag:audience:qloo"
+          ],
+          "diversify.by": "subtype",
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 314,
+        "bytes": 48270,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.entities=syn-movie-5dea891c,syn-tv_show-85161ad8,syn-person-516c9174,syn-tv_show-5464849d' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media,urn:tag:theme:qloo,urn:tag:audience:qloo' --data-urlencode 'diversify.by=subtype' --data-urlencode 'take=30'",
+        "startedAt": "2026-10-17T14:30:17.002Z",
+        "note": "Denylist removed 3 tags (ethnicity/inclusivity/credit_card) before the allowlist.",
+        "id": "Q22"
+      },
+      {
+        "kind": "acs",
+        "method": "GET",
+        "endpoint": "/data/2024/acs/acs5",
+        "params": {
+          "get": [
+            "NAME",
+            "B01003_001E",
+            "B01002_001E",
+            "B19013_001E",
+            "B01001_001E",
+            "B01001_003E",
+            "B01001_004E",
+            "B01001_005E",
+            "B01001_006E",
+            "B01001_007E",
+            "B01001_008E",
+            "B01001_027E",
+            "B01001_028E",
+            "B01001_029E",
+            "B01001_030E",
+            "B01001_031E",
+            "B01001_032E"
+          ],
+          "for": "zip code tabulation area:23663,23601,23517,23704,23669",
+          "key": "$CENSUS_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 325,
+        "bytes": 8360,
+        "cacheHit": false,
+        "resultCount": 5,
+        "curl": "curl -sG 'https://api.census.gov/data/2024/acs/acs5' --data-urlencode 'get=NAME,B01003_001E,B01002_001E,B19013_001E,B01001_001E,B01001_003E,B01001_004E,B01001_005E,B01001_006E,B01001_007E,B01001_008E,B01001_027E,B01001_028E,B01001_029E,B01001_030E,B01001_031E,B01001_032E' --data-urlencode 'for=zip code tabulation area:23663,23601,23517,23704,23669' --data-urlencode \"key=$CENSUS_API_KEY\"",
+        "startedAt": "2026-10-17T14:30:17.490Z",
+        "note": "Adults 21+ per ZCTA (B01001 total minus the under-21 bins) for the budget heuristic and the tile floor.",
+        "id": "C1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "comedy night bar Hampton VA",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 323,
+        "bytes": 24640,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"comedy night bar Hampton VA\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":37.0447,\"longitude\":-76.3889},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-10-17T14:30:17.975Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "barbershop Hampton VA",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 357,
+        "bytes": 26720,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"barbershop Hampton VA\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":37.0447,\"longitude\":-76.3889},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-10-17T14:30:18.444Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P2"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "seafood restaurant Hampton VA",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 716,
+        "bytes": 32720,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"seafood restaurant Hampton VA\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":37.0447,\"longitude\":-76.3889},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-10-17T14:30:19.067Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P3"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "comedy club Norfolk VA",
+          "locationBias.radiusM": 40000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 1034,
+        "bytes": 26260,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"comedy club Norfolk VA\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":37.0447,\"longitude\":-76.3889},\"radius\":40000}},\"pageSize\":20}'",
+        "startedAt": "2026-10-17T14:30:20.007Z",
+        "note": "Arm F: query chosen by the model.",
+        "id": "P4"
+      },
+      {
+        "kind": "anthropic",
+        "method": "POST",
+        "endpoint": "/v1/messages",
+        "params": {
+          "model": "claude-opus-5-5",
+          "output_config.effort": "medium",
+          "tools": [
+            "places_search",
+            "acs_lookup"
+          ],
+          "max_tokens": 16000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 15800,
+        "bytes": 19900,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -s 'https://api.anthropic.com/v1/messages' -H \"x-api-key: $ANTHROPIC_API_KEY\" -H 'anthropic-version: 2023-06-01' -H 'content-type: application/json' -d @request.json",
+        "startedAt": "2026-10-17T14:30:21.089Z",
+        "note": "Arm F: same model, same schema, Google Places + ACS tools.",
+        "id": "L1"
+      },
+      {
+        "kind": "anthropic",
+        "method": "POST",
+        "endpoint": "/v1/messages",
+        "params": {
+          "model": "claude-opus-5-5",
+          "output_config.effort": "low",
+          "output_config.format": "json_schema:street_sheet_narration",
+          "max_tokens": 4000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 6900,
+        "bytes": 8300,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -s 'https://api.anthropic.com/v1/messages' -H \"x-api-key: $ANTHROPIC_API_KEY\" -H 'anthropic-version: 2023-06-01' -H 'content-type: application/json' -d @request.json",
+        "startedAt": "2026-10-17T14:30:37.007Z",
+        "note": "Narration may cite only ids and numbers from this run; guard dropped 0.",
+        "id": "L2"
+      }
+    ],
+    "guard": {
+      "dropped": 0,
+      "reasons": [
+        "3 tags denied by policy (ethnicity/inclusivity/credit_card)",
+        "Person-entity tags stripped before storage."
+      ],
+      "deniedTagCount": 3
+    },
+    "budgetSplit": [
+      {
+        "geohash": "dq9dx5",
+        "share": 0.23,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dq9dsh",
+        "share": 0.2,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dq99xy",
+        "share": 0.24,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dq99x9",
+        "share": 0.17,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "dq9dws",
+        "share": 0.16,
+        "label": "heuristic, not a forecast"
+      }
+    ],
+    "limits": [
+      "Whether this plan sells tickets: nothing here measures sales.",
+      "What fans will buy: these are tastes, not purchases.",
+      "Where buyers live: the areas show where this bill's fans stand out from the room's usual crowd.",
+      "Anything about one person, or whether a partner will move tickets.",
+      "Planning tool; no sales data is known or shown.",
+      "Venue coordinates in this synthetic fixture are approximate; live runs take them from Ticketmaster."
+    ]
+  },
+  "control": {
+    "arm": "F",
+    "places": [
+      {
+        "placeId": "syn-gplace-5255d501",
+        "name": "Mercury Plaza Sports Bar",
+        "address": "W Mercury Blvd, Hampton Roads, VA",
+        "rating": 4.1,
+        "userRatingCount": 4875,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.042254,
+          "lon": -76.389675
+        },
+        "query": "comedy night bar Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-bbef1506",
+        "name": "Town Center Taphouse",
+        "address": "Town Center Dr, Hampton Roads, VA",
+        "rating": 4.3,
+        "userRatingCount": 1576,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.06036,
+          "lon": -76.443731
+        },
+        "query": "comedy night bar Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-8e509a6c",
+        "name": "Granby Street Giggle Room",
+        "address": "Granby St, Hampton Roads, VA",
+        "rating": 4.5,
+        "userRatingCount": 4026,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.844125,
+          "lon": -76.286716
+        },
+        "query": "comedy club Norfolk VA"
+      },
+      {
+        "placeId": "syn-gplace-99030a41",
+        "name": "Downtown Norfolk Comedy Cellar",
+        "address": "Main St, Hampton Roads, VA",
+        "rating": 4.1,
+        "userRatingCount": 1900,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.846317,
+          "lon": -76.291665
+        },
+        "query": "comedy club Norfolk VA"
+      },
+      {
+        "placeId": "syn-gplace-cb5f7ea4",
+        "name": "Waterside Open Mic Bar",
+        "address": "Waterside Dr, Hampton Roads, VA",
+        "rating": 4.2,
+        "userRatingCount": 109,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.843543,
+          "lon": -76.295067
+        },
+        "query": "comedy club Norfolk VA"
+      },
+      {
+        "placeId": "syn-gplace-6ec69995",
+        "name": "Coliseum Drive Clippers",
+        "address": "Coliseum Dr, Hampton Roads, VA",
+        "rating": 4.5,
+        "userRatingCount": 4188,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.044655,
+          "lon": -76.390643
+        },
+        "query": "barbershop Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-e4b1f4b6",
+        "name": "Power Plant Parkway Cuts",
+        "address": "Power Plant Pkwy, Hampton Roads, VA",
+        "rating": 4.3,
+        "userRatingCount": 4525,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.04226,
+          "lon": -76.386335
+        },
+        "query": "barbershop Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-4552d1e0",
+        "name": "Kecoughtan Cuts",
+        "address": "Kecoughtan Rd, Hampton Roads, VA",
+        "rating": 4.4,
+        "userRatingCount": 1125,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.020834,
+          "lon": -76.356878
+        },
+        "query": "barbershop Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-83372914",
+        "name": "Crown & Clipper Barbershop",
+        "address": "Mellen St, Hampton Roads, VA",
+        "rating": 4.4,
+        "userRatingCount": 5782,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.021043,
+          "lon": -76.322551
+        },
+        "query": "barbershop Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-abfd2d11",
+        "name": "Bayside Crab Shack",
+        "address": "Pembroke Ave, Hampton Roads, VA",
+        "rating": 4.6,
+        "userRatingCount": 2273,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.036292,
+          "lon": -76.326277
+        },
+        "query": "seafood restaurant Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-a295ced9",
+        "name": "Hampton Harbor Fish House",
+        "address": "Settlers Landing Rd, Hampton Roads, VA",
+        "rating": 4.2,
+        "userRatingCount": 3485,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.023665,
+          "lon": -76.344632
+        },
+        "query": "seafood restaurant Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-7809ba39",
+        "name": "Harborline Seafood Kitchen",
+        "address": "E Mercury Blvd, Hampton Roads, VA",
+        "rating": 4,
+        "userRatingCount": 310,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.024149,
+          "lon": -76.32422
+        },
+        "query": "seafood restaurant Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-0e9ba0f2",
+        "name": "Pembroke Seafood Grill",
+        "address": "Pembroke Ave, Hampton Roads, VA",
+        "rating": 4.2,
+        "userRatingCount": 2347,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 37.046726,
+          "lon": -76.386307
+        },
+        "query": "seafood restaurant Hampton VA"
+      },
+      {
+        "placeId": "syn-gplace-24e27173",
+        "name": "Military Highway Wing Spot",
+        "address": "N Military Hwy, Hampton Roads, VA",
+        "rating": 4.1,
+        "userRatingCount": 2139,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 36.871725,
+          "lon": -76.217222
+        },
+        "query": "comedy night bar Hampton VA"
+      }
+    ],
+    "overlapWithQloo": [
+      "Crown & Clipper Barbershop",
+      "Harborline Seafood Kitchen"
+    ],
+    "ledgerRefs": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "L1",
+      "C1"
+    ]
+  }
+}

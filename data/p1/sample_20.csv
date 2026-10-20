@@ -1,0 +1,21 @@
+club,chapter,city,state,bar_name,address,listing_role,source_url,fetched_at,page_last_updated
+american_outlaws,Orange County,Anaheim,CA,Lopez & Lefty's,"1759 S Claudina Way, Anaheim, CA, 92805",official,https://theamericanoutlaws.com/chapters/orange-county,2026-10-13T08:40:21Z,
+american_outlaws,Philly,Philadelphia,PA,Top Tomato Bar & Pizza,"116 S 11th St, Philadelphia, PA, 19107",official,https://theamericanoutlaws.com/chapters/philly,2026-10-13T08:40:29Z,
+american_outlaws,Detroit,Detroit,MI,McShane's Irish Pub,"1460 Michigan Ave, Detroit, MI, 48216",official,https://theamericanoutlaws.com/chapters/detroit,2026-10-13T08:38:29Z,
+american_outlaws,Hudson Valley,Poughkeepsie,NY,The Academy,"33 Academy St, Poughkeepsie, NY, 12601",official,https://theamericanoutlaws.com/chapters/hudson-valley,2026-10-13T08:39:16Z,
+american_outlaws,Jackson,Jackson,MS,Fondren Public,"2765 Old Canton Rd, Jackson, MS, 39216",official,https://theamericanoutlaws.com/chapters/jackson,2026-10-13T08:39:23Z,
+american_outlaws,Fargo,Fargo,ND,Sidestreet Grille and Pub,"404 4th Ave N, Fargo, ND, 58102",official,https://theamericanoutlaws.com/chapters/fargo,2026-10-13T08:38:42Z,
+american_outlaws,Greensboro,Greensboro,NC,THE ABBEY TAPHOUSE,"310 E Sycamore St, Greensboro, NC, 27401",official,https://theamericanoutlaws.com/chapters/greensboro,2026-10-13T08:39:03Z,
+arsenal_america,Westside LA Gooners,Culver City,CA,Joxer Daly’s,"11168 Washington Blvd., Culver City, CA 90232",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+arsenal_america,Syracuse Gooners,Syracuse,NY,Wolff’s Biergarten,"106 Montgomery Street, Syracuse, NY 13202",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+arsenal_america,Tucson Gooners,Tucson,AZ,Corbett’s,"340 N. 6th Ave., Tucson AZ 85705",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+arsenal_america,Charm City Gooners,Baltimore,MD,Liv’s Tavern,"1113 S Charles Street, Baltimore, MD 21230",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+arsenal_america,Blue Ridge Gooners,Roanoke,VA,Village Grill,"1802 Memorial Ave SW Roanoke, VA 24015",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+arsenal_america,Tallahassee Gooners,Tallahassee,FL,7th Hill Taproom,"2475 Apalachee Parkway, Tallahassee, FL 32311",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+arsenal_america,Duke City Gunners,Albuquerque,NM,Santa Fe Brewing Company,"6110 Alameda Blvd. NE, Albuquerque, NM 87113",official,https://arsenalamerica.com/branches/,2026-10-13T08:42:03Z,2026-09-03T02:38:02+00:00
+lfc_olsc,"Carlsbad, California Supporters Club",Carlsbad,CA,Senor Grubbys,"377 Carlsbad Village Drive, Carlsbad, CA 92008",official,https://www.liverpoolfc.com/info/north-america,2026-10-13T08:42:05Z,2026-09-28T08:12:33.000Z
+lfc_olsc,"Murfreesboro, Tennessee Supporters Club",Murfreesboro,TN,Party Fowl Murfreesboro,"127 SE Broad St, Murfreesboro, TN 37130",official,https://www.liverpoolfc.com/info/north-america,2026-10-13T08:42:05Z,2026-09-28T08:12:33.000Z
+lfc_olsc,Atlanta Supporters Club,Atlanta,GA,Fado Irish Pub,"273 Buckhead Ave NE, Atlanta, GA 30305",official,https://www.liverpoolfc.com/info/north-america,2026-10-13T08:42:05Z,2026-09-28T08:12:33.000Z
+lfc_olsc,Indianapolis Supporters Club,Indianapolis,IN,Union Jack Pub,921 Broad Ripple Ave,official,https://www.liverpoolfc.com/info/north-america,2026-10-13T08:42:05Z,2026-09-28T08:12:33.000Z
+lfc_olsc,Pasadena Supporters Club,Pasadena,CA,Lucky Baldwins Pub,"17 South Raymond Ave., Pasadena, California",official,https://www.liverpoolfc.com/info/north-america,2026-10-13T08:42:05Z,2026-09-28T08:12:33.000Z
+lfc_olsc,Houston Supporters Club,Houston,TX,Hugh O'Connors,"7620 Katy Fwy, Houston TX 77024",official,https://www.liverpoolfc.com/info/north-america,2026-10-13T08:42:05Z,2026-09-28T08:12:33.000Z

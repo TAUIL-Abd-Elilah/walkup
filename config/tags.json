@@ -1,0 +1,306 @@
+{
+  "$schema": "./tags.schema.json",
+  "version": 1,
+  "description": "Qloo tag URNs pinned at build time from GET /v2/tags (call Q16). Runtime code reads tag IDs only from this file; a tag whose status is not \"pinned\" is skipped and the card says so. See config/README.md.",
+  "validation": {
+    "minRows": 5,
+    "radiusM": 25000,
+    "anchor": "Hampton Coliseum, Hampton VA (Ticketmaster venue coordinates)",
+    "baselineMinCells": 200,
+    "baselineAnchor": "A hero room (Ticketmaster venue coordinates), 40 km"
+  },
+  "categories": [
+    {
+      "key": "bar",
+      "label": "Bar",
+      "query": "bar",
+      "usedBy": [
+        "Q9",
+        "Q10",
+        "P1"
+      ],
+      "urn": "urn:tag:category:place:bar",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T13:05:00Z",
+      "validatedRows": 10
+    },
+    {
+      "key": "pub",
+      "label": "Pub",
+      "query": "pub",
+      "usedBy": [
+        "P1"
+      ],
+      "urn": "urn:tag:category:place:pub",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 6
+    },
+    {
+      "key": "sports_bar",
+      "label": "Sports bar",
+      "query": "sports bar",
+      "usedBy": [
+        "P1"
+      ],
+      "urn": "urn:tag:category:place:sports_bar",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 10
+    },
+    {
+      "key": "irish_pub",
+      "label": "Irish pub",
+      "query": "irish pub",
+      "usedBy": [
+        "P1"
+      ],
+      "urn": "urn:tag:category:place:irish_pub",
+      "status": "dropped",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 1,
+      "note": "Dropped Oct 15: 1 row within 25 km of the anchor (5 needed)."
+    },
+    {
+      "key": "restaurant",
+      "label": "Restaurant",
+      "query": "restaurant",
+      "usedBy": [
+        "Q6",
+        "Q9",
+        "Q10"
+      ],
+      "urn": "urn:tag:genre:place:restaurant",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T13:05:00Z",
+      "validatedRows": 10,
+      "note": "Also the generic heatmap baseline signal for Q6. No category:place restaurant tag came back; this is the canonical genre:place tag."
+    },
+    {
+      "key": "cafe",
+      "label": "Cafe",
+      "query": "cafe",
+      "usedBy": [
+        "Q9",
+        "Q10"
+      ],
+      "urn": "urn:tag:category:place:cafe",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T13:05:00Z",
+      "validatedRows": 10
+    },
+    {
+      "key": "record_store",
+      "label": "Record store",
+      "query": "record store",
+      "usedBy": [
+        "Q9"
+      ],
+      "urn": "urn:tag:category:place:record_store",
+      "status": "dropped",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 2,
+      "note": "Dropped Oct 15: 2 rows within 25 km of the anchor (5 needed). Partner cards say it was skipped. Re-validate at another hero room before using it."
+    },
+    {
+      "key": "book_store",
+      "label": "Book store",
+      "query": "book store",
+      "usedBy": [
+        "Q9"
+      ],
+      "urn": "urn:tag:category:place:book_store",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T13:08:00Z",
+      "validatedRows": 9
+    },
+    {
+      "key": "barber_shop",
+      "label": "Barber shop",
+      "query": "barber shop",
+      "usedBy": [
+        "Q9"
+      ],
+      "probeGated": true,
+      "urn": "urn:tag:category:place:barber_shop",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 10,
+      "note": "Kept only if validation returns enough rows (it did: 10 of 10 carry the tag)."
+    },
+    {
+      "key": "beauty_salon",
+      "label": "Beauty salon",
+      "query": "beauty salon",
+      "usedBy": [
+        "Q9"
+      ],
+      "probeGated": true,
+      "urn": "urn:tag:category:place:beauty_salon",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 10,
+      "note": "Kept only if validation returns enough rows (it did: 10 of 10 carry the tag)."
+    },
+    {
+      "key": "clothing_store",
+      "label": "Clothing store",
+      "query": "clothing store",
+      "usedBy": [
+        "Q9"
+      ],
+      "urn": "urn:tag:category:place:clothing_store",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T13:08:00Z",
+      "validatedRows": 10
+    },
+    {
+      "key": "night_club",
+      "label": "Night club",
+      "query": "night club",
+      "usedBy": [
+        "Q9"
+      ],
+      "urn": "urn:tag:category:place:night_club",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T13:05:00Z",
+      "validatedRows": 8,
+      "note": "Exclusion only: sent as filter.exclude.tags when the show is not 21+ (Ticketmaster ageRestrictions)."
+    },
+    {
+      "key": "place_of_worship",
+      "label": "Place of worship",
+      "query": "place of worship",
+      "usedBy": [
+        "Q11"
+      ],
+      "urn": "urn:tag:category:place:church",
+      "status": "dropped",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 4,
+      "note": "Dropped Oct 15: found only through the query \"church\" (the words \"place of worship\" are not in the tag name) and 4 rows within 25 km (5 needed). Only to help an operator pick a congregation they declared themselves; never used to discover or rank places on its own."
+    },
+    {
+      "key": "soul_food",
+      "label": "Soul food",
+      "query": "soul food",
+      "usedBy": [
+        "Q9",
+        "Q10"
+      ],
+      "urn": "urn:tag:genre:place:restaurant:soul_food",
+      "status": "pinned",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 10,
+      "note": "Cuisine tag. Added to the partner category set only when the operator selects it."
+    }
+  ],
+  "baselines": [
+    {
+      "key": "country",
+      "label": "Country fans in general",
+      "query": "country",
+      "usedBy": [
+        "Q5"
+      ],
+      "candidates": [
+        "urn:tag:genre:music:country"
+      ],
+      "urn": null,
+      "status": "unpinned",
+      "pinnedAt": null,
+      "validatedRows": null,
+      "note": "Genre-tag baseline for a music bill whose roster house resolves fewer than 5 acts. Pinned only when a heatmap with this tag as the only signal returns at least validation.baselineMinCells cells near a hero room. validatedRows holds that cell count."
+    }
+  ],
+  "sponsorExclusions": [
+    {
+      "key": "alcohol",
+      "label": "Alcohol",
+      "query": "alcohol",
+      "usedBy": [
+        "Q13"
+      ],
+      "urn": null,
+      "status": "dropped",
+      "pinnedAt": "2026-10-15T12:07:08Z",
+      "validatedRows": 0,
+      "note": "Sponsor exclusion on shows that are not 21+. Dropped Oct 15: the /v2/tags lookup for \"alcohol\" on brands returned no candidate. Until one is pinned, the sponsor card relies on its own name and tag filter for adult-only brands."
+    },
+    {
+      "key": "tobacco",
+      "label": "Tobacco",
+      "query": "tobacco",
+      "usedBy": [
+        "Q13"
+      ],
+      "urn": null,
+      "status": "unpinned",
+      "pinnedAt": null,
+      "validatedRows": null,
+      "note": "Sponsor exclusion on shows that are not 21+."
+    },
+    {
+      "key": "gambling",
+      "label": "Gambling",
+      "query": "gambling",
+      "usedBy": [
+        "Q13"
+      ],
+      "urn": null,
+      "status": "unpinned",
+      "pinnedAt": null,
+      "validatedRows": null,
+      "note": "Sponsor exclusion on shows that are not 21+."
+    }
+  ],
+  "personChecks": [
+    {
+      "key": "comedian",
+      "label": "Comedian",
+      "query": "comedian",
+      "usedBy": [
+        "Q1"
+      ],
+      "candidates": [
+        "urn:tag:genre:person:comedian",
+        "urn:tag:occupation:person:comedian"
+      ],
+      "urn": null,
+      "status": "unpinned",
+      "pinnedAt": null,
+      "validatedRows": null,
+      "note": "A person on a comedy bill is admissible as a seed only if it carries this tag. Pin whichever candidate the API confirms."
+    }
+  ],
+  "denied": {
+    "source": "packages/contracts/src/index.ts (DENIED_TAG_PREFIXES, DENIED_TAG_KEYWORDS)",
+    "prefixes": [
+      "urn:tag:ethnicity:",
+      "urn:tag:inclusivity:",
+      "urn:tag:credit_card:",
+      "urn:tag:hotel_rating:",
+      "urn:tag:cost_description:",
+      "urn:tag:wikipedia_category:",
+      "urn:tag:religion:",
+      "urn:tag:political",
+      "urn:tag:sexuality:",
+      "urn:tag:customer_identity:"
+    ],
+    "keywords": [
+      "ethnic",
+      "religio",
+      "christian",
+      "muslim",
+      "jewish",
+      "catholic",
+      "political",
+      "democrat",
+      "republican",
+      "lgbt",
+      "gay",
+      "lesbian",
+      "race"
+    ]
+  }
+}

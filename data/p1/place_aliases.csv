@@ -1,0 +1,12 @@
+city,state,alias_city,alias_state,note
+Boise,ID,Boise City,ID,Census place name
+Macon,GA,Macon-Bibb County,GA,consolidated government name
+New York City,NY,New York,NY,Census place name
+Astoria,NY,New York,NY,neighbourhood of New York city (Queens)
+Encino,CA,Los Angeles,CA,neighbourhood of Los Angeles city
+Studio City,CA,Los Angeles,CA,neighbourhood of Los Angeles city
+Ewing Township,NJ,Ewing,NJ,county subdivision (township)
+Hampton Roads,VA,Norfolk,VA,regional label; Norfolk used as the region's core city
+Honolulu,HI,Urban Honolulu,HI,Census place name
+Ventura,CA,San Buenaventura (Ventura),CA,Census place name
+Lake Worth,FL,Lake Worth Beach,FL,place renamed in 2019

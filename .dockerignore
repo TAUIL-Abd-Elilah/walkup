@@ -1,0 +1,39 @@
+# Build context for the Dockerfile. Keeps the context small and keeps secrets,
+# raw API bodies and private tables out of every image layer.
+
+# Installed and built output (the image runs npm ci and next build itself)
+**/node_modules
+**/.next
+**/.cache
+**/dist
+**/coverage
+**/*.tsbuildinfo
+
+# Secrets: .env, .env.local, .env.production, ... (the image needs none of them)
+.env*
+**/.env*
+
+# Raw Qloo response bodies and recorded runs: never in git, never in an image.
+# They are copied onto the Fly volume instead (docs/deploy.md).
+fixtures/raw
+
+# Private tables and probe output
+data/private
+evals/out/private
+probe_out
+**/probe_out
+**/*.sqlite
+**/*.sqlite-*
+
+# Not needed to build or run
+.git
+.githooks
+.github
+.claude
+**/__pycache__
+**/*.pyc
+**/.DS_Store
+**/npm-debug.log*
+Dockerfile
+.dockerignore
+fly.toml

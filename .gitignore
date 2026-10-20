@@ -1,0 +1,19 @@
+node_modules/
+.next/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+# Qloo response bodies must never be committed (Qloo hackathon data rule)
+fixtures/raw/
+*.sqlite
+*.sqlite-*
+.cache/
+probe_out/
+# Third-party tables we may not redistribute (P1 full table, Places responses)
+data/private/
+evals/out/private/
+__pycache__/
+*.pyc
+.claude/

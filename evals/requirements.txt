@@ -1,0 +1,10 @@
+# Python dependencies for evals/ (Python 3.11).
+# The P1 analysis is sealed against the exact NumPy and SciPy versions below.
+numpy==2.4.6
+scipy==1.17.1
+# Collection (evals/p1/collect_bars.py, evals/p1/centroids.py)
+requests>=2.32
+beautifulsoup4>=4.12
+lxml>=5.0
+# Optional: run the tests with "python -m pytest evals" instead of the built-in runners
+# pytest>=8

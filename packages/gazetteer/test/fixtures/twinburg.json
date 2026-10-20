@@ -1,0 +1,19 @@
+{
+  "synthetic": true,
+  "metro": "twinburg",
+  "label": "Twinburg (synthetic fixture, overlaps Testville's north edge)",
+  "center": { "lat": 10.3, "lon": -30.0 },
+  "bbox": { "south": 10.1, "west": -30.2, "north": 10.5, "east": -29.8 },
+  "generatedAt": "2026-01-01T00:00:00Z",
+  "attribution": { "osm": "© OpenStreetMap contributors, ODbL", "census": "U.S. Census Bureau, public domain" },
+  "neighbourhoods": [
+    { "name": "North Pier", "lat": 10.31, "lon": -30.0, "kind": "neighbourhood", "osmId": "node/11" }
+  ],
+  "places": [
+    { "name": "Twinburg", "geoid": "9900011", "lat": 10.3, "lon": -30.0, "kind": "incorporated", "landKm2": 50 }
+  ],
+  "zctas": [
+    { "zcta": "99904", "lat": 10.1, "lon": -30.1, "landKm2": 30.0, "totalPop": 2600, "adults21": 2000, "medianAge": 41.2, "medianIncome": 55000 },
+    { "zcta": "99911", "lat": 10.3, "lon": -30.0, "landKm2": 25.0, "totalPop": 9000, "adults21": 7000, "medianAge": 36.0, "medianIncome": 64000 }
+  ]
+}

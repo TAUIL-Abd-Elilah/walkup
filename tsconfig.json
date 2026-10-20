@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "noEmit": true },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/test/**/*.ts",
+    "packages/*/scripts/**/*.ts",
+    "scripts/**/*.ts",
+    "evals/product/*.ts",
+    "evals/p1/run_arms.ts",
+    "evals/p1/arms/**/*.ts"
+  ]
+}

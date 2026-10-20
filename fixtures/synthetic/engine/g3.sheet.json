@@ -1,0 +1,2958 @@
+{
+  "synthetic": true,
+  "fixtureId": "g3",
+  "title": "Super Funny, Tacoma",
+  "note": "Made with Walkup's sample data; no live service was called. The venue and area names are real; every act, business, podcast, brand and number is made up. Phone numbers use the reserved 555-01xx lines and websites the .example domain.",
+  "generatedBy": "packages/orchestrator/scripts/generate-fixture-sheets.ts",
+  "worldSeed": "houselights-world-v1",
+  "budget": {
+    "qlooFresh": 15,
+    "qlooCached": 0,
+    "qlooTotal": 15,
+    "billLevel": 12,
+    "venueLevel": 3,
+    "arms": 0,
+    "tm": 2,
+    "places": 8,
+    "anthropic": 0,
+    "byNode": {
+      "Q1 act search: headliner": 1,
+      "Q1 act search: support": 1,
+      "Q2 venue": 1,
+      "Q3 house set search": 2,
+      "Q1 signal check": 1,
+      "Q4 bill heat": 1,
+      "Q4 bill heat (widened to 60 km)": 1,
+      "Q9 partners, near venue": 1,
+      "Q10 pre/post": 1,
+      "Q10 pre/post (2,500 m)": 1,
+      "Q12 podcasts": 1,
+      "Q13 sponsor": 1,
+      "Q7 demographics": 1,
+      "Q14 copy allowlist": 1
+    }
+  },
+  "sheet": {
+    "planId": "g3",
+    "createdAt": "2026-11-20T15:00:00.000Z",
+    "mode": "fixture",
+    "hypothetical": true,
+    "bill": {
+      "acts": [
+        {
+          "name": "Ada Pell",
+          "role": "headliner",
+          "tmAttractionId": "syn-tm-att-ada_pell",
+          "isComedian": true
+        },
+        {
+          "name": "Margo Vint",
+          "role": "support",
+          "tmAttractionId": "syn-tm-att-margo_vint",
+          "isComedian": true
+        }
+      ],
+      "venue": {
+        "name": "Super Funny Comedy Club",
+        "lat": 47.244,
+        "lon": -122.453,
+        "city": "Tacoma",
+        "state": "WA",
+        "country": "US",
+        "tmVenueId": "syn-tm-ven-superfunny",
+        "timeZone": "America/Los_Angeles",
+        "qlooEntityId": null
+      },
+      "date": "2026-12-04",
+      "weekday": "friday",
+      "legalAgeEnforced": null,
+      "tmEventId": "syn-tm-ev-superfunny-1204-ada",
+      "classification": "Arts & Theatre / Comedy",
+      "tmUrl": "https://tickets.example/event/syn-tm-ev-superfunny-1204-ada"
+    },
+    "operator": {
+      "seatsLeft": null,
+      "capacity": 320,
+      "mediaBudgetUsd": 600,
+      "streetTeamDays": [
+        "wednesday",
+        "thursday"
+      ],
+      "radiusKm": 40,
+      "declaredPartners": []
+    },
+    "cards": {
+      "resolution": {
+        "status": "partial",
+        "summary": "1 of 2 acts resolved. Venue not in the catalog yet, so the run uses the Ticketmaster point. Only 1 of the room's headliners matched Qloo (5 needed), and there is no comedy-wide crowd to stand in, so there is no usual crowd to compare with.",
+        "results": [
+          {
+            "input": "Ada Pell",
+            "role": "headliner",
+            "status": "exact",
+            "entity": {
+              "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+              "name": "Ada Pell",
+              "subtype": "urn:entity:person",
+              "popularity": 0.41,
+              "affinity": null,
+              "tags": [],
+              "properties": {
+                "short_description": "Stand-up comedian (synthetic)"
+              }
+            },
+            "ledgerRef": "Q1"
+          },
+          {
+            "input": "Margo Vint",
+            "role": "support",
+            "status": "unresolved",
+            "ledgerRef": "Q2"
+          },
+          {
+            "input": "Super Funny Comedy Club",
+            "role": "venue",
+            "status": "unresolved",
+            "ledgerRef": "Q3"
+          },
+          {
+            "input": "The room's next 4 shows on Ticketmaster",
+            "role": "house",
+            "status": "unresolved",
+            "ledgerRef": "T2"
+          }
+        ],
+        "provenance": [
+          "Q1",
+          "Q2",
+          "Q3",
+          "T2",
+          "Q4",
+          "Q5"
+        ],
+        "limits": [],
+        "reason": "Margo Vint: no match in Qloo's catalog; the run continued on the matched acts."
+      },
+      "liftMap": {
+        "status": "degraded",
+        "summary": "There is no usual crowd to compare this bill with.",
+        "results": {
+          "tiles": [],
+          "diagnostics": {
+            "spearmanLiftVsHeat": null,
+            "baseline": "none"
+          }
+        },
+        "provenance": [
+          "Q7",
+          "Q8"
+        ],
+        "limits": [],
+        "reason": "Qloo has no comedy-wide map to compare with, and fewer than 5 of the room's usual acts matched, so there's no lift map for this bill. Partners are picked near the venue. The search widened to 60 km (fewer than 200 areas came back inside 40 km)."
+      },
+      "partners": {
+        "status": "partial",
+        "summary": "6 partners in 1 area, at most 2 of a kind per area.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "0000646f-6c0d-4550-aa49-f0b10b5b0051",
+              "name": "Yoder's Cafe",
+              "subtype": "urn:entity:place",
+              "popularity": 0.955,
+              "affinity": 0.99,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:lively",
+                  "name": "Lively",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "2883 Willard St, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0171",
+                "website": "https://yoder-s-cafe.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.6,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.250767,
+                "lon": -122.434075,
+                "geohash": "c22uvcwpxm2u"
+              },
+              "distanceM": 1614.6,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "tileGeohash": null,
+            "category": "cafe",
+            "score": 1,
+            "qlooRank": 1,
+            "address": "2883 Willard St, Tacoma, WA",
+            "phone": "+1 253-555-0171",
+            "website": "https://yoder-s-cafe.example",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q9"
+              },
+              {
+                "label": "most influenced by Ada Pell",
+                "ledgerRef": "Q9"
+              }
+            ],
+            "hoursOnDay": "07:00-16:00",
+            "explain": {
+              "tags": [
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:lively",
+                  "name": "Lively"
+                }
+              ],
+              "activation": "Ask to leave table cards.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 1 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "ledgerRefs": [
+                "Q9"
+              ],
+              "areaName": "Downtown Tacoma",
+              "distanceKm": 1.6
+            }
+          },
+          {
+            "entity": {
+              "entityId": "0000d2e8-1e2d-4157-a49f-f0b10b5c03e1",
+              "name": "Gaddis' Barber Shop",
+              "subtype": "urn:entity:place",
+              "popularity": 0.687,
+              "affinity": 0.9748,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "546 Oakhurst Ave, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": false,
+                      "opens": "T09:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T09:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T09:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T09:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T09:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T09:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0125",
+                "website": "https://gaddis-barber-shop.example",
+                "price_level": 1,
+                "is_closed": false,
+                "business_rating": 3.6,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98418"
+              },
+              "location": {
+                "lat": 47.237349,
+                "lon": -122.416628,
+                "geohash": "c22uwr6ctb44"
+              },
+              "distanceM": 2843.7,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "tileGeohash": null,
+            "category": "barber_shop",
+            "score": 0.875,
+            "qlooRank": 2,
+            "address": "546 Oakhurst Ave, Tacoma, WA",
+            "phone": "+1 253-555-0125",
+            "website": "https://gaddis-barber-shop.example",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q9"
+              },
+              {
+                "label": "most influenced by Ada Pell",
+                "ledgerRef": "Q9"
+              }
+            ],
+            "hoursOnDay": "09:00-19:00",
+            "explain": {
+              "tags": [
+                {
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups"
+                }
+              ],
+              "activation": "Ask to leave flyers and a card at each chair.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 2 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "ledgerRefs": [
+                "Q9"
+              ],
+              "areaName": "Lower Portland",
+              "distanceKm": 2.8
+            }
+          },
+          {
+            "entity": {
+              "entityId": "0000f079-a067-480a-a7e5-f0b10b5b0311",
+              "name": "Crenshaw's Table",
+              "subtype": "urn:entity:place",
+              "popularity": 0.812,
+              "affinity": 0.9119,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:retro",
+                  "name": "Retro",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:kids",
+                  "name": "Kids",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "4739 Ashby Ln, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0123",
+                "website": "https://crenshaw-s-table.example",
+                "price_level": 2,
+                "is_closed": false,
+                "business_rating": 4.8,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.248523,
+                "lon": -122.436581,
+                "geohash": "c22uvck6sgh4"
+              },
+              "distanceM": 1337.5,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "tileGeohash": null,
+            "category": "restaurant",
+            "score": 0.75,
+            "qlooRank": 3,
+            "address": "4739 Ashby Ln, Tacoma, WA",
+            "phone": "+1 253-555-0123",
+            "website": "https://crenshaw-s-table.example",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q9"
+              },
+              {
+                "label": "most influenced by Ada Pell",
+                "ledgerRef": "Q9"
+              }
+            ],
+            "hoursOnDay": "11:00-22:00",
+            "explain": {
+              "tags": [
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:retro",
+                  "name": "Retro"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:kids",
+                  "name": "Kids"
+                }
+              ],
+              "activation": "Ask to leave flyers at the counter.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 3 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "ledgerRefs": [
+                "Q9"
+              ],
+              "areaName": "Downtown Tacoma",
+              "distanceKm": 1.3
+            }
+          },
+          {
+            "entity": {
+              "entityId": "00001252-4a5b-4e83-a1a2-f0b10b5e05e1",
+              "name": "Dalrymple's Table",
+              "subtype": "urn:entity:place",
+              "popularity": 0.652,
+              "affinity": 0.8657,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:laid_back",
+                  "name": "Laid-back",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:kids",
+                  "name": "Kids",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "3358 Tolliver Ln, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0197",
+                "website": "https://dalrymple-s-table.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.6,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.247958,
+                "lon": -122.428531,
+                "geohash": "c22uy14r23wx"
+              },
+              "distanceM": 1898.8,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "tileGeohash": null,
+            "category": "restaurant",
+            "score": 0.625,
+            "qlooRank": 4,
+            "address": "3358 Tolliver Ln, Tacoma, WA",
+            "phone": "+1 253-555-0197",
+            "website": "https://dalrymple-s-table.example",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q9"
+              },
+              {
+                "label": "most influenced by Ada Pell",
+                "ledgerRef": "Q9"
+              }
+            ],
+            "hoursOnDay": "11:00-22:00",
+            "explain": {
+              "tags": [
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:kids",
+                  "name": "Kids"
+                }
+              ],
+              "activation": "Ask to leave flyers at the counter.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 4 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "ledgerRefs": [
+                "Q9"
+              ],
+              "areaName": "Downtown Tacoma",
+              "distanceKm": 1.9
+            }
+          },
+          {
+            "entity": {
+              "entityId": "0000f94f-814a-48f8-af8b-f0b10b580181",
+              "name": "Ramsey's Tavern",
+              "subtype": "urn:entity:place",
+              "popularity": 0.681,
+              "affinity": 0.8553,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:retro",
+                  "name": "Retro",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:craft_beer",
+                  "name": "Craft beer",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "3710 Hartley Rd, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0183",
+                "website": "https://ramsey-s-tavern.example",
+                "price_level": 2,
+                "is_closed": false,
+                "business_rating": 3.6,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98405"
+              },
+              "location": {
+                "lat": 47.238756,
+                "lon": -122.485975,
+                "geohash": "c22usz83tym7"
+              },
+              "distanceM": 2556.7,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "tileGeohash": null,
+            "category": "bar",
+            "score": 0.5,
+            "qlooRank": 5,
+            "address": "3710 Hartley Rd, Tacoma, WA",
+            "phone": "+1 253-555-0183",
+            "website": "https://ramsey-s-tavern.example",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q9"
+              },
+              {
+                "label": "most influenced by Ada Pell",
+                "ledgerRef": "Q9"
+              }
+            ],
+            "hoursOnDay": "16:00-02:00",
+            "explain": {
+              "tags": [
+                {
+                  "id": "urn:tag:ambience:qloo:retro",
+                  "name": "Retro"
+                }
+              ],
+              "activation": "Ask to put up a poster.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 5 of 8 near the venue, not in a top area, but the list was short, it ranked in the lower half and this bill's signal is thin.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "ledgerRefs": [
+                "Q9"
+              ],
+              "areaName": "Oakland Madrona",
+              "distanceKm": 2.6
+            }
+          },
+          {
+            "entity": {
+              "entityId": "0000ab49-7da8-41d9-a2fd-f0b10b5b0571",
+              "name": "Crate & Needle",
+              "subtype": "urn:entity:place",
+              "popularity": 0.879,
+              "affinity": 0.7222,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "3674 Pruitt Ave, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T19:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T19:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0177",
+                "website": "https://crate-and-needle.example",
+                "price_level": 2,
+                "is_closed": false,
+                "business_rating": 4.7,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.262146,
+                "lon": -122.447566,
+                "geohash": "c22uveu3uyt4"
+              },
+              "distanceM": 2059,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "tileGeohash": null,
+            "category": "record_store",
+            "score": 0.25,
+            "qlooRank": 7,
+            "address": "3674 Pruitt Ave, Tacoma, WA",
+            "phone": "+1 253-555-0177",
+            "website": "https://crate-and-needle.example",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q9"
+              },
+              {
+                "label": "most influenced by Ada Pell",
+                "ledgerRef": "Q9"
+              }
+            ],
+            "hoursOnDay": "11:00-19:00",
+            "explain": {
+              "tags": [
+                {
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:cozy",
+                  "name": "Cozy"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:live_music",
+                  "name": "Live music"
+                }
+              ],
+              "activation": "Ask to leave flyers at the counter.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 7 of 8 near the venue, not in a top area, but the list was short, it ranked in the lower half and this bill's signal is thin.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "ledgerRefs": [
+                "Q9"
+              ],
+              "areaName": "Stadium District",
+              "distanceKm": 2.1
+            }
+          }
+        ],
+        "provenance": [
+          "Q9"
+        ],
+        "limits": [
+          "Suggested, not affiliated: no partner has agreed to anything."
+        ],
+        "reason": "No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list."
+      },
+      "declared": {
+        "status": "empty",
+        "summary": "No list of your own partners came with this plan.",
+        "results": [],
+        "provenance": [],
+        "limits": [],
+        "reason": "No list of your own partners came with this plan."
+      },
+      "prePost": {
+        "status": "partial",
+        "summary": "3 spots within 2.5 km open on show night, with the crowd spread across them by assumed capacity.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "0000646f-6c0d-4550-aa49-f0b10b5b0051",
+              "name": "Yoder's Cafe",
+              "subtype": "urn:entity:place",
+              "popularity": 0.955,
+              "affinity": 0.99,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:lively",
+                  "name": "Lively",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "2883 Willard St, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T07:00",
+                      "closes": "T16:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0171",
+                "website": "https://yoder-s-cafe.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.6,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.250767,
+                "lon": -122.434075,
+                "geohash": "c22uvcwpxm2u"
+              },
+              "distanceM": 1614.6,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.1,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "category": "cafe",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q11"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000f079-a067-480a-a7e5-f0b10b5b0311",
+              "name": "Crenshaw's Table",
+              "subtype": "urn:entity:place",
+              "popularity": 0.812,
+              "affinity": 0.5625,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:retro",
+                  "name": "Retro",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:kids",
+                  "name": "Kids",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "4739 Ashby Ln, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0123",
+                "website": "https://crenshaw-s-table.example",
+                "price_level": 2,
+                "is_closed": false,
+                "business_rating": 4.8,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.248523,
+                "lon": -122.436581,
+                "geohash": "c22uvck6sgh4"
+              },
+              "distanceM": 1337.5,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.065625,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "category": "restaurant",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q11"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "00001252-4a5b-4e83-a1a2-f0b10b5e05e1",
+              "name": "Dalrymple's Table",
+              "subtype": "urn:entity:place",
+              "popularity": 0.652,
+              "affinity": 0.55,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:laid_back",
+                  "name": "Laid-back",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:brunch",
+                  "name": "Brunch",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:kids",
+                  "name": "Kids",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "3358 Tolliver Ln, Tacoma, WA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 253-555-0197",
+                "website": "https://dalrymple-s-table.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.6,
+                "geocode": {
+                  "city": "Tacoma",
+                  "admin1_region": "WA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "98402"
+              },
+              "location": {
+                "lat": 47.247958,
+                "lon": -122.428531,
+                "geohash": "c22uy14r23wx"
+              },
+              "distanceM": 1898.8,
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.034375,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "category": "restaurant",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q11"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q10",
+          "Q11"
+        ],
+        "limits": [
+          "Expected shares are a heuristic with assumed capacities, not a forecast."
+        ],
+        "reason": "Fewer than 6 spots came back inside 1.5 km, so the search widened to 2,500 m."
+      },
+      "media": {
+        "status": "partial",
+        "summary": "3 podcasts. Local ranking not checked yet, so all are national. Alcohol, tobacco and gambling brands are excluded (Ticketmaster lists no age policy, so the show is not treated as 21+).",
+        "results": [
+          {
+            "entity": {
+              "entityId": "0000d296-669c-4ae1-89fc-395be5a2da27",
+              "name": "Back Booth Banter",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.6,
+              "affinity": 0.99,
+              "tags": [
+                {
+                  "id": "urn:tag:genre:podcast:comedy",
+                  "name": "Comedy",
+                  "type": "urn:tag:genre:podcast"
+                }
+              ],
+              "properties": {},
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "ranked for this bill; labelled national until the local probe shows movement",
+                "ledgerRef": "Q12"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "00005fb4-9652-4db2-84e2-70149d3386f0",
+              "name": "Open Mic Diaries",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.43,
+              "affinity": 0.7302,
+              "tags": [
+                {
+                  "id": "urn:tag:genre:podcast:comedy",
+                  "name": "Comedy",
+                  "type": "urn:tag:genre:podcast"
+                }
+              ],
+              "properties": {},
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "ranked for this bill; labelled national until the local probe shows movement",
+                "ledgerRef": "Q12"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000da39-a3ab-463b-8468-9a99823c3c6a",
+              "name": "Night Shift Laughs",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.55,
+              "affinity": 0.55,
+              "tags": [
+                {
+                  "id": "urn:tag:genre:podcast:comedy",
+                  "name": "Comedy",
+                  "type": "urn:tag:genre:podcast"
+                }
+              ],
+              "properties": {},
+              "explainability": [
+                {
+                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
+                  "score": 0.9
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "ranked for this bill; labelled national until the local probe shows movement",
+                "ledgerRef": "Q12"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          "Q12",
+          "Q13"
+        ],
+        "limits": [],
+        "reason": "No sponsor brand came back."
+      },
+      "demographics": {
+        "status": "empty",
+        "summary": "No age or gender blocks came back.",
+        "results": {
+          "bill": [],
+          "house": []
+        },
+        "provenance": [
+          "Q14"
+        ],
+        "limits": [],
+        "reason": "Qloo returned no demographics blocks for these signals."
+      },
+      "whatsDifferent": {
+        "status": "empty",
+        "summary": "There is no usual crowd to compare this bill with.",
+        "results": {
+          "shared": [],
+          "a": [],
+          "b": [],
+          "fromTagDiff": false
+        },
+        "provenance": [],
+        "limits": [],
+        "reason": "Too few of the room's usual acts matched Qloo, and no genre-wide crowd stands in for this bill."
+      },
+      "copyHooks": {
+        "status": "partial",
+        "summary": "1 line, each built only from approved Qloo tags.",
+        "results": [
+          {
+            "text": "Alternative rock at Super Funny Comedy Club, Friday, Dec 4.",
+            "tagIds": [
+              "urn:tag:genre:music:alternative_rock"
+            ]
+          }
+        ],
+        "provenance": [
+          "Q15"
+        ],
+        "limits": [
+          "No jokes, no artist voice, no artist marks in partner copy."
+        ],
+        "reason": "1 line passed the checks."
+      }
+    },
+    "narration": {
+      "summary": "Ada Pell and Margo Vint at Super Funny Comedy Club, Friday, Dec 4. No area stands out on this run, so partners are picked near the venue. The sheet suggests 6 partners of 5 kinds; none has agreed to anything. It also lists 3 spots for before and after the show and 3 podcasts.",
+      "tileWhy": [],
+      "partnerLines": [
+        {
+          "entityId": "0000646f-6c0d-4550-aa49-f0b10b5b0051",
+          "text": "A cafe near the venue, 1st on that list for this crowd."
+        },
+        {
+          "entityId": "0000d2e8-1e2d-4157-a49f-f0b10b5c03e1",
+          "text": "A barbershop near the venue, 2nd on that list for this crowd."
+        },
+        {
+          "entityId": "0000f079-a067-480a-a7e5-f0b10b5b0311",
+          "text": "A restaurant near the venue, 3rd on that list for this crowd."
+        },
+        {
+          "entityId": "00001252-4a5b-4e83-a1a2-f0b10b5e05e1",
+          "text": "A restaurant near the venue, 4th on that list for this crowd."
+        },
+        {
+          "entityId": "0000f94f-814a-48f8-af8b-f0b10b580181",
+          "text": "A bar near the venue, 5th on that list for this crowd."
+        },
+        {
+          "entityId": "0000ab49-7da8-41d9-a2fd-f0b10b5b0571",
+          "text": "A record store near the venue, 7th on that list for this crowd."
+        }
+      ],
+      "templated": true
+    },
+    "ledger": [
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events/syn-tm-ev-superfunny-1204-ada.json",
+        "params": {
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 1246,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -s \"https://app.ticketmaster.com/discovery/v2/events/syn-tm-ev-superfunny-1204-ada.json?apikey=$TICKETMASTER_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "note": "node T intake; fixture world: synthetic response",
+        "id": "T1"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Ada Pell",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Ada%20Pell&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 822,
+        "cacheHit": false,
+        "resultCount": 1,
+        "note": "node Q1 act search: headliner; fixture world: synthetic response",
+        "id": "Q1"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Margo Vint",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Margo%20Vint&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 404,
+        "envelopeStatus": "empty",
+        "latencyMs": 0,
+        "bytes": 61,
+        "cacheHit": false,
+        "resultCount": 0,
+        "note": "node Q1 act search: support; fixture world: synthetic response; HTTP 404: no match",
+        "id": "Q2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Super Funny Comedy Club",
+          "types": [
+            "urn:entity:place"
+          ],
+          "take": 10,
+          "filter.location": "47.244,-122.453",
+          "filter.radius": 1
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/search?filter.location=47.244,-122.453&filter.radius=1&query=Super%20Funny%20Comedy%20Club&take=10&types=urn:entity:place\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 404,
+        "envelopeStatus": "empty",
+        "latencyMs": 0,
+        "bytes": 61,
+        "cacheHit": false,
+        "resultCount": 0,
+        "note": "node Q2 venue; fixture world: synthetic response; HTTP 404: no match",
+        "id": "Q3"
+      },
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events.json",
+        "params": {
+          "venueId": "syn-tm-ven-superfunny",
+          "startDateTime": "2026-11-20T00:00:00Z",
+          "size": 60,
+          "sort": "date,asc",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 4685,
+        "cacheHit": false,
+        "resultCount": 4,
+        "curl": "curl -s \"https://app.ticketmaster.com/discovery/v2/events.json?venueId=syn-tm-ven-superfunny&startDateTime=2026-11-20T00%3A00%3A00Z&size=60&sort=date%2Casc&apikey=$TICKETMASTER_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "note": "node Q3 house roster (Ticketmaster); fixture world: synthetic response",
+        "id": "T2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Tamsin Rook",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Tamsin%20Rook&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 824,
+        "cacheHit": false,
+        "resultCount": 1,
+        "note": "node Q3 house set search; fixture world: synthetic response",
+        "id": "Q4"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Benny Okafor",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Benny%20Okafor&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 404,
+        "envelopeStatus": "empty",
+        "latencyMs": 0,
+        "bytes": 61,
+        "cacheHit": false,
+        "resultCount": 0,
+        "note": "node Q3 house set search; fixture world: synthetic response; HTTP 404: no match",
+        "id": "Q5"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 1500,
+          "take": 1,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.location=POINT(-122.453%2047.244)&filter.location.radius=1500&filter.type=urn:entity:place&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=1\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 1979,
+        "cacheHit": false,
+        "resultCount": 1,
+        "note": "node Q1 signal check; fixture world: synthetic response; signal check: which ids Qloo has taste data for",
+        "id": "Q6"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 40000,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.location=POINT(-122.453%2047.244)&filter.location.radius=40000&filter.type=urn:heatmap&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 20828,
+        "cacheHit": false,
+        "resultCount": 139,
+        "note": "node Q4 bill heat; fixture world: synthetic response",
+        "id": "Q7"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 60000,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.location=POINT(-122.453%2047.244)&filter.location.radius=60000&filter.type=urn:heatmap&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 48312,
+        "cacheHit": false,
+        "resultCount": 323,
+        "note": "node Q4 bill heat (widened to 60 km); fixture world: synthetic response",
+        "id": "Q8"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 3500,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:clothing_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:beauty_salon"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": [
+            "urn:tag:category:place:night_club"
+          ],
+          "feature.explainability": true,
+          "take": 50,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.exclude.tags=urn:tag:category:place:night_club&filter.hours=wednesday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=3500&filter.price_level.max=3&filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:clothing_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon&filter.type=urn:entity:place&operator.filter.tags=union&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=50\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 16821,
+        "cacheHit": false,
+        "resultCount": 8,
+        "note": "node Q9 partners, near venue; fixture world: synthetic response",
+        "id": "Q9"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 1500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "friday",
+          "feature.explainability": true,
+          "take": 25,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.hours=friday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=1500&filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe&filter.type=urn:entity:place&operator.filter.tags=union&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=25\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 2274,
+        "cacheHit": false,
+        "resultCount": 1,
+        "note": "node Q10 pre/post; fixture world: synthetic response",
+        "id": "Q10"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 2500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "friday",
+          "feature.explainability": true,
+          "take": 25,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.hours=friday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=2500&filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe&filter.type=urn:entity:place&operator.filter.tags=union&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=25\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 6435,
+        "cacheHit": false,
+        "resultCount": 3,
+        "note": "node Q10 pre/post (2,500 m); fixture world: synthetic response",
+        "id": "Q11"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:podcast",
+          "signal.location": "POINT(-122.453 47.244)",
+          "feature.explainability": true,
+          "take": 15,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.type=urn:entity:podcast&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&signal.location=POINT(-122.453%2047.244)&take=15\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 1494,
+        "cacheHit": false,
+        "resultCount": 3,
+        "note": "node Q12 podcasts; fixture world: synthetic response",
+        "id": "Q12"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:brand",
+          "signal.location": "POINT(-122.453 47.244)",
+          "filter.exclude.tags": [
+            "urn:tag:genre:brand:alcohol",
+            "urn:tag:genre:brand:tobacco",
+            "urn:tag:genre:brand:gambling"
+          ],
+          "feature.explainability": true,
+          "take": 15,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.exclude.tags=urn:tag:genre:brand:alcohol,urn:tag:genre:brand:tobacco,urn:tag:genre:brand:gambling&filter.type=urn:entity:brand&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&signal.location=POINT(-122.453%2047.244)&take=15\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 0,
+        "bytes": 73,
+        "cacheHit": false,
+        "resultCount": 0,
+        "note": "node Q13 sponsor; fixture world: synthetic response",
+        "id": "Q13"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:demographics",
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.type=urn:demographics&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 0,
+        "bytes": 78,
+        "cacheHit": false,
+        "resultCount": 0,
+        "note": "node Q7 demographics; fixture world: synthetic response",
+        "id": "Q14"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:tag",
+          "filter.tag.types": [
+            "urn:tag:keyword:media",
+            "urn:tag:genre:music",
+            "urn:tag:theme:qloo",
+            "urn:tag:audience:qloo"
+          ],
+          "diversify.by": "subtype",
+          "take": 30,
+          "signal.interests.entities": [
+            "0000c782-048a-4a80-8990-95d0d5287866"
+          ]
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?diversify.by=subtype&filter.tag.types=urn:tag:keyword:media,urn:tag:genre:music,urn:tag:theme:qloo,urn:tag:audience:qloo&filter.type=urn:tag&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=30\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 1107,
+        "cacheHit": false,
+        "resultCount": 4,
+        "note": "node Q14 copy allowlist; fixture world: synthetic response",
+        "id": "Q15"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "bar near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"bar near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 21223,
+        "cacheHit": false,
+        "resultCount": 20,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "restaurant near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"restaurant near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 21770,
+        "cacheHit": false,
+        "resultCount": 20,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P2"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "coffee shop near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"coffee shop near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 22934,
+        "cacheHit": false,
+        "resultCount": 20,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P3"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "record store near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"record store near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 18922,
+        "cacheHit": false,
+        "resultCount": 18,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P4"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "book store near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"book store near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 10358,
+        "cacheHit": false,
+        "resultCount": 11,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P5"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "clothing boutique near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"clothing boutique near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 23554,
+        "cacheHit": false,
+        "resultCount": 20,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P6"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "barber shop near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"barber shop near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 19937,
+        "cacheHit": false,
+        "resultCount": 20,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P7"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "beauty salon near Tacoma",
+          "maxResultCount": 20,
+          "locationBias.circle.center.latitude": 47.244,
+          "locationBias.circle.center.longitude": -122.453,
+          "locationBias.circle.radius": 5000,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types",
+          "X-Goog-Api-Key": "$GOOGLE_PLACES_API_KEY"
+        },
+        "curl": "curl -s -X POST \"https://places.googleapis.com/v1/places:searchText\" -H \"Content-Type: application/json\" -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H \"X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.businessStatus,places.regularOpeningHours,places.types\" -d '{\"textQuery\":\"beauty salon near Tacoma\",\"maxResultCount\":20,\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":5000}}}'",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 18257,
+        "cacheHit": false,
+        "resultCount": 20,
+        "note": "node arm F (Google Places, model off); fixture world: synthetic response",
+        "id": "P8"
+      }
+    ],
+    "guard": {
+      "dropped": 0,
+      "reasons": [
+        "4 tags denied by policy (ethnicity/inclusivity/credit_card)",
+        "The summary came from a fixed template (no model key).",
+        "1 tag held back from copy on a show that is not 21+ (alcohol).",
+        "Person-entity tags stripped before storage."
+      ],
+      "deniedTagCount": 4,
+      "deniedByNamespace": {
+        "ethnicity": 2,
+        "inclusivity": 1,
+        "credit_card": 1
+      }
+    },
+    "limits": [
+      "Whether this plan sells tickets: nothing here measures sales.",
+      "What fans will buy: these are tastes, not purchases.",
+      "Where buyers live: the areas show where this bill's fans stand out from the room's usual crowd.",
+      "Anything about one person, or whether a partner will move tickets.",
+      "Planning tool; no sales data for this show is known or shown.",
+      "Thin signal: treat as a starting list.",
+      "Sample data: made-up places and numbers; no live service was called.",
+      "Venue points for rooms without a public map point are approximate in sample data.",
+      "The Google Places list used fixed searches because no model key is set."
+    ],
+    "control": {
+      "arm": "F",
+      "places": [
+        {
+          "placeId": "syn-gp-dded826a49fba163f0b10b5b",
+          "name": "Lomax & Co.",
+          "rating": 4.9,
+          "userRatingCount": 2317,
+          "businessStatus": "OPERATIONAL",
+          "query": "clothing boutique near Tacoma",
+          "address": "4523 3rd St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.263437,
+            "lon": -122.444042
+          }
+        },
+        {
+          "placeId": "syn-gp-9cd573ed43e9aed8f0b10b5b",
+          "name": "Ackerly Records",
+          "rating": 4.9,
+          "userRatingCount": 2314,
+          "businessStatus": "OPERATIONAL",
+          "query": "record store near Tacoma",
+          "address": "595 Linden Ave, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.254888,
+            "lon": -122.447737
+          }
+        },
+        {
+          "placeId": "syn-gp-514d2b454362a6b0f0b10b59",
+          "name": "Fulton's Diner",
+          "rating": 4.8,
+          "userRatingCount": 2494,
+          "businessStatus": "OPERATIONAL",
+          "query": "restaurant near Tacoma",
+          "address": "4838 Calloway St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.227927,
+            "lon": -122.442022
+          }
+        },
+        {
+          "placeId": "syn-gp-24e356f44c89a37cf0b10b59",
+          "name": "Mane Street Salon",
+          "rating": 4.8,
+          "userRatingCount": 2239,
+          "businessStatus": "OPERATIONAL",
+          "query": "beauty salon near Tacoma",
+          "address": "3865 Holloway Rd, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.23362,
+            "lon": -122.445357
+          }
+        },
+        {
+          "placeId": "syn-gp-d9ba51ec4eada741f0b10b5b",
+          "name": "Hagan's Bookshop",
+          "rating": 4.9,
+          "userRatingCount": 1784,
+          "businessStatus": "OPERATIONAL",
+          "query": "book store near Tacoma",
+          "address": "4423 Mercer St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.263442,
+            "lon": -122.454757
+          }
+        },
+        {
+          "placeId": "syn-gp-f2f2f0ef4736a606f0b10b5a",
+          "name": "McBride Barbers",
+          "rating": 4.8,
+          "userRatingCount": 2033,
+          "businessStatus": "OPERATIONAL",
+          "query": "barber shop near Tacoma",
+          "address": "4397 Sycamore Ave, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.256424,
+            "lon": -122.475812
+          }
+        },
+        {
+          "placeId": "syn-gp-2cb8f6d8471ea725f0b10b5b",
+          "name": "Hammond's",
+          "rating": 4.8,
+          "userRatingCount": 2005,
+          "businessStatus": "OPERATIONAL",
+          "query": "restaurant near Tacoma",
+          "address": "2751 Ashby Ln, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.242242,
+            "lon": -122.435352
+          }
+        },
+        {
+          "placeId": "syn-gp-44d579ac4245a1bbf0b10b5b",
+          "name": "Overby's",
+          "rating": 4.9,
+          "userRatingCount": 1640,
+          "businessStatus": "OPERATIONAL",
+          "query": "bar near Tacoma",
+          "address": "1637 Linden Ave, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.252634,
+            "lon": -122.470136
+          }
+        },
+        {
+          "placeId": "syn-gp-bafcd5294846a46bf0b10b5c",
+          "name": "Eckert's Record Shop",
+          "rating": 4.7,
+          "userRatingCount": 2250,
+          "businessStatus": "OPERATIONAL",
+          "query": "record store near Tacoma",
+          "address": "4599 Ashby Ln, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.234038,
+            "lon": -122.418342
+          }
+        },
+        {
+          "placeId": "syn-gp-a9b0bcad45fea8d5f0b10b5e",
+          "name": "Toombs'",
+          "rating": 4.9,
+          "userRatingCount": 1613,
+          "businessStatus": "OPERATIONAL",
+          "query": "clothing boutique near Tacoma",
+          "address": "2781 Alder St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.255675,
+            "lon": -122.424194
+          }
+        },
+        {
+          "placeId": "syn-gp-64a925c24693a142f0b10b5b",
+          "name": "Colquitt's Kitchen",
+          "rating": 4.8,
+          "userRatingCount": 1877,
+          "businessStatus": "OPERATIONAL",
+          "query": "restaurant near Tacoma",
+          "address": "958 Willard St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.243836,
+            "lon": -122.441154
+          }
+        },
+        {
+          "placeId": "syn-gp-1a3f7aca41caa1dcf0b10b59",
+          "name": "Keel Supply",
+          "rating": 4.6,
+          "userRatingCount": 2598,
+          "businessStatus": "OPERATIONAL",
+          "query": "clothing boutique near Tacoma",
+          "address": "2020 Pruitt Ave, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.227454,
+            "lon": -122.441646
+          }
+        },
+        {
+          "placeId": "syn-gp-582ac01949daa4dbf0b10b59",
+          "name": "Holcomb's Grill",
+          "rating": 4.6,
+          "userRatingCount": 2485,
+          "businessStatus": "OPERATIONAL",
+          "query": "restaurant near Tacoma",
+          "address": "4742 Juniper Way, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.240475,
+            "lon": -122.453467
+          }
+        },
+        {
+          "placeId": "syn-gp-bcc1829741fca671f0b10b59",
+          "name": "Well Read",
+          "rating": 4.7,
+          "userRatingCount": 2100,
+          "businessStatus": "OPERATIONAL",
+          "query": "book store near Tacoma",
+          "address": "723 Ashby Ln, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.231153,
+            "lon": -122.456279
+          }
+        },
+        {
+          "placeId": "syn-gp-c0d49e464ed2a4e3f0b10b5b",
+          "name": "Minton's Kitchen",
+          "rating": 4.8,
+          "userRatingCount": 1773,
+          "businessStatus": "OPERATIONAL",
+          "query": "restaurant near Tacoma",
+          "address": "663 Tolliver Ln, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.256747,
+            "lon": -122.43737
+          }
+        },
+        {
+          "placeId": "syn-gp-6fe0dc424a81a138f0b10b5b",
+          "name": "Hightower's Bar",
+          "rating": 4.5,
+          "userRatingCount": 2897,
+          "businessStatus": "OPERATIONAL",
+          "query": "bar near Tacoma",
+          "address": "1940 3rd St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.254007,
+            "lon": -122.458672
+          }
+        },
+        {
+          "placeId": "syn-gp-2c81b89341faa134f0b10b5b",
+          "name": "Steady Pour",
+          "rating": 4.7,
+          "userRatingCount": 2050,
+          "businessStatus": "OPERATIONAL",
+          "query": "coffee shop near Tacoma",
+          "address": "2595 Alder St, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.251838,
+            "lon": -122.437724
+          }
+        },
+        {
+          "placeId": "syn-gp-46a8511a4a94a83df0b10b58",
+          "name": "Crate & Needle",
+          "rating": 4.8,
+          "userRatingCount": 1662,
+          "businessStatus": "OPERATIONAL",
+          "query": "record store near Tacoma",
+          "address": "112 Holloway Rd, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.236538,
+            "lon": -122.485019
+          }
+        },
+        {
+          "placeId": "syn-gp-80b59ba0460ca7b5f0b10b59",
+          "name": "Gilliam's Diner",
+          "rating": 4.8,
+          "userRatingCount": 1656,
+          "businessStatus": "OPERATIONAL",
+          "query": "restaurant near Tacoma",
+          "address": "708 Sycamore Ave, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.23702,
+            "lon": -122.443446
+          }
+        },
+        {
+          "placeId": "syn-gp-4d23d8b44520a6bff0b10b59",
+          "name": "Rinaldi Coffee",
+          "rating": 4.9,
+          "userRatingCount": 1419,
+          "businessStatus": "OPERATIONAL",
+          "query": "coffee shop near Tacoma",
+          "address": "1037 Prescott Ave, Tacoma, WA, USA",
+          "location": {
+            "lat": 47.236475,
+            "lon": -122.443105
+          }
+        }
+      ],
+      "overlapWithQloo": [],
+      "ledgerRefs": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8"
+      ]
+    },
+    "steps": [
+      {
+        "id": "resolve",
+        "kind": "resolve",
+        "label": "Acts",
+        "decision": "Matched 1 of 2 acts to Qloo.",
+        "status": "partial",
+        "ledgerRefs": [
+          "Q1",
+          "Q2",
+          "Q3"
+        ],
+        "cause": "Margo Vint: not in Qloo's catalog, so the run went on without it. The room isn't in Qloo's catalog, so the run uses the Ticketmaster map point."
+      },
+      {
+        "id": "baseline",
+        "kind": "baseline",
+        "label": "Usual crowd",
+        "decision": "Couldn't build the room's usual crowd.",
+        "status": "degraded",
+        "ledgerRefs": [
+          "T2",
+          "Q4",
+          "Q5"
+        ],
+        "cause": "Too few of the room's headliners matched Qloo, and comedy has no genre-wide crowd to stand in."
+      },
+      {
+        "id": "heat",
+        "kind": "heat",
+        "label": "Lift map",
+        "decision": "No lift map: there is no usual crowd to compare this bill with.",
+        "status": "degraded",
+        "ledgerRefs": [
+          "Q7",
+          "Q8"
+        ]
+      },
+      {
+        "id": "partners",
+        "kind": "partners",
+        "label": "Partners",
+        "decision": "Kept 6 places near the venue, at most 2 of a kind.",
+        "status": "partial",
+        "ledgerRefs": [
+          "Q9"
+        ],
+        "cause": "Qloo ranked them for this crowd, and every one is open Wednesday. That's short of the 15 the list aims for, so treat it as a starting list."
+      },
+      {
+        "id": "prepost",
+        "kind": "prepost",
+        "label": "Before and after",
+        "decision": "Picked 3 spots within 2.5 km of the room, open on show night.",
+        "status": "partial",
+        "ledgerRefs": [
+          "Q10",
+          "Q11"
+        ],
+        "cause": "Fewer than 6 came back inside 1.5 km, so the search widened to 2.5 km."
+      },
+      {
+        "id": "media",
+        "kind": "media",
+        "label": "Podcasts and sponsor",
+        "decision": "Added 3 podcasts; no sponsor brand came back.",
+        "status": "partial",
+        "ledgerRefs": [
+          "Q12",
+          "Q13"
+        ],
+        "cause": "All are labelled national: local ranking isn't verified yet. Alcohol, tobacco and gambling brands are left out: Ticketmaster doesn't list an age limit for the show."
+      },
+      {
+        "id": "narrate",
+        "kind": "narrate",
+        "label": "Summary",
+        "decision": "Wrote the summary and 1 fan copy line from a fixed template; no model was called.",
+        "status": "ok",
+        "ledgerRefs": [
+          "Q15"
+        ],
+        "cause": "Only 1 copy line passed the tag allowlist and the checks."
+      },
+      {
+        "id": "guard",
+        "kind": "guard",
+        "label": "Checks",
+        "decision": "Checked every line against this run's requests; nothing had to go.",
+        "status": "ok",
+        "ledgerRefs": [],
+        "cause": "Held back 4 tags by policy: none of them appears in copy or on this sheet. Kept 1 alcohol tag out of fan copy: Ticketmaster doesn't list the show as 21+."
+      },
+      {
+        "id": "control",
+        "kind": "other",
+        "label": "Without Qloo",
+        "decision": "Built a list without Qloo from 8 Google Places searches: 0 of its 20 places are also on this sheet.",
+        "status": "degraded",
+        "ledgerRefs": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6",
+          "P7",
+          "P8"
+        ],
+        "cause": "No model key is set, so fixed searches by type, sorted by Google rating and review count, stood in for the model's own searches."
+      }
+    ]
+  },
+  "control": {
+    "arm": "F",
+    "places": [
+      {
+        "placeId": "syn-gp-dded826a49fba163f0b10b5b",
+        "name": "Lomax & Co.",
+        "rating": 4.9,
+        "userRatingCount": 2317,
+        "businessStatus": "OPERATIONAL",
+        "query": "clothing boutique near Tacoma",
+        "address": "4523 3rd St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.263437,
+          "lon": -122.444042
+        }
+      },
+      {
+        "placeId": "syn-gp-9cd573ed43e9aed8f0b10b5b",
+        "name": "Ackerly Records",
+        "rating": 4.9,
+        "userRatingCount": 2314,
+        "businessStatus": "OPERATIONAL",
+        "query": "record store near Tacoma",
+        "address": "595 Linden Ave, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.254888,
+          "lon": -122.447737
+        }
+      },
+      {
+        "placeId": "syn-gp-514d2b454362a6b0f0b10b59",
+        "name": "Fulton's Diner",
+        "rating": 4.8,
+        "userRatingCount": 2494,
+        "businessStatus": "OPERATIONAL",
+        "query": "restaurant near Tacoma",
+        "address": "4838 Calloway St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.227927,
+          "lon": -122.442022
+        }
+      },
+      {
+        "placeId": "syn-gp-24e356f44c89a37cf0b10b59",
+        "name": "Mane Street Salon",
+        "rating": 4.8,
+        "userRatingCount": 2239,
+        "businessStatus": "OPERATIONAL",
+        "query": "beauty salon near Tacoma",
+        "address": "3865 Holloway Rd, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.23362,
+          "lon": -122.445357
+        }
+      },
+      {
+        "placeId": "syn-gp-d9ba51ec4eada741f0b10b5b",
+        "name": "Hagan's Bookshop",
+        "rating": 4.9,
+        "userRatingCount": 1784,
+        "businessStatus": "OPERATIONAL",
+        "query": "book store near Tacoma",
+        "address": "4423 Mercer St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.263442,
+          "lon": -122.454757
+        }
+      },
+      {
+        "placeId": "syn-gp-f2f2f0ef4736a606f0b10b5a",
+        "name": "McBride Barbers",
+        "rating": 4.8,
+        "userRatingCount": 2033,
+        "businessStatus": "OPERATIONAL",
+        "query": "barber shop near Tacoma",
+        "address": "4397 Sycamore Ave, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.256424,
+          "lon": -122.475812
+        }
+      },
+      {
+        "placeId": "syn-gp-2cb8f6d8471ea725f0b10b5b",
+        "name": "Hammond's",
+        "rating": 4.8,
+        "userRatingCount": 2005,
+        "businessStatus": "OPERATIONAL",
+        "query": "restaurant near Tacoma",
+        "address": "2751 Ashby Ln, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.242242,
+          "lon": -122.435352
+        }
+      },
+      {
+        "placeId": "syn-gp-44d579ac4245a1bbf0b10b5b",
+        "name": "Overby's",
+        "rating": 4.9,
+        "userRatingCount": 1640,
+        "businessStatus": "OPERATIONAL",
+        "query": "bar near Tacoma",
+        "address": "1637 Linden Ave, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.252634,
+          "lon": -122.470136
+        }
+      },
+      {
+        "placeId": "syn-gp-bafcd5294846a46bf0b10b5c",
+        "name": "Eckert's Record Shop",
+        "rating": 4.7,
+        "userRatingCount": 2250,
+        "businessStatus": "OPERATIONAL",
+        "query": "record store near Tacoma",
+        "address": "4599 Ashby Ln, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.234038,
+          "lon": -122.418342
+        }
+      },
+      {
+        "placeId": "syn-gp-a9b0bcad45fea8d5f0b10b5e",
+        "name": "Toombs'",
+        "rating": 4.9,
+        "userRatingCount": 1613,
+        "businessStatus": "OPERATIONAL",
+        "query": "clothing boutique near Tacoma",
+        "address": "2781 Alder St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.255675,
+          "lon": -122.424194
+        }
+      },
+      {
+        "placeId": "syn-gp-64a925c24693a142f0b10b5b",
+        "name": "Colquitt's Kitchen",
+        "rating": 4.8,
+        "userRatingCount": 1877,
+        "businessStatus": "OPERATIONAL",
+        "query": "restaurant near Tacoma",
+        "address": "958 Willard St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.243836,
+          "lon": -122.441154
+        }
+      },
+      {
+        "placeId": "syn-gp-1a3f7aca41caa1dcf0b10b59",
+        "name": "Keel Supply",
+        "rating": 4.6,
+        "userRatingCount": 2598,
+        "businessStatus": "OPERATIONAL",
+        "query": "clothing boutique near Tacoma",
+        "address": "2020 Pruitt Ave, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.227454,
+          "lon": -122.441646
+        }
+      },
+      {
+        "placeId": "syn-gp-582ac01949daa4dbf0b10b59",
+        "name": "Holcomb's Grill",
+        "rating": 4.6,
+        "userRatingCount": 2485,
+        "businessStatus": "OPERATIONAL",
+        "query": "restaurant near Tacoma",
+        "address": "4742 Juniper Way, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.240475,
+          "lon": -122.453467
+        }
+      },
+      {
+        "placeId": "syn-gp-bcc1829741fca671f0b10b59",
+        "name": "Well Read",
+        "rating": 4.7,
+        "userRatingCount": 2100,
+        "businessStatus": "OPERATIONAL",
+        "query": "book store near Tacoma",
+        "address": "723 Ashby Ln, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.231153,
+          "lon": -122.456279
+        }
+      },
+      {
+        "placeId": "syn-gp-c0d49e464ed2a4e3f0b10b5b",
+        "name": "Minton's Kitchen",
+        "rating": 4.8,
+        "userRatingCount": 1773,
+        "businessStatus": "OPERATIONAL",
+        "query": "restaurant near Tacoma",
+        "address": "663 Tolliver Ln, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.256747,
+          "lon": -122.43737
+        }
+      },
+      {
+        "placeId": "syn-gp-6fe0dc424a81a138f0b10b5b",
+        "name": "Hightower's Bar",
+        "rating": 4.5,
+        "userRatingCount": 2897,
+        "businessStatus": "OPERATIONAL",
+        "query": "bar near Tacoma",
+        "address": "1940 3rd St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.254007,
+          "lon": -122.458672
+        }
+      },
+      {
+        "placeId": "syn-gp-2c81b89341faa134f0b10b5b",
+        "name": "Steady Pour",
+        "rating": 4.7,
+        "userRatingCount": 2050,
+        "businessStatus": "OPERATIONAL",
+        "query": "coffee shop near Tacoma",
+        "address": "2595 Alder St, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.251838,
+          "lon": -122.437724
+        }
+      },
+      {
+        "placeId": "syn-gp-46a8511a4a94a83df0b10b58",
+        "name": "Crate & Needle",
+        "rating": 4.8,
+        "userRatingCount": 1662,
+        "businessStatus": "OPERATIONAL",
+        "query": "record store near Tacoma",
+        "address": "112 Holloway Rd, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.236538,
+          "lon": -122.485019
+        }
+      },
+      {
+        "placeId": "syn-gp-80b59ba0460ca7b5f0b10b59",
+        "name": "Gilliam's Diner",
+        "rating": 4.8,
+        "userRatingCount": 1656,
+        "businessStatus": "OPERATIONAL",
+        "query": "restaurant near Tacoma",
+        "address": "708 Sycamore Ave, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.23702,
+          "lon": -122.443446
+        }
+      },
+      {
+        "placeId": "syn-gp-4d23d8b44520a6bff0b10b59",
+        "name": "Rinaldi Coffee",
+        "rating": 4.9,
+        "userRatingCount": 1419,
+        "businessStatus": "OPERATIONAL",
+        "query": "coffee shop near Tacoma",
+        "address": "1037 Prescott Ave, Tacoma, WA, USA",
+        "location": {
+          "lat": 47.236475,
+          "lon": -122.443105
+        }
+      }
+    ],
+    "overlapWithQloo": [],
+    "ledgerRefs": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8"
+    ]
+  }
+}

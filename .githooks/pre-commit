@@ -1,0 +1,11 @@
+#!/bin/sh
+# Blocks commits that would add private data or raw API response bodies.
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+# The same check runs in CI as: npm run check:no-raw
+root=$(git rev-parse --show-toplevel) || exit 1
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node is not on PATH, so check-no-raw cannot run; commit blocked" >&2
+  exit 1
+fi
+exec node "$root/scripts/check-no-raw.mjs"

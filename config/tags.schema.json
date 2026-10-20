@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Walkup pinned Qloo tags",
+  "description": "Tag URNs pinned at build time from GET /v2/tags. Runtime code reads tag IDs only from config/tags.json.",
+  "type": "object",
+  "required": [
+    "version",
+    "categories",
+    "sponsorExclusions",
+    "personChecks",
+    "denied"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "validation": {
+      "type": "object",
+      "required": [
+        "minRows",
+        "radiusM",
+        "anchor"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "minRows": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "radiusM": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "baselineMinCells": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Heatmap cells a genre-tag baseline needs near a hero room before it is pinned."
+        },
+        "baselineAnchor": {
+          "type": "string"
+        }
+      }
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pinnedTag"
+      }
+    },
+    "baselines": {
+      "type": "array",
+      "description": "Genre-tag baselines (Q5) keyed by a lower-cased Ticketmaster genre. Validated by heatmap cell count, not row count. Comedy never gets one.",
+      "items": {
+        "$ref": "#/$defs/pinnedTag"
+      }
+    },
+    "sponsorExclusions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pinnedTag"
+      }
+    },
+    "personChecks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pinnedTag"
+      }
+    },
+    "denied": {
+      "type": "object",
+      "required": [
+        "source",
+        "prefixes",
+        "keywords"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "prefixes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^urn:tag:"
+          }
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]+$"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pinnedTag": {
+      "type": "object",
+      "required": [
+        "key",
+        "label",
+        "query",
+        "usedBy",
+        "urn",
+        "status",
+        "pinnedAt",
+        "validatedRows"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Stable key used by code (Partner.category)."
+        },
+        "label": {
+          "type": "string",
+          "description": "Human label shown on cards."
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "description": "filter.query sent to /v2/tags. Every keyword must appear in the pinned tag's name."
+        },
+        "usedBy": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(Q[0-9]+|P[0-9]+)$"
+          },
+          "description": "Calls (Q#) or evals (P#) that read this tag."
+        },
+        "probeGated": {
+          "type": "boolean",
+          "description": "True when the category is used only if validation passes."
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^urn:tag:"
+          },
+          "description": "Candidate URNs to confirm before pinning."
+        },
+        "urn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^urn:tag:",
+          "description": "The pinned tag id. Null until pinned."
+        },
+        "status": {
+          "enum": [
+            "unpinned",
+            "pinned",
+            "dropped"
+          ]
+        },
+        "pinnedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "validatedRows": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "pinned"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "urn": {
+                "type": "string"
+              },
+              "pinnedAt": {
+                "type": "string"
+              },
+              "validatedRows": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "unpinned"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "urn": {
+                "type": "null"
+              },
+              "pinnedAt": {
+                "type": "null"
+              },
+              "validatedRows": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

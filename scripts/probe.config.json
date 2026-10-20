@@ -1,0 +1,301 @@
+{
+  "about": "Inputs for scripts/probe.ts. Every artist, club, guest and bill below is a probe-only test input, not a product claim. Venue and metro points cite their source; null points are filled on key day.",
+  "run": {
+    "ratePerSecond": 3,
+    "maxCalls": 100,
+    "maxRetries": 2,
+    "timeoutMs": 30000,
+    "minMonthRemaining": 1500
+  },
+  "venues": {
+    "the-truth": {
+      "name": "The Truth",
+      "city": "Nashville",
+      "state": "TN",
+      "lat": null,
+      "lon": null,
+      "note": "Opened Oct 2026; no OpenStreetMap match on 2026-10-13. fill from Ticketmaster venue on key day",
+      "source": {
+        "provider": "OpenStreetMap Nominatim",
+        "query": "The Truth, Nashville (also bounded searches near Nashville)",
+        "result": "no match",
+        "retrieved": "2026-10-13"
+      },
+      "searchAnchor": {
+        "lat": 36.1612473,
+        "lon": -86.7784951,
+        "radiusMiles": 10,
+        "note": "Nashville anchor (the Ryman Auditorium point) used only to search the room by name until its own point is known"
+      }
+    },
+    "hampton-coliseum": {
+      "name": "Hampton Coliseum",
+      "city": "Hampton",
+      "state": "VA",
+      "lat": 37.0347001,
+      "lon": -76.3813675,
+      "source": {
+        "provider": "OpenStreetMap Nominatim",
+        "query": "Hampton Coliseum, Hampton, Virginia",
+        "osm": "way/388598106",
+        "url": "https://www.openstreetmap.org/way/388598106",
+        "retrieved": "2026-10-13",
+        "license": "ODbL 1.0, (c) OpenStreetMap contributors"
+      }
+    },
+    "ryman": {
+      "name": "Ryman Auditorium",
+      "city": "Nashville",
+      "state": "TN",
+      "lat": 36.1612473,
+      "lon": -86.7784951,
+      "source": {
+        "provider": "OpenStreetMap Nominatim",
+        "query": "Ryman Auditorium, Nashville",
+        "osm": "way/130905906",
+        "url": "https://www.openstreetmap.org/way/130905906",
+        "retrieved": "2026-10-13",
+        "license": "ODbL 1.0, (c) OpenStreetMap contributors"
+      }
+    },
+    "super-funny-tacoma": {
+      "name": "Super Funny Comedy Club",
+      "city": "Tacoma",
+      "state": "WA",
+      "lat": null,
+      "lon": null,
+      "note": "No OpenStreetMap match on 2026-10-13 (searched by name, with and without the owner's name, and bounded to Tacoma). fill from Ticketmaster venue on key day, or from the club's own published address",
+      "source": {
+        "provider": "OpenStreetMap Nominatim",
+        "query": "Super Funny Comedy Club, Tacoma",
+        "result": "no match",
+        "retrieved": "2026-10-13"
+      },
+      "searchAnchor": {
+        "lat": 47.2455013,
+        "lon": -122.438329,
+        "radiusMiles": 10,
+        "note": "Tacoma city point used until the club's point is known",
+        "source": {
+          "provider": "OpenStreetMap Nominatim",
+          "query": "city=Tacoma, state=Washington",
+          "osm": "relation/8348295",
+          "url": "https://www.openstreetmap.org/relation/8348295",
+          "retrieved": "2026-10-13",
+          "license": "ODbL 1.0, (c) OpenStreetMap contributors"
+        }
+      }
+    }
+  },
+  "tags": {
+    "pinned": {
+      "restaurant": {
+        "id": "urn:tag:genre:place:restaurant",
+        "note": "Reported working as a generic heatmap baseline signal in public API probe notes; probe #2 and #6 confirm it returns cells"
+      }
+    },
+    "keywords": [
+      { "key": "bar", "queries": ["bar"], "parentType": "urn:entity:place" },
+      { "key": "pub", "queries": ["pub"], "parentType": "urn:entity:place" },
+      { "key": "sports_bar", "queries": ["sports bar"], "parentType": "urn:entity:place" },
+      { "key": "irish_pub", "queries": ["irish pub"], "parentType": "urn:entity:place" },
+      { "key": "barber_shop", "queries": ["barber shop", "barbershop"], "parentType": "urn:entity:place" },
+      { "key": "record_store", "queries": ["record store", "record shop"], "parentType": "urn:entity:place" },
+      { "key": "beauty_salon", "queries": ["beauty salon"], "parentType": "urn:entity:place" },
+      { "key": "place_of_worship", "queries": ["church", "place of worship"], "parentType": "urn:entity:place" },
+      { "key": "soul_food", "queries": ["soul food"], "parentType": "urn:entity:place" },
+      { "key": "alcohol", "queries": ["alcohol", "beer"], "parentType": "urn:entity:brand", "max": 5 },
+      { "key": "comedy", "queries": ["stand-up comedy", "comedy"], "parentType": null }
+    ]
+  },
+  "roster": {
+    "venue": "the-truth",
+    "spotifyIds": [],
+    "note": "fill on key day: Spotify artist ids from the room's next 60 Ticketmaster events (attractions[].externalLinks.spotify). Used for the house set (#2, #13) and probe #18"
+  },
+  "kg1": {
+    "note": "probe-only test pairs, not product claims: well-known acts with dense audiences in contrasting genres; nothing here says they are booked at these rooms",
+    "venues": ["the-truth", "hampton-coliseum", "ryman"],
+    "poolRadiusM": 1500,
+    "poolSize": 30,
+    "poolTagKeys": ["restaurant", "bar"],
+    "topK": 8,
+    "maxTau": 0.8,
+    "maxTopKOverlap": 5,
+    "minPool": 10,
+    "minCoverage": 0.8,
+    "venuesRequired": 2,
+    "bills": {
+      "the-truth": [
+        { "label": "A", "genre": "country / Americana", "acts": [{ "name": "Chris Stapleton", "kind": "artist" }] },
+        { "label": "B", "genre": "hip-hop", "acts": [{ "name": "Kendrick Lamar", "kind": "artist" }] }
+      ],
+      "hampton-coliseum": [
+        { "label": "A", "genre": "country", "acts": [{ "name": "Luke Combs", "kind": "artist" }] },
+        { "label": "B", "genre": "R&B", "acts": [{ "name": "SZA", "kind": "artist" }] }
+      ],
+      "ryman": [
+        {
+          "label": "A",
+          "genre": "Americana",
+          "acts": [{ "name": "Jason Isbell", "kind": "artist", "aliases": ["Jason Isbell and the 400 Unit"] }]
+        },
+        { "label": "B", "genre": "Latin", "acts": [{ "name": "Bad Bunny", "kind": "artist" }] }
+      ]
+    }
+  },
+  "kg2": {
+    "venue": "the-truth",
+    "fallbackVenue": "ryman",
+    "radiusM": 40000,
+    "genericTagKey": "restaurant",
+    "houseMaxEntities": 12,
+    "houseMinResolved": 5,
+    "shrinkBelowPopularity": 0.2,
+    "topFraction": 0.1,
+    "maxSpearman": 0.8,
+    "maxTopJaccard": 0.5
+  },
+  "kg4": {
+    "note": "3 clubs x 3 metros = 9 (club, metro) rows. Bar names come from the official supporters'-club pages collected for the fan-bar test; fill kg4.bars or put the rows in the private bars file (git-ignored)",
+    "radiusM": 25000,
+    "take": 50,
+    "barTagKeys": ["bar", "pub", "sports_bar", "irish_pub"],
+    "clubs": [
+      { "key": "arsenal", "name": "Arsenal F.C.", "aliases": ["Arsenal F.C.", "Arsenal FC", "Arsenal"] },
+      { "key": "liverpool", "name": "Liverpool F.C.", "aliases": ["Liverpool F.C.", "Liverpool FC", "Liverpool"] },
+      {
+        "key": "usmnt",
+        "name": "US men's national soccer team",
+        "aliases": [
+          "US men's national soccer team",
+          "U.S. men's national soccer team",
+          "United States men's national soccer team",
+          "USMNT"
+        ]
+      }
+    ],
+    "metros": [
+      {
+        "key": "houston",
+        "name": "Houston, TX",
+        "lat": 29.7589382,
+        "lon": -95.3676974,
+        "source": {
+          "provider": "OpenStreetMap Nominatim",
+          "query": "city=Houston, state=Texas",
+          "osm": "relation/2688911",
+          "url": "https://www.openstreetmap.org/relation/2688911",
+          "retrieved": "2026-10-13",
+          "license": "ODbL 1.0, (c) OpenStreetMap contributors"
+        }
+      },
+      {
+        "key": "chicago",
+        "name": "Chicago, IL",
+        "lat": 41.8755616,
+        "lon": -87.6244212,
+        "source": {
+          "provider": "OpenStreetMap Nominatim",
+          "query": "city=Chicago, state=Illinois",
+          "osm": "relation/122604",
+          "url": "https://www.openstreetmap.org/relation/122604",
+          "retrieved": "2026-10-13",
+          "license": "ODbL 1.0, (c) OpenStreetMap contributors"
+        }
+      },
+      {
+        "key": "durham",
+        "name": "Durham, NC",
+        "lat": 35.996653,
+        "lon": -78.9018053,
+        "source": {
+          "provider": "OpenStreetMap Nominatim",
+          "query": "city=Durham, state=North Carolina",
+          "osm": "relation/179868",
+          "url": "https://www.openstreetmap.org/relation/179868",
+          "retrieved": "2026-10-13",
+          "license": "ODbL 1.0, (c) OpenStreetMap contributors"
+        }
+      }
+    ],
+    "bars": [
+      { "club": "arsenal", "metro": "houston", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "arsenal", "metro": "chicago", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "arsenal", "metro": "durham", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "liverpool", "metro": "houston", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "liverpool", "metro": "chicago", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "liverpool", "metro": "durham", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "usmnt", "metro": "houston", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "usmnt", "metro": "chicago", "barName": null, "lat": null, "lon": null, "sourceUrl": null },
+      { "club": "usmnt", "metro": "durham", "barName": null, "lat": null, "lon": null, "sourceUrl": null }
+    ],
+    "barsFile": "data/private/p1/kg4-bars.json",
+    "barSearchRadiusMiles": 1,
+    "metroSearchRadiusMiles": 25,
+    "minResolved": 6,
+    "minInTop": 3,
+    "minNameSimilarity": 0.85,
+    "maxBarDistanceM": 300
+  },
+  "people": {
+    "note": "Probe inputs only, not a preset or a bill: a well-known stand-up for exact person resolution and comedy heatmap density, a one-word stage name that other entities share, a thinner person entity and two title proxies. Confirm each against /search on key day before relying on it",
+    "headliner": { "name": "Jerry Seinfeld", "kind": "person" },
+    "ambiguous": { "name": "Sinbad", "kind": "person" },
+    "thin": { "name": "Tommy Davidson", "kind": "person" },
+    "proxies": [
+      { "name": "Bee Movie", "kind": "movie" },
+      { "name": "Seinfeld", "kind": "tv_show" }
+    ]
+  },
+  "p6": { "venue": "hampton-coliseum", "radiusM": 40000, "minCells": 200, "maxSpearman": 0.8, "baselineTagKey": "restaurant" },
+  "p7": { "markerNamePatterns": ["ice age", "animated", "child"] },
+  "p8": { "venues": ["the-truth", "hampton-coliseum", "super-funny-tacoma"], "radiusMiles": 1, "minNameSimilarity": 0.85 },
+  "p9": {
+    "venue": "hampton-coliseum",
+    "radiusM": 25000,
+    "minRows": 5,
+    "take": 10,
+    "keys": ["barber_shop", "record_store", "beauty_salon", "place_of_worship", "sports_bar", "pub", "irish_pub", "soul_food"]
+  },
+  "p10": { "venue": "ryman", "day": "thursday" },
+  "p11": { "venue": "the-truth", "fallbackVenue": "ryman", "take": 15, "maxOverlap": 12 },
+  "p12": { "venue": "the-truth", "fallbackVenue": "ryman", "take": 15, "excludeTagKey": "alcohol" },
+  "p13": {
+    "take": 30,
+    "minDistinctive": 5,
+    "genericNames": ["United States", "Place", "Music", "Artist", "Person", "English", "Popular", "Entertainment"],
+    "genericPrefixes": ["urn:tag:language:", "urn:tag:wikipedia_category:"]
+  },
+  "p14": { "venue": "the-truth", "fallbackVenue": "ryman", "radiusM": 40000, "weights": [10, 1], "topCells": 50, "maxTopJaccard": 0.9 },
+  "p15": {
+    "venue": "ryman",
+    "radiusM": 5000,
+    "names": ["Ryman Auditorium", "Bridgestone Arena", "Tootsie's Orchid Lounge"],
+    "minResolved": 2,
+    "minNameSimilarity": 0.85
+  },
+  "p16": { "venue": "ryman", "ageBuckets": ["24_and_younger", "25_to_29"], "topN": 10 },
+  "p17": { "queries": ["alumni", "church"], "rankQuery": "alumni", "venue": "ryman", "topN": 10 },
+  "p18": { "minResolved": 7, "maxIds": 10 },
+  "p19": { "venue": "super-funny-tacoma", "radiusM": 60000, "tagKey": "comedy", "minCells": 200 },
+  "p20": {
+    "note": "probe-only test set: past guests of the podcast, used only to check that a guest slate can be scored; verify against the show's public episode list before reuse",
+    "podcast": { "name": "Hot Ones", "kind": "podcast" },
+    "guests": [
+      { "name": "Gordon Ramsay", "kind": "person" },
+      { "name": "Shaquille O'Neal", "kind": "person" },
+      { "name": "Paul Rudd", "kind": "person" },
+      { "name": "Charlize Theron", "kind": "person" },
+      { "name": "Idris Elba", "kind": "person" },
+      { "name": "Kevin Hart", "kind": "person" },
+      { "name": "Natalie Portman", "kind": "person" },
+      { "name": "Seth Rogen", "kind": "person" },
+      { "name": "Ricky Gervais", "kind": "person" },
+      { "name": "Conan O'Brien", "kind": "person" }
+    ],
+    "minScored": 10,
+    "minAffinitySpread": 0.01,
+    "minDistinct": 3
+  }
+}

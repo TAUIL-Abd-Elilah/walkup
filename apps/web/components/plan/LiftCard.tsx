@@ -1,0 +1,205 @@
+"use client";
+import { useMemo } from "react";
+import type { StreetSheet } from "@walkup/contracts";
+import { LiftLegend } from "../LiftLegend";
+import { LiftMap, squareSizeLine } from "../LiftMap";
+import { TileList } from "../TileList";
+import { formatPct, formatUsd } from "../../lib/format";
+import { allTiles, areaName, baselineName, liftWeak, spreadSentence, tileWhy, topTiles } from "../../lib/sheet-utils";
+import { PlanCard } from "./PlanCard";
+import { Refs } from "./receipts";
+
+const rho = (v: number | null): string => (v === null ? "not enough areas to check" : v.toFixed(2));
+
+/** The lift card's own definition of lift, said once in the hint; the run's limits line repeats it, so it is dropped there. */
+const LIFT_DEFINITION = /^Lift compares percentile ranks/;
+
+/**
+ * How far to trust the map, in one sentence: "The map holds up when the bill is split in two (0.71) and isn't just
+ * where people go anyway."
+ */
+export function trustSentence(split: number | null | undefined, weak: boolean): string {
+  const anyway = weak ? "but it mostly follows where people go anyway" : "and isn't just where people go anyway";
+  if (split === undefined) return weak ? "The map mostly follows where people go anyway." : "The map isn't just where people go anyway.";
+  if (split === null) return `Too few acts to check the map by splitting the bill in two; it ${weak ? "mostly follows" : "isn't just"} where people go anyway.`;
+  if (split > 0.5) return `The map holds up when the bill is split in two (${split.toFixed(2)}) ${anyway}.`;
+  return `The two halves of the bill point to different areas (${split.toFixed(2)}), so treat the map as rough, ${weak ? "and it mostly follows where people go anyway" : "though it isn't just where people go anyway"}.`;
+}
+
+/** The trust checks in full, for "More about this crowd" (the lift card says them in one sentence). */
+export function TrustTable({ sheet }: { sheet: StreetSheet }) {
+  const env = sheet.cards.liftMap;
+  const diag = env.results.diagnostics;
+  const extra = env.results.liftDiagnostics;
+  const weak = liftWeak(sheet);
+  const against = baselineName(sheet);
+  return (
+    <table className="table mt-2">
+      <tbody>
+        <tr>
+          <th scope="row" className="font-normal">
+            Compared with
+          </th>
+          <td>
+            {diag.baseline === "house"
+              ? "The room's own upcoming shows"
+              : diag.baseline === "none"
+                ? "Nothing: too few of the room's headliners matched Qloo and no genre-wide map stands in"
+                : `${against.charAt(0).toUpperCase()}${against.slice(1)}: too few of the room's headliners matched Qloo`}
+          </td>
+        </tr>
+        {extra ? (
+          <tr>
+            <th scope="row" className="font-normal">
+              Split-half agreement
+            </th>
+            <td className="tabular">
+              {extra.splitHalfSpearman === null ? "Too few acts to split in two" : extra.splitHalfSpearman.toFixed(2)}
+              <span className="block text-sm text-muted">The bill split in two halves and mapped apart. Near 1 means the map holds up.</span>
+            </td>
+          </tr>
+        ) : null}
+        <tr>
+          <th scope="row" className="font-normal">
+            Overlap with general popularity
+          </th>
+          <td className="tabular">
+            {rho(extra ? extra.liftVsHeatSpearman : diag.spearmanLiftVsHeat)}
+            <span className="block text-sm text-muted">
+              {weak ? "High: the map mostly shows where people go anyway." : "Near 0 or below: the map isn't just where people go anyway."}
+            </span>
+          </td>
+        </tr>
+        {extra ? (
+          <tr>
+            <th scope="row" className="font-normal">
+              Method
+            </th>
+            <td>{extra.method}</td>
+          </tr>
+        ) : null}
+      </tbody>
+    </table>
+  );
+}
+
+/** The lift map, its numbered areas, how far to trust it (one sentence), and the heuristic budget split. */
+export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; selected: string | null; onSelect: (geohash: string | null) => void }) {
+  const env = sheet.cards.liftMap;
+  // Stable across re-renders (drawer, compare toggle, tile selection) so the map is not rebuilt.
+  const top = useMemo(() => topTiles(sheet), [sheet]);
+  const tiles = useMemo(() => allTiles(sheet), [sheet]);
+  const ranked = useMemo(() => top.map((t) => t.geohash), [top]);
+  const extra = env.results.liftDiagnostics;
+  const weak = liftWeak(sheet);
+  const split = sheet.budgetSplit ?? [];
+  const budget = sheet.operator.mediaBudgetUsd;
+  const toggle = (gh: string) => onSelect(selected === gh ? null : gh);
+  const against = baselineName(sheet);
+  // One takeaway after the list, from the same numbered areas: how far out and which way.
+  const spread = spreadSentence(top, { lat: sheet.bill.venue.lat, lon: sheet.bill.venue.lon });
+  const square = squareSizeLine(tiles);
+  const listId = `lift-${sheet.planId}-areas`;
+  // The budget rows use the same numbers and names as the map and the area list.
+  const area = (gh: string) => {
+    const i = top.findIndex((t) => t.geohash === gh);
+    return { number: i >= 0 ? i + 1 : null, name: i >= 0 ? areaName(top[i]) : areaName(tiles.find((t) => t.geohash === gh)) };
+  };
+
+  return (
+    <PlanCard id="lift" title={`Where this crowd stands out, compared with ${against}`} envelope={{ ...env, limits: env.limits.filter((l) => !LIFT_DEFINITION.test(l)) }} wide>
+      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        {/* Under 1024px the numbered list comes first and the map draws the same rows under it. */}
+        <div className="min-w-0 max-lg:order-2">
+          <LiftLegend className="mb-2" caption={`Fans compared with ${against}`} />
+          <LiftMap
+            tiles={tiles}
+            venue={{ lat: sheet.bill.venue.lat, lon: sheet.bill.venue.lon, name: sheet.bill.venue.name }}
+            ranked={ranked}
+            selected={selected}
+            onSelect={toggle}
+            idBase={`lift-${sheet.planId}`}
+            title={`Areas around ${sheet.bill.venue.name} by lift`}
+            listId={listId}
+            {...(square ? { captionLead: `${square} Walkup shows where this crowd stands out, never where one fan lives.` } : {})}
+            source={
+              <>
+                {sheet.mode === "fixture" ? "Data: sample data in Qloo's format" : "Data: Qloo"}
+                <Refs ids={env.provenance} />.
+              </>
+            }
+          />
+        </div>
+        <div className="min-w-0 max-lg:order-1">
+          <h3 className="mb-2 text-base">{top.length === 1 ? "Top area" : `Top ${top.length} areas`}</h3>
+          <TileList id={listId} tiles={top} selected={selected} onSelect={toggle} why={(gh) => tileWhy(sheet, gh)} />
+          {spread ? <p className="mt-3">{spread}</p> : null}
+          <p className="hint mt-3">
+            Lift compares where this bill&apos;s crowd ranks each area with where {against} ranks it; it isn&apos;t a count of people. Above 1.0, this crowd
+            ranks the area higher. Select an area to find it on the map.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-x-8 gap-y-8 lg:grid-cols-2">
+        <div className="min-w-0">
+          <h3 className="text-base">How far to trust this map</h3>
+          <p className="mt-1">{trustSentence(extra ? extra.splitHalfSpearman : undefined, weak)}</p>
+          {extra?.note ? <p className="mt-2 text-base">{extra.note}</p> : null}
+          <p className="hint mt-1">
+            <a href="#different" className="underline underline-offset-2 hover:text-ink">
+              More about this crowd
+            </a>{" "}
+            has the checks in full and the method.
+          </p>
+        </div>
+
+        {split.length > 0 ? (
+          <div className="min-w-0">
+            <h3 className="text-base">Budget split</h3>
+            <p className="hint mt-0.5">A rule of thumb from lift and adult counts, not a forecast.</p>
+            <table className="table mt-2">
+              <thead>
+                <tr>
+                  <th scope="col">Area</th>
+                  <th scope="col" className="num">
+                    Share
+                  </th>
+                  {budget !== null ? (
+                    <th scope="col" className="num">
+                      Of {formatUsd(budget)}
+                    </th>
+                  ) : null}
+                </tr>
+              </thead>
+              <tbody>
+                {split.map((s) => {
+                  const a = area(s.geohash);
+                  return (
+                  <tr key={s.geohash}>
+                    <td>
+                      <span className="inline-flex items-start gap-1.5">
+                        {a.number ? (
+                          <span className="marker mt-0.5" aria-hidden="true">
+                            {a.number}
+                          </span>
+                        ) : null}
+                        <span>
+                          {a.number ? <span className="sr-only">Area {a.number}: </span> : null}
+                          {a.name}
+                        </span>
+                      </span>
+                    </td>
+                    <td className="num">{formatPct(s.share)}</td>
+                    {budget !== null ? <td className="num">{formatUsd(budget * s.share)}</td> : null}
+                  </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </div>
+    </PlanCard>
+  );
+}

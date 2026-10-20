@@ -1,0 +1,73 @@
+# Fly.io configuration for the hosted Walkup instance.
+# One always-on machine in iad (US East) with a persistent volume at /data.
+# Setup, secrets and operations: docs/deploy.md. Nothing in this file is secret;
+# API keys are set with `fly secrets`, never here.
+
+app = "walkup"
+primary_region = "iad"
+# Next's standalone server exits as soon as it gets SIGTERM; kill_timeout is the
+# upper bound before Fly sends SIGKILL (see docs/deploy.md, "Deploys and restarts").
+kill_signal = "SIGTERM"
+kill_timeout = "30s"
+swap_size_mb = 512
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  NEXT_TELEMETRY_DISABLED = "1"
+  QLOO_BASE_URL = "https://hackathon.api.qloo.com"
+  # auto = live while QLOO_API_KEY is set, fixture replay once it is unset.
+  WALKUP_MODE = "auto"
+  # Everything the server writes: SQLite cache, plans, month quota, spend files.
+  WALKUP_DATA_DIR = "/data"
+  # Recorded runs: /data/fixtures/raw (copied in with `fly ssh sftp`, never committed).
+  WALKUP_FIXTURES_DIR = "/data/fixtures"
+  WALKUP_GAZETTEER_DIR = "/app/data/gazetteer/out"
+  # Pinned Qloo tag URNs read by the orchestrator.
+  WALKUP_TAGS_FILE = "/app/config/tags.json"
+  QLOO_MONTH_GUARD_FLOOR = "1500"
+
+# One volume, one machine. Create it before the first deploy:
+#   fly volumes create walkup_data --region iad --size 1
+[[mounts]]
+  source = "walkup_data"
+  destination = "/data"
+  initial_size = "1gb"
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = "1gb"
+  auto_extend_size_limit = "5gb"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Always on: never stopped for idleness, at least one machine running.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 100
+    hard_limit = 250
+
+  # /healthz must stay cheap: it never calls Qloo or any other upstream API.
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    protocol = "http"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"
+
+[[restart]]
+  policy = "always"
+  retries = 10
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "2gb"

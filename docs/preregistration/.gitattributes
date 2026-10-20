@@ -1,0 +1,2 @@
+# Keep LF line endings so the published SHA-256 hashes match a fresh checkout.
+* text eol=lf

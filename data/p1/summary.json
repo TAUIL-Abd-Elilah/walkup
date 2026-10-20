@@ -1,0 +1,134 @@
+{
+  "rows": 426,
+  "per_club": {
+    "american_outlaws": {
+      "label": "American Outlaws (US national teams)",
+      "rows": 256,
+      "chapters": 219,
+      "listing_role": {
+        "official": 223,
+        "satellite": 33
+      },
+      "with_street_number": 254,
+      "metro_point": {
+        "place": 251,
+        "cousub": 5
+      },
+      "distinct_metros": 227,
+      "page_last_updated": null,
+      "fetched": [
+        "2026-10-13T08:37:20Z",
+        "2026-10-13T08:42:00Z"
+      ],
+      "chapter_status": {
+        "Official chapter; Rebuilding": 85,
+        "Official chapter": 151,
+        "Unofficial chapter": 15,
+        "Unofficial chapter; Rebuilding": 5
+      }
+    },
+    "arsenal_america": {
+      "label": "Arsenal America (Arsenal FC)",
+      "rows": 94,
+      "chapters": 88,
+      "listing_role": {
+        "official": 88,
+        "satellite": 6
+      },
+      "with_street_number": 94,
+      "metro_point": {
+        "place": 94
+      },
+      "distinct_metros": 92,
+      "page_last_updated": [
+        "2026-09-03T02:38:02+00:00"
+      ],
+      "fetched": [
+        "2026-10-13T08:42:03Z",
+        "2026-10-13T08:42:03Z"
+      ]
+    },
+    "lfc_olsc": {
+      "label": "LFC Official Supporters Clubs, North America (Liverpool FC)",
+      "rows": 76,
+      "chapters": 61,
+      "listing_role": {
+        "official": 76
+      },
+      "with_street_number": 40,
+      "metro_point": {
+        "place": 73,
+        "cousub": 2,
+        "miss": 1
+      },
+      "distinct_metros": 74,
+      "page_last_updated": [
+        "2026-09-28T08:12:33.000Z"
+      ],
+      "fetched": [
+        "2026-10-13T08:42:05Z",
+        "2026-10-13T08:42:05Z"
+      ]
+    }
+  },
+  "metros_total": 260,
+  "metros_with_two_or_more_clubs": 92,
+  "metros_by_club_combination": {
+    "american_outlaws + arsenal_america": 36,
+    "american_outlaws + arsenal_america + lfc_olsc": 41,
+    "american_outlaws + lfc_olsc": 11,
+    "arsenal_america + lfc_olsc": 4
+  },
+  "derby_ordered_trials_upper_bound": 348,
+  "bars_shared_by_two_clubs_same_metro": 37,
+  "collection": {
+    "american_outlaws": {
+      "index_url": "https://theamericanoutlaws.com/chapters",
+      "chapter_pages": 282,
+      "chapters_without_listed_location": 61,
+      "rows": 258,
+      "failures": []
+    },
+    "arsenal_america": {
+      "index_url": "https://arsenalamerica.com/branches/",
+      "locations_parsed": 96,
+      "branches": 88,
+      "rows": 94,
+      "notes": [
+        "New York: page points to an independent organization; no bar listed",
+        "Pennsylvania: page points to an independent organization; no bar listed"
+      ],
+      "failures": []
+    },
+    "lfc_olsc": {
+      "index_url": "https://www.liverpoolfc.com/fans/official-lfc-supporters-clubs/north-america",
+      "final_url": "https://www.liverpoolfc.com/info/north-america",
+      "items_on_page": 73,
+      "items_with_us_rows": 61,
+      "rows": 76,
+      "extraction": "hand-extracted from free text into data/private/p1/lfc_curated.csv; each row re-checked against the live page",
+      "failures": []
+    },
+    "dropped_outside_us": 2,
+    "last_pipeline_run": [
+      "2026-10-13T08:55:29Z",
+      "2026-10-13T08:55:44Z"
+    ]
+  },
+  "centroids": {
+    "gazetteer_year": "2026",
+    "sources": [
+      "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2026_Gazetteer/2026_Gaz_place_national.zip",
+      "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2026_Gazetteer/2026_Gaz_cousubs_national.zip"
+    ],
+    "counts": {
+      "place": 418,
+      "cousub": 7,
+      "miss": 1,
+      "alias": 12,
+      "consolidated": 5
+    },
+    "distinct_metros": 260,
+    "misses": 1
+  }
+}

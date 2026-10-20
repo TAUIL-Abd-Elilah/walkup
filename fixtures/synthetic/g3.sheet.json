@@ -1,0 +1,2623 @@
+{
+  "synthetic": true,
+  "fixtureId": "g3",
+  "title": "Super Funny, Tacoma",
+  "note": "Synthetic fixture. Acts, partner businesses, ids, scores and ledger timings are invented; neighbourhood names and ZIPs are real places used for layout only. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
+  "sheet": {
+    "planId": "g3",
+    "createdAt": "2026-11-20T18:00:00.000Z",
+    "mode": "fixture",
+    "hypothetical": true,
+    "bill": {
+      "acts": [
+        {
+          "name": "Ada Pell",
+          "role": "headliner",
+          "isComedian": true
+        },
+        {
+          "name": "Margo Vint",
+          "role": "support",
+          "isComedian": true
+        }
+      ],
+      "venue": {
+        "name": "Super Funny Comedy Club",
+        "lat": 47.244,
+        "lon": -122.453,
+        "city": "Tacoma",
+        "state": "WA",
+        "country": "US",
+        "qlooEntityId": null
+      },
+      "date": "2026-12-04",
+      "weekday": "friday",
+      "legalAgeEnforced": null,
+      "classification": "Comedy (operator-entered)"
+    },
+    "operator": {
+      "seatsLeft": null,
+      "capacity": 320,
+      "mediaBudgetUsd": 600,
+      "streetTeamDays": [
+        "wednesday",
+        "thursday"
+      ],
+      "radiusKm": 60,
+      "declaredPartners": []
+    },
+    "cards": {
+      "resolution": {
+        "status": "partial",
+        "summary": "1 of 2 acts resolved. Venue and house roster are not available, so the run uses the venue point and a comedy tag baseline.",
+        "results": [
+          {
+            "input": "Ada Pell",
+            "role": "headliner",
+            "status": "exact",
+            "entity": {
+              "entityId": "syn-person-4fe11df1",
+              "name": "Ada Pell",
+              "subtype": "urn:entity:person",
+              "popularity": 0.41,
+              "affinity": null,
+              "tags": [],
+              "properties": {
+                "short_description": "Fictional comedian for the synthetic fixture.",
+                "occupation_check": "comedian tag present"
+              }
+            },
+            "ledgerRef": "Q1"
+          },
+          {
+            "input": "Margo Vint",
+            "role": "support",
+            "status": "unresolved",
+            "ledgerRef": "Q2"
+          },
+          {
+            "input": "Super Funny Comedy Club",
+            "role": "venue",
+            "status": "unresolved",
+            "ledgerRef": "Q3"
+          },
+          {
+            "input": "House roster (Ticketmaster)",
+            "role": "house",
+            "status": "unresolved",
+            "ledgerRef": "T2"
+          }
+        ],
+        "reason": "The support act has no exact match tagged comedian; the run continued on the headliner alone.",
+        "provenance": [
+          "T1",
+          "T2",
+          "Q1",
+          "Q2",
+          "Q3"
+        ],
+        "limits": [
+          "Near matches without the comedian tag are never used."
+        ]
+      },
+      "liftMap": {
+        "status": "degraded",
+        "summary": "3 tiles with lift of 1.3 or more; top tile Sixth Avenue at 1.58.",
+        "results": {
+          "tiles": [
+            {
+              "geohash": "c22uv4",
+              "lat": 47.254944,
+              "lon": -122.470093,
+              "lift": 1.58,
+              "billPct": 0.654,
+              "housePct": 0.414,
+              "popularityPct": 0.798,
+              "name": "Sixth Avenue",
+              "zctas": [
+                "98406"
+              ],
+              "adultPopulation": 5900
+            },
+            {
+              "geohash": "c22uut",
+              "lat": 47.271423,
+              "lon": -122.492065,
+              "lift": 1.41,
+              "billPct": 0.261,
+              "housePct": 0.185,
+              "popularityPct": 0.844,
+              "name": "Proctor",
+              "zctas": [
+                "98407"
+              ],
+              "adultPopulation": 4800
+            },
+            {
+              "geohash": "c22uvs",
+              "lat": 47.26593,
+              "lon": -122.44812,
+              "lift": 1.33,
+              "billPct": 0.4,
+              "housePct": 0.301,
+              "popularityPct": 0.588,
+              "name": "Stadium District",
+              "zctas": [
+                "98403"
+              ],
+              "adultPopulation": 3600
+            },
+            {
+              "geohash": "c22uv3",
+              "lat": 47.249451,
+              "lon": -122.459106,
+              "lift": 1.24,
+              "billPct": 0.869,
+              "housePct": 0.701,
+              "popularityPct": 0.881,
+              "name": "Hilltop",
+              "zctas": [
+                "98405"
+              ],
+              "adultPopulation": 5100
+            },
+            {
+              "geohash": "c22uer",
+              "lat": 47.238464,
+              "lon": -122.546997,
+              "lift": 1.19,
+              "billPct": 0.411,
+              "housePct": 0.345,
+              "popularityPct": 0.561,
+              "name": "University Place",
+              "zctas": [
+                "98466"
+              ],
+              "adultPopulation": 7400
+            },
+            {
+              "geohash": "c22v68",
+              "lat": 47.331848,
+              "lon": -122.579956,
+              "lift": 1.12,
+              "billPct": 0.444,
+              "housePct": 0.396,
+              "popularityPct": 0.473,
+              "name": "Gig Harbor",
+              "zctas": [
+                "98335"
+              ],
+              "adultPopulation": 6900
+            },
+            {
+              "geohash": "c22uk5",
+              "lat": 47.172546,
+              "lon": -122.514038,
+              "lift": 1.06,
+              "billPct": 0.844,
+              "housePct": 0.796,
+              "popularityPct": 0.62,
+              "name": "Lakewood",
+              "zctas": [
+                "98499"
+              ],
+              "adultPopulation": 8100
+            },
+            {
+              "geohash": "c23j0w",
+              "lat": 47.320862,
+              "lon": -122.316284,
+              "lift": 0.95,
+              "billPct": 0.433,
+              "housePct": 0.456,
+              "popularityPct": 0.383,
+              "name": "Federal Way",
+              "zctas": [
+                "98003"
+              ],
+              "adultPopulation": 9300
+            },
+            {
+              "geohash": "c22uvd",
+              "lat": 47.254944,
+              "lon": -122.44812,
+              "lift": 0.92,
+              "billPct": 0.272,
+              "housePct": 0.296,
+              "popularityPct": 0.49,
+              "name": "Downtown Tacoma",
+              "zctas": [
+                "98402"
+              ],
+              "adultPopulation": 3900
+            },
+            {
+              "geohash": "c23jd3",
+              "lat": 47.381287,
+              "lon": -122.23938,
+              "lift": 0.9,
+              "billPct": 0.37,
+              "housePct": 0.411,
+              "popularityPct": 0.727,
+              "name": "Kent",
+              "zctas": [
+                "98032"
+              ],
+              "adultPopulation": 8800
+            },
+            {
+              "geohash": "c23h3j",
+              "lat": 47.183533,
+              "lon": -122.294312,
+              "lift": 0.88,
+              "billPct": 0.316,
+              "housePct": 0.359,
+              "popularityPct": 0.694,
+              "name": "Puyallup",
+              "zctas": [
+                "98371"
+              ],
+              "adultPopulation": 7600
+            },
+            {
+              "geohash": "c22ee6",
+              "lat": 47.035217,
+              "lon": -122.89856,
+              "lift": 0.81,
+              "billPct": 0.234,
+              "housePct": 0.289,
+              "popularityPct": 0.702,
+              "name": "Olympia",
+              "zctas": [
+                "98501"
+              ],
+              "adultPopulation": 9800
+            }
+          ],
+          "diagnostics": {
+            "spearmanLiftVsHeat": 0.71,
+            "baseline": "tag"
+          }
+        },
+        "reason": "degraded: tag baseline. The club's roster is not on Ticketmaster, and the heatmap widened to 60 km (140 cells inside 40 km).",
+        "provenance": [
+          "Q4",
+          "Q5",
+          "Q6",
+          "Q7",
+          "C1"
+        ],
+        "limits": [
+          "Lift compares percentile ranks inside two responses; it is not a count of fans.",
+          "Against a tag baseline, lift means 'versus comedy fans here', not 'versus this room's crowd'."
+        ]
+      },
+      "partners": {
+        "status": "partial",
+        "summary": "11 partners across the top 3 tiles. Thin signal: treat as a starting list.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-place-00943c9d",
+              "name": "Pinball Parlor Taproom",
+              "subtype": "urn:entity:place",
+              "popularity": 0.668,
+              "affinity": 0.964,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "6th Ave, Tacoma, WA",
+                "phone": "(253) 555-0100",
+                "website": "https://example.com/walkup-fixture/pinball-parlor-taproom",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "16:00-02:00"
+                },
+                "neighborhood": "Sixth Avenue",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.249176,
+                "lon": -122.465472,
+                "geohash": "c22uv1rq7"
+              },
+              "distanceM": 730,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uv4",
+            "tileName": "Sixth Avenue",
+            "category": "bar",
+            "score": 1,
+            "qlooRank": 1,
+            "hoursOnDay": "Wed 16:00-02:00",
+            "address": "6th Ave, Tacoma, WA",
+            "phone": "(253) 555-0100",
+            "website": "https://example.com/walkup-fixture/pinball-parlor-taproom",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "in a 1.58x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-127c879c",
+              "name": "Night Owl Noodle Co.",
+              "subtype": "urn:entity:place",
+              "popularity": 0.386,
+              "affinity": 0.935,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "6th Ave, Tacoma, WA",
+                "phone": "(253) 555-0101",
+                "website": "https://example.com/walkup-fixture/night-owl-noodle-co",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "12:00-22:00"
+                },
+                "neighborhood": "Sixth Avenue",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.261058,
+                "lon": -122.472155,
+                "geohash": "c22uv5d7x"
+              },
+              "distanceM": 697,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uv4",
+            "tileName": "Sixth Avenue",
+            "category": "restaurant",
+            "score": 0.96,
+            "qlooRank": 3,
+            "hoursOnDay": "Wed 12:00-22:00",
+            "address": "6th Ave, Tacoma, WA",
+            "phone": "(253) 555-0101",
+            "website": "https://example.com/walkup-fixture/night-owl-noodle-co",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "in a 1.58x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-6d1c0779",
+              "name": "Drizzle & Groove Records",
+              "subtype": "urn:entity:place",
+              "popularity": 0.76,
+              "affinity": 0.929,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:record_store",
+                  "name": "Record Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:keyword:place:vinyl",
+                  "name": "Vinyl",
+                  "type": "urn:tag:keyword:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                }
+              ],
+              "properties": {
+                "address": "N Pine St, Tacoma, WA",
+                "phone": "(253) 555-0102",
+                "website": "https://example.com/walkup-fixture/drizzle-and-groove-records",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "11:00-20:00"
+                },
+                "neighborhood": "Sixth Avenue",
+                "short_description": "Fictional record store for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.258132,
+                "lon": -122.463561,
+                "geohash": "c22uv70f8"
+              },
+              "distanceM": 607,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uv4",
+            "tileName": "Sixth Avenue",
+            "category": "record_store",
+            "score": 0.94,
+            "qlooRank": 4,
+            "hoursOnDay": "Wed 11:00-20:00",
+            "address": "N Pine St, Tacoma, WA",
+            "phone": "(253) 555-0102",
+            "website": "https://example.com/walkup-fixture/drizzle-and-groove-records",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "in a 1.58x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-069bbc3d",
+              "name": "Fern Hollow Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.594,
+              "affinity": 0.904,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "6th Ave, Tacoma, WA",
+                "phone": "(253) 555-0103",
+                "website": "https://example.com/walkup-fixture/fern-hollow-coffee",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "07:00-17:00"
+                },
+                "neighborhood": "Sixth Avenue",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.250434,
+                "lon": -122.473344,
+                "geohash": "c22uv19ts"
+              },
+              "distanceM": 558,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uv4",
+            "tileName": "Sixth Avenue",
+            "category": "cafe",
+            "score": 0.9,
+            "qlooRank": 6,
+            "hoursOnDay": "Wed 07:00-17:00",
+            "address": "6th Ave, Tacoma, WA",
+            "phone": "(253) 555-0103",
+            "website": "https://example.com/walkup-fixture/fern-hollow-coffee",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q13"
+              },
+              {
+                "label": "in a 1.58x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-4faf8794",
+              "name": "Spine & Static Books",
+              "subtype": "urn:entity:place",
+              "popularity": 0.602,
+              "affinity": 0.946,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:book_store",
+                  "name": "Book Store",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "N 26th St, Tacoma, WA",
+                "phone": "(253) 555-0104",
+                "website": "https://example.com/walkup-fixture/spine-and-static-books",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "10:00-20:00"
+                },
+                "neighborhood": "Proctor",
+                "short_description": "Fictional bookstore for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.273125,
+                "lon": -122.491801,
+                "geohash": "c22uutu1y"
+              },
+              "distanceM": 190,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uut",
+            "tileName": "Proctor",
+            "category": "book_store",
+            "score": 0.875,
+            "qlooRank": 2,
+            "hoursOnDay": "Wed 10:00-20:00",
+            "address": "N 26th St, Tacoma, WA",
+            "phone": "(253) 555-0104",
+            "website": "https://example.com/walkup-fixture/spine-and-static-books",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.41x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-60875500",
+              "name": "Tideflat Tavern",
+              "subtype": "urn:entity:place",
+              "popularity": 0.315,
+              "affinity": 0.936,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "N Proctor St, Tacoma, WA",
+                "phone": "(253) 555-0105",
+                "website": "https://example.com/walkup-fixture/tideflat-tavern",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "16:00-02:00"
+                },
+                "neighborhood": "Proctor",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.275525,
+                "lon": -122.492785,
+                "geohash": "c22uuw5rz"
+              },
+              "distanceM": 459,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uut",
+            "tileName": "Proctor",
+            "category": "bar",
+            "score": 0.857,
+            "qlooRank": 3,
+            "hoursOnDay": "Wed 16:00-02:00",
+            "address": "N Proctor St, Tacoma, WA",
+            "phone": "(253) 555-0105",
+            "website": "https://example.com/walkup-fixture/tideflat-tavern",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.41x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-f49f8f89",
+              "name": "Stadium Steps Diner",
+              "subtype": "urn:entity:place",
+              "popularity": 0.736,
+              "affinity": 0.966,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "N Tacoma Ave, Tacoma, WA",
+                "phone": "(253) 555-0108",
+                "website": "https://example.com/walkup-fixture/stadium-steps-diner",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "12:00-22:00"
+                },
+                "neighborhood": "Stadium District",
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.263004,
+                "lon": -122.442632,
+                "geohash": "c22uvezyz"
+              },
+              "distanceM": 527,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uvs",
+            "tileName": "Stadium District",
+            "category": "restaurant",
+            "score": 0.842,
+            "qlooRank": 1,
+            "hoursOnDay": "Wed 12:00-22:00",
+            "address": "N Tacoma Ave, Tacoma, WA",
+            "phone": "(253) 555-0108",
+            "website": "https://example.com/walkup-fixture/stadium-steps-diner",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.33x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-fe39cc4c",
+              "name": "Bellwether Bar & Billiards",
+              "subtype": "urn:entity:place",
+              "popularity": 0.57,
+              "affinity": 0.954,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "N 1st St, Tacoma, WA",
+                "phone": "(253) 555-0109",
+                "website": "https://example.com/walkup-fixture/bellwether-bar-and-billiards",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "17:00-02:00"
+                },
+                "neighborhood": "Stadium District",
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.264799,
+                "lon": -122.45368,
+                "geohash": "c22uvkrcq"
+              },
+              "distanceM": 438,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uvs",
+            "tileName": "Stadium District",
+            "category": "bar",
+            "score": 0.825,
+            "qlooRank": 2,
+            "hoursOnDay": "Wed 17:00-02:00",
+            "address": "N 1st St, Tacoma, WA",
+            "phone": "(253) 555-0109",
+            "website": "https://example.com/walkup-fixture/bellwether-bar-and-billiards",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.33x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-0f78e67b",
+              "name": "Slow Ferry Cafe",
+              "subtype": "urn:entity:place",
+              "popularity": 0.748,
+              "affinity": 0.913,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "N 27th St, Tacoma, WA",
+                "phone": "(253) 555-0106",
+                "website": "https://example.com/walkup-fixture/slow-ferry-cafe",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "08:00-17:00"
+                },
+                "neighborhood": "Proctor",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.274107,
+                "lon": -122.482868,
+                "geohash": "c22uuvfxw"
+              },
+              "distanceM": 755,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uut",
+            "tileName": "Proctor",
+            "category": "cafe",
+            "score": 0.821,
+            "qlooRank": 5,
+            "hoursOnDay": "Wed 08:00-17:00",
+            "address": "N 27th St, Tacoma, WA",
+            "phone": "(253) 555-0106",
+            "website": "https://example.com/walkup-fixture/slow-ferry-cafe",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.41x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-5d369365",
+              "name": "Tin Kettle Teahouse",
+              "subtype": "urn:entity:place",
+              "popularity": 0.256,
+              "affinity": 0.923,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Division Ave, Tacoma, WA",
+                "phone": "(253) 555-0110",
+                "website": "https://example.com/walkup-fixture/tin-kettle-teahouse",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "07:00-17:00"
+                },
+                "neighborhood": "Stadium District",
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.269518,
+                "lon": -122.446018,
+                "geohash": "c22uvtjsb"
+              },
+              "distanceM": 429,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uvs",
+            "tileName": "Stadium District",
+            "category": "cafe",
+            "score": 0.791,
+            "qlooRank": 4,
+            "hoursOnDay": "Wed 07:00-17:00",
+            "address": "Division Ave, Tacoma, WA",
+            "phone": "(253) 555-0110",
+            "website": "https://example.com/walkup-fixture/tin-kettle-teahouse",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q16"
+              },
+              {
+                "label": "in a 1.33x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-ccdcb102",
+              "name": "Mossback Barber Co.",
+              "subtype": "urn:entity:place",
+              "popularity": 0.73,
+              "affinity": 0.893,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:barber_shop",
+                  "name": "Barber Shop",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "N Proctor St, Tacoma, WA",
+                "phone": "(253) 555-0107",
+                "website": "https://example.com/walkup-fixture/mossback-barber-co",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Wed": "10:00-19:00"
+                },
+                "neighborhood": "Proctor",
+                "short_description": "Fictional barbershop for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.269719,
+                "lon": -122.490263,
+                "geohash": "c22uutjq1"
+              },
+              "distanceM": 233,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "tileGeohash": "c22uut",
+            "tileName": "Proctor",
+            "category": "barber_shop",
+            "score": 0.785,
+            "qlooRank": 7,
+            "hoursOnDay": "Wed 10:00-19:00",
+            "address": "N Proctor St, Tacoma, WA",
+            "phone": "(253) 555-0107",
+            "website": "https://example.com/walkup-fixture/mossback-barber-co",
+            "chips": [
+              {
+                "label": "over-indexes for this bill",
+                "ledgerRef": "Q14"
+              },
+              {
+                "label": "in a 1.41x lift tile",
+                "ledgerRef": "Q5"
+              }
+            ]
+          }
+        ],
+        "reason": "Two tiles returned fewer than 8 places at 2,000 m and were widened to 3,500 m; 11 partners against a target of 15.",
+        "provenance": [
+          "Q12",
+          "Q13",
+          "Q14",
+          "Q15",
+          "Q16"
+        ],
+        "limits": [
+          "Suggested, not affiliated: no partner has agreed to anything."
+        ]
+      },
+      "declared": {
+        "status": "empty",
+        "summary": "No partners declared yet.",
+        "results": [],
+        "reason": "The operator has not typed any partners.",
+        "provenance": [],
+        "limits": [
+          "Type the businesses you already work with to rank them for this bill."
+        ]
+      },
+      "prePost": {
+        "status": "partial",
+        "summary": "5 spots within 2.5 km open on show night. Age policy unknown (no Ticketmaster listing), so bars are operator-only partners.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-place-fb154e01",
+              "name": "Spotlight Taqueria",
+              "subtype": "urn:entity:place",
+              "popularity": 0.402,
+              "affinity": 0.95,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "S 11th St, Tacoma, WA",
+                "phone": "(253) 555-0111",
+                "website": "https://example.com/walkup-fixture/spotlight-taqueria",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Fri": "11:00-21:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.247773,
+                "lon": -122.45644,
+                "geohash": "c22uv3jyn"
+              },
+              "distanceM": 493,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.15,
+            "assumedCapacity": 60,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-e926cecf",
+              "name": "Green Room Grill",
+              "subtype": "urn:entity:place",
+              "popularity": 0.423,
+              "affinity": 0.91,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "Pacific Ave, Tacoma, WA",
+                "phone": "(253) 555-0112",
+                "website": "https://example.com/walkup-fixture/green-room-grill",
+                "price_level": 2,
+                "is_closed": false,
+                "hours": {
+                  "Fri": "11:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.240586,
+                "lon": -122.446252,
+                "geohash": "c22utxvk7"
+              },
+              "distanceM": 635,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.18,
+            "assumedCapacity": 70,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-c43eac1a",
+              "name": "Callback Coffee",
+              "subtype": "urn:entity:place",
+              "popularity": 0.5,
+              "affinity": 0.87,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:cafe",
+                  "name": "Cafe",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:walk_ins",
+                  "name": "Walk-ins welcome",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "S 9th St, Tacoma, WA",
+                "phone": "(253) 555-0113",
+                "website": "https://example.com/walkup-fixture/callback-coffee",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Fri": "07:00-17:00"
+                },
+                "short_description": "Fictional cafe for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.252624,
+                "lon": -122.451412,
+                "geohash": "c22uvd1d7"
+              },
+              "distanceM": 966,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.1,
+            "assumedCapacity": 35,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-1eeca877",
+              "name": "Opening Act Pizza",
+              "subtype": "urn:entity:place",
+              "popularity": 0.514,
+              "affinity": 0.83,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:casual",
+                  "name": "Casual",
+                  "type": "urn:tag:ambience:place"
+                },
+                {
+                  "id": "urn:tag:ambience:place:local_favorite",
+                  "name": "Local favorite",
+                  "type": "urn:tag:ambience:place"
+                }
+              ],
+              "properties": {
+                "address": "S Fawcett Ave, Tacoma, WA",
+                "phone": "(253) 555-0114",
+                "website": "https://example.com/walkup-fixture/opening-act-pizza",
+                "price_level": 3,
+                "is_closed": false,
+                "hours": {
+                  "Fri": "11:00-22:00"
+                },
+                "short_description": "Fictional restaurant for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.230974,
+                "lon": -122.462263,
+                "geohash": "c22utq1sq"
+              },
+              "distanceM": 1608,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.14,
+            "assumedCapacity": 55,
+            "fanFacingAllowed": true,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q18"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-place-31e9afb4",
+              "name": "Mic Drop Pub",
+              "subtype": "urn:entity:place",
+              "popularity": 0.615,
+              "affinity": 0.79,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:amenity:place:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:amenity:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:place"
+                },
+                {
+                  "id": "urn:tag:good_for:place:groups",
+                  "name": "Good for groups",
+                  "type": "urn:tag:good_for:place"
+                }
+              ],
+              "properties": {
+                "address": "Commerce St, Tacoma, WA",
+                "phone": "(253) 555-0115",
+                "website": "https://example.com/walkup-fixture/mic-drop-pub",
+                "price_level": 1,
+                "is_closed": false,
+                "hours": {
+                  "Fri": "16:00-02:00"
+                },
+                "short_description": "Fictional bar for the synthetic fixture."
+              },
+              "location": {
+                "lat": 47.26017,
+                "lon": -122.441091,
+                "geohash": "c22uvg3n7"
+              },
+              "distanceM": 2010,
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "deltaRank": null,
+            "expectedShare": 0.12,
+            "assumedCapacity": 90,
+            "fanFacingAllowed": false,
+            "chips": [
+              {
+                "label": "open on show night",
+                "ledgerRef": "Q18"
+              }
+            ]
+          }
+        ],
+        "reason": "Fewer than 6 spots inside 1.5 km; radius widened to 2,500 m.",
+        "provenance": [
+          "Q18",
+          "T1"
+        ],
+        "limits": [
+          "Assumed capacities are guesses the operator can edit.",
+          "No house twin, so no 'tonight vs house' delta."
+        ]
+      },
+      "media": {
+        "status": "partial",
+        "summary": "3 podcasts. No sponsor brand came back.",
+        "results": [
+          {
+            "entity": {
+              "entityId": "syn-podcast-f95a8071",
+              "name": "Open Mic Notebook",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.32,
+              "affinity": 0.92,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q19"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-505c95a1",
+              "name": "The Road Comic Report",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.385,
+              "affinity": 0.85,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q19"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "syn-podcast-9d87a3f5",
+              "name": "Pacific Northwest Punchlines",
+              "subtype": "urn:entity:podcast",
+              "popularity": 0.654,
+              "affinity": 0.78,
+              "tags": [],
+              "properties": {
+                "publisher": "Fictional network",
+                "short_description": "Fictional podcast for the synthetic fixture."
+              },
+              "explainability": [
+                {
+                  "entityId": "syn-person-4fe11df1",
+                  "score": 1
+                }
+              ]
+            },
+            "kind": "podcast",
+            "scope": "national",
+            "chips": [
+              {
+                "label": "bill audience overlap, labelled national until the local probe runs",
+                "ledgerRef": "Q19"
+              }
+            ]
+          }
+        ],
+        "reason": "The brand call was empty, so the sponsor slot is hidden.",
+        "provenance": [
+          "Q19",
+          "Q20"
+        ],
+        "limits": [
+          "Podcast reach is not measured here."
+        ]
+      },
+      "demographics": {
+        "status": "ok",
+        "summary": "Age and gender skew for the headliner. No house block (tag baseline).",
+        "results": {
+          "bill": [
+            {
+              "entityId": "syn-person-4fe11df1",
+              "age": {
+                "24_and_younger": 0.05,
+                "25_to_29": 0.11,
+                "30_to_34": 0.09,
+                "35_to_44": 0.03,
+                "45_to_54": -0.08,
+                "55_and_older": -0.14
+              },
+              "gender": {
+                "male": 0.06,
+                "female": -0.06
+              }
+            }
+          ],
+          "house": []
+        },
+        "provenance": [
+          "Q8"
+        ],
+        "limits": [
+          "Skews describe aggregate audiences, never individuals."
+        ]
+      },
+      "whatsDifferent": {
+        "status": "degraded",
+        "summary": "Tags that rank higher for this bill than for comedy fans in Tacoma in general.",
+        "results": {
+          "shared": [
+            {
+              "id": "urn:tag:genre:media:comedy",
+              "name": "Comedy",
+              "type": "urn:tag:genre:media",
+              "score": 0.6
+            }
+          ],
+          "a": [
+            {
+              "id": "urn:tag:genre:media:stand_up_comedy",
+              "name": "Stand-up comedy",
+              "type": "urn:tag:genre:media",
+              "count": 1
+            },
+            {
+              "id": "urn:tag:keyword:media:observational_comedy",
+              "name": "Observational comedy",
+              "type": "urn:tag:keyword:media",
+              "count": 4
+            }
+          ],
+          "b": [
+            {
+              "id": "urn:tag:genre:media:improv",
+              "name": "Improv",
+              "type": "urn:tag:genre:media",
+              "count": 2
+            },
+            {
+              "id": "urn:tag:genre:media:sketch_comedy",
+              "name": "Sketch comedy",
+              "type": "urn:tag:genre:media",
+              "count": 5
+            }
+          ],
+          "fromTagDiff": true
+        },
+        "reason": "degraded: tag diff. Compare returned only generic shared tags.",
+        "provenance": [
+          "Q9",
+          "Q10",
+          "Q11"
+        ],
+        "limits": [
+          "A tag diff ranks tags; it does not measure how different two crowds are."
+        ]
+      },
+      "copyHooks": {
+        "status": "partial",
+        "summary": "2 hooks, drawn from partner tags.",
+        "results": [
+          {
+            "text": "Stand-up comedy, late night.",
+            "tagIds": [
+              "urn:tag:genre:media:stand_up_comedy",
+              "urn:tag:good_for:place:late_night"
+            ]
+          },
+          {
+            "text": "Good for groups. Walk-ins welcome.",
+            "tagIds": [
+              "urn:tag:good_for:place:groups",
+              "urn:tag:amenity:place:walk_ins"
+            ]
+          }
+        ],
+        "reason": "Only 2 bill tags survived the allowlist, so hooks come from partner tags.",
+        "provenance": [
+          "Q21"
+        ],
+        "limits": [
+          "No jokes, no artist voice, no artist marks in partner copy."
+        ]
+      }
+    },
+    "narration": {
+      "summary": "Thin signal: treat this as a starting list. Against a comedy tag baseline, the headliner's crowd over-indexes in Sixth Avenue, Proctor and Stadium District. 11 partners; 5 spots near the club.",
+      "tileWhy": [
+        {
+          "geohash": "c22uv4",
+          "text": "Lift 1.58 against the comedy tag baseline."
+        },
+        {
+          "geohash": "c22uut",
+          "text": "Lift 1.41 against the comedy tag baseline."
+        },
+        {
+          "geohash": "c22uvs",
+          "text": "Lift 1.33 against the comedy tag baseline."
+        }
+      ],
+      "partnerLines": [
+        {
+          "entityId": "syn-place-00943c9d",
+          "text": "Rank 1 for this headliner near Sixth Avenue."
+        },
+        {
+          "entityId": "syn-place-127c879c",
+          "text": "Rank 3 for this headliner near Sixth Avenue."
+        },
+        {
+          "entityId": "syn-place-6d1c0779",
+          "text": "Rank 4 for this headliner near Sixth Avenue."
+        }
+      ],
+      "templated": true
+    },
+    "ledger": [
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/events.json",
+        "params": {
+          "keyword": "Super Funny Comedy Club",
+          "city": "Tacoma",
+          "startDateTime": "2026-12-04T00:00:00Z",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 625,
+        "bytes": 1200,
+        "cacheHit": false,
+        "resultCount": 0,
+        "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/events.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'keyword=Super Funny Comedy Club' --data-urlencode 'city=Tacoma' --data-urlencode 'startDateTime=2026-12-04T00:00:00Z'",
+        "startedAt": "2026-11-20T18:00:00.000Z",
+        "note": "The club sells on its own platform: bill and date typed by the operator. Age policy unknown.",
+        "id": "T1"
+      },
+      {
+        "kind": "tm",
+        "method": "GET",
+        "endpoint": "/discovery/v2/venues.json",
+        "params": {
+          "keyword": "Super Funny Comedy Club",
+          "stateCode": "WA",
+          "apikey": "$TICKETMASTER_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 307,
+        "bytes": 1200,
+        "cacheHit": false,
+        "resultCount": 0,
+        "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/venues.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'keyword=Super Funny Comedy Club' --data-urlencode 'stateCode=WA'",
+        "startedAt": "2026-11-20T18:00:00.791Z",
+        "note": "No Ticketmaster roster for the house baseline.",
+        "id": "T2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Ada Pell",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 299,
+        "bytes": 2689,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Ada Pell' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
+        "startedAt": "2026-11-20T18:00:01.152Z",
+        "note": "Exact match; comedian tag check passed.",
+        "id": "Q1"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Margo Vint",
+          "types": [
+            "urn:entity:artist",
+            "urn:entity:person"
+          ],
+          "take": 5
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 552,
+        "bytes": 3848,
+        "cacheHit": false,
+        "resultCount": 2,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Margo Vint' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
+        "startedAt": "2026-11-20T18:00:01.502Z",
+        "note": "2 near matches, neither exact nor tagged comedian: not used.",
+        "id": "Q2"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/search",
+        "params": {
+          "query": "Super Funny Comedy Club",
+          "types": "urn:entity:place",
+          "filter.location": "47.244,-122.453",
+          "filter.radius": 1
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 938,
+        "bytes": 1200,
+        "cacheHit": false,
+        "resultCount": 0,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Super Funny Comedy Club' --data-urlencode 'types=urn:entity:place' --data-urlencode 'filter.location=47.244,-122.453' --data-urlencode 'filter.radius=1'",
+        "startedAt": "2026-11-20T18:00:02.223Z",
+        "note": "Venue not in catalog: using POINT(-122.453 47.244).",
+        "id": "Q3"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 40000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 225,
+        "bytes": 21400,
+        "cacheHit": false,
+        "resultCount": 140,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=40000'",
+        "startedAt": "2026-11-20T18:00:03.308Z",
+        "note": "Thin: 140 cells within 40 km (floor is 200). Retrying at 60 km.",
+        "id": "Q4"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 60000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 1060,
+        "bytes": 35800,
+        "cacheHit": false,
+        "resultCount": 236,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=60000'",
+        "startedAt": "2026-11-20T18:00:03.629Z",
+        "id": "Q5"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.tags": "urn:tag:genre:media:stand_up_comedy",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 60000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "degraded",
+        "latencyMs": 248,
+        "bytes": 196000,
+        "cacheHit": false,
+        "resultCount": 1310,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.tags=urn:tag:genre:media:stand_up_comedy' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=60000'",
+        "startedAt": "2026-11-20T18:00:04.765Z",
+        "note": "House baseline degraded to a comedy tag baseline (no roster).",
+        "id": "Q6"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:heatmap",
+          "signal.interests.tags": "urn:tag:category:place:restaurant",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 60000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 1060,
+        "bytes": 431000,
+        "cacheHit": false,
+        "resultCount": 2950,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.tags=urn:tag:category:place:restaurant' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=60000'",
+        "startedAt": "2026-11-20T18:00:05.148Z",
+        "note": "Generic baseline: diagnostic only.",
+        "id": "Q7"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:demographics",
+          "signal.interests.entities": "syn-person-4fe11df1"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 319,
+        "bytes": 2151,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:demographics' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1'",
+        "startedAt": "2026-11-20T18:00:06.303Z",
+        "id": "Q8"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/analysis/compare",
+        "params": {
+          "a.signal.interests.entities": "syn-person-4fe11df1",
+          "b.signal.interests.tags": "urn:tag:genre:media:stand_up_comedy",
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "degraded",
+        "latencyMs": 205,
+        "bytes": 4800,
+        "cacheHit": false,
+        "resultCount": 4,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/analysis/compare' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'a.signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'b.signal.interests.tags=urn:tag:genre:media:stand_up_comedy' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-20T18:00:06.892Z",
+        "note": "Only generic shared tags came back; falling back to a tag diff.",
+        "id": "Q9"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:tag",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.tag.types": [
+            "urn:tag:keyword:media",
+            "urn:tag:genre:media"
+          ],
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 483,
+        "bytes": 46860,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-20T18:00:07.215Z",
+        "id": "Q10"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:tag",
+          "signal.interests.tags": "urn:tag:genre:media:stand_up_comedy",
+          "filter.tag.types": [
+            "urn:tag:keyword:media",
+            "urn:tag:genre:media"
+          ],
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 710,
+        "bytes": 41880,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.tags=urn:tag:genre:media:stand_up_comedy' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-20T18:00:07.969Z",
+        "note": "Tag-diff baseline side.",
+        "id": "Q11"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.470093 47.254944)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 487,
+        "bytes": 9390,
+        "cacheHit": false,
+        "resultCount": 6,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.470093 47.254944)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-20T18:00:08.907Z",
+        "note": "Fewer than 8 results at 2,000 m: widening to 3,500 m.",
+        "id": "Q12"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.470093 47.254944)",
+          "filter.location.radius": 3500,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 300,
+        "bytes": 17790,
+        "cacheHit": false,
+        "resultCount": 14,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.470093 47.254944)' --data-urlencode 'filter.location.radius=3500' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-20T18:00:09.501Z",
+        "note": "Partner pool for tile Sixth Avenue at 3,500 m.",
+        "id": "Q13"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.492065 47.271423)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 927,
+        "bytes": 14241,
+        "cacheHit": false,
+        "resultCount": 9,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.492065 47.271423)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-20T18:00:09.883Z",
+        "note": "Partner pool for tile Proctor.",
+        "id": "Q14"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.44812 47.26593)",
+          "filter.location.radius": 2000,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 184,
+        "bytes": 5790,
+        "cacheHit": false,
+        "resultCount": 5,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.44812 47.26593)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-20T18:00:10.854Z",
+        "note": "Fewer than 8 results at 2,000 m: widening to 3,500 m.",
+        "id": "Q15"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.44812 47.26593)",
+          "filter.location.radius": 3500,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:barber_shop"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "feature.explainability": true,
+          "take": 50
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 875,
+        "bytes": 14480,
+        "cacheHit": false,
+        "resultCount": 10,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.44812 47.26593)' --data-urlencode 'filter.location.radius=3500' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
+        "startedAt": "2026-11-20T18:00:11.325Z",
+        "note": "Partner pool for tile Stadium District at 3,500 m.",
+        "id": "Q16"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 1500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "friday",
+          "feature.explainability": true,
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "partial",
+        "latencyMs": 471,
+        "bytes": 6944,
+        "cacheHit": false,
+        "resultCount": 4,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=1500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=friday' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-20T18:00:12.456Z",
+        "note": "Fewer than 6 spots at 1,500 m: widening to 2,500 m.",
+        "id": "Q17"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 2500,
+          "filter.tags": [
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:cafe"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "friday",
+          "feature.explainability": true,
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 690,
+        "bytes": 12783,
+        "cacheHit": false,
+        "resultCount": 9,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=2500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=friday' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-20T18:00:13.161Z",
+        "note": "No house twin: the house baseline is a tag, so no delta rank.",
+        "id": "Q18"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:podcast",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "signal.location": "POINT(-122.453 47.244)",
+          "feature.explainability": true,
+          "take": 15
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 488,
+        "bytes": 18540,
+        "cacheHit": false,
+        "resultCount": 15,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:podcast' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'signal.location=POINT(-122.453 47.244)' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
+        "startedAt": "2026-11-20T18:00:14.144Z",
+        "note": "signal.location probe pending: labelled national.",
+        "id": "Q19"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:brand",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "signal.location": "POINT(-122.453 47.244)",
+          "filter.exclude.tags": [
+            "urn:tag:category:brand:alcohol",
+            "urn:tag:category:brand:tobacco",
+            "urn:tag:category:brand:gambling"
+          ],
+          "feature.explainability": true,
+          "take": 15
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "empty",
+        "latencyMs": 981,
+        "bytes": 1200,
+        "cacheHit": false,
+        "resultCount": 0,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:brand' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'signal.location=POINT(-122.453 47.244)' --data-urlencode 'filter.exclude.tags=urn:tag:category:brand:alcohol,urn:tag:category:brand:tobacco,urn:tag:category:brand:gambling' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
+        "startedAt": "2026-11-20T18:00:14.809Z",
+        "note": "No sponsor brand returned: sponsor slot hidden.",
+        "id": "Q20"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:tag",
+          "signal.interests.entities": "syn-person-4fe11df1",
+          "filter.tag.types": [
+            "urn:tag:keyword:media",
+            "urn:tag:genre:media",
+            "urn:tag:theme:qloo",
+            "urn:tag:audience:qloo"
+          ],
+          "diversify.by": "subtype",
+          "take": 30
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 530,
+        "bytes": 37590,
+        "cacheHit": false,
+        "resultCount": 30,
+        "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media,urn:tag:theme:qloo,urn:tag:audience:qloo' --data-urlencode 'diversify.by=subtype' --data-urlencode 'take=30'",
+        "startedAt": "2026-11-20T18:00:15.984Z",
+        "note": "Denylist removed 1 tag (credit_card); 2 bill tags survived the allowlist.",
+        "id": "Q21"
+      },
+      {
+        "kind": "acs",
+        "method": "GET",
+        "endpoint": "/data/2024/acs/acs5",
+        "params": {
+          "get": [
+            "NAME",
+            "B01003_001E",
+            "B01002_001E",
+            "B19013_001E",
+            "B01001_001E",
+            "B01001_003E",
+            "B01001_004E",
+            "B01001_005E",
+            "B01001_006E",
+            "B01001_007E",
+            "B01001_008E",
+            "B01001_027E",
+            "B01001_028E",
+            "B01001_029E",
+            "B01001_030E",
+            "B01001_031E",
+            "B01001_032E"
+          ],
+          "for": "zip code tabulation area:98406,98407,98403",
+          "key": "$CENSUS_API_KEY"
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 848,
+        "bytes": 5586,
+        "cacheHit": false,
+        "resultCount": 3,
+        "curl": "curl -sG 'https://api.census.gov/data/2024/acs/acs5' --data-urlencode 'get=NAME,B01003_001E,B01002_001E,B19013_001E,B01001_001E,B01001_003E,B01001_004E,B01001_005E,B01001_006E,B01001_007E,B01001_008E,B01001_027E,B01001_028E,B01001_029E,B01001_030E,B01001_031E,B01001_032E' --data-urlencode 'for=zip code tabulation area:98406,98407,98403' --data-urlencode \"key=$CENSUS_API_KEY\"",
+        "startedAt": "2026-11-20T18:00:16.761Z",
+        "note": "Adults 21+ per ZCTA (B01001 total minus the under-21 bins) for the budget heuristic and the tile floor.",
+        "id": "C1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "comedy club Tacoma",
+          "locationBias.radiusM": 50000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 817,
+        "bytes": 32780,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"comedy club Tacoma\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":50000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-20T18:00:17.864Z",
+        "note": "Arm F: query chosen by the model. Location bias capped at the Places maximum of 50 km (the run radius is 60 km).",
+        "id": "P1"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "bar near Sixth Avenue Tacoma",
+          "locationBias.radiusM": 50000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 819,
+        "bytes": 25720,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"bar near Sixth Avenue Tacoma\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":50000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-20T18:00:18.833Z",
+        "note": "Arm F: query chosen by the model. Location bias capped at the Places maximum of 50 km (the run radius is 60 km).",
+        "id": "P2"
+      },
+      {
+        "kind": "places",
+        "method": "POST",
+        "endpoint": "/v1/places:searchText",
+        "params": {
+          "textQuery": "coffee shop Tacoma",
+          "locationBias.radiusM": 50000,
+          "pageSize": 20
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 736,
+        "bytes": 31780,
+        "cacheHit": false,
+        "resultCount": 20,
+        "curl": "curl -s -X POST 'https://places.googleapis.com/v1/places:searchText' -H \"X-Goog-Api-Key: $GOOGLE_PLACES_API_KEY\" -H 'X-Goog-FieldMask: places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.location,places.regularOpeningHours' -H 'Content-Type: application/json' -d '{\"textQuery\":\"coffee shop Tacoma\",\"locationBias\":{\"circle\":{\"center\":{\"latitude\":47.244,\"longitude\":-122.453},\"radius\":50000}},\"pageSize\":20}'",
+        "startedAt": "2026-11-20T18:00:19.891Z",
+        "note": "Arm F: query chosen by the model. Location bias capped at the Places maximum of 50 km (the run radius is 60 km).",
+        "id": "P3"
+      },
+      {
+        "kind": "anthropic",
+        "method": "POST",
+        "endpoint": "/v1/messages",
+        "params": {
+          "model": "claude-opus-5-5",
+          "output_config.effort": "medium",
+          "tools": [
+            "places_search",
+            "acs_lookup"
+          ],
+          "max_tokens": 16000
+        },
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 12900,
+        "bytes": 15200,
+        "cacheHit": false,
+        "resultCount": 1,
+        "curl": "curl -s 'https://api.anthropic.com/v1/messages' -H \"x-api-key: $ANTHROPIC_API_KEY\" -H 'anthropic-version: 2023-06-01' -H 'content-type: application/json' -d @request.json",
+        "startedAt": "2026-11-20T18:00:20.688Z",
+        "note": "Arm F: same model, same schema, Google Places + ACS tools.",
+        "id": "L1"
+      }
+    ],
+    "guard": {
+      "dropped": 0,
+      "reasons": [
+        "1 tag denied by policy (credit_card)",
+        "Narration used the deterministic template (no model call)."
+      ],
+      "deniedTagCount": 1
+    },
+    "budgetSplit": [
+      {
+        "geohash": "c22uv4",
+        "share": 0.41,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "c22uut",
+        "share": 0.33,
+        "label": "heuristic, not a forecast"
+      },
+      {
+        "geohash": "c22uvs",
+        "share": 0.26,
+        "label": "heuristic, not a forecast"
+      }
+    ],
+    "limits": [
+      "Whether this plan sells tickets: nothing here measures sales.",
+      "What fans will buy: these are tastes, not purchases.",
+      "Where buyers live: the areas show where this bill's fans stand out from the room's usual crowd.",
+      "Anything about one person, or whether a partner will move tickets.",
+      "Thin signal: treat as a starting list.",
+      "Venue coordinates in this synthetic fixture are approximate."
+    ]
+  },
+  "control": {
+    "arm": "F",
+    "places": [
+      {
+        "placeId": "syn-gplace-ac448ed3",
+        "name": "Tacoma Mall Laugh Lounge",
+        "address": "S Steele St, Tacoma, WA",
+        "rating": 4.6,
+        "userRatingCount": 1191,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.215616,
+          "lon": -122.471333
+        },
+        "query": "comedy club Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-d0821526",
+        "name": "Pacific Avenue Comedy Cellar",
+        "address": "Pacific Ave, Tacoma, WA",
+        "rating": 4.6,
+        "userRatingCount": 659,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.255513,
+          "lon": -122.445614
+        },
+        "query": "comedy club Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-b7145915",
+        "name": "Puget Sound Open Mic Room",
+        "address": "Commerce St, Tacoma, WA",
+        "rating": 4.2,
+        "userRatingCount": 4215,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.253425,
+          "lon": -122.435253
+        },
+        "query": "comedy club Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-751d564f",
+        "name": "Pinball Parlor Taproom",
+        "address": "6th Ave, Tacoma, WA",
+        "rating": 4.2,
+        "userRatingCount": 3868,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.254331,
+          "lon": -122.467331
+        },
+        "query": "bar near Sixth Avenue Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-3a64b477",
+        "name": "Sixth Ave Sports Bar",
+        "address": "6th Ave, Tacoma, WA",
+        "rating": 4.1,
+        "userRatingCount": 342,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.251713,
+          "lon": -122.470953
+        },
+        "query": "bar near Sixth Avenue Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-c60eef92",
+        "name": "Union Station Brewhouse",
+        "address": "Pacific Ave, Tacoma, WA",
+        "rating": 4.4,
+        "userRatingCount": 5061,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.254564,
+          "lon": -122.441505
+        },
+        "query": "bar near Sixth Avenue Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-0f6eb997",
+        "name": "Waterfront Wings & Taps",
+        "address": "Ruston Way, Tacoma, WA",
+        "rating": 4.2,
+        "userRatingCount": 5534,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.281689,
+          "lon": -122.469327
+        },
+        "query": "bar near Sixth Avenue Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-74be3b13",
+        "name": "Fern Hollow Coffee",
+        "address": "6th Ave, Tacoma, WA",
+        "rating": 4.5,
+        "userRatingCount": 796,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.259376,
+          "lon": -122.469322
+        },
+        "query": "coffee shop Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-1a431ab0",
+        "name": "Downtown Daily Grind",
+        "address": "Broadway, Tacoma, WA",
+        "rating": 4.7,
+        "userRatingCount": 517,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.25355,
+          "lon": -122.445112
+        },
+        "query": "coffee shop Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-42f91c3e",
+        "name": "Mall Court Espresso",
+        "address": "S Steele St, Tacoma, WA",
+        "rating": 4.4,
+        "userRatingCount": 3947,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.220603,
+          "lon": -122.46555
+        },
+        "query": "coffee shop Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-30a7a66b",
+        "name": "Freighthouse Coffee Bar",
+        "address": "E D St, Tacoma, WA",
+        "rating": 4.6,
+        "userRatingCount": 2411,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.247247,
+          "lon": -122.423905
+        },
+        "query": "coffee shop Tacoma"
+      },
+      {
+        "placeId": "syn-gplace-9a314dfd",
+        "name": "Theater District Taphouse",
+        "address": "Broadway, Tacoma, WA",
+        "rating": 4.3,
+        "userRatingCount": 4685,
+        "businessStatus": "OPERATIONAL",
+        "location": {
+          "lat": 47.253706,
+          "lon": -122.446438
+        },
+        "query": "bar near Sixth Avenue Tacoma"
+      }
+    ],
+    "overlapWithQloo": [
+      "Pinball Parlor Taproom",
+      "Fern Hollow Coffee"
+    ],
+    "ledgerRefs": [
+      "P1",
+      "P2",
+      "P3",
+      "L1",
+      "C1"
+    ]
+  }
+}

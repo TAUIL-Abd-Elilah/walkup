@@ -1,0 +1,57 @@
+# Product eval (20 cases)
+
+This eval checks the [definition of done](../../docs/definition-of-done.md) and the spec's statuses, fallbacks, call budget and policy rules. Each case runs `@walkup/orchestrator` on `@walkup/qloo-world`, the synthetic stand-in for Qloo, Ticketmaster and Google Places, so no key is needed and no live API is called. The same checks also run on recorded plans: stored live runs, or replays of them.
+
+Output: `out/score.json` (`{format, formatVersion, source, worldSeed, recordedPlans, generatedAt, passed, failed, knownGaps, unexpectedFailures, skipped, total, strictHours, clauses[], cases[]}`) and `out/score.md`. Everything except `generatedAt` is deterministic. On recorded plans, `recordedPlans` lists each plan read with the mode its sheet carries, so a fixture sheet never reads as a live run.
+
+## Files
+
+| File | What it holds |
+|---|---|
+| `cases.ts` | The 20 cases (`CASES`). Each one runs plans and adds its own checks. It then hands one or more sheets ("subjects") to the universal checks, with the card statuses, guard drops and budget bounds it expects. |
+| `checks.ts` | The universal checks, run on every subject. **Renders:** all cards present, limits printed, honest mode label, web validator, export model, one-page PDF on the goldens. **Card statuses.** **Guard drops by field.** **Ledger refs and entity citations.** **The ID validator.** **Grounding** against Google Places. **Call budget**, including fallbacks shown on their cards. **Policy invariants.** Also: the clause list (`CLAUSES`), `classifyGuardReasons`, `readBudget`, `groundSheet`. |
+| `harness.ts` | `newRig()`: fixture deps with a fixed clock and counter plan ids. Every Qloo response body is tapped into a set of strings, which the ID validator checks against. `runWithPick()` resumes a `needs_input` pause the way an operator would. Also two world variants (`liftWeakVariant`, `failingHouseHeatVariant`), mock narrator models, and `worldPlacesClient()` for grounding. |
+| `known-gaps.ts` | Product gaps this eval found and reported that are still open. They stay failures in the score but are marked as known, so CI can tell them from regressions. |
+| `run.ts` | `runProductEval()`, `writeScore()`, `scoreMarkdown()`, `loadRecordedPlans()` and the CLI. |
+| `product.eval.test.ts` | The vitest wrapper. It runs the cases, then mutation tests showing that each check fails on a sheet broken on purpose, then unit tests and the recorded path (JSON files, fixture wrappers, SQLite). |
+
+## Run
+
+```sh
+npx tsx evals/product/run.ts                        # all 20 on the fixture world; writes evals/product/out/
+npx tsx evals/product/run.ts --only C01,C18 --out /tmp/pe
+npx tsx evals/product/run.ts --strict-hours         # a partner with no hours in Places fails even when the sheet says "call ahead"
+npx tsx evals/product/run.ts --source recorded --plans <dir of StoredPlan or fixture-wrapper JSON | plans.sqlite>
+npx tsx evals/product/run.ts --source recorded --plans <...> --ground-live   # calls Google Places (GOOGLE_PLACES_API_KEY), at most 300 requests a day
+```
+
+Exit code 0 means there are no failures, or only known gaps. Exit code 1 means a failure that is not a known gap. Exit code 2 means bad usage. A full run takes about 20 seconds.
+
+## Test
+
+```sh
+npx vitest run --config evals/product/vitest.config.ts
+npx tsc -p evals/product/tsconfig.json --noEmit
+```
+
+The wrapper writes the score to `evals/product/out/` when `CI` or `PRODUCT_EVAL_WRITE` is set; `PRODUCT_EVAL_OUT` sets another directory. Otherwise it writes to a temporary directory, so local test runs leave the committed file alone.
+
+## CI
+
+- The root `vitest.config.ts` includes `evals/product/*.test.ts` and the root `tsconfig.json` includes `evals/product/*.ts`, so `npm test` and `npm run typecheck` (both in the CI `node` job) run and typecheck the eval (D5).
+- The CI job `product-score` (pushes to the default branch only, `contents: write`) runs `npx tsx evals/product/run.ts --quiet` and commits `evals/product/out/score.json` and `score.md` when the result changed, ignoring the timestamp lines (D7). The commit message carries `[skip ci]`. A protected default branch must allow the GitHub Actions bot to push, or the step fails and the score stays as committed.
+- The P1 analysis tests run in the Python job (D6).
+
+## The cases
+
+C01 to C04 are the goldens: G1 bill A, G1 bill B, G2 and G3. C05 is the `needs_input` pause and resume. C06 is an empty compare, which falls back to a tag diff. C07 is a thin heatmap, which widens to 60 km. C08 is lift that tracks foot traffic, so partners are ranked near the venue. C09 is the all-ages alcohol rule. C10 checks that denied tags never reach copy or stored data. C11 drops closed places. C12 keeps places with unknown hours and marks them "call ahead". C13 is the quota guard, which serves from the store or cache. C14 is a 429 retry. C15 covers declared partners not in the catalog and the pick-list cap. C16 checks the diversity caps. C17 checks that the budget split sums to 1. C18 swaps the bill (specificity). C19 is the degraded house baseline. C20 is the template narration. The clause map is in [docs/definition-of-done.md](../../docs/definition-of-done.md).
+
+## Known limits
+
+- **Grounding on fixture runs** uses the fixture world's Places transport. That transport is built from the same invented businesses as its Qloo side, so it checks the pipeline's logic, not real places. On recorded live runs the check needs `--ground-live` and a Places key; otherwise it is skipped, and the clause reads "not verified".
+- **The ID validator** needs a tapped transport, so it only runs on fixture runs. On recorded runs the ledger checks remain: every reference is in the run's ledger, and every cited entity traces to a Qloo entry that returned results.
+- **The partner open check uses the first street-team day**, which is the day Q9 filters on. Openness on the other street-team days is reported as a number (`openAllStreetDays`) and does not fail a case.
+- **A partner with no hours in Places passes when the sheet shows it as "call ahead".** G1 bill A has one such partner on the fixture world; the D3 row of the score names it. `--strict-hours` fails it.
+- **Budget bounds are upper limits.** "About 14-18 calls" is a target, not a floor. G3 reaches 10 coded fallback calls, which is the cap allowed here; C19 uses 7 venue calls because the failed house heatmap is counted.
+- **Recorded plans keep the last complete record per plan id.** The calls a paused run made before it resumed are not in that record, so a recorded G2 understates its budget.
+- **No known gaps today.** The one gap this eval reported (C11 and C12: pre/post spots with unknown hours kept the chip "near the room, open on show night") is fixed in `packages/orchestrator` (`src/steps/prepost.ts`): such spots now say "call ahead" on their chip and the card counts them. `known-gaps.ts` is empty; a new entry must name its own check, so it can never mask a spot that is missing, closed or shut that night.

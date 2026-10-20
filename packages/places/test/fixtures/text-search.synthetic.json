@@ -1,0 +1,71 @@
+{
+  "synthetic": true,
+  "note": "Synthetic Places API (New) places:searchText body written by hand for tests. Every name, id and address is invented.",
+  "body": {
+    "places": [
+      {
+        "id": "SynPlace_TapRoom",
+        "displayName": { "text": "Marlow's Tap Room", "languageCode": "en" },
+        "formattedAddress": "12 Example St, Riverton, TN 37000, USA",
+        "location": { "latitude": 36.1612, "longitude": -86.7705 },
+        "rating": 4.6,
+        "userRatingCount": 812,
+        "businessStatus": "OPERATIONAL",
+        "types": ["bar", "point_of_interest", "establishment"],
+        "regularOpeningHours": {
+          "openNow": false,
+          "periods": [
+            { "open": { "day": 0, "hour": 16, "minute": 0 }, "close": { "day": 1, "hour": 2, "minute": 0 } },
+            { "open": { "day": 2, "hour": 16, "minute": 0 }, "close": { "day": 3, "hour": 2, "minute": 0 } },
+            { "open": { "day": 3, "hour": 16, "minute": 0 }, "close": { "day": 4, "hour": 2, "minute": 0 } },
+            { "open": { "day": 4, "hour": 16, "minute": 0 }, "close": { "day": 5, "hour": 2, "minute": 0 } },
+            { "open": { "day": 5, "hour": 16, "minute": 0 }, "close": { "day": 6, "hour": 2, "minute": 0 } },
+            { "open": { "day": 6, "hour": 16, "minute": 0 }, "close": { "day": 0, "hour": 2, "minute": 0 } }
+          ],
+          "weekdayDescriptions": ["Monday: Closed", "Tuesday: 4:00 PM - 2:00 AM"]
+        }
+      },
+      {
+        "id": "SynPlace_Records",
+        "displayName": { "text": "Juniper Records", "languageCode": "en" },
+        "formattedAddress": "40 Example Ave, Riverton, TN 37000, USA",
+        "location": { "latitude": 36.1655, "longitude": -86.7801 },
+        "rating": 4.8,
+        "userRatingCount": 233,
+        "businessStatus": "OPERATIONAL",
+        "types": ["store", "point_of_interest", "establishment"],
+        "regularOpeningHours": {
+          "periods": [
+            { "open": { "day": 1, "hour": 10, "minute": 0 }, "close": { "day": 1, "hour": 18, "minute": 0 } },
+            { "open": { "day": 2, "hour": 10, "minute": 0 }, "close": { "day": 2, "hour": 18, "minute": 0 } },
+            { "open": { "day": 3, "hour": 10, "minute": 0 }, "close": { "day": 3, "hour": 18, "minute": 0 } },
+            { "open": { "day": 4, "hour": 10, "minute": 0 }, "close": { "day": 4, "hour": 18, "minute": 0 } },
+            { "open": { "day": 5, "hour": 10, "minute": 0 }, "close": { "day": 5, "hour": 18, "minute": 0 } },
+            { "open": { "day": 6, "hour": 10, "minute": 0 }, "close": { "day": 6, "hour": 18, "minute": 0 } }
+          ]
+        }
+      },
+      {
+        "id": "SynPlace_Diner",
+        "displayName": { "text": "Hollow Pines Diner" },
+        "formattedAddress": "7 Example Rd, Riverton, TN 37000, USA",
+        "location": { "latitude": 36.159, "longitude": -86.775 },
+        "rating": 4.1,
+        "userRatingCount": 95,
+        "businessStatus": "CLOSED_TEMPORARILY",
+        "types": ["restaurant"],
+        "regularOpeningHours": { "periods": [{ "open": { "day": 0, "hour": 0, "minute": 0 } }] }
+      },
+      {
+        "id": "SynPlace_Corner",
+        "displayName": { "text": "Lantern Corner Bar" },
+        "location": { "latitude": 36.17, "longitude": -86.76 },
+        "types": ["bar"]
+      },
+      {
+        "id": "SynPlace_NoName",
+        "location": { "latitude": 36.17, "longitude": -86.76 }
+      }
+    ]
+  }
+}

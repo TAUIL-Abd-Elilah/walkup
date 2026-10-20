@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-10-13T08:54:44Z",
+  "metros": {
+    "hampton_roads": {
+      "file": "hampton_roads.json",
+      "generatedAt": "2026-10-13T08:54:44Z",
+      "counts": {
+        "neighbourhoods": 808,
+        "places": 13,
+        "zctas": 76
+      },
+      "adults21Total": 1159226,
+      "sources": {
+        "places": "ok",
+        "zctaPoints": "ok",
+        "osm": "ok",
+        "acs": "ok"
+      },
+      "errors": []
+    },
+    "nashville": {
+      "file": "nashville.json",
+      "generatedAt": "2026-10-13T08:54:44Z",
+      "counts": {
+        "neighbourhoods": 255,
+        "places": 30,
+        "zctas": 51
+      },
+      "adults21Total": 1041198,
+      "sources": {
+        "places": "ok",
+        "zctaPoints": "ok",
+        "osm": "ok",
+        "acs": "ok"
+      },
+      "errors": []
+    },
+    "tacoma": {
+      "file": "tacoma.json",
+      "generatedAt": "2026-10-13T08:54:44Z",
+      "counts": {
+        "neighbourhoods": 549,
+        "places": 106,
+        "zctas": 119
+      },
+      "adults21Total": 2038347,
+      "sources": {
+        "places": "ok",
+        "zctaPoints": "ok",
+        "osm": "ok",
+        "acs": "ok"
+      },
+      "errors": []
+    }
+  }
+}

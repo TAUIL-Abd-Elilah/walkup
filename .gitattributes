@@ -1,0 +1,4 @@
+# LF in every checkout, including Windows clones with core.autocrlf=true. Sealed
+# hashes (docs/preregistration), byte-compared fixtures (apps/web/test) and the
+# POSIX pre-commit hook all depend on it.
+* text=auto eol=lf

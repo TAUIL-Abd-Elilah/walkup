@@ -1,0 +1,44 @@
+# P1 deviations log
+
+Every departure from `p1-plan.md` after sealing is recorded here: date, what changed, why, and which results it affects. The plan itself is never edited.
+
+| Date | Section | Deviation | Reason | Affects |
+|---|---|---|---|---|
+| 2026-10-13 | §8, §10 (code: `evals/p1/analyze.py`) | A rank of 0, a negative rank or a fractional rank in the arms CSV is now an input error. Before this change it was read as "not in the list". | A runner that wrote 0-based ranks would have turned every top-1 hit into a miss without any warning. | No result yet. Valid 1-based input gives the same numbers. |
+| 2026-10-13 | §5, §8 "Failures" (code: `analyze.py`) | With `--bars`, the results now also count (1) analyzed bars that have no row in any arm and (2) arm rows for bars whose status is not `analyzed`. Both are reported under `info` and in the warnings. No row is dropped. | Before this change, a query whose calls all failed vanished without being counted, although §8 says such failures are counted. | Reporting only. |
+| 2026-10-13 | Header, §13 (code: `analyze.py`) | The results now report whether `p1-plan.md` on disk still matches the sealed hash (`plan_sha256_matches_file`), and add a warning when it does not. | Before this change, the results quoted the sealed hash without checking it against the plan file. | Reporting only. |
+| 2026-10-13 | §11 (code: `analyze.py`; contract: `evals/p1/ARMS.md` §2 and §7) | When no Q-derby rows exist, the plan falls back to the Q-signal lists. That fallback needs rival-bar rows, so ARMS.md now has the Q-signal step write them (`bar_club` = rival club). If the source arm has no rival rows, the Derby block now says it could not be computed. | Under the sealed ARMS.md, rival rows existed only for Q-derby, so the fallback would have reported 0 trials as though the test had run. | The Derby fallback only. The primary Q-derby path, H1 and H2 are unchanged. |
+| 2026-10-13 | §8 F and L (contract: `ARMS.md` §4 and §5) | The output schemas carry no array-length limit. The runner keeps the first 50 place ids (F) or the first 3 names (L). | Structured outputs do not enforce `maxItems`. The SDK checks it on the client, so an over-long answer would fail to parse instead of being trimmed. | F and L, only when the model returns too many items. |
+| 2026-10-13 | §3 (code: `evals/p1/common.py`) | A robots.txt answer of 401, 403 or 5xx now blocks the host, matching `urllib.robotparser`. Other 4xx answers still mean "no robots.txt". | The collector treated every status from 400 up as "allow all". All three club sites returned robots.txt with HTTP 200 on 2026-10-13, so the collected table is unchanged (same SHA-256). | Collection politeness only. |
+| 2026-10-13 | §3, §14 (clarification, no change to the analysis) | 20 of the 256 American Outlaws rows come from chapters the club marks "Unofficial chapter" (15 of them alone, 5 together with "Rebuilding"). They stay in the ground truth because the club lists them. The official-listings-only sensitivity analysis uses each location's own "Official" mark, not the chapter's status. | §14 named only the "Rebuilding" share. | Disclosure only. |
+| 2026-10-13 | §7, §8 (contract: `evals/p1/ARMS.md` new §9; code: `evals/p1/run_arms.ts`, `evals/p1/arms/`) | ARMS.md gains a §9 "Runner" that records how the arm runner settles details §0 to §8 leave open: order and per-bar freezing, batched brand-tag lookup, tie handling, where a ZIP is read, Google resolution only for Qloo-resolved bars, Q calls only where a bar is analyzed, rank counting, F answer trimming (first 50, then unseen and repeated ids dropped), failure classes (a places_search request that still fails after retries ends the F conversation with no rows; 401/403 stops the run), F-subset population and size, retries (network errors and timeouts included), shared-client request details and guards. Sections 0 to 8 are byte-identical to the sealed file. The runner code is sealed in `p1-code.sha256` from this date. | The runner needs written rules for these points; recording them, and sealing the runner, before any call keeps them preregistered. | No result yet. No request shape, threshold or metric changes. |
+| 2026-10-13 | None (rename only; code: `evals/p1/run_arms.ts`, `evals/p1/arms/*.ts`; contract: `evals/p1/ARMS.md` §9.13) | The product was renamed from Houselights to Walkup, so the workspace packages moved from `@houselights/*` to `@walkup/*` and the runner's environment variables from `HOUSELIGHTS_*` to `WALKUP_*`. The changed files differ from their sealed versions only in those identifiers and the product name. `p1-plan.md` and `evals/p1/common.py` are untouched: they record the collector's identity (`HouselightsResearch/0.1`) under which the bar table was actually collected. | Another hackathon entry already uses the Houselights name. | None: no request shape, threshold, metric or collected row changes. No Qloo, Google Places or model call had been made. |
+
+The first six rows were code or contract changes, made on 2026-10-13; the seventh row is a clarification; the eighth (the runner) is described after the hashes below. No Qloo, Google Places or model call had been made, and no result existed. `p1-plan.md` is unchanged and still matches `p1-plan.sha256`. `p1-code.sha256` now holds the new hashes of the three changed files. The hashes at sealing were:
+
+```
+f5f132c817dbbb927f606c3690add9d8028e04012fd8b16bb9bf5c0ab4b43c31 *evals/p1/analyze.py
+7c018663713cddbdc9a03b7aafb54ebaa9f488e1a58467a2bfe51231900a5b9a *evals/p1/common.py
+05d207a5fa8b8b8c161a5e33ffbd97c74274a6200a0d01e2e1ebbc95dc667221 *evals/p1/ARMS.md
+```
+
+The runner row (ARMS.md §9 and the runner code) was added on 2026-10-13, also before any Qloo, Google Places or model call. `p1-code.sha256` now holds the new ARMS.md hash and the hashes of `evals/p1/run_arms.ts` and `evals/p1/arms/*.ts` (tests and the local vitest config excluded). The ARMS.md hash before this row was `b9e16f0d11d5c5debbb79d6bb339268aa83a38e61324bd0c71eff647f4132ac1`; the file up to the new §9 heading still hashes to it.
+
+
+Rename row (2026-10-13): `p1-code.sha256` now holds the post-rename hashes. The hashes of the 13 changed files just before the rename were:
+
+```
+a578191d73b50f0d9b5cfa0656995922803bae5867a61e636c9aa80245e73606 *evals/p1/ARMS.md
+ca696a7d0176a90dadeb6ff467590eb38581317043bd7addb5c4a5c75014cfd9 *evals/p1/arms/bars.ts
+39605acac1ed9438f3b4408b8ab044e91e9e3adf33ae2046303698b1046e8e37 *evals/p1/arms/census.ts
+eaf6bd284980e9c30975b8700c0abc7dcd3618e8d2a309dc5c787399a4ee2f86 *evals/p1/arms/errors.ts
+c7e8dd88e32ba3b230d34fed9dc4fa696b475843a8ce850a9a197bcae6161e75 *evals/p1/arms/model-arms.ts
+f17aab17bb82c76b2e0647bd24f20dc05ac4d80706f23f9366c821bfe9d255fa *evals/p1/arms/places-io.ts
+ce4676866c6849cfee1eb6ed5921d72607f580b162396fd3928d4e5c8d6dc912 *evals/p1/arms/protocol.ts
+6173f6b9957e83e243cb20dfc3c6f1194a86d8e5e65b2028937f35b366aeda97 *evals/p1/arms/q-arms.ts
+8896b70b0134dd7ef3ad89ebf67207d92362b8ede7a4a702e8f163ffcc5c9282 *evals/p1/arms/qloo-io.ts
+69306296da58de0b2a25bd6a5e289b0d17cb445da46ef1168b58931cb579b7fe *evals/p1/arms/resolve.ts
+090b590d74769d9d5445484d0ea61105bd4824dd7994a3936d1f81710e16e808 *evals/p1/arms/runner.ts
+9d4e9e581410aa430bdf7cd76a2b70ebdd13809124db41dbec1bb460e41833a6 *evals/p1/arms/services.ts
+9136db021b7fce02cbc09d29f718079e5103c38ad6c4d361f1a132dae4cb3484 *evals/p1/arms/store.ts
+```

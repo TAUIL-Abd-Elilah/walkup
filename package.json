@@ -1,0 +1,29 @@
+{
+  "name": "walkup",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "scripts"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "probe": "tsx scripts/probe.ts",
+    "dev": "npm run dev -w @walkup/web",
+    "check:no-raw": "node scripts/check-no-raw.mjs",
+    "eval:product": "tsx evals/product/run.ts",
+    "p1:arms": "tsx evals/p1/run_arms.ts",
+    "fixtures:engine": "tsx packages/orchestrator/scripts/generate-fixture-sheets.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  }
+}
