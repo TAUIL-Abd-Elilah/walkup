@@ -1,4 +1,21 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
+
+// `npm run dev` runs `next dev` in apps/web, and Next.js reads .env files from there only. The README
+// tells you to keep keys in the repository root .env, so the dev server loads that file too. Variables
+// already set (your shell, apps/web/.env*) win. Builds and the Docker image never read it: the image
+// gets its keys from Fly secrets at runtime.
+function loadRootEnvForDev(): void {
+  const file = resolve(/*turbopackIgnore: true*/ process.cwd(), "..", "..", ".env");
+  if (!existsSync(file)) return;
+  try {
+    process.loadEnvFile(file);
+  } catch {
+    console.warn("warning: could not read the repository root .env; using the process environment only");
+  }
+}
 
 const nextConfig: NextConfig = {
   // The Dockerfile runs apps/web/.next/standalone/apps/web/server.js.
@@ -52,4 +69,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
 };
 
-export default nextConfig;
+export default function config(phase: string): NextConfig {
+  if (phase === PHASE_DEVELOPMENT_SERVER) loadRootEnvForDev();
+  return nextConfig;
+}
