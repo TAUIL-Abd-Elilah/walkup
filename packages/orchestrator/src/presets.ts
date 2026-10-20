@@ -2,15 +2,39 @@
  * The four prewarmed presets, in one place: venue, the bill the selection rule
  * picked, the operator's what-if inputs and any seed plan.
  *
- * Event ids point at the fixture world until key day; live runs use the
- * Ticketmaster ids the same rules pick from the real calendars. Every bill
- * here is invented. Presets carry no seats-left count; capacity and budget
- * are operator what-ifs, never sales data.
+ * Each preset has a fixture show and room for a live one. The top-level
+ * fields are the fixture show: event ids point at the fixture world and every
+ * bill there is invented. `live` is a real Ticketmaster bill picked by
+ * HERO_RULE (one independent room, HERO_WINDOW); it is null until key day
+ * fills g1-a and g1-b. presetFor(preset, mode) is the one reader of either
+ * show: a live run of a preset with no live show stops with NO_LIVE_SHOW
+ * before any call. Presets carry no seats-left count; capacity and budget are
+ * operator what-ifs, never sales data.
  */
 import type { OperatorInputs } from "@walkup/contracts";
 import type { TmEvent } from "@walkup/tm";
 import { WORLD_EVENT_IDS, WORLD_VENUES, catalogByKey } from "@walkup/qloo-world";
 import type { PresetId, SeedPlan } from "./types";
+
+/**
+ * A real Ticketmaster bill for a preset, filled on key day (npm run tm:room
+ * prints the HERO_RULE picks). Real-only inputs: no fixture-world ids, and
+ * declared partners by label unless a real Qloo id is known. Seeds,
+ * categories and the pairing stay on the preset and apply in both modes (a
+ * seed plan only applies to an act of that exact name).
+ */
+export interface LivePreset {
+  /** Ticketmaster event the rule picked on the room's real calendar. */
+  tmEventId: string;
+  tmVenueId: string;
+  /** Planning and recording date (YYYY-MM-DD): the roster window starts here. */
+  asOf: string;
+  title: string;
+  venue: { name: string; city: string; state: string };
+  selection: { rule: string; result: string };
+  operator: OperatorInputs;
+  line: string;
+}
 
 export interface Preset {
   id: PresetId;
@@ -29,7 +53,31 @@ export interface Preset {
   realShow: boolean;
   /** One plain line for the top of the plan; {seats_left}, if used, is the operator's what-if. */
   line: string;
+  /** The real bill a live run plans; null until key day (see LivePreset). */
+  live: LivePreset | null;
 }
+
+/** What a preset plans in one mode: its fixture show or its live show. */
+export interface PresetShow {
+  tmEventId: string;
+  asOf: string;
+  title: string;
+  venue: { name: string; city: string; state: string; tmVenueId: string };
+  selection: { rule: string; result: string };
+  operator: OperatorInputs;
+  line: string;
+  realShow: boolean;
+}
+
+/** Why a live run of a preset stopped before any call. */
+export const NO_LIVE_SHOW = "This preset has no live show yet.";
+
+/** The live hero window. The fixture presets keep G1_RULE's Nov 20 - Dec 20 window. */
+export const HERO_WINDOW: Readonly<{ from: string; to: string }> = { from: "2026-12-20", to: "2027-02-28" };
+
+/** The docs/spec.md G1 rule for the live hero bills: explainG1Rule(events, HERO_WINDOW) applies it. */
+export const HERO_RULE =
+  "One independent room, Dec 20 2026 to Feb 28 2027. Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar in that window. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy).";
 
 const G1_RULE =
   "Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar between Nov 20 and Dec 20 2026. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy).";
@@ -68,6 +116,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     pairedWith: "g1-b",
     realShow: false,
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
+    // Key day fills this with the real bill A at the hero room (npm run tm:room, HERO_RULE).
+    live: null,
   },
   "g1-b": {
     id: "g1-b",
@@ -80,6 +130,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     pairedWith: "g1-a",
     realShow: false,
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
+    // Key day fills this with the real bill B at the hero room (npm run tm:room, HERO_RULE).
+    live: null,
   },
   g2: {
     id: "g2",
@@ -116,6 +168,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     categories: ["restaurant", "bar", "barber_shop", "record_store", "beauty_salon"],
     realShow: false,
     line: "One act's name matches more than one catalog entry, so Walkup asks you to pick before it plans.",
+    // Key day fills g1-a and g1-b only.
+    live: null,
   },
   g3: {
     id: "g3",
@@ -134,6 +188,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     },
     realShow: false,
     line: "A small club with thin signal: each fallback says why it was taken.",
+    // Key day fills g1-a and g1-b only.
+    live: null,
   },
 };
 
@@ -143,14 +199,40 @@ export function presetById(id: string): Preset | null {
   return (PRESETS as Record<string, Preset>)[id] ?? null;
 }
 
+/**
+ * The show a preset plans in this mode: the fixture fields in fixture mode,
+ * the live block in live mode (a real show), or null in live mode while the
+ * preset has no live show.
+ */
+export function presetFor(preset: Preset, mode: "fixture"): PresetShow;
+export function presetFor(preset: Preset, mode: "live" | "fixture"): PresetShow | null;
+export function presetFor(preset: Preset, mode: "live" | "fixture"): PresetShow | null {
+  if (mode === "fixture") {
+    const { tmEventId, asOf, title, venue, selection, operator, line, realShow } = preset;
+    return { tmEventId, asOf, title, venue, selection, operator, line, realShow };
+  }
+  const live = preset.live;
+  if (!live) return null;
+  return {
+    tmEventId: live.tmEventId,
+    asOf: live.asOf,
+    title: live.title,
+    venue: { ...live.venue, tmVenueId: live.tmVenueId },
+    selection: live.selection,
+    operator: live.operator,
+    line: live.line,
+    realShow: true,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // The G1 bill selection rule, as code
 // ---------------------------------------------------------------------------
 
-type GenreClass = "roots" | "hiphop" | "rnb" | "latin" | "comedy" | "indie_pop" | "other";
+export type GenreClass = "roots" | "hiphop" | "rnb" | "latin" | "comedy" | "indie_pop" | "other";
 
 /** Distance of each eligible genre from a roots bill (higher = more distant). */
-const DISTANCE_FROM_ROOTS: Record<GenreClass, number> = {
+export const DISTANCE_FROM_ROOTS: Readonly<Record<GenreClass, number>> = {
   hiphop: 1,
   rnb: 0.95,
   latin: 0.9,
@@ -159,6 +241,19 @@ const DISTANCE_FROM_ROOTS: Record<GenreClass, number> = {
   roots: 0,
   other: 0,
 };
+
+const GENRE_WORDS: Record<GenreClass, string> = {
+  roots: "Americana, country or folk",
+  hiphop: "hip-hop",
+  rnb: "R&B",
+  latin: "Latin",
+  comedy: "comedy",
+  indie_pop: "indie pop",
+  other: "other",
+};
+
+/** G1_RULE's window, the default for the fixture presets. */
+const G1_WINDOW = { from: "2026-11-20", to: "2026-12-20" };
 
 export function genreClass(e: TmEvent): GenreClass {
   const c = e.classifications?.[0];
@@ -173,26 +268,108 @@ export function genreClass(e: TmEvent): GenreClass {
   return "other";
 }
 
+/** One event dated in the rule's window, as the rule saw it. */
+export interface G1Candidate {
+  id: string;
+  /** Venue-local date (YYYY-MM-DD). */
+  localDate: string;
+  name: string;
+  /** Ticketmaster status code (onsale, offsale, canceled, postponed, rescheduled); null when absent. */
+  status: string | null;
+  genre: string | null;
+  subGenre: string | null;
+  genreClass: GenreClass;
+  /** DISTANCE_FROM_ROOTS of its class; 0 never makes bill B. */
+  distance: number;
+  /** False for a canceled event: the rule skips it. */
+  eligible: boolean;
+}
+
+export interface G1Pick {
+  /** Ticketmaster event id; null when nothing qualifies. */
+  id: string | null;
+  /** One line: why this bill, or why none. */
+  reason: string;
+}
+
+export interface G1Explanation {
+  window: { from: string; to: string };
+  /** Every event dated in the window, by date. */
+  candidates: G1Candidate[];
+  billA: G1Pick;
+  billB: G1Pick;
+}
+
+const localDateOf = (e: TmEvent): string => e.dates?.start?.localDate ?? "";
+
+function isCanceled(e: TmEvent): boolean {
+  const code = e.dates?.status?.code?.toLowerCase();
+  return code === "canceled" || code === "cancelled";
+}
+
+/** Discovery's "Undefined" placeholder is not a label. */
+const label = (s: string | undefined): string | null => (s && s.trim() !== "" && s !== "Undefined" ? s : null);
+
+function candidateOf(e: TmEvent): G1Candidate {
+  const c = e.classifications?.[0];
+  const cls = genreClass(e);
+  return {
+    id: e.id,
+    localDate: localDateOf(e),
+    name: e.name ?? e.id,
+    status: e.dates?.status?.code ?? null,
+    genre: label(c?.genre?.name),
+    subGenre: label(c?.subGenre?.name),
+    genreClass: cls,
+    distance: DISTANCE_FROM_ROOTS[cls],
+    eligible: !isCanceled(e),
+  };
+}
+
+function billWords(c: G1Candidate): string {
+  const genre = [c.genre, c.subGenre].filter((x): x is string => x !== null);
+  return `${c.name} on ${c.localDate}${genre.length > 0 ? ` (${genre.join(" / ")})` : ""}`;
+}
+
+/**
+ * The G1 rule with its working shown: every event dated in the window and a
+ * one-line reason for each pick. applyG1Rule returns the same picks.
+ */
+export function explainG1Rule(events: readonly TmEvent[], window: { from: string; to: string } = G1_WINDOW): G1Explanation {
+  const span = `${window.from} to ${window.to}`;
+  const inside = events.filter((e) => {
+    const d = localDateOf(e);
+    return d >= window.from && d <= window.to;
+  });
+  const candidates = [...inside].sort((a, b) => localDateOf(a).localeCompare(localDateOf(b))).map(candidateOf);
+  const base = { window: { from: window.from, to: window.to }, candidates };
+  // The rule's own order: events still on, by local date (the sort applyG1Rule has always used).
+  const ranked = inside.filter((e) => !isCanceled(e)).sort((a, b) => (localDateOf(a) < localDateOf(b) ? -1 : 1));
+  const a = ranked.find((e) => genreClass(e) === "roots") ?? null;
+  if (!a) {
+    return { ...base, billA: { id: null, reason: `No Americana, country or folk bill from ${span}.` }, billB: { id: null, reason: "No bill A, so no bill B." } };
+  }
+  const billA: G1Pick = { id: a.id, reason: `First Americana, country or folk bill from ${span}: ${billWords(candidateOf(a))}.` };
+  let best: { e: TmEvent; d: number; date: string } | null = null;
+  for (const e of ranked) {
+    if (e.id === a.id) continue;
+    const d = DISTANCE_FROM_ROOTS[genreClass(e)];
+    const date = localDateOf(e);
+    if (d > 0 && (!best || d > best.d || (d === best.d && date < best.date))) best = { e, d, date };
+  }
+  if (!best) return { ...base, billA, billB: { id: null, reason: `No hip-hop, R&B, Latin, comedy or indie-pop bill from ${span} besides bill A.` } };
+  const b = candidateOf(best.e);
+  const d = best.d;
+  const tied = ranked.filter((e) => e.id !== a.id && DISTANCE_FROM_ROOTS[genreClass(e)] === d).length;
+  const tie = tied > 1 ? `, the earliest of ${tied} at that distance` : "";
+  return { ...base, billA, billB: { id: b.id, reason: `Genre most distant from bill A (${GENRE_WORDS[b.genreClass]}, distance ${d}${tie}): ${billWords(b)}.` } };
+}
+
 /**
  * Applies the G1 rule to a room's calendar. Null fields when no event
  * qualifies (the spec then falls back to another Nashville room).
  */
-export function applyG1Rule(events: readonly TmEvent[], window = { from: "2026-11-20", to: "2026-12-20" }): { billA: string | null; billB: string | null } {
-  const inWindow = events
-    .filter((e) => {
-      const d = e.dates?.start?.localDate ?? "";
-      const code = e.dates?.status?.code?.toLowerCase();
-      return d >= window.from && d <= window.to && code !== "canceled" && code !== "cancelled";
-    })
-    .sort((a, b) => ((a.dates?.start?.localDate ?? "") < (b.dates?.start?.localDate ?? "") ? -1 : 1));
-  const a = inWindow.find((e) => genreClass(e) === "roots") ?? null;
-  if (!a) return { billA: null, billB: null };
-  let best: { id: string; d: number; date: string } | null = null;
-  for (const e of inWindow) {
-    if (e.id === a.id) continue;
-    const d = DISTANCE_FROM_ROOTS[genreClass(e)];
-    const date = e.dates?.start?.localDate ?? "";
-    if (d > 0 && (!best || d > best.d || (d === best.d && date < best.date))) best = { id: e.id, d, date };
-  }
-  return { billA: a.id, billB: best?.id ?? null };
+export function applyG1Rule(events: readonly TmEvent[], window = G1_WINDOW): { billA: string | null; billB: string | null } {
+  const { billA, billB } = explainG1Rule(events, window);
+  return { billA: billA.id, billB: billB.id };
 }

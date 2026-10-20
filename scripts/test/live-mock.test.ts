@@ -216,11 +216,20 @@ afterAll(() => {
 describe("live path against synthetic responses", () => {
   it("KG1 derives tau and overlaps per room and passes when the bills reorder the pool", async () => {
     const api = fakeApi();
-    const r = await runProbes(liveOpts(loadConfig(CONFIG_PATH), api.transport, { only: [1] }));
+    const cfg = loadConfig(CONFIG_PATH);
+    const r = await runProbes(liveOpts(cfg, api.transport, { only: [1] }));
     const run = r.runs[0]!;
     expect(run.outcome.status).toBe("pass");
-    expect(run.outcome.headline).toBe("2/2 rooms pass (need 2)");
-    const ryman = (run.outcome.derived.venues as Record<string, Record<string, unknown>>).ryman!;
+    // Every KG1 room with a point is scored (the-truth joins once key day fills its point).
+    const rooms = cfg.kg1.venues.filter((v) => cfg.venues[v]!.lat !== null);
+    expect(rooms.length).toBeGreaterThanOrEqual(cfg.kg1.venuesRequired);
+    expect(run.outcome.headline).toBe(`${rooms.length}/${rooms.length} rooms pass (need ${cfg.kg1.venuesRequired})`);
+    const venues = run.outcome.derived.venues as Record<string, Record<string, unknown>>;
+    for (const v of cfg.kg1.venues) {
+      if (rooms.includes(v)) expect(venues[v], v).toMatchObject({ pass: true, poolSize: 30 });
+      else expect(venues[v], v).toEqual({ skipped: "no coordinates" });
+    }
+    const ryman = venues.ryman!;
     expect(ryman.poolSize).toBe(30);
     expect(ryman.topKAvsPop).toBe(0);
     expect(ryman.tauAB as number).toBeLessThan(0.8);
@@ -238,6 +247,7 @@ describe("live path against synthetic responses", () => {
     expect(r.aborted).toBeNull();
     expect(r.calls).toBeLessThanOrEqual(100);
     for (const run of r.runs) expect(run.outcome.status, `#${run.def.id}: ${run.outcome.lines.join(" | ")}`).not.toMatch(/error|aborted/);
+    for (const run of r.runs) expect(run.requests.filter((q) => !q.memo).length, `#${run.def.id}`).toBeLessThanOrEqual(run.def.maxCalls);
     const byId = new Map(r.runs.map((x) => [x.def.id, x.outcome]));
     expect(byId.get(2)!.derived.cells).toEqual({ billA: 400, billB: 400, house: 400, generic: 400 });
     expect(byId.get(3)!.derived.resolved).toBe(9);

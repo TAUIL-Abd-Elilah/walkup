@@ -153,8 +153,11 @@ npx tsc -p apps/web/tsconfig.json --noEmit
 ## Known limits
 
 - Live mode is wired but unexercised: no keys exist. The live paths (free-text search, caps, stored presets, the quota
-  guard) are tested with the fixture world standing in for the live transports. Presets point at fixture-world
-  Ticketmaster ids until the key-day selection; in live mode they show the bundled fixture until a stored run exists.
+  guard) are tested with the fixture world standing in for the live transports. No preset has a live show until the
+  key-day selection fills `live` for g1-a and g1-b (`presetFor` in `@walkup/orchestrator`); until then a live run of a
+  preset stops with "This preset has no live show yet." before any call, and in live mode the preset pages show the
+  bundled fixture until a stored run exists. A live sheet of a preset takes its line and real-show wording from the
+  preset's live show.
 - Runs, SSE and the send store are in-process: one machine (as deployed). A restart loses a run in progress (its id then
   answers 404) and pending send tokens; complete and paused plans survive in SQLite.
 - "None of these: use a proxy" resumes the run with the title as the act's pick and relabels the row as a proxy seed;

@@ -15,7 +15,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { Bill, ControlArmResult, Envelope, LedgerEntry, OperatorInputs, Resolution, StreetSheet } from "@walkup/contracts";
-import { planShow, presetById, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
+import { planShow, presetById, presetFor, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
 import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, sheetEnvelope } from "../api";
 import { runtimeMode } from "../mode";
 import { getPlan, isPresetId, PRESET_PLAN_IDS, type PresetFixture } from "../plans";
@@ -111,8 +111,10 @@ export interface LoadOptions {
   sessionId?: string | null;
 }
 
-function presetTitle(id: string | undefined): string | undefined {
-  return id ? presetById(id)?.title : undefined;
+/** The title of the preset's show in this mode (its fixture title while it has no live show). */
+function presetTitle(id: string | undefined, mode: "live" | "fixture"): string | undefined {
+  const preset = id ? presetById(id) : null;
+  return preset ? (presetFor(preset, mode) ?? presetFor(preset, "fixture")).title : undefined;
 }
 
 function billTitle(bill: Bill | undefined): string {
@@ -181,7 +183,7 @@ export function presetPause(id: string): Promise<PauseData | null> {
       const preset = presetById(id);
       if (!preset) return null;
       try {
-        const deps = pinnedFixtureDeps(`pause:${id}`, Date.parse(`${preset.asOf}T15:00:00Z`));
+        const deps = pinnedFixtureDeps(`pause:${id}`, Date.parse(`${presetFor(preset, "fixture").asOf}T15:00:00Z`));
         const r = await planShow({ presetId: id, planId: id }, deps, { persist: false });
         if (r.status !== "needs_input" || !r.pause) return null;
         return { resolution: r.pause.resolution, pending: r.pause.pending, bill: r.pause.bill, operator: r.pause.operator, ledger: r.pause.ledger };
@@ -206,7 +208,7 @@ function sheetFromStored(s: StoredPlan, source: SheetView["source"]): SheetView 
     note: null,
     source,
     ...(presetId ? { presetId } : {}),
-    title: presetTitle(presetId) ?? billTitle(s.sheet.bill),
+    title: presetTitle(presetId, s.mode) ?? billTitle(s.sheet.bill),
   };
 }
 
@@ -255,7 +257,7 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
 
   const run = getRun(id);
   if (run) {
-    const title = presetTitle(run.presetId) ?? run.title;
+    const title = presetTitle(run.presetId, run.mode) ?? run.title;
     const base = { planId: id, mode: run.mode, title, ...(run.presetId ? { presetId: run.presetId } : {}) };
     if (run.status === "running") return { kind: "running", ...base, cards: [...run.cards] };
     if (run.status === "error") return { kind: "error", planId: id, mode: run.mode, title, error: run.error ?? "The run stopped." };
@@ -283,7 +285,7 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
       planId: id,
       mode: stored.mode,
       ...(stored.presetId ? { presetId: stored.presetId } : {}),
-      title: presetTitle(stored.presetId) ?? billTitle(stored.pause.bill),
+      title: presetTitle(stored.presetId, stored.mode) ?? billTitle(stored.pause.bill),
       pause: { resolution: stored.pause.resolution, pending: stored.pause.pending, bill: stored.pause.bill, operator: stored.pause.operator, ledger: stored.pause.ledger },
       source: "store",
     };
@@ -487,7 +489,7 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
     ...(Object.keys(proxyPicks).length > 0 ? { proxyPicks } : {}),
     ...(overrides ? { customInputs: true } : {}),
   };
-  const title = presetTitle(presetId) ?? `Ticketmaster event ${tmEventId}`;
+  const title = presetTitle(presetId, mode.kind) ?? `Ticketmaster event ${tmEventId}`;
   const run = launch({ request, mode: mode.kind, ctx, title, counted });
   return respond(run, body.wait, ctx, counted, opts.rankPartners ? declaredOnly : undefined);
 }

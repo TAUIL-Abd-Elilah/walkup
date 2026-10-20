@@ -179,8 +179,12 @@ describe("dry-run plan (shipped config)", () => {
     const reqs = fresh(result, 1).filter((r) => r.path === "/v2/insights");
     const pools = reqs.filter((r) => r.label.includes("(no signal"));
     const scored = reqs.filter((r) => r.params["filter.results.entities"] !== undefined);
-    expect(pools.length).toBe(2); // the-truth has no point yet
-    expect(scored.length).toBe(4);
+    // One pool per KG1 room with a point (the-truth gets one once key day fills it), each scored by both bills.
+    const withPoint = cfg.kg1.venues.filter((v) => cfg.venues[v]!.lat !== null);
+    const without = cfg.kg1.venues.filter((v) => cfg.venues[v]!.lat === null);
+    expect(withPoint.length).toBeGreaterThanOrEqual(2);
+    expect(pools.map((p) => p.label)).toEqual(withPoint.map((v) => `pool near ${v} (no signal = popularity order)`));
+    expect(scored.length).toBe(2 * withPoint.length);
     for (const p of pools) {
       expect(p.params["signal.interests.entities"]).toBeUndefined();
       expect(p.params["filter.location.radius"]).toBe(1500);
@@ -188,7 +192,8 @@ describe("dry-run plan (shipped config)", () => {
       expect(p.params["operator.filter.tags"]).toBe("union");
     }
     for (const s of scored) expect(s.params["signal.interests.entities"]).toBeTruthy();
-    expect(result.runs.find((r) => r.def.id === 1)!.outcome.lines.join(" ")).toMatch(/the-truth: skipped/);
+    const lines = result.runs.find((r) => r.def.id === 1)!.outcome.lines;
+    expect(lines).toEqual(without.map((v) => `${v}: skipped (no coordinates yet; fill lat/lon from the Ticketmaster venue)`));
   });
 
   it("probe 2: bill, bill, house and generic heatmaps at 40 km", () => {
@@ -257,7 +262,17 @@ describe("dry-run plan (shipped config)", () => {
   });
 
   it("probe 18 waits for roster ids; 19 uses a 60 km comedy-tag heatmap; 20 scores the slate with explainability", () => {
-    expect(result.runs.find((r) => r.def.id === 18)!.outcome.status).toBe("skipped");
+    const p18 = result.runs.find((r) => r.def.id === 18)!;
+    const ids = cfg.roster.spotifyIds.slice(0, cfg.p18.maxIds);
+    if (ids.length === 0) {
+      expect(p18.outcome.status).toBe("skipped");
+      expect(p18.requests).toEqual([]);
+    } else {
+      // Filled on key day: one /entities lookup by the roster's ids (or the same lookup reused from probe 2).
+      expect(p18.outcome.status).toBe("planned");
+      expect(p18.requests.length).toBe(1);
+      expect(p18.requests[0]).toMatchObject({ path: "/entities", params: { "external.spotify.ids": ids.join(",") } });
+    }
     const h = fresh(result, 19).find((r) => r.params["filter.type"] === "urn:heatmap")!;
     expect(h.params["filter.location.radius"]).toBe(60000);
     expect(h.params["signal.interests.tags"]).toBeTruthy();
@@ -288,6 +303,10 @@ describe("dry-run plan with key-day inputs filled", () => {
   it("the gates alone (--only=1,2,3) plan well under the cap", async () => {
     const result = await plan(base(), [1, 2, 3]);
     expect(result.runs.map((r) => r.def.id)).toEqual([1, 2, 3]);
-    expect(result.calls).toBeLessThanOrEqual(40);
+    // Within the gates' own estimates, which leave room for key day: the-truth's point adds a KG1 room
+    // and filled bars add the KG4 lookups (37 calls as shipped, 51 with both).
+    const declared = PROBES.filter((p) => p.id <= 3).reduce((n, p) => n + p.maxCalls, 0);
+    expect(declared).toBeLessThanOrEqual(55);
+    expect(result.calls).toBeLessThanOrEqual(declared);
   });
 });

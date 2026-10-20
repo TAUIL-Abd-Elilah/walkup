@@ -3,7 +3,7 @@
  * sheets, its fixture-mode rule, its afterRun bookkeeping).
  */
 import type { StreetSheet } from "@walkup/contracts";
-import type { PlanResult } from "@walkup/orchestrator";
+import { NO_LIVE_SHOW, type FixtureDeps, type PlanResult } from "@walkup/orchestrator";
 import { describe, expect, it } from "vitest";
 import { createMcpServices, DEFAULT_FIXTURE_REFUSAL, planShowTool, rankPartnersTool, type FreshRunLimiter, type PlanView } from "../src/index";
 import { caller, connect, services } from "./helpers";
@@ -112,4 +112,34 @@ describe("host hooks", () => {
     expect(again.envelope.planId).toBe("g3");
     expect(seen).toEqual(["g3:complete", `${fresh.envelope.planId}:complete`]);
   }, 120_000);
+});
+
+describe("a live server and a preset with no live show yet", () => {
+  it("answers the plain reason before any Ticketmaster or Qloo call and takes no fresh run", async () => {
+    const calls: string[] = [];
+    const limiter: FreshRunLimiter = {
+      check: () => (calls.push("check"), { allowed: true, leftForCaller: 3, leftToday: 15 }),
+      take: () => (calls.push("take"), { allowed: true, leftForCaller: 2, leftToday: 14 }),
+      refund: () => void calls.push("refund"),
+    };
+    const base = services();
+    const world = (base.deps as FixtureDeps).world;
+    // The fixture world stands in for the live transports, as in the web app's live-mode tests.
+    const s = createMcpServices({ deps: { ...base.deps, mode: "live" }, store: base.store, limiter, rate: null, secrets: [], now: base.now, idGen: base.idGen });
+    expect(s.mode).toBe("live");
+    world.resetStats();
+
+    const whatIf = await planShowTool(s, caller(), { presetId: "g1-a", operator: { seatsLeft: 300 } });
+    expect(whatIf.httpStatus).toBe(404);
+    expect(whatIf.envelope.reason).toBe(NO_LIVE_SHOW);
+    const ranked = await rankPartnersTool(s, caller(), { presetId: "g1-b", partnerNames: ["A partner by name"] });
+    expect(ranked.httpStatus).toBe(404);
+    expect(ranked.envelope.reason).toBe(NO_LIVE_SHOW);
+    const plain = await planShowTool(s, caller(), { presetId: "g1-a" });
+    expect(plain.envelope.status).toBe("error");
+    expect(plain.envelope.reason).toBe(NO_LIVE_SHOW);
+
+    expect(calls.filter((c) => c !== "check")).toEqual([]);
+    expect(world.stats()).toMatchObject({ qloo: 0, tm: 0 });
+  });
 });

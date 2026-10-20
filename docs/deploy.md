@@ -199,7 +199,9 @@ that as a `degraded` card, not an error page, to mark every sheet produced this 
 watermark, and to disable fresh runs with an explanation (the web app already answers fresh runs with 503 in fixture
 mode).
 
-1. **Before the key goes away, record.** Run each preset plan once in live mode with recording on. On the host:
+1. **Before the key goes away, record.** Run each preset plan that has a live show once in live mode with recording on
+   (g1-a and g1-b once key day fills their `live` blocks; a preset without one stops with "This preset has no live show
+   yet." and records nothing). On the host:
 
    ```bash
    fly secrets set WALKUP_RECORD=1 -a walkup      # restarts the machine

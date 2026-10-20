@@ -62,7 +62,8 @@ export const probe1: ProbeDef = {
   criterion:
     "Per room, one pool of the same places scored by two contrasting bills: Kendall tau between bills < 0.8 and top-8 overlap <= 5/8; each bill vs the no-signal popularity order top-8 overlap <= 5/8. Gate: at least kg1.venuesRequired rooms pass.",
   ifFails: 'Partner cards say "ranked by Qloo" with no claim over popularity; review the alternate product plan before building partners further.',
-  maxCalls: 16,
+  // All three kg1 rooms: the-truth plans its pool once key day fills its point.
+  maxCalls: 22,
   async run(ctx) {
     const c = ctx.cfg.kg1;
     const lines: string[] = [];
