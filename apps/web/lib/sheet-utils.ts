@@ -328,7 +328,7 @@ export function comparisonSentence(c: BillComparison, names: { a: string; b: str
   const partners =
     c.partnersA === c.partnersB
       ? some(c.sharedPartners, `their ${c.partnersA} suggested partners`)
-      : `${c.sharedPartners} suggested ${c.sharedPartners === 1 ? "partner" : "partners"} (of ${c.partnersA} and ${c.partnersB})`;
+      : `${some(c.sharedPartners, "their suggested partners")} (${c.partnersA} and ${c.partnersB})`;
   const shared = `The two bills share ${areas ? `${areas} and ${partners}` : partners}`;
   if (!c.a || !c.b) return `${shared}.`;
   const ba = c.a.baseline ?? "house";

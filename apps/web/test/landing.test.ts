@@ -101,7 +101,8 @@ describe("comparisonSentence wording", () => {
   });
 
   it("names both partner counts when they differ", () => {
-    expect(comparisonSentence({ ...base, partnersB: 20, sharedPartners: 1, a: null, b: null }, names)).toContain("1 suggested partner (of 24 and 20)");
+    expect(comparisonSentence({ ...base, partnersB: 20, sharedPartners: 1, a: null, b: null }, names)).toContain("1 of their suggested partners (24 and 20)");
+    expect(comparisonSentence({ ...base, partnersB: 20, sharedPartners: 0, a: null, b: null }, names)).toContain("none of their suggested partners (24 and 20)");
   });
 
   it("adds each bill's top area with distance and direction from the venue", () => {
