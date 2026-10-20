@@ -118,7 +118,7 @@ export function LiftMap({
   title,
   selected = null,
   onSelect,
-  frameClass = "aspect-[4/5] sm:aspect-[16/10]",
+  frameClass = "aspect-[4/3] sm:aspect-[16/10]",
   interactive = true,
   extent = null,
   caption = true,

@@ -157,7 +157,8 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
             }
           : { center: [venue.lon, venue.lat] as [number, number], zoom: 10 }),
         attributionControl: false,
-        cooperativeGestures: false,
+        // On a touch screen one finger scrolls the page and two move the map, so the page never gets stuck on it.
+        cooperativeGestures: typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true,
         scrollZoom: false,
         dragRotate: false,
         pitchWithRotate: false,

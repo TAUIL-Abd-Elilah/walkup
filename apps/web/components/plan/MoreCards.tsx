@@ -143,7 +143,7 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
                       const v = Number(e.target.value);
                       setCaps((c) => ({ ...c, [s.entity.entityId]: Number.isFinite(v) && v >= 0 ? v : 0 }));
                     }}
-                    className="ml-auto block w-16 rounded-[4px] border border-transparent bg-transparent px-1 py-0.5 text-right tabular hover:border-control focus:border-control"
+                    className="ml-auto block w-16 rounded-[4px] border border-transparent bg-transparent px-1 py-0.5 text-right tabular hover:border-control focus:border-control max-sm:border-control"
                   />
                 </td>
               </tr>

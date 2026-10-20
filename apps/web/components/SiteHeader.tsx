@@ -34,7 +34,7 @@ export function SiteHeader({ mode }: { mode: RuntimeMode }) {
                   <Link
                     href={n.href}
                     aria-current={current ? "page" : undefined}
-                    className={`underline-offset-4 hover:underline ${current ? "font-semibold text-ink underline" : "text-muted hover:text-ink"}`}
+                    className={`inline-block py-1.5 underline-offset-4 hover:underline ${current ? "font-semibold text-ink underline" : "text-muted hover:text-ink"}`}
                   >
                     {n.label}
                   </Link>

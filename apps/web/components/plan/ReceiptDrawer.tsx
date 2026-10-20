@@ -118,17 +118,17 @@ export function ReceiptDrawer({
             {onNavigate && entries.length > 1 ? (
               <p className="link-row mt-1 text-muted">
                 {index >= 0 ? <span>{`Request ${index + 1} of ${entries.length}`}</span> : null}
-                <button type="button" className="text-button" aria-disabled={!prev} onClick={() => prev && onNavigate(prev.id)}>
+                <button type="button" className="text-button min-h-[36px]" aria-disabled={!prev} onClick={() => prev && onNavigate(prev.id)}>
                   Previous{prev ? <span className="sr-only">: receipt {prev.id}</span> : null}
                 </button>
-                <button type="button" className="text-button" aria-disabled={!next} onClick={() => next && onNavigate(next.id)}>
+                <button type="button" className="text-button min-h-[36px]" aria-disabled={!next} onClick={() => next && onNavigate(next.id)}>
                   Next{next ? <span className="sr-only">: receipt {next.id}</span> : null}
                 </button>
               </p>
             ) : null}
           </div>
           {/* Full screen under 640px, with Close at the top left. */}
-          <button ref={closeRef} type="button" className="btn btn-ghost min-h-0 px-3 py-1 text-sm max-sm:order-first" onClick={onClose}>
+          <button ref={closeRef} type="button" className="btn btn-ghost min-h-[40px] px-3 py-1 text-sm max-sm:order-first" onClick={onClose}>
             Close<span className="sr-only"> receipt</span>
           </button>
         </header>
@@ -146,10 +146,10 @@ export function ReceiptDrawer({
                 </p>
               ) : null}
               <p>{claim}</p>
-              <dl className="mt-3 grid grid-cols-[40%_minmax(0,1fr)] border-t border-rule">
+              <dl className="mt-3 grid grid-cols-[40%_minmax(0,1fr)] border-t border-rule max-sm:grid-cols-1">
                 {facts.map(([k, v]) => (
                   <div key={k} className="contents">
-                    <dt className="border-b border-rule py-1.5 pr-3 text-muted">{k}</dt>
+                    <dt className="border-b border-rule py-1.5 pr-3 text-muted max-sm:border-b-0 max-sm:pb-0">{k}</dt>
                     <dd className="tabular border-b border-rule py-1.5 [overflow-wrap:anywhere]">{v}</dd>
                   </div>
                 ))}

@@ -314,6 +314,13 @@
     content: "·";
     color: var(--color-muted);
     margin-right: 0.25rem;
+    /* Inline-block keeps the link's underline off the dot. */
+    display: inline-block;
+    text-decoration: none;
+  }
+  .link-row a,
+  .link-row .text-button {
+    padding-block: 6px;
   }
   /* A lead-in word ("Show:") takes no separator after it. */
   .link-row > .link-row-lead + *::before {
@@ -499,9 +506,12 @@
     position: relative;
     top: -0.45em;
     line-height: 0;
-    font-size: 0.7em;
+    font-size: max(0.7em, 12px);
   }
+  /* A tap area about 30px tall around each small receipt link; the padding and margin cancel out in the layout. */
   .fn-flat a {
+    padding: 9px 3px;
+    margin: -9px -3px;
     line-height: 0;
   }
 }

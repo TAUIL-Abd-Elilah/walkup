@@ -59,11 +59,11 @@ export function LedgerSection({ entries, exportHref, sample = false }: { entries
               </td>
               <td className="hidden text-muted md:table-cell">{LEDGER_KIND_LABEL[e.kind]}</td>
               <td className="max-w-0 w-full">
-                <span className="block truncate text-base" title={`${e.method} ${e.endpoint}`}>
+                <span className="block truncate text-base max-sm:whitespace-normal max-sm:[overflow-wrap:anywhere]" title={`${e.method} ${e.endpoint}`}>
                   {e.method === "ACTION" ? "" : <span className="text-muted">{e.method} </span>}
                   {e.endpoint}
                 </span>
-                {e.note ? <span className="block truncate text-sm text-muted">{ledgerNoteText(e.note)}</span> : null}
+                {e.note ? <span className="block truncate text-sm text-muted max-sm:whitespace-normal">{ledgerNoteText(e.note)}</span> : null}
               </td>
               <td className={`hidden whitespace-nowrap sm:table-cell ${e.envelopeStatus === "ok" ? "text-muted" : "font-semibold"}`}>{STATUS_LABEL[e.envelopeStatus]}</td>
               <td className="num hidden whitespace-nowrap sm:table-cell">

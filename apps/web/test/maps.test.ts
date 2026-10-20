@@ -83,7 +83,7 @@ describe("lift map frame", () => {
       createElement(LiftMap, { tiles: allTiles(a), venue: venueOf(a), ranked: top.map((t) => t.geohash), idBase: "m", title: "Areas" }),
     );
     expect(html).toContain("Simplified drawing while the street map loads.");
-    expect(html).toContain("aspect-[4/5]"); // about 4:5 on a phone
+    expect(html).toContain("aspect-[4/3]"); // 4:3 on a phone, short enough to scroll past
     expect(html).toContain("OpenStreetMap contributors");
     expect(html).not.toContain("Each square is about"); // the plan page prints its own square line
   });

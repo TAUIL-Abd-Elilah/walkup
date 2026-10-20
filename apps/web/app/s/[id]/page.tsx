@@ -33,7 +33,7 @@ function Refs({ refs, planId }: { refs: string; planId: string }) {
   if (!text) return null;
   const parts = text.split(/,\s*|\s+(?=\+\d)/).filter(Boolean);
   return (
-    <sup className="fn">
+    <sup className="fn fn-flat">
       {parts.map((part, i) => {
         const first = /^[A-Za-z]+\d+/.exec(part)?.[0];
         return (
