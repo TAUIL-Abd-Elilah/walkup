@@ -56,7 +56,7 @@ export {
   genreClass,
   DISTANCE_FROM_ROOTS,
 } from "./presets";
-export type { Preset, LivePreset, PresetShow, GenreClass, G1Candidate, G1Pick, G1Explanation } from "./presets";
+export type { Preset, LivePreset, PresetShow, GenreClass, G1Candidate, G1Pick, G1Explanation, G1Options } from "./presets";
 export { createMemoryPlanStore, createMemoryChoiceStore, getPlan, choiceKey, CHOICE_TTL_MS } from "./store";
 export type { PlanStore, StoredPlan, ChoiceStore, CompleteFilter } from "./store";
 export { createFixtureDeps, createDepsFromEnv, liveKeysPresent } from "./deps";

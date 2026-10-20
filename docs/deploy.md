@@ -215,8 +215,8 @@ Qloo has rejected the configured key and the plan store holds a live sheet. A re
 falls back to fixture mode (the synthetic sample world), as before. The stored sheets live in `/data/plans.sqlite` on
 the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
 
-1. **Before Nov 2, record each preset live on the host.** Only a preset with a live show (its `live` block, filled on
-   key day) can be recorded; one without stops with "This preset has no live show yet." and records nothing. While the
+1. **Before Nov 2, record each preset live on the host.** Only a preset with a live show (its `live` block: g1-a and g1-b)
+   can be recorded; one without stops with "This preset has no live show yet." and records nothing. While the
    server is live, a preset page shows the bundled sample until a live run of that preset's live show is stored. Start one per preset with the preset's own inputs (no what-ifs,
    no partner list, no picks sent up front). Each is a fresh run and counts against the caps (3 per network and 15 per
    day), so run the fourth from another network or the next day; answering a pick does not count again.

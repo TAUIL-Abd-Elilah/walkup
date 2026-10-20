@@ -182,6 +182,7 @@ describe("host hooks", () => {
 });
 
 describe("a live server and a preset with no live show yet", () => {
+  // g2 and g3 have no live show (g1-a and g1-b carry the hero bills).
   it("answers the plain reason before any Ticketmaster or Qloo call and takes no fresh run", async () => {
     const calls: string[] = [];
     const limiter: FreshRunLimiter = {
@@ -196,13 +197,13 @@ describe("a live server and a preset with no live show yet", () => {
     expect(s.mode).toBe("live");
     world.resetStats();
 
-    const whatIf = await planShowTool(s, caller(), { presetId: "g1-a", operator: { seatsLeft: 300 } });
+    const whatIf = await planShowTool(s, caller(), { presetId: "g2", operator: { seatsLeft: 300 } });
     expect(whatIf.httpStatus).toBe(404);
     expect(whatIf.envelope.reason).toBe(NO_LIVE_SHOW);
-    const ranked = await rankPartnersTool(s, caller(), { presetId: "g1-b", partnerNames: ["A partner by name"] });
+    const ranked = await rankPartnersTool(s, caller(), { presetId: "g3", partnerNames: ["A partner by name"] });
     expect(ranked.httpStatus).toBe(404);
     expect(ranked.envelope.reason).toBe(NO_LIVE_SHOW);
-    const plain = await planShowTool(s, caller(), { presetId: "g1-a" });
+    const plain = await planShowTool(s, caller(), { presetId: "g2" });
     expect(plain.envelope.status).toBe("error");
     expect(plain.envelope.reason).toBe(NO_LIVE_SHOW);
 

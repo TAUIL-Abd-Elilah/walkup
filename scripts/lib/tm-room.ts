@@ -246,12 +246,18 @@ export interface ReportInput {
   venueQuery: string;
   asOf: string;
   window: Window;
+  /** Event ids whose headliner Qloo cannot match exactly; the rule skips them. */
+  unresolved?: readonly string[];
 }
+
+/** The reason the rule prints for a bill passed with --unresolved. */
+export const UNRESOLVED_REASON = "its headliner has no exact match in Qloo";
 
 export async function roomReport(tm: TmClient, input: ReportInput): Promise<RoomReport> {
   const roster = await readRoster(tm, input.venueId, input.asOf);
   const read = await readWindow(tm, input.venueId, input.window);
-  const explanation = explainG1Rule(read.events, input.window);
+  const unresolved = Object.fromEntries((input.unresolved ?? []).map((id) => [id, UNRESOLVED_REASON]));
+  const explanation = explainG1Rule(read.events, input.window, { unresolved });
   const warnings: string[] = [];
   const venue = input.venue ?? venueFromEvents(input.venueId, [...roster.events, ...read.events]);
   if (!venue) warnings.push(`No event at venue ${input.venueId} carries the venue record, so its name and point are unknown.`);
@@ -325,7 +331,7 @@ export function renderReport(r: RoomReport): string[] {
   L.push(`Window  ${w.from} to ${w.to}: ${w.events.length} events read in ${w.pages} ${w.pages === 1 ? "page" : "pages"} (${w.startDateTime} to ${w.endDateTime}, then kept by local date)`);
   for (const c of r.explanation.candidates) {
     const labels = [c.genre, c.subGenre].filter((x): x is string => x !== null).join(" / ") || "-";
-    L.push(`  ${cell(c.localDate, 10)}  ${cell(c.name, 36)}  ${cell(labels, 32)}  ${cell(c.genreClass, 9)}  ${cell(String(c.distance), 4)}  ${c.eligible ? (c.status ?? "-") : `${c.status} (skipped)`}`);
+    L.push(`  ${cell(c.localDate, 10)}  ${cell(c.name, 36)}  ${cell(labels, 32)}  ${cell(c.genreClass, 9)}  ${cell(String(c.distance), 4)}  ${c.eligible ? (c.status ?? "-") : `${c.status} (skipped${c.skipped ? `: ${c.skipped}` : ""})`}`);
   }
   if (r.explanation.candidates.length === 0) L.push("  (no event dated in the window)");
   L.push(`Bill A  ${r.explanation.billA.id ?? "none"}  ${r.explanation.billA.reason}`);

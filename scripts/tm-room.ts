@@ -34,6 +34,8 @@ interface Args {
   venueId: string | null;
   asOf: string;
   window: Window;
+  /** Event ids whose headliner Qloo cannot match exactly (checked by hand); the rule skips them. */
+  unresolved: string[];
   probeKey: string;
   writeProbe: boolean;
   config: string;
@@ -42,7 +44,7 @@ interface Args {
   help: boolean;
 }
 
-const VALUE_FLAGS = new Set(["--name", "--city", "--state", "--venue-id", "--as-of", "--window", "--probe-key", "--config"]);
+const VALUE_FLAGS = new Set(["--name", "--city", "--state", "--venue-id", "--as-of", "--window", "--unresolved", "--probe-key", "--config"]);
 
 function isDate(s: string): boolean {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
@@ -59,6 +61,7 @@ export function parseArgs(argv: readonly string[], today: string): Args {
     venueId: null,
     asOf: today,
     window: { from: HERO_WINDOW.from, to: HERO_WINDOW.to },
+    unresolved: [],
     probeKey: "the-truth",
     writeProbe: false,
     config: resolve(HERE, "probe.config.json"),
@@ -106,6 +109,12 @@ export function parseArgs(argv: readonly string[], today: string): Args {
         args.window = { from, to };
         break;
       }
+      case "--unresolved": {
+        const ids = need().split(",").map((x) => x.trim()).filter(Boolean);
+        if (ids.length === 0 || ids.some((x) => !/^[A-Za-z0-9_-]+$/.test(x))) throw new Error("--unresolved is a comma-separated list of Ticketmaster event ids");
+        args.unresolved.push(...ids);
+        break;
+      }
       case "--probe-key": {
         const v = need();
         if (!/^[a-z0-9][a-z0-9-]*$/.test(v)) throw new Error("--probe-key is lowercase letters, digits and dashes, e.g. the-truth");
@@ -142,10 +151,11 @@ function usage(): string {
   return [
     'usage: npm run tm:room -- --name="<room>" --city=<city> --state=<XX> [--as-of=YYYY-MM-DD] [--window=FROM:TO]',
     "       npm run tm:room -- --venue-id=<id> [...]",
-    "       [--write-probe] [--probe-key=the-truth] [--config=path] [--save] [--json]",
+    "       [--unresolved=<eventId>[,<eventId>]] [--write-probe] [--probe-key=the-truth] [--config=path] [--save] [--json]",
     "",
     `Default window: ${HERO_WINDOW.from}:${HERO_WINDOW.to} (the hero rule). Default as-of date: today (UTC).`,
     "--write-probe writes venues.<probe-key> (point and source) and roster (Spotify ids) in scripts/probe.config.json.",
+    "--unresolved lists bills whose headliner you checked has no exact match in Qloo; the rule skips them and says so.",
     "--save writes the Ticketmaster bodies to probe_out/ (git-ignored). Nothing else is written.",
     "Exit codes: 0 done (warnings included), 2 usage, config or venue-choice error, 3 Ticketmaster refused or failed.",
   ].join("\n");
@@ -209,7 +219,7 @@ async function main(): Promise<number> {
       venueQuery = found.query;
     }
 
-    const report = await roomReport(tm, { venue, venueId, venueQuery, asOf: args.asOf, window: args.window });
+    const report = await roomReport(tm, { venue, venueId, venueQuery, asOf: args.asOf, window: args.window, unresolved: args.unresolved });
     if (args.json) console.log(JSON.stringify(reportJson(report), null, 2));
     else for (const line of renderReport(report)) console.log(line);
 

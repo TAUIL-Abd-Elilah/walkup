@@ -5,8 +5,8 @@
  * Each preset has a fixture show and room for a live one. The top-level
  * fields are the fixture show: event ids point at the fixture world and every
  * bill there is invented. `live` is a real Ticketmaster bill picked by
- * HERO_RULE (one independent room, HERO_WINDOW); it is null until key day
- * fills g1-a and g1-b. presetFor(preset, mode) is the one reader of either
+ * HERO_RULE (one independent room, HERO_WINDOW): g1-a and g1-b carry the two
+ * hero bills at The Basement East; g2 and g3 have none. presetFor(preset, mode) is the one reader of either
  * show: a live run of a preset with no live show stops with NO_LIVE_SHOW
  * before any call. Presets carry no seats-left count; capacity and budget are
  * operator what-ifs, never sales data.
@@ -17,8 +17,8 @@ import { WORLD_EVENT_IDS, WORLD_VENUES, catalogByKey } from "@walkup/qloo-world"
 import type { PresetId, SeedPlan } from "./types";
 
 /**
- * A real Ticketmaster bill for a preset, filled on key day (npm run tm:room
- * prints the HERO_RULE picks). Real-only inputs: no fixture-world ids, and
+ * A real Ticketmaster bill for a preset (npm run tm:room prints the
+ * HERO_RULE picks). Real-only inputs: no fixture-world ids, and
  * declared partners by label unless a real Qloo id is known. Seeds,
  * categories and the pairing stay on the preset and apply in both modes (a
  * seed plan only applies to an act of that exact name).
@@ -53,7 +53,7 @@ export interface Preset {
   realShow: boolean;
   /** One plain line for the top of the plan; {seats_left}, if used, is the operator's what-if. */
   line: string;
-  /** The real bill a live run plans; null until key day (see LivePreset). */
+  /** The real bill a live run plans; null when the preset has none (see LivePreset). */
   live: LivePreset | null;
 }
 
@@ -77,7 +77,7 @@ export const HERO_WINDOW: Readonly<{ from: string; to: string }> = { from: "2026
 
 /** The docs/spec.md G1 rule for the live hero bills: explainG1Rule(events, HERO_WINDOW) applies it. */
 export const HERO_RULE =
-  "One independent room, Dec 20 2026 to Feb 28 2027. Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar in that window. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy).";
+  "One independent room, Dec 20 2026 to Feb 28 2027. Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar in that window. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy). A bill whose headliner Qloo cannot match exactly is skipped, because both headliners must resolve exactly.";
 
 const G1_RULE =
   "Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar between Nov 20 and Dec 20 2026. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy).";
@@ -100,6 +100,30 @@ const G1_OPERATOR: OperatorInputs = {
   ],
 };
 
+/**
+ * The live hero room: The Basement East, Nashville (independently owned; Live Nation has booked it since 2019).
+ * The rule was run with npm run tm:room on 2026-10-20 over the room's Ticketmaster calendar, venue KovZ917ACl7:
+ *   npm run tm:room -- --venue-id=KovZ917ACl7 --as-of=2026-10-20 --unresolved=rZ7HnEZ1AfGI-f
+ * Its first folk bill, Bo Staloch on Feb 3 2027 (rZ7HnEZ1AfGI-f), was skipped: an exact Qloo search for the name
+ * returned other acts only. Both picked headliners resolve by their Spotify ids and pass the signal check.
+ * The events list the room under its TicketWeb venue id, rZ7HnEZ1789Gg, which is what a run reads the house
+ * roster from.
+ */
+const HERO_VENUE = { name: "The Basement East", city: "Nashville", state: "TN" } as const;
+const HERO_VENUE_ID = "rZ7HnEZ1789Gg";
+const HERO_AS_OF = "2026-10-20";
+const HERO_LINE = "Same room, two crowds: two real bills at The Basement East, planned side by side.";
+
+/** What-ifs for the hero room: the capacity is the room's published 500-600 range; the budget is an example. */
+const HERO_OPERATOR: OperatorInputs = {
+  seatsLeft: null,
+  capacity: 550,
+  mediaBudgetUsd: 1500,
+  streetTeamDays: ["thursday", "saturday"],
+  radiusKm: 40,
+  declaredPartners: [],
+};
+
 const truth = WORLD_VENUES.truth;
 const hampton = WORLD_VENUES.hampton;
 const superfunny = WORLD_VENUES.superfunny;
@@ -116,8 +140,20 @@ export const PRESETS: Record<PresetId, Preset> = {
     pairedWith: "g1-b",
     realShow: false,
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
-    // Key day fills this with the real bill A at the hero room (npm run tm:room, HERO_RULE).
-    live: null,
+    live: {
+      tmEventId: "rZ7HnEZ1AfGx4f",
+      tmVenueId: HERO_VENUE_ID,
+      asOf: HERO_AS_OF,
+      title: "The Basement East, Nashville: bill A",
+      venue: HERO_VENUE,
+      selection: {
+        rule: HERO_RULE,
+        result:
+          "Bill A: Rayland Baxter, The True Violet Tour, Fri Feb 5 2027 (Rock / Folk Rock), the first folk bill in the window after Bo Staloch (Feb 3), whose headliner has no exact match in Qloo.",
+      },
+      operator: HERO_OPERATOR,
+      line: HERO_LINE,
+    },
   },
   "g1-b": {
     id: "g1-b",
@@ -130,8 +166,19 @@ export const PRESETS: Record<PresetId, Preset> = {
     pairedWith: "g1-a",
     realShow: false,
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
-    // Key day fills this with the real bill B at the hero room (npm run tm:room, HERO_RULE).
-    live: null,
+    live: {
+      tmEventId: "rZ7HnEZ1AfusAf",
+      tmVenueId: HERO_VENUE_ID,
+      asOf: HERO_AS_OF,
+      title: "The Basement East, Nashville: bill B",
+      venue: HERO_VENUE,
+      selection: {
+        rule: HERO_RULE,
+        result: "Bill B: Little Stranger with Shwayze and Damn Skippy, Sun Feb 21 2027 (Hip-Hop/Rap), the genre most distant from bill A.",
+      },
+      operator: HERO_OPERATOR,
+      line: HERO_LINE,
+    },
   },
   g2: {
     id: "g2",
@@ -168,7 +215,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     categories: ["restaurant", "bar", "barber_shop", "record_store", "beauty_salon"],
     realShow: false,
     line: "One act's name matches more than one catalog entry, so Walkup asks you to pick before it plans.",
-    // Key day fills g1-a and g1-b only.
+    // No live show: only g1-a and g1-b carry the hero bills.
     live: null,
   },
   g3: {
@@ -188,7 +235,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     },
     realShow: false,
     line: "A small club with thin signal: each fallback says why it was taken.",
-    // Key day fills g1-a and g1-b only.
+    // No live show: only g1-a and g1-b carry the hero bills.
     live: null,
   },
 };
@@ -292,8 +339,18 @@ export interface G1Candidate {
   genreClass: GenreClass;
   /** DISTANCE_FROM_ROOTS of its class; 0 never makes bill B. */
   distance: number;
-  /** False for a canceled event: the rule skips it. */
+  /** False for a canceled event or one listed as unresolved: the rule skips it. */
   eligible: boolean;
+  /** Why the rule skipped it, when it did. */
+  skipped?: string;
+}
+
+export interface G1Options {
+  /**
+   * Events whose headliner Qloo cannot match exactly, by Ticketmaster event id, with the reason
+   * (the spec needs both hero headliners to resolve exactly). The rule skips them, and says so.
+   */
+  unresolved?: Readonly<Record<string, string>>;
 }
 
 export interface G1Pick {
@@ -346,21 +403,34 @@ function billWords(c: G1Candidate): string {
  * The G1 rule with its working shown: every event dated in the window and a
  * one-line reason for each pick. applyG1Rule returns the same picks.
  */
-export function explainG1Rule(events: readonly TmEvent[], window: { from: string; to: string } = G1_WINDOW): G1Explanation {
+export function explainG1Rule(events: readonly TmEvent[], window: { from: string; to: string } = G1_WINDOW, opts: G1Options = {}): G1Explanation {
   const span = `${window.from} to ${window.to}`;
+  const unresolved = opts.unresolved ?? {};
+  const skippedWhy = (e: TmEvent): string | undefined => unresolved[e.id];
   const inside = events.filter((e) => {
     const d = localDateOf(e);
     return d >= window.from && d <= window.to;
   });
-  const candidates = [...inside].sort((a, b) => localDateOf(a).localeCompare(localDateOf(b))).map(candidateOf);
+  const candidates = [...inside]
+    .sort((a, b) => localDateOf(a).localeCompare(localDateOf(b)))
+    .map((e) => {
+      const c = candidateOf(e);
+      const why = skippedWhy(e);
+      return why && c.eligible ? { ...c, eligible: false, skipped: why } : c;
+    });
   const base = { window: { from: window.from, to: window.to }, candidates };
   // The rule's own order: events still on, by local date (the sort applyG1Rule has always used).
-  const ranked = inside.filter((e) => !isCanceled(e)).sort((a, b) => (localDateOf(a) < localDateOf(b) ? -1 : 1));
+  const ranked = inside.filter((e) => !isCanceled(e) && !skippedWhy(e)).sort((a, b) => (localDateOf(a) < localDateOf(b) ? -1 : 1));
   const a = ranked.find((e) => genreClass(e) === "roots") ?? null;
+  // Roots bills before A that the rule skipped as unresolved, named in A's reason.
+  const passedOver = inside
+    .filter((e) => !isCanceled(e) && skippedWhy(e) && genreClass(e) === "roots" && (!a || localDateOf(e) < localDateOf(a)))
+    .map((e) => ` Skipped ${billWords(candidateOf(e))}: ${skippedWhy(e)}.`)
+    .join("");
   if (!a) {
-    return { ...base, billA: { id: null, reason: `No Americana, country or folk bill from ${span}.` }, billB: { id: null, reason: "No bill A, so no bill B." } };
+    return { ...base, billA: { id: null, reason: `No Americana, country or folk bill from ${span}.${passedOver}` }, billB: { id: null, reason: "No bill A, so no bill B." } };
   }
-  const billA: G1Pick = { id: a.id, reason: `First Americana, country or folk bill from ${span}: ${billWords(candidateOf(a))}.` };
+  const billA: G1Pick = { id: a.id, reason: `First Americana, country or folk bill from ${span}: ${billWords(candidateOf(a))}.${passedOver}` };
   let best: { e: TmEvent; d: number; date: string } | null = null;
   for (const e of ranked) {
     if (e.id === a.id) continue;
@@ -380,7 +450,7 @@ export function explainG1Rule(events: readonly TmEvent[], window: { from: string
  * Applies the G1 rule to a room's calendar. Null fields when no event
  * qualifies (the spec then falls back to another Nashville room).
  */
-export function applyG1Rule(events: readonly TmEvent[], window = G1_WINDOW): { billA: string | null; billB: string | null } {
-  const { billA, billB } = explainG1Rule(events, window);
+export function applyG1Rule(events: readonly TmEvent[], window = G1_WINDOW, opts: G1Options = {}): { billA: string | null; billB: string | null } {
+  const { billA, billB } = explainG1Rule(events, window, opts);
   return { billA: billA.id, billB: billB.id };
 }

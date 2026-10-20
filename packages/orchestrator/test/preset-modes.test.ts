@@ -264,6 +264,23 @@ describe("explainG1Rule", () => {
     expect(ex.billB.reason).toMatch(/^Genre most distant from bill A \(indie pop, distance 0\.8\): Neon Orchard .* on 2026-12-05 \(Pop \/ Indie Pop\)\.$/);
   });
 
+  it("skips bills listed as unresolved, names them in bill A's reason, and never picks one as bill B", () => {
+    const events = [
+      ev("folk-unresolved", "2027-02-03", "Folk", "Folk"),
+      ev("folk-rock", "2027-02-05", "Rock", "Folk Rock"),
+      ev("rap-unresolved", "2027-01-10", "Hip-Hop/Rap"),
+      ev("rap", "2027-02-21", "Hip-Hop/Rap"),
+    ];
+    const plain = explainG1Rule(events, HERO_WINDOW);
+    expect([plain.billA.id, plain.billB.id]).toEqual(["folk-unresolved", "rap-unresolved"]);
+    const why = "its headliner has no exact match in Qloo";
+    const ex = explainG1Rule(events, HERO_WINDOW, { unresolved: { "folk-unresolved": why, "rap-unresolved": why } });
+    expect([ex.billA.id, ex.billB.id]).toEqual(["folk-rock", "rap"]);
+    expect(ex.billA.reason).toContain(`Skipped Test bill folk-unresolved on 2027-02-03 (Folk / Folk): ${why}.`);
+    expect(ex.candidates.find((c) => c.id === "folk-unresolved")).toMatchObject({ eligible: false, skipped: why });
+    expect(applyG1Rule(events, HERO_WINDOW, { unresolved: { "folk-unresolved": why } })).toEqual({ billA: "folk-rock", billB: "rap-unresolved" });
+  });
+
   it("skips canceled bills and events outside the window, and takes the earliest of tied distances", () => {
     const events = [
       ev("outside-early", "2026-12-19", "Country"),
