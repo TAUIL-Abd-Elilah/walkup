@@ -3,7 +3,7 @@ import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { shortUrl, telHref } from "../../lib/format";
 import { categoryLabel } from "../../lib/labels";
-import { areaName, formatHours, isThinSignal, normalizeName, partnerSummary, topTiles } from "../../lib/sheet-utils";
+import { areaName, formatHours, isThinSignal, normalizeName, partnerLine, partnerSummary, topTiles } from "../../lib/sheet-utils";
 import { LESS_SURE_NOTE, partnerLessSure } from "@walkup/exports/format";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
@@ -176,6 +176,8 @@ export function PartnersCard({
       (p.tileName ?? "Near the venue")
     );
 
+  const narrated = (p: Partner) => partnerLine(sheet, p.entity.entityId);
+
   const whyCell = (p: Partner) => {
     const w = partnerWhy(p);
     const isNew = added.has(normalizeName(p.entity.name));
@@ -186,6 +188,8 @@ export function PartnersCard({
           <Refs ids={w.refs} entityId={p.entity.entityId} />
           {isNew ? <span className="text-muted"> new</span> : null}
         </span>
+        {/* The narration's one line for this partner: checked against this run's ids, numbers and words. */}
+        {narrated(p) ? <span className="mt-1 block">{narrated(p)}</span> : null}
         {p.explain ? (
           <span className="mt-1 block">
             <button

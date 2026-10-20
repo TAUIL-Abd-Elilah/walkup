@@ -363,6 +363,22 @@ describe("the plan page as a document", () => {
   });
 });
 
+describe("narrated partner lines", () => {
+  it("shows the narration's line for a partner under its rank line, and nothing when the sheet has none", () => {
+    const sheet = bare("g1-a");
+    const p = sheet.cards.partners.results[0]!;
+    const line = "A test line the narration wrote for this partner.";
+    const withLine: StreetSheet = {
+      ...sheet,
+      narration: sheet.narration ? { ...sheet.narration, partnerLines: [{ entityId: p.entity.entityId, text: line }] } : sheet.narration,
+    };
+    expect(withLine.narration).toBeTruthy();
+    expect(visibleText(renderView(withLine))).toContain(line);
+    const without: StreetSheet = { ...sheet, narration: sheet.narration ? { ...sheet.narration, partnerLines: [] } : sheet.narration };
+    expect(visibleText(renderView(without))).not.toContain(line);
+  });
+});
+
 describe("the live view", () => {
   it("lists the sections in stream order and says how many are in", () => {
     const { sheet } = fixture("g1-a");
