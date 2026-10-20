@@ -1,0 +1,50 @@
+name: gazetteer
+
+# Builds one gazetteer metro (data/gazetteer/build.py) on a GitHub runner and pushes the
+# result to a branch gazetteer/<metro>-<run id> for review; nothing lands on main from here.
+# Used when the build's sources (OpenStreetMap Overpass, Census files) are out of reach
+# from the machine at hand. Run it from the Actions tab or the API (workflow_dispatch).
+on:
+  workflow_dispatch:
+    inputs:
+      metro:
+        description: "Metro key in METROS (data/gazetteer/build.py), e.g. dc"
+        required: true
+        default: dc
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check the metro name
+        env:
+          METRO: ${{ inputs.metro }}
+        run: |
+          [[ "$METRO" =~ ^[a-z_]+$ ]] || { echo "::error::metro must be lowercase letters and underscores"; exit 1; }
+      - name: Build
+        env:
+          METRO: ${{ inputs.metro }}
+        run: |
+          python -m pip install --quiet "requests>=2.32"
+          python -I data/gazetteer/build.py --metro "$METRO"
+          python -I data/gazetteer/test_build.py
+      - name: Push the output to a review branch
+        env:
+          METRO: ${{ inputs.metro }}
+        run: |
+          branch="gazetteer/${METRO}-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add data/gazetteer/out
+          git diff --cached --stat
+          git commit -m "Gazetteer: build ${METRO} (run ${GITHUB_RUN_ID})"
+          git push origin "$branch"
