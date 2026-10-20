@@ -70,7 +70,7 @@ describe("partner facts", () => {
   it("say which day the hours are for: the street-team day, else the show's weekday", () => {
     const hoursDay = (input: ReturnType<typeof makeInput>) =>
       (prepareRun(input).facts["partners"] as { hoursOnDay: string | null; hoursDay: string | null }[]).find((p) => p.hoursOnDay)?.hoursDay;
-    expect(hoursDay({ ...makeInput(), streetTeamDay: "thursday" })).toBe("thursday");
-    expect(hoursDay(makeInput())).toBe("saturday");
+    expect(hoursDay({ ...makeInput(), streetTeamDay: "thursday" })).toBe("Thursday");
+    expect(hoursDay(makeInput())).toBe("Saturday");
   });
 });

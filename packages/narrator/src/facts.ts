@@ -79,6 +79,11 @@ function tagsFromCompare(tags: ReadonlyArray<CompareTag> | undefined, allowed: M
   return out;
 }
 
+/** "thursday" -> "Thursday": the model copies the value as written. */
+function dayName(day: string): string {
+  return day ? day[0]!.toUpperCase() + day.slice(1) : day;
+}
+
 export function prepareRun(input: NarrateInput): PreparedRun {
   const { bill } = input;
   // Alcohol rules come from the ticketing age policy only; unknown counts as not 21+.
@@ -111,7 +116,7 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     qlooRank: p.qlooRank,
     hoursOnDay: p.hoursOnDay ?? null,
     // Hours are for the street-team day, which is often not the show's weekday.
-    hoursDay: p.hoursOnDay ? (input.streetTeamDay ?? input.bill.weekday) : null,
+    hoursDay: p.hoursOnDay ? dayName(input.streetTeamDay ?? input.bill.weekday) : null,
     address: p.address ?? null,
     distanceM: p.entity.distanceM != null ? Math.round(p.entity.distanceM) : null,
   }));
