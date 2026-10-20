@@ -20,6 +20,7 @@ import {
   planShow,
   presetById,
   presetFor,
+  presetShowOf,
   PRESET_IDS,
   questionRevision,
   readInstruction,
@@ -116,6 +117,13 @@ function isFresh(services: McpServices, stored: StoredPlan): boolean {
   return Number.isFinite(at) && services.now() - at < PRESET_TTL_MS;
 }
 
+/** A fresh stored run of the preset's show as it is now: a run of an event the preset no longer names is not that preset. */
+function isCurrentPresetRun(services: McpServices, presetId: string, stored: StoredPlan): boolean {
+  const preset = presetById(presetId);
+  const bill = stored.sheet?.bill ?? stored.pause?.bill;
+  return isFresh(services, stored) && preset !== null && presetShowOf(preset, stored.mode, bill) !== null;
+}
+
 async function once<T>(services: McpServices, key: string, fn: () => Promise<T>): Promise<T> {
   const running = services.inflight.get(key) as Promise<T> | undefined;
   if (running) return running;
@@ -124,14 +132,14 @@ async function once<T>(services: McpServices, key: string, fn: () => Promise<T>)
   return p;
 }
 
-/** What a preset id shows: the host's loader when it has one, else the stored preset plan (plan id = preset id), else one run. Unlimited. */
+/** What a preset id shows: the host's loader when it has one, else the stored preset plan (plan id = preset id) of its current show, else one run. Unlimited. */
 async function presetView(services: McpServices, presetId: string, view: "page" | "api"): Promise<PlanView> {
   if (services.presetView) {
     const hosted = await services.presetView(presetId, view);
     if (hosted) return hosted;
   }
   const stored = await services.store.get(presetId);
-  if (stored && isFresh(services, stored)) return viewOfStored(stored);
+  if (stored && isCurrentPresetRun(services, presetId, stored)) return viewOfStored(stored);
   const r = await once(services, `preset:${presetId}`, () => run(services, { presetId, planId: presetId }, depsFor(services, null)));
   return viewOfResult(r);
 }
@@ -167,7 +175,7 @@ async function resumePreset(services: McpServices, presetId: string, picks: Pick
   if ("problem" in checked) return fail(services, 400, checked.problem, { planId: presetId, resolution: base.pause.resolution.results });
   const planId = `${presetId}-${picksHash(checked.resolutions)}`;
   const stored = await services.store.get(planId);
-  if (stored && isFresh(services, stored)) return ok(envelopeOfView(viewOfStored(stored), caller.origin));
+  if (stored && isCurrentPresetRun(services, presetId, stored)) return ok(envelopeOfView(viewOfStored(stored), caller.origin));
   const r = await once(services, `preset:${planId}`, () => run(services, { presetId, planId, resolutions: checked.resolutions }, depsFor(services, null)));
   return ok(envelopeOfView(viewOfResult(r), caller.origin));
 }

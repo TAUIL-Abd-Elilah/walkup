@@ -225,6 +225,17 @@ export function presetFor(preset: Preset, mode: "live" | "fixture"): PresetShow 
   };
 }
 
+/**
+ * The preset's show in `mode` when `bill` is that show's event, else null. A
+ * run recorded before the preset's show changed (a postponed pick replaced on
+ * key day, a live block set back to null) planned another event: it is not
+ * the preset any more and takes none of the show's title, line or inputs.
+ */
+export function presetShowOf(preset: Preset, mode: "live" | "fixture", bill: { tmEventId?: string } | undefined): PresetShow | null {
+  const show = presetFor(preset, mode);
+  return show && bill?.tmEventId === show.tmEventId ? show : null;
+}
+
 // ---------------------------------------------------------------------------
 // The G1 bill selection rule, as code
 // ---------------------------------------------------------------------------

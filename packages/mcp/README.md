@@ -38,7 +38,7 @@ Picks sent up front follow the same rule. With a preset (what-ifs, or `rank_part
 
 A preset with what-ifs, or `rank_partners` on a preset, runs the preset's event, date, what-ifs and seeds as a new plan under its own id. It is never stored as the preset itself, so one caller's partner names or seat counts never become the sheet a preset shows to everyone, and the quota guard's "serve the stored preset" fallback never answers such a run with a sheet that ignores the changes. If the guard does serve a stored sheet for a fresh run, the tool says the guard is on and gives the fresh run back.
 
-A live server runs a preset's live show: the real Ticketmaster bill set on key day (`presetFor` in `@walkup/orchestrator`). Until a preset has one, preset what-ifs and `rank_partners` on it answer 404 "This preset has no live show yet." before any Ticketmaster or Qloo call and take no fresh run; a run of the preset itself stops with the same reason (a host's own preset loader still answers first).
+A live server runs a preset's live show: the real Ticketmaster bill set on key day (`presetFor` in `@walkup/orchestrator`). Until a preset has one, preset what-ifs and `rank_partners` on it answer 404 "This preset has no live show yet." before any Ticketmaster or Qloo call and take no fresh run; a run of the preset itself stops with the same reason (a host's own preset loader still answers first). A stored run of the preset is served only while it is a run of the event the preset's show names now.
 
 ### Revising a sheet
 

@@ -2,7 +2,9 @@
  * A preset's two shows (presetFor): the fixture show unchanged, a live run
  * with no live show stopped before any call, a live block's ids, date and
  * inputs used end to end (the fixture world stands in for the live
- * transports), and the G1 rule with its working shown (explainG1Rule).
+ * transports), a run of an event the live show no longer names kept apart
+ * from the preset (presetShowOf), and the G1 rule with its working shown
+ * (explainG1Rule).
  */
 import { describe, expect, it } from "vitest";
 import type { StreetSheet } from "@walkup/contracts";
@@ -17,9 +19,11 @@ import {
   HERO_RULE,
   HERO_WINDOW,
   NO_LIVE_SHOW,
+  createMemoryPlanStore,
   parentRequest,
   planShow,
   presetFor,
+  presetShowOf,
   PRESETS,
   type LivePreset,
   type Preset,
@@ -147,6 +151,59 @@ describe("planShow with a preset in live mode", () => {
     await withLive(null, async () => {
       const sheet = { mode: "live", steps: [], bill: { acts: [] } } as unknown as StreetSheet;
       expect(parentRequest(sheet, { presetId: "g1-a" })).toBeNull();
+    });
+  });
+});
+
+/** TEST_LIVE after key day picked another bill at the same room. */
+const OTHER_LIVE: LivePreset = { ...TEST_LIVE, tmEventId: WORLD_EVENT_IDS.g1a, title: "Another live show", line: "Another line." };
+
+describe("a stored live run after the preset's live show changes", () => {
+  it("presetShowOf names the show only for a run of its own event", () => {
+    const p: Preset = { ...PRESETS["g1-a"], live: TEST_LIVE };
+    expect(presetShowOf(p, "live", { tmEventId: TEST_LIVE.tmEventId })?.title).toBe("Test live show");
+    expect(presetShowOf(p, "live", { tmEventId: WORLD_EVENT_IDS.g1a })).toBeNull();
+    expect(presetShowOf(p, "live", {})).toBeNull();
+    expect(presetShowOf(p, "live", undefined)).toBeNull();
+    expect(presetShowOf({ ...p, live: null }, "live", { tmEventId: TEST_LIVE.tmEventId })).toBeNull();
+    expect(presetShowOf(p, "fixture", { tmEventId: WORLD_EVENT_IDS.g1a })?.title).toBe(PRESETS["g1-a"].title);
+    expect(presetShowOf(p, "fixture", { tmEventId: TEST_LIVE.tmEventId })).toBeNull();
+  });
+
+  it("the quota guard serves only a stored run of the current live show", async () => {
+    const store = createMemoryPlanStore();
+    const d = deps({ store });
+    const live = { ...d, mode: "live" as const };
+    const recorded = await withLive(TEST_LIVE, () => planShow({ presetId: "g1-a" }, live));
+    expect(recorded.status).toBe("complete");
+
+    // The next answers report a month quota under the 1,500 floor.
+    d.world.setScenario({ quotaRemaining: 1400 });
+    await d.qloo.withLedger(createMemoryLedger()).search("Marla Vane", ["artist"], { take: 1 });
+    expect(d.qloo.guardTripped()).toBe(true);
+
+    const same = await withLive(TEST_LIVE, () => planShow({ presetId: "g1-a" }, live, { persist: false }));
+    expect(same.servedFromStore).toBe(true);
+    expect(same.planId).toBe(recorded.planId);
+
+    const changed = await withLive(OTHER_LIVE, () => planShow({ presetId: "g1-a" }, live, { persist: false }));
+    // Not the old bill's sheet under the new show: a fresh run, which the guard stops.
+    expect(changed.servedFromStore).toBe(false);
+    expect(changed.planId).not.toBe(recorded.planId);
+    expect(changed.sheet).toBeUndefined();
+    expect(changed.error).toMatch(/quota/i);
+  });
+
+  it("does not re-run an old live sheet as the preset's new show", async () => {
+    const d = deps();
+    const r = await withLive(TEST_LIVE, () => planShow({ presetId: "g1-a" }, { ...d, mode: "live" }, { persist: false }));
+    const sheet = r.sheet as StreetSheet;
+    await withLive(OTHER_LIVE, async () => {
+      expect(parentRequest(sheet, { presetId: "g1-a" })).toBeNull();
+      expect(parentRequest(sheet, { stored: { presetId: "g1-a", planId: sheet.planId } })).toBeNull();
+    });
+    await withLive(TEST_LIVE, async () => {
+      expect(parentRequest(sheet, { stored: { presetId: "g1-a", planId: sheet.planId } })).toMatchObject({ tmEventId: TEST_LIVE.tmEventId });
     });
   });
 });

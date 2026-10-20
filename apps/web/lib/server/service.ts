@@ -15,7 +15,7 @@
  */
 import { randomUUID } from "node:crypto";
 import type { Bill, ControlArmResult, Envelope, LedgerEntry, OperatorInputs, Resolution, StreetSheet } from "@walkup/contracts";
-import { planShow, presetById, presetFor, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
+import { planShow, presetById, presetFor, presetShowOf, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
 import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, sheetEnvelope } from "../api";
 import { runtimeMode } from "../mode";
 import { getPlan, isPresetId, PRESET_PLAN_IDS, type PresetFixture } from "../plans";
@@ -111,10 +111,17 @@ export interface LoadOptions {
   sessionId?: string | null;
 }
 
-/** The title of the preset's show in this mode (its fixture title while it has no live show). */
-function presetTitle(id: string | undefined, mode: "live" | "fixture"): string | undefined {
+/**
+ * The title of the preset's show in this mode (its fixture title while it has
+ * no live show). Given the bill a run planned, only that show's own event
+ * takes the title: a run of an event the preset no longer names is titled by
+ * its bill.
+ */
+function presetTitle(id: string | undefined, mode: "live" | "fixture", bill?: Bill): string | undefined {
   const preset = id ? presetById(id) : null;
-  return preset ? (presetFor(preset, mode) ?? presetFor(preset, "fixture")).title : undefined;
+  if (!preset) return undefined;
+  if (bill) return presetShowOf(preset, mode, bill)?.title;
+  return (presetFor(preset, mode) ?? presetFor(preset, "fixture")).title;
 }
 
 function billTitle(bill: Bill | undefined): string {
@@ -208,7 +215,7 @@ function sheetFromStored(s: StoredPlan, source: SheetView["source"]): SheetView 
     note: null,
     source,
     ...(presetId ? { presetId } : {}),
-    title: presetTitle(presetId, s.mode) ?? billTitle(s.sheet.bill),
+    title: presetTitle(presetId, s.mode, s.sheet.bill) ?? billTitle(s.sheet.bill),
   };
 }
 
@@ -216,12 +223,16 @@ function sheetFromStored(s: StoredPlan, source: SheetView["source"]): SheetView 
  * The stored run every visitor sees as a preset in live mode: the latest complete run made by
  * the deps that run live presets now (a run stored while the server was in fixture mode does
  * not count), with the preset's own inputs (no what-ifs, partner lists or up-front picks, no
- * proxy). Anything else leaves the bundled sheet in place, or lets a fresh run start.
+ * proxy), of the event the preset's live show names now (a run recorded before that show
+ * changed does not count). Anything else leaves the bundled sheet in place, or lets a fresh
+ * run start.
  */
 export async function storedPresetRun(id: string): Promise<StoredPlan | null> {
-  const stored = await stores().plans.latestForPreset(id);
-  if (!stored?.sheet || !isCanonicalRequest(stored.request as WebPlanRequest)) return null;
-  return stored.mode === resolveMode(depsFor("live")) ? stored : null;
+  const preset = presetById(id);
+  const stored = preset ? await stores().plans.latestForPreset(id) : null;
+  if (!preset || !stored?.sheet || !isCanonicalRequest(stored.request as WebPlanRequest)) return null;
+  const mode = resolveMode(depsFor("live"));
+  return stored.mode === mode && presetShowOf(preset, mode, stored.sheet.bill) ? stored : null;
 }
 
 export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPlan | null> {
@@ -257,7 +268,8 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
 
   const run = getRun(id);
   if (run) {
-    const title = presetTitle(run.presetId, run.mode) ?? run.title;
+    const runBill = run.sheet?.bill ?? run.bill;
+    const title = presetTitle(run.presetId, run.mode, runBill) ?? (run.presetId && runBill ? billTitle(runBill) : run.title);
     const base = { planId: id, mode: run.mode, title, ...(run.presetId ? { presetId: run.presetId } : {}) };
     if (run.status === "running") return { kind: "running", ...base, cards: [...run.cards] };
     if (run.status === "error") return { kind: "error", planId: id, mode: run.mode, title, error: run.error ?? "The run stopped." };
@@ -285,7 +297,7 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
       planId: id,
       mode: stored.mode,
       ...(stored.presetId ? { presetId: stored.presetId } : {}),
-      title: presetTitle(stored.presetId, stored.mode) ?? billTitle(stored.pause.bill),
+      title: presetTitle(stored.presetId, stored.mode, stored.pause.bill) ?? billTitle(stored.pause.bill),
       pause: { resolution: stored.pause.resolution, pending: stored.pause.pending, bill: stored.pause.bill, operator: stored.pause.operator, ledger: stored.pause.ledger },
       source: "store",
     };

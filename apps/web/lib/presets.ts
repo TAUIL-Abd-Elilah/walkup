@@ -2,11 +2,11 @@
  * The three prewarmed presets as the plan pages show them: the line at the top
  * of the plan, the show name, and whether the show is real. Plan ids point at
  * the synthetic fixtures today and at cached live runs once keys exist. Every
- * fixture bill is invented. A live sheet of a preset with a live show (set on
- * key day in @walkup/orchestrator) takes its line from that show instead. No
+ * fixture bill is invented. A live sheet of a preset's live show (set on key
+ * day in @walkup/orchestrator) takes its line from that show instead. No
  * preset carries a seats-left count.
  */
-import { presetById, presetFor } from "@walkup/orchestrator";
+import { presetById, presetShowOf } from "@walkup/orchestrator";
 
 export interface Preset {
   id: string;
@@ -47,15 +47,18 @@ export const PRESETS: Preset[] = [
 ];
 
 /**
- * The preset behind a plan id, for a sheet made in `mode`. A live sheet of a
- * preset with a live show is a real show with that show's line, and the
- * fixture show name does not apply to it.
+ * The preset behind a plan id, for a sheet made in `mode` of `bill`. A live
+ * sheet of the event the preset's live show names is a real show with that
+ * show's line, and the fixture show name does not apply to it. Any other live
+ * sheet (one recorded before the live show changed, or while there was none)
+ * gets no preset line or show facts: it reads like any other live run.
  */
-export function presetForPlan(planId: string, mode: "live" | "fixture" = "fixture"): Preset | undefined {
+export function presetForPlan(planId: string, mode: "live" | "fixture" = "fixture", bill?: { tmEventId?: string }): Preset | undefined {
   const p = PRESETS.find((x) => x.planId === planId) ?? (planId.startsWith("g1-") ? PRESETS[0] : undefined);
-  const preset = p && mode === "live" ? presetById(planId) : null;
-  const show = preset ? presetFor(preset, "live") : null;
-  if (!p || !show) return p;
+  if (!p || mode === "fixture") return p;
+  const preset = presetById(planId);
+  const show = preset ? presetShowOf(preset, "live", bill) : null;
+  if (!show) return undefined;
   const { showName: _fixtureName, ...rest } = p;
   return { ...rest, realShow: show.realShow, line: show.line };
 }

@@ -3,7 +3,8 @@
  * sheets, its fixture-mode rule, its afterRun bookkeeping).
  */
 import type { StreetSheet } from "@walkup/contracts";
-import { NO_LIVE_SHOW, type FixtureDeps, type PlanResult } from "@walkup/orchestrator";
+import { NO_LIVE_SHOW, PRESETS, type FixtureDeps, type LivePreset, type PlanResult } from "@walkup/orchestrator";
+import { WORLD_EVENT_IDS } from "@walkup/qloo-world";
 import { describe, expect, it } from "vitest";
 import { createMcpServices, DEFAULT_FIXTURE_REFUSAL, planShowTool, rankPartnersTool, type FreshRunLimiter, type PlanView } from "../src/index";
 import { caller, connect, services } from "./helpers";
@@ -141,5 +142,39 @@ describe("a live server and a preset with no live show yet", () => {
 
     expect(calls.filter((c) => c !== "check")).toEqual([]);
     expect(world.stats()).toMatchObject({ qloo: 0, tm: 0 });
+  });
+});
+
+describe("a live server and a preset whose live show changed", () => {
+  it("never serves the stored run of the old event as the preset", async () => {
+    // A live block for this test: fixture-world ids so the world can answer it.
+    const recorded: LivePreset = {
+      tmEventId: WORLD_EVENT_IDS.g3,
+      tmVenueId: PRESETS.g3.venue.tmVenueId,
+      asOf: PRESETS.g3.asOf,
+      title: "Recorded live show",
+      venue: { name: PRESETS.g3.venue.name, city: PRESETS.g3.venue.city, state: PRESETS.g3.venue.state },
+      selection: PRESETS.g3.selection,
+      operator: { ...PRESETS.g3.operator, declaredPartners: [] },
+      line: "The recorded show's line.",
+    };
+    const before = PRESETS.g3.live;
+    const base = services();
+    const s = createMcpServices({ deps: { ...base.deps, mode: "live" }, store: base.store, limiter: base.limiter, rate: null, secrets: [], now: base.now, idGen: base.idGen });
+    try {
+      PRESETS.g3.live = recorded;
+      const first = await planShowTool(s, caller(), { presetId: "g3" });
+      expect((first.envelope.results as StreetSheet).mode).toBe("live");
+      expect((await base.store.get("g3"))?.sheet?.bill.tmEventId).toBe(WORLD_EVENT_IDS.g3);
+      const again = await planShowTool(s, caller(), { presetId: "g3" });
+      expect((again.envelope.results as StreetSheet).createdAt).toBe((first.envelope.results as StreetSheet).createdAt);
+
+      // Key day picks another bill: the preset plans it instead of showing the old sheet.
+      PRESETS.g3.live = { ...recorded, tmEventId: WORLD_EVENT_IDS.g1b };
+      const changed = await planShowTool(s, caller(), { presetId: "g3" });
+      expect((changed.envelope.results as StreetSheet).bill.tmEventId).toBe(WORLD_EVENT_IDS.g1b);
+    } finally {
+      PRESETS.g3.live = before;
+    }
   });
 });

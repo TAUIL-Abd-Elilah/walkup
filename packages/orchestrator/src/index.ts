@@ -49,6 +49,7 @@ export {
   PRESET_IDS,
   presetById,
   presetFor,
+  presetShowOf,
   NO_LIVE_SHOW,
   HERO_RULE,
   HERO_WINDOW,
