@@ -77,7 +77,7 @@ claude mcp add --transport http walkup "$WALKUP_URL/mcp"
 
 ## Reading the result
 
-The server returns one envelope: `status`, `summary`, `planId`, `sheetUrl`, `mode` (`live` or `fixture`; a refusal can say `recorded`), `results` (the Street Sheet: cards, ledger, guard report), `resolution`, `provenance`, `limits`.
+The server returns one envelope: `status`, `summary`, `planId`, `sheetUrl`, `mode` (`live` or `fixture`; `recorded` from a server that serves recorded sheets only, on its refusals and on a live sheet it serves), `results` (the Street Sheet: cards, ledger, guard report), `resolution`, `provenance`, `limits`.
 
 - Each card has its own status: `ok`, `empty`, `needs_input`, `partial`, `degraded` or `error`. Relay the reason for anything that isn't `ok`.
 - Cite places and numbers exactly as returned, with their receipt (`[Q9]`). Do not add places, rankings or numbers of your own.

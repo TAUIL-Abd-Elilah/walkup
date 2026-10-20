@@ -527,7 +527,8 @@ export async function billVsHouseTool(services: McpServices, caller: Caller, arg
 export async function getSheetTool(services: McpServices, caller: Caller, args: PlanRefArgs): Promise<ToolOutcome> {
   const v = await readView(services, args.planId);
   if (!v) return fail(services, 404, `No plan with id ${args.planId}.`);
-  return ok(envelopeOfView(v, caller.origin));
+  // Recorded state: a live sheet is a recording, and its envelope says so.
+  return ok(envelopeOfView(v, caller.origin, { recorded: Boolean(services.policy.recorded) }));
 }
 
 // ---------------------------------------------------------------------------

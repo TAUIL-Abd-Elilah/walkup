@@ -21,7 +21,7 @@ import { exportKind, exportResponse } from "../lib/server/exports";
 import type { RequestContext } from "../lib/server/http";
 import { clientIp, parseCookies, sessionCookie } from "../lib/server/http";
 import { parseOperator, parsePlanBody, POLITICAL_REFUSAL, tmEventIdFrom } from "../lib/server/input";
-import { noteQlooRejection, qlooKeyRejection, resetKeyStatusMemo } from "../lib/server/key-status";
+import { noteQlooRejection, qlooKeyRejection, qlooRefusedKey, resetKeyStatusMemo } from "../lib/server/key-status";
 import { FreshRunLimiter, rateLimit, resetRateWindowsForTests, setFreshRunsForTests } from "../lib/server/limits";
 import { health, limitsFor, proxySearch, showSearch } from "../lib/server/lookups";
 import { applyProxyPicks } from "../lib/server/proxy";
@@ -159,10 +159,10 @@ describe("mode", () => {
     expect(words(keys, NOV2 + 2 * DAY, true)).toMatchObject({
       label: "RECORDED · Qloo unavailable",
       liveSearch: false,
-      detail: "Qloo is unavailable since Tue Nov 3 2026. The sheets here were recorded from live runs on the dates shown and are not refreshed. New plans are off.",
+      detail: "Qloo has been unavailable since Nov 3 2026. New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.",
     });
-    expect(words(until, NOV2 + 5 * DAY).detail).toMatch(/^Qloo is unavailable since Mon Nov 2 2026\./);
-    expect(words({ WALKUP_MODE: "recorded" }, NOV2).detail).toMatch(/^Qloo is unavailable since the key was switched off\./);
+    expect(words(until, NOV2 + 5 * DAY).detail).toMatch(/^Qloo has been unavailable since Nov 2 2026\. /);
+    expect(words({ WALKUP_MODE: "recorded" }, NOV2).detail).toMatch(/^Qloo is no longer available to this server\. New plans are off\. /);
     resetKeyStatusMemo();
   });
 });
@@ -625,11 +625,25 @@ describe("recorded mode (Qloo unavailable; the live-mode harness records the run
     expect(usableRecording(good)).toBe(true);
     expect(usableRecording((await stores().plans.get(refusedId))!.sheet!)).toBe(false);
     expect(usableRecording((await stores().plans.get(recordedIds.g3!))!.sheet!)).toBe(false);
-    // One 403 among accepted calls is a filter the key may not use, not a dead key.
-    const one403 = { ...good, ledger: good.ledger.map((e, i) => (i === good.ledger.findIndex((x) => x.kind === "qloo") ? { ...e, httpStatus: 403 } : e)) };
+    // One 403 among fresh accepted calls is a filter the key may not use, not a dead key.
+    const first = good.ledger.findIndex((x) => x.kind === "qloo");
+    const one403 = {
+      ...good,
+      ledger: good.ledger.map((e, i) => (e.kind !== "qloo" ? e : { ...e, cacheHit: false, httpStatus: i === first ? 403 : 200 })),
+    };
     expect(usableRecording(one403)).toBe(true);
     const all403 = { ...good, ledger: good.ledger.map((e) => (e.kind === "qloo" ? { ...e, httpStatus: 403 } : e)) };
     expect(usableRecording(all403)).toBe(false);
+    // A run made after the key was switched off: every fresh call refused, the rest answered from the Qloo cache.
+    // Cached answers say nothing about the key, so this is a refused key, as key-status reads it.
+    let n = 0;
+    const halfCached = {
+      ...good,
+      ledger: good.ledger.map((e) => (e.kind !== "qloo" ? e : n++ % 2 === 0 ? { ...e, httpStatus: 200, cacheHit: true } : { ...e, httpStatus: 403, cacheHit: false })),
+    };
+    expect(n).toBeGreaterThan(1);
+    expect(usableRecording(halfCached)).toBe(false);
+    expect(qlooRefusedKey(halfCached.ledger)?.httpStatus).toBe(403);
   });
 
   it("lists in /healthz, while still live, what recorded mode will serve", async () => {
@@ -657,7 +671,7 @@ describe("recorded mode (Qloo unavailable; the live-mode harness records the run
     expect(qlooKeyRejection()?.httpStatus).toBe(401);
     const m = runtimeMode();
     expect(m.kind).toBe("recorded");
-    expect(m.detail).toMatch(/^Qloo is unavailable since \w{3} \w{3} \d{1,2} \d{4}\. /);
+    expect(m.detail).toMatch(/^Qloo has been unavailable since \w{3} \d{1,2} \d{4}\. /);
   });
 
   describe("with WALKUP_MODE=recorded", () => {
@@ -678,10 +692,10 @@ describe("recorded mode (Qloo unavailable; the live-mode harness records the run
         const v = await loadPlan(id, { view: "page" });
         expect(v?.kind === "sheet" && [v.source, v.sheet.mode], id).toEqual(["preset", "fixture"]);
       }
-      // A caller's own live run is never a preset, but opens at its own id; a stored run's snapshot says live.
+      // A caller's own live run is never a preset, but opens at its own id; a stored live run's snapshot says it is a recording.
       const own = await loadPlan(customId, { view: "page" });
       expect(own?.kind === "sheet" && [own.sheet.mode, own.sheet.operator.seatsLeft]).toEqual(["live", 99]);
-      expect(((await planSnapshot(recordedIds["g1-a"]!, ctx())).body as Body).mode).toBe("live");
+      expect(((await planSnapshot(recordedIds["g1-a"]!, ctx())).body as Body).mode).toBe("recorded");
     });
 
     it("refuses every fresh path with one reason, 503 and mode recorded", async () => {
@@ -720,7 +734,7 @@ describe("recorded mode (Qloo unavailable; the live-mode harness records the run
       const b = (await health()).body as Health & { reachability: Record<string, { status: string }> };
       delete process.env.WALKUP_QLOO_UNTIL;
       expect(b.mode).toBe("recorded");
-      expect(b.detail).toMatch(/^Qloo is unavailable since /);
+      expect(b.detail).toMatch(/^Qloo has been unavailable since /);
       expect(b.qloo).toEqual({ keyRejected: { httpStatus: 401, at: expect.any(String) }, until: "2026-11-02T00:00:00.000Z" });
       expect(b.recorded?.presets["g1-b"]?.planId).toBe(recordedIds["g1-b"]);
       expect(b.recorded?.presets.g3).toBeNull();

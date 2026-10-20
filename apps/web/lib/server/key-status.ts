@@ -55,20 +55,23 @@ function keyAccepted(e: LedgerEntry): boolean {
 }
 
 /**
- * Records a rejection if this run's ledger shows Qloo rejecting the key. Returns true when it did.
+ * The Qloo call in a run's ledger that shows Qloo refusing the key, or undefined.
  *
  * 401 always counts. 403 counts only when no fresh Qloo call in the same run was accepted:
  * Qloo also answers 403 for a single request whose filter.type the key may not use ("You do
  * not have permission to access urn:entity:..."), and that must not switch the whole server
- * to fixture mode for good.
+ * to fixture mode for good. Answers from the Qloo cache prove nothing about the key.
  */
+export function qlooRefusedKey(entries: readonly LedgerEntry[]): LedgerEntry | undefined {
+  const qloo = entries.filter((e) => e.kind === "qloo");
+  return qloo.find((e) => e.httpStatus === 401) ?? (qloo.some(keyAccepted) ? undefined : qloo.find((e) => e.httpStatus === 403));
+}
+
+/** Records a rejection if this run's ledger shows Qloo refusing the key (qlooRefusedKey). Returns true when it did. */
 export function noteQlooRejection(entries: readonly LedgerEntry[], env: Env = process.env, now: () => number = Date.now): boolean {
   const key = (env.QLOO_API_KEY ?? "").trim();
   if (!key) return false;
-  const qloo = entries.filter((e) => e.kind === "qloo");
-  const hit =
-    qloo.find((e) => e.httpStatus === 401) ??
-    (qloo.some(keyAccepted) ? undefined : qloo.find((e) => e.httpStatus === 403));
+  const hit = qlooRefusedKey(entries);
   if (!hit || hit.httpStatus === null) return false;
   const value: KeyStatus = { status: "rejected", httpStatus: hit.httpStatus, at: new Date(now()).toISOString(), keyHash: keyHash(key) };
   const file = statusFile(env);

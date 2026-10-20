@@ -8,8 +8,8 @@ import { LIMITS_EVERY_SHEET, type Candidate, type EnvelopeStatus, type Resolutio
 import { FIXTURE_LIMITS } from "@walkup/orchestrator";
 
 /**
- * "recorded": the server serves recorded sheets only (Qloo is no longer available). Only its refusals carry
- * it; a recorded sheet keeps its own mode ("live").
+ * "recorded": the server serves recorded sheets only (Qloo is no longer available). Its refusals carry it, and
+ * so does the envelope of a live sheet it serves (the sheet itself keeps mode "live").
  */
 export type PlanMode = "live" | "fixture" | "recorded";
 
@@ -106,8 +106,24 @@ export function cardStatuses(sheet: StreetSheet): Partial<Record<keyof StreetShe
   return Object.fromEntries(Object.entries(sheet.cards).map(([k, c]) => [k, c.status])) as Partial<Record<keyof StreetSheetCards, EnvelopeStatus>>;
 }
 
-/** The envelope for a finished Street Sheet (results = the whole sheet, ledger included). */
-export function sheetEnvelope(sheet: StreetSheet, origin: string | null): ToolEnvelope<StreetSheet> {
+/**
+ * A sheet as a server that serves recorded sheets only hands it out. A live sheet loses its Google Places
+ * comparison list (arm F): Places content may be kept 30 days at most, and a recording is served for longer.
+ * A sample sheet is returned as it is.
+ */
+export function asRecordedSheet(sheet: StreetSheet): StreetSheet {
+  if (sheet.mode !== "live" || !sheet.control) return sheet;
+  const copy = { ...sheet };
+  delete copy.control;
+  return copy;
+}
+
+/**
+ * The envelope for a finished Street Sheet (results = the whole sheet, ledger included). `recorded`: the server
+ * serves recorded sheets only, so a live sheet's envelope says mode "recorded" and carries asRecordedSheet.
+ */
+export function sheetEnvelope(sheet: StreetSheet, origin: string | null, opts: { recorded?: boolean } = {}): ToolEnvelope<StreetSheet> {
+  const recorded = opts.recorded === true && sheet.mode === "live";
   const status = sheetStatus(sheet);
   const reason = rollupReason(sheet, status);
   return {
@@ -116,8 +132,8 @@ export function sheetEnvelope(sheet: StreetSheet, origin: string | null): ToolEn
     planId: sheet.planId,
     sheetUrl: sheetUrlFor(origin, sheet.planId),
     planUrl: planUrlFor(origin, sheet.planId),
-    mode: sheet.mode,
-    results: sheet,
+    mode: recorded ? "recorded" : sheet.mode,
+    results: recorded ? asRecordedSheet(sheet) : sheet,
     resolution: sheet.cards.resolution.results,
     cards: cardStatuses(sheet),
     ...(reason ? { reason } : {}),

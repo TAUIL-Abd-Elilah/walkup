@@ -3,27 +3,22 @@
  * stored live run stands for each preset, the check a recording must pass to be
  * served, and whether the plan store holds any live sheet at all. Server-only.
  */
-import type { LedgerEntry, StreetSheet } from "@walkup/contracts";
+import type { StreetSheet } from "@walkup/contracts";
 import type { StoredPlan } from "@walkup/orchestrator";
 import { stores, type Stores } from "./engine";
+import { qlooRefusedKey } from "./key-status";
 import { isCanonicalRequest, type WebPlanRequest } from "./runs";
 
 /** Complete live runs of a preset read, newest first, to find one worth serving. */
 export const RECORDED_LOOKBACK = 10;
 
-function accepted(e: LedgerEntry): boolean {
-  return e.httpStatus !== null && ((e.httpStatus >= 200 && e.httpStatus < 300) || e.httpStatus === 404);
-}
-
 /**
  * A stored live sheet good enough to stand for its preset once Qloo is gone. It fails when Qloo refused the key
- * on it (any 401; a 403 when no Qloo call on the sheet was answered, since Qloo also answers 403 for one filter
- * the key may not use), or when at least half of its cards are errors.
+ * on it (the rule that switches the server off live mode, key-status.ts qlooRefusedKey), or when at least half
+ * of its cards are errors.
  */
 export function usableRecording(sheet: StreetSheet): boolean {
-  const qloo = sheet.ledger.filter((e) => e.kind === "qloo");
-  if (qloo.some((e) => e.httpStatus === 401)) return false;
-  if (qloo.some((e) => e.httpStatus === 403) && !qloo.some(accepted)) return false;
+  if (qlooRefusedKey(sheet.ledger)) return false;
   const cards = Object.values(sheet.cards);
   return cards.filter((c) => c.status === "error").length * 2 < cards.length;
 }

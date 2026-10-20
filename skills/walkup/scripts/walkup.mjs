@@ -457,6 +457,10 @@ function report(data, opts, base, resumeEvent) {
   /** @type {string[]} */
   const lines = [];
   if ((data.mode ?? sheet?.mode) === "fixture") lines.push("FIXTURE: sample data (synthetic), not a live run.");
+  else if (data.mode === "recorded" && sheet) {
+    const day = typeof sheet.createdAt === "string" ? ` on ${sheet.createdAt.slice(0, 10)}` : "";
+    lines.push(`RECORDED: a live run recorded${day}. Qloo is no longer available to the server, so it is not refreshed.`);
+  }
   if (sheet?.hypothetical) lines.push("HYPOTHETICAL COUNT: seats left and capacity are what-ifs.");
   lines.push(`Status: ${status}${data.planId ? ` · plan ${data.planId}` : ""}`);
   if (data.summary) lines.push(String(data.summary));

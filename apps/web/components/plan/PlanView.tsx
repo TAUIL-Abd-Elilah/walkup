@@ -229,6 +229,8 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
   const op = sheet.operator;
   const venue = sheet.bill.venue;
   const sample = sheet.mode === "fixture";
+  // A recorded live sheet is served without its Google Places list (kept 30 days at most), so there is nothing to compare.
+  const placesList = !(recorded && !sample);
   const base = `/api/sheet/${encodeURIComponent(sheet.planId)}`;
   const target = sheet.discovery ? discoveryTarget(sheet, sheet.discovery) : null;
   const revise = useMemo(() => onRevise ?? (revisable ? apiRevise(sheet.planId) : null), [onRevise, revisable, sheet.planId]);
@@ -346,18 +348,20 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
             <Link href={`/s/${sheet.planId}`} className="text-button">
               Print view
             </Link>
-            <button
-              type="button"
-              className="text-button"
-              aria-pressed={compare}
-              onClick={() => {
-                const next = !compare;
-                setCompare(next);
-                if (next) document.getElementById("partners")?.scrollIntoView({ block: "start" });
-              }}
-            >
-              Compare with Google Places
-            </button>
+            {placesList ? (
+              <button
+                type="button"
+                className="text-button"
+                aria-pressed={compare}
+                onClick={() => {
+                  const next = !compare;
+                  setCompare(next);
+                  if (next) document.getElementById("partners")?.scrollIntoView({ block: "start" });
+                }}
+              >
+                Compare with Google Places
+              </button>
+            ) : null}
             {paired ? (
               <Link href={`/plan/${paired.planId}`} className="text-button" aria-label={`Swap the bill: open ${paired.headliner} in the same room`}>
                 Swap the bill

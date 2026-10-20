@@ -11,7 +11,7 @@ import { clientIp } from "@/lib/server/http";
 import { freshRuns } from "@/lib/server/limits";
 import { freshRunsBody, loadPlan, presetPausedInRecording, presetSheet } from "@/lib/server/service";
 import { decodeBbox, unionBbox } from "@/lib/geohash";
-import { allTiles, baselineName, compareBills, comparisonSentence, recordedSheetsIntro, topTiles } from "@/lib/sheet-utils";
+import { allTiles, baselineName, compareBills, comparisonSentence, recordedSheetsSection, topTiles } from "@/lib/sheet-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +129,7 @@ export default async function Home() {
     return `Fans compared with ${ba}`;
   })();
   const recorded = links.some((l) => l.sheet.mode === "live");
+  const recordedSection = mode.kind === "recorded" ? recordedSheetsSection(links.map((l) => l.sheet)) : null;
 
   return (
     <div className="wrap-wide">
@@ -183,11 +184,11 @@ export default async function Home() {
           </p>
           <SheetList links={links} />
         </section>
-      ) : mode.kind === "recorded" ? (
+      ) : recordedSection ? (
         // Nothing new runs, so the recorded sheets take the search's place, as the sample sheets do without keys.
         <section id="sheets" className="section scroll-mt-4" aria-labelledby="sheets-title">
-          <h2 id="sheets-title">Recorded sheets</h2>
-          <p className="mt-2 max-w-[760px]">{recordedSheetsIntro(links.map((l) => l.sheet))}</p>
+          <h2 id="sheets-title">{recordedSection.heading}</h2>
+          <p className="mt-2 max-w-[760px]">{recordedSection.intro}</p>
           <SheetList links={links} />
         </section>
       ) : (

@@ -15,7 +15,7 @@
  * Reads key presence only, never values.
  */
 import { envValue, walkupModeValue } from "@walkup/qloo";
-import { formatShowDate } from "./format";
+import { formatStamp } from "./format";
 import { lastQuota } from "./server/engine";
 import { qlooKeyRejection } from "./server/key-status";
 import { liveSheetStored } from "./server/recorded";
@@ -62,11 +62,15 @@ export function qlooUntil(env: Env = process.env): number | null {
 }
 
 function recordedMode(since: number | null): RuntimeMode {
-  const when = since !== null && Number.isFinite(since) ? formatShowDate(new Date(since).toISOString().slice(0, 10)) : "the key was switched off";
+  // Said so it holds whether or not any live run was recorded: a preset without one shows a sample sheet, marked so.
+  const gone =
+    since !== null && Number.isFinite(since)
+      ? `Qloo has been unavailable since ${formatStamp(new Date(since).toISOString()).split(",")[0]}.`
+      : "Qloo is no longer available to this server.";
   return {
     kind: "recorded",
     label: "RECORDED · Qloo unavailable",
-    detail: `Qloo is unavailable since ${when}. The sheets here were recorded from live runs on the dates shown and are not refreshed. New plans are off.`,
+    detail: `${gone} New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.`,
     liveSearch: false,
   };
 }

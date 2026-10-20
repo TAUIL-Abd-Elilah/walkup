@@ -71,6 +71,28 @@ describe("run policy", () => {
       const stored = await c.call("get_sheet", { planId });
       expect(stored.env.status).not.toBe("error");
       expect(stored.env.planId).toBe(planId);
+      // That one is a sample sheet and says so; a live sheet read now is a recording, said with its date.
+      expect(stored.env.mode).toBe("fixture");
+      const from = await live.store.get(planId);
+      const control = { arm: "F" as const, places: [], overlapWithQloo: [], ledgerRefs: [] };
+      const liveSheet: StreetSheet = { ...from!.sheet!, planId: "rec-live-1", mode: "live", createdAt: "2026-10-30T15:00:00.000Z", control };
+      await live.store.put({ ...from!, planId: "rec-live-1", mode: "live", sheet: liveSheet });
+      const rec = await c.call("get_sheet", { planId: "rec-live-1" });
+      expect(rec.result.isError).toBeFalsy();
+      expect(rec.env.mode).toBe("recorded");
+      const recSheet = rec.env.results as StreetSheet;
+      expect(recSheet.mode).toBe("live");
+      // Served without its Google Places list: Places content is kept 30 days at most.
+      expect(recSheet.control).toBeUndefined();
+      expect(rec.text).toContain("Mode: recorded (a live run recorded on 2026-10-30; Qloo is no longer available to this server, so it is not refreshed).");
+      // The same sheet on a live server is a live sheet, list included.
+      const asLive = await connect(services({ store: live.store }));
+      try {
+        const l = await asLive.call("get_sheet", { planId: "rec-live-1" });
+        expect([l.env.mode, (l.env.results as StreetSheet).control]).toEqual(["live", control]);
+      } finally {
+        await asLive.close();
+      }
       const preset = await c.call("get_sheet", { planId: "g3" });
       expect(preset.env).toMatchObject({ status: "error", mode: "recorded", reason });
       expect(runs).toEqual([]);

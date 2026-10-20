@@ -142,7 +142,9 @@ export function envelopeText(tool: string, env: ToolEnvelope): string {
     env.mode === "fixture"
       ? "Mode: fixture (synthetic data; no live API was called)."
       : env.mode === "recorded"
-        ? "Mode: recorded (Qloo is no longer available; only recorded sheets can be read)."
+        ? isSheet(env.results)
+          ? `Mode: recorded (a live run recorded on ${env.results.createdAt.slice(0, 10)}; Qloo is no longer available to this server, so it is not refreshed).`
+          : "Mode: recorded (Qloo is no longer available; only recorded sheets can be read)."
         : "Mode: live.",
   );
   if (env.planId) lines.push(`Plan id: ${env.planId}${env.sheetUrl ? ` · Street Sheet: ${env.sheetUrl}` : ""}`);

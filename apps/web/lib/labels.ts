@@ -219,7 +219,7 @@ export function genreLabel(classification: string | undefined, fallback: string)
 export function dataSourcesLine(mode: "live" | "fixture" | "recorded"): string {
   if (mode === "fixture") return "Sample data shaped like Qloo, Ticketmaster and Google Places responses; none of those services is called.";
   if (mode === "recorded") {
-    return "Affinity data from Qloo, events and age rules from Ticketmaster and the comparison list from Google Places, as recorded on live runs; none of those services is called now.";
+    return "Affinity data from Qloo, events and age rules from Ticketmaster, as recorded on live runs; neither service is called now.";
   }
   return "Affinity data from Qloo. Events and age rules from Ticketmaster. The comparison list comes from Google Places.";
 }

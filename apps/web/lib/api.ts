@@ -40,7 +40,11 @@ function rollupReason(sheet: StreetSheet, status: EnvelopeStatus): string | unde
   return (exact ?? cards.find((c) => c.status !== "ok" && c.status !== "empty" && c.reason))?.reason;
 }
 
-export function sheetEnvelope(sheet: StreetSheet, origin: string) {
+/**
+ * `recorded`: the server serves recorded sheets only (Qloo is no longer available), so a live sheet's envelope
+ * says mode "recorded"; the sheet itself keeps mode "live".
+ */
+export function sheetEnvelope(sheet: StreetSheet, origin: string, opts: { recorded?: boolean } = {}) {
   const status = sheetStatus(sheet);
   const reason = rollupReason(sheet, status);
   return {
@@ -49,7 +53,7 @@ export function sheetEnvelope(sheet: StreetSheet, origin: string) {
     planId: sheet.planId,
     sheetUrl: `${origin}/s/${sheet.planId}`,
     planUrl: `${origin}/plan/${sheet.planId}`,
-    mode: sheet.mode,
+    mode: opts.recorded && sheet.mode === "live" ? ("recorded" as const) : sheet.mode,
     results: sheet,
     resolution: sheet.cards.resolution.results,
     cards: Object.fromEntries(Object.entries(sheet.cards).map(([k, c]) => [k, c.status])),

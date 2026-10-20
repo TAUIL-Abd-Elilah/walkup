@@ -196,13 +196,16 @@ The Qloo hackathon key stops working on Nov 2 2026. From then on the site serves
 and makes nothing new. The web app calls this **recorded** mode:
 
 - Each preset (`g1-a`, `g1-b`, `g2`, `g3`) shows its latest stored live run made with the preset's own inputs, skipping
-  a run on which Qloo refused the key (401, or 403 with no Qloo call answered) and one with at least half of its cards
-  failed. A preset with no such run shows its bundled sample sheet, labelled "Sample sheet".
+  a run on which Qloo refused the key (401, or 403 with no fresh Qloo call answered; answers from the Qloo cache do not
+  count) and one with at least half of its cards failed. A preset with no such run shows its bundled sample sheet, labelled "Sample sheet".
 - Any stored live sheet still opens at `/plan/<id>`, `/s/<id>` and `/api/sheet/<id>`, with its downloads. Sample
   sheets stored earlier stay labelled sample. The send step stays as it is (confirm first, test inbox by default).
-- A strip on every page says Qloo is unavailable since the date, that the sheets were recorded from live runs on the
-  dates shown and are not refreshed, and that new plans are off. A recorded sheet says "Recorded <date>" where a live
-  one says "Planned <date>", on the page and in the PDF.
+  A recorded sheet is served without its Google Places comparison list (Places content is kept 30 days at most), and
+  its envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps `"mode": "live"`.
+- A strip on every page says since when Qloo has been unavailable, that new plans are off, and that sheets recorded
+  from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
+  sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
+  "Planned <date>", on the page and in the PDF.
 - New plans, the show and title searches, picks, revisions and the MCP tools other than `get_sheet` answer with
   `"mode": "recorded"` and one plain reason (HTTP 503 on the REST routes). Nothing calls Qloo, Ticketmaster or Google
   Places.
