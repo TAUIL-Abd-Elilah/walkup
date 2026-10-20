@@ -190,6 +190,56 @@ function compareByScore(a: Candidate, b: Candidate): number {
   );
 }
 
+type DropReason = "invalid" | "excluded" | "closed" | "hoursClosed" | "category";
+
+const DROP_FIELD = {
+  invalid: "droppedInvalid",
+  excluded: "droppedExcluded",
+  closed: "droppedClosed",
+  hoursClosed: "droppedHoursClosed",
+  category: "droppedCategory",
+} as const satisfies Record<DropReason, keyof PartnerScoringReport>;
+
+type Eligibility = { ok: false; drop: DropReason } | { ok: true; id: string; hoursText: string | null; hoursKnown: boolean; category: string };
+
+/** The eligibility rules of the module comment, in order: id, excluded id, closed, closed on the weekday, excluded category. */
+function eligibility(entity: QlooEntity, opts: PartnerScoringOptions, excluded: ReadonlySet<string>, excludedCats: ReadonlySet<string>): Eligibility {
+  const id = entity && typeof entity.entityId === "string" ? entity.entityId.trim() : "";
+  if (!id) return { ok: false, drop: "invalid" };
+  if (excluded.has(id)) return { ok: false, drop: "excluded" };
+  if (isClosedEntity(entity)) return { ok: false, drop: "closed" };
+  let hoursText: string | null = null;
+  let hoursKnown = true;
+  if (opts.weekday) {
+    const h = hoursOnDay(entity.properties?.hours, opts.weekday, opts.hours ?? {});
+    if (h.status === "closed") return { ok: false, drop: "hoursClosed" };
+    hoursText = h.text;
+    hoursKnown = h.status === "open";
+  }
+  const category = resolveCategory(entity, opts);
+  if (excludedCats.has(category)) return { ok: false, drop: "category" };
+  return { ok: true, id, hoursText, hoursKnown, category };
+}
+
+/**
+ * Entity ids of `entities` that partner scoring would consider, in their order (first appearance): the same
+ * eligibility rules and options as `scorePartnersWithReport`, no caps.
+ */
+export function eligiblePartnerIds(entities: readonly QlooEntity[], opts: PartnerScoringOptions = {}): string[] {
+  const excluded = new Set(opts.excludeEntityIds ?? []);
+  const excludedCats = new Set(opts.excludeCategories ?? []);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const e of entities) {
+    const el = eligibility(e, opts, excluded, excludedCats);
+    if (el.ok && !seen.has(el.id)) {
+      seen.add(el.id);
+      out.push(el.id);
+    }
+  }
+  return out;
+}
+
 function intOpt(v: number | undefined, d: number): number {
   return isFiniteNumber(v) ? Math.max(0, Math.floor(v)) : d;
 }
@@ -308,37 +358,14 @@ export function scorePartnersWithReport(
     const weight = clamp(lift / maxLift, 0, 1);
     pool.entities.forEach((entity, i) => {
       report.candidates++;
-      const id = entity && typeof entity.entityId === "string" ? entity.entityId.trim() : "";
-      if (!id) {
-        report.droppedInvalid++;
+      const el = eligibility(entity, opts, excluded, excludedCats);
+      if (!el.ok) {
+        report[DROP_FIELD[el.drop]]++;
         return;
       }
-      if (excluded.has(id)) {
-        report.droppedExcluded++;
-        return;
-      }
-      if (isClosedEntity(entity)) {
-        report.droppedClosed++;
-        return;
-      }
-      let hoursText: string | null = null;
-      let hoursKnown = true;
-      if (opts.weekday) {
-        const h = hoursOnDay(entity.properties?.hours, opts.weekday, opts.hours ?? {});
-        if (h.status === "closed") {
-          report.droppedHoursClosed++;
-          return;
-        }
-        hoursText = h.text;
-        hoursKnown = h.status === "open";
-      }
+      const { id, hoursText, hoursKnown, category } = el;
       const qlooRank = i + 1;
       const rankScore = n > 0 ? 1 - (qlooRank - 1) / n : 0;
-      const category = resolveCategory(entity, opts);
-      if (excludedCats.has(category)) {
-        report.droppedCategory++;
-        return;
-      }
       const cand: Candidate = {
         entity,
         id,

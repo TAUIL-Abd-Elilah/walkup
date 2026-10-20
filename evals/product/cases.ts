@@ -851,10 +851,10 @@ export const CASES: readonly ProductCase[] = [
         b = sheetOf(runB.final);
         const warm = runB.final.budget;
         c.ok("bill B reuses the cached venue baseline", warm.venueLevel <= 2 && warm.qlooCached >= 3, `${warm.venueLevel} venue call(s), ${warm.qlooCached} cached`, "S1");
-        // The plan's own calls; the trust checks (split-half heatmaps, partner house twins) are counted apart, at most 7.
+        // The plan's own calls; the trust checks (split-half heatmaps, partner house and popularity twins) are counted apart, at most 10.
         const read = readBudget(warm);
         c.between("bill B fresh calls with the venue cached (about 14-18, not counting trust checks)", warm.billLevel + warm.venueLevel - read.checks, 12, 18, "S1");
-        c.between("bill B trust-check calls (split-half heatmaps and house twins)", read.checks, 0, 7, "S1");
+        c.between("bill B trust-check calls (split-half heatmaps, house and popularity twins)", read.checks, 0, 10, "S1");
         subjects.push(fixtureSubject("g1-b after g1-a (warm venue)", rig, runB, { cards: ALL_OK, budget: { venueMax: 2 }, grounding: false }));
       }
       const topA = topPartnerIds(a);

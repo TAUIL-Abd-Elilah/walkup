@@ -170,7 +170,8 @@ describe("All ages: no bars (G1-A, a 21+ bill)", { timeout: 90_000 }, () => {
     expect(b.venueLevel).toBe(0);
     expect(Object.keys(b.byNode).every((n) => n.startsWith("Q9 ") || n === "Q13 sponsor")).toBe(true);
     expect(Object.keys(b.byNode)).toContain("Q13 sponsor");
-    expect(b.qlooFresh).toBeLessThanOrEqual(9);
+    // 3 pools, their house twins and their popularity twins, and the sponsor pick.
+    expect(b.qlooFresh).toBeLessThanOrEqual(12);
     expect(b.qlooCached).toBeGreaterThan(b.qlooFresh);
     expect(b.anthropic).toBe(0);
   });

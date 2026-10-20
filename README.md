@@ -33,7 +33,7 @@ One run produces a **Street Sheet**: nine sections, each with a status (`ok`, `e
 
 1. **Resolution.** The acts and the venue matched to Qloo entities, IDs shown. Ambiguity pauses the run and shows candidates; it is never guessed.
 2. **Lift map: where this crowd differs from your house crowd.** The top 5 neighbourhood tiles where this bill's fans over-index versus the fans of the acts this room usually hosts, with the ZIPs in each tile.
-3. **Partners for the drop.** 15-25 real places inside the top tiles (bars, cafes, book stores, barbershops...) with address, hours on the street-team day, phone, website and a "Why this place" line. Footer: *Suggested, not affiliated: no partner has agreed to anything.*
+3. **Partners for the drop.** 15-25 real places inside the top tiles (bars, cafes, book stores, barbershops...) with address, hours on the street-team day, phone, website and a "Why this place" line, local places before national chains. One line says how many of them a list of the most popular places in the same areas would miss, with its receipts. Footer: *Suggested, not affiliated: no partner has agreed to anything.*
 4. **Before and after the show.** 6-8 spots within 1.5 km of the venue, open on show night, load-balanced against assumed capacities you can edit. Alcohol rules come from the Ticketmaster age policy, never from Qloo.
 5. **Media and sponsor.** 3-5 podcasts for a host-read or giveaway pitch (labelled local or national) and one sponsor brand (labelled national until local ranking is checked).
 6. **Copy hooks.** Three lines built only from allowlisted Qloo tag words. No jokes, nothing in the artist's voice.
@@ -50,7 +50,7 @@ Three sample presets open from cache. Their bills are invented; only the rooms a
 
 ### Qloo workflows and tools used, and why
 
-Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. About **15 to 29 Qloo calls per fresh run** on the sample run (G1-A makes 29 cold, including the signal check, 4 split-half heatmaps and 3 partner usual-crowd searches that check the result; G3, with no lift map, makes 15). Each call gates one decision; each has a coded fallback whose reason shows on its card.
+Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. About **16 to 32 Qloo calls per fresh run** on the sample run (G1-A makes 32 cold, including the signal check, 4 split-half heatmaps, 3 partner usual-crowd searches and 3 popularity searches that check the result; G3, with no lift map, makes 16). Each call gates one decision; each has a coded fallback whose reason shows on its card.
 
 | Call | Request shape (abridged) | Decision it gates | Calls per run |
 |---|---|---|---|
@@ -64,6 +64,8 @@ Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only.
 | Q7 | `filter.type=urn:demographics` over bill and house (one block per entity) | Bill-versus-house age and gender skew for creative and dayparting. Never used for alcohol, radio format or community inference | 1 |
 | Q8 | `GET /v2/analysis/compare?a.signal.interests.entities=<bill>&b.signal.interests.entities=<house>&take=30` | "What's different tonight"; side-`a` tags become copy-hook candidates. Generic result: two `urn:tag` calls diffed by rank, `degraded` | 1 (+2) |
 | Q9 | `filter.type=urn:entity:place` per top tile: `signal.interests.entities=<bill>`, `filter.location=POINT(tile)` 2 km, pinned `filter.tags` with `operator.filter.tags=union`, `filter.hours=<street-team day>`, `filter.price_level.max=3`, `filter.exclude.tags`, `filter.exclude.entities=<venue>`, `feature.explainability=true`, `take=50` | **The 15-25 ticket-drop, poster and call partners** | 3 |
+| Q9 house twin | The same request per pool with the room's usual crowd as the signal, no explainability | Marks down places the usual crowd likes as much ("tonight vs house" chip) | 0-3 |
+| Q9 popularity twin | The same request per pool that gave partners, with no `signal.interests.entities` and no explainability; Qloo answers it in popularity order (probe 1, Oct 15) | Nothing on the list: it measures how many partners a popularity list of the same length would miss ("8 of the 11 partners would not make a list of the most popular places in their areas."). Failed or empty: no number, and the steps say why | 1-3 |
 | Q10 | Same place shape at the venue, 1.5 km, restaurant/bar/cafe, show weekday; a weekly house-signal twin | The 6-8 pre/post spots and their "tonight versus usual" rank delta | 1 (+1 weekly) |
 | Q11 | `filter.results.entities=<operator's partners>` with the bill as the signal | Call order for the operator's own list; partners not in the catalog stay on the list, "not in Qloo's catalog, kept in your order" | 1 (+1 pick-list search per typed partner, cap 20) |
 | Q12 | `filter.type=urn:entity:podcast` with `signal.location=POINT(venue)`, explainability, `take=15` | Which podcasts get a pitch; labelled national until a check shows location moves the ranking | 1 |
@@ -167,6 +169,7 @@ The field-by-field mapping from our inputs to Qloo parameters and back is in [do
 ## What we checked
 
 - **Product eval, 20 cases, on sample data.** Four goldens and sixteen scenario cases (the `needs_input` pause, thin heatmaps, empty compare, closed places, missing hours, the all-ages rule, quota and rate limits and more) run end to end through the orchestrator on the synthetic stand-in, with grounding, ledger, budget and policy checks on every sheet. All 20 pass; CI writes the score to [`evals/product/out/score.md`](evals/product/out/score.md). This checks that the pipeline behaves as described. It says nothing about whether Qloo's picks are better than another list.
+- **Popularity check, on every sheet.** For each partner area, Walkup runs the same Qloo place search without the bill as the signal, which Qloo answers in popularity order, and counts how many partners are not among that list's first k places (k = the partners picked there, after the same open, closed and type rules). The partner card says it in one sentence with its receipts, and `sheet.json` carries it as `popularityCheck`. It compares Qloo with the bill against Qloo without a signal over the same pool; it says nothing about ticket sales or whether the partners are better. On the sample sheets the numbers are made up with everything else (G1-A: 18 of 24).
 - **P1, the Fan-Bar Test: designed and sealed, not run.** The question was whether a supporters' club, used as a Qloo signal, ranks that club's official home bar in each US metro above a popularity ranking of the same places and above the same model searching Google Places. The analysis plan was hashed before any data existed ([`docs/preregistration/`](docs/preregistration/)), and the collector, analysis code and their tests on synthetic data are in [`evals/p1/`](evals/p1/). A full run needs up to 1,331 Qloo calls, more than a tenth of a monthly key, so we chose not to run it. There is no P1 result.
 
 What we tried and dropped is in [docs/what-we-tried.md](docs/what-we-tried.md).
@@ -237,7 +240,7 @@ Also:
 - **Generic compare results.** When bill-versus-house compare returns only shared, generic tags, the card falls back to a tag diff and is marked `degraded`.
 - **Local or national.** Podcast and brand rankings with `signal.location` may not move with location; when they don't, they are labelled "national, not local".
 - **No live sheet yet.** Every sheet today is sample data. The Oct 15 checks show which request shapes work on the live host, not that Qloo's picks beat a popularity ranking or any other list.
-- **No comparison list.** The sheet shows Qloo's picks with their receipts, not how they compare with a list made without Qloo. The Google Places comparison list was removed on Oct 20 2026 ([why](docs/what-we-tried.md)).
+- **No comparison list.** The sheet shows Qloo's picks with their receipts, not how they compare with a list made without Qloo. The popularity check compares two Qloo lists over the same places (with the bill and without a signal); it does not show the picks sell more tickets. The Google Places comparison list was removed on Oct 20 2026 ([why](docs/what-we-tried.md)).
 - **Revisions change five settings only.** All ages, place types, areas, street-team days and radius. A note asking for anything else gets a question back. The fixed rules know a short list of phrasings; the model reads more, but only when a model key (OpenRouter or Anthropic) is set, and in sample mode the rules always read the note.
 - **Counts are what-ifs.** Seats left and capacity are operator inputs, marked as what-ifs wherever they appear. The presets carry no seats-left count. No sales data about any show is known or shown.
 
@@ -270,7 +273,7 @@ Other public 2026 projects built on Qloo work on nearby problems. Descriptions a
 |---|---|
 | [`packages/contracts/`](packages/contracts/src/index.ts) | Shared types: envelope, ledger, entities, lift tiles, Street Sheet cards, policy constants |
 | [`packages/qloo/`](packages/qloo/) | Qloo client: request shapes Q1-Q16, rate limiter, month guard, private cache, ledger writer, fixture record and replay |
-| [`packages/engine/`](packages/engine/) | Pure code, no I/O: lift, partner scoring, diversity rules, chain matcher, load balancer, budget heuristic, guard, denylist |
+| [`packages/engine/`](packages/engine/) | Pure code, no I/O: lift, partner scoring, diversity rules, chain matcher, popularity check, load balancer, budget heuristic, guard, denylist |
 | [`packages/narrator/`](packages/narrator/) | Schema-constrained narration and the labelled template fallback |
 | [`packages/tm/`](packages/tm/) | Ticketmaster Discovery: intake, venue roster, age policy |
 | [`packages/places/`](packages/places/) | Google Places (New) client, used only by the P1 research harness, not by the product |

@@ -6,10 +6,10 @@
   "generatedBy": "packages/orchestrator/scripts/generate-fixture-sheets.ts",
   "worldSeed": "houselights-world-v1",
   "budget": {
-    "qlooFresh": 15,
+    "qlooFresh": 16,
     "qlooCached": 0,
-    "qlooTotal": 15,
-    "billLevel": 12,
+    "qlooTotal": 16,
+    "billLevel": 13,
     "venueLevel": 3,
     "arms": 0,
     "tm": 2,
@@ -24,6 +24,7 @@
       "Q4 bill heat": 1,
       "Q4 bill heat (widened to 60 km)": 1,
       "Q9 partners, near venue": 1,
+      "Q9 popularity twin, near venue": 1,
       "Q10 pre/post": 1,
       "Q10 pre/post (2,500 m)": 1,
       "Q12 podcasts": 1,
@@ -1060,10 +1061,12 @@
           }
         ],
         "provenance": [
-          "Q9"
+          "Q9",
+          "Q10"
         ],
         "limits": [
-          "Suggested, not affiliated: no partner has agreed to anything."
+          "Suggested, not affiliated: no partner has agreed to anything.",
+          "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales."
         ],
         "reason": "No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list."
       },
@@ -1195,7 +1198,7 @@
             "chips": [
               {
                 "label": "near the room, open on show night",
-                "ledgerRef": "Q11"
+                "ledgerRef": "Q12"
               }
             ]
           },
@@ -1315,7 +1318,7 @@
             "chips": [
               {
                 "label": "near the room, open on show night",
-                "ledgerRef": "Q11"
+                "ledgerRef": "Q12"
               }
             ]
           },
@@ -1440,14 +1443,14 @@
             "chips": [
               {
                 "label": "near the room, open on show night",
-                "ledgerRef": "Q11"
+                "ledgerRef": "Q12"
               }
             ]
           }
         ],
         "provenance": [
-          "Q10",
-          "Q11"
+          "Q11",
+          "Q12"
         ],
         "limits": [
           "Expected shares are a heuristic with assumed capacities, not a forecast."
@@ -1485,7 +1488,7 @@
             "chips": [
               {
                 "label": "ranked for this bill; labelled national until the local probe shows movement",
-                "ledgerRef": "Q12"
+                "ledgerRef": "Q13"
               }
             ]
           },
@@ -1516,7 +1519,7 @@
             "chips": [
               {
                 "label": "ranked for this bill; labelled national until the local probe shows movement",
-                "ledgerRef": "Q12"
+                "ledgerRef": "Q13"
               }
             ]
           },
@@ -1547,14 +1550,14 @@
             "chips": [
               {
                 "label": "ranked for this bill; labelled national until the local probe shows movement",
-                "ledgerRef": "Q12"
+                "ledgerRef": "Q13"
               }
             ]
           }
         ],
         "provenance": [
-          "Q12",
-          "Q13"
+          "Q13",
+          "Q14"
         ],
         "limits": [],
         "reason": "No sponsor brand came back."
@@ -1567,7 +1570,7 @@
           "house": []
         },
         "provenance": [
-          "Q14"
+          "Q15"
         ],
         "limits": [],
         "reason": "Qloo returned no demographics blocks for these signals."
@@ -1597,7 +1600,7 @@
           }
         ],
         "provenance": [
-          "Q15"
+          "Q16"
         ],
         "limits": [
           "No jokes, no artist voice, no artist marks in partner copy."
@@ -1911,6 +1914,43 @@
         "params": {
           "filter.type": "urn:entity:place",
           "filter.location": "POINT(-122.453 47.244)",
+          "filter.location.radius": 3500,
+          "filter.tags": [
+            "urn:tag:category:place:bar",
+            "urn:tag:category:place:restaurant",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:record_store",
+            "urn:tag:category:place:book_store",
+            "urn:tag:category:place:clothing_store",
+            "urn:tag:category:place:barber_shop",
+            "urn:tag:category:place:beauty_salon"
+          ],
+          "operator.filter.tags": "union",
+          "filter.hours": "wednesday",
+          "filter.price_level.max": 3,
+          "filter.exclude.tags": [
+            "urn:tag:category:place:night_club"
+          ],
+          "take": 50
+        },
+        "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.exclude.tags=urn:tag:category:place:night_club&filter.hours=wednesday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=3500&filter.price_level.max=3&filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:clothing_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon&filter.type=urn:entity:place&operator.filter.tags=union&take=50\" -H \"X-Api-Key: $QLOO_API_KEY\"",
+        "startedAt": "2026-11-20T15:00:00.000Z",
+        "httpStatus": 200,
+        "envelopeStatus": "ok",
+        "latencyMs": 0,
+        "bytes": 92840,
+        "cacheHit": false,
+        "resultCount": 50,
+        "note": "node Q9 popularity twin, near venue; fixture world: synthetic response",
+        "id": "Q10"
+      },
+      {
+        "kind": "qloo",
+        "method": "GET",
+        "endpoint": "/v2/insights",
+        "params": {
+          "filter.type": "urn:entity:place",
+          "filter.location": "POINT(-122.453 47.244)",
           "filter.location.radius": 1500,
           "filter.tags": [
             "urn:tag:category:place:restaurant",
@@ -1934,7 +1974,7 @@
         "cacheHit": false,
         "resultCount": 1,
         "note": "node Q10 pre/post; fixture world: synthetic response",
-        "id": "Q10"
+        "id": "Q11"
       },
       {
         "kind": "qloo",
@@ -1966,7 +2006,7 @@
         "cacheHit": false,
         "resultCount": 3,
         "note": "node Q10 pre/post (2,500 m); fixture world: synthetic response",
-        "id": "Q11"
+        "id": "Q12"
       },
       {
         "kind": "qloo",
@@ -1990,7 +2030,7 @@
         "cacheHit": false,
         "resultCount": 3,
         "note": "node Q12 podcasts; fixture world: synthetic response",
-        "id": "Q12"
+        "id": "Q13"
       },
       {
         "kind": "qloo",
@@ -2019,7 +2059,7 @@
         "cacheHit": false,
         "resultCount": 0,
         "note": "node Q13 sponsor; fixture world: synthetic response",
-        "id": "Q13"
+        "id": "Q14"
       },
       {
         "kind": "qloo",
@@ -2040,7 +2080,7 @@
         "cacheHit": false,
         "resultCount": 0,
         "note": "node Q7 demographics; fixture world: synthetic response",
-        "id": "Q14"
+        "id": "Q15"
       },
       {
         "kind": "qloo",
@@ -2069,7 +2109,7 @@
         "cacheHit": false,
         "resultCount": 4,
         "note": "node Q14 copy allowlist; fixture world: synthetic response",
-        "id": "Q15"
+        "id": "Q16"
       }
     ],
     "guard": {
@@ -2097,6 +2137,21 @@
       "Sample data: made-up places and numbers; no live service was called.",
       "Venue points for rooms without a public map point are approximate in sample data."
     ],
+    "popularityCheck": {
+      "partners": 6,
+      "notInPopularTop": 5,
+      "perArea": [
+        {
+          "tileGeohash": null,
+          "partners": 6,
+          "notInPopularTop": 5,
+          "ledgerRef": "Q10"
+        }
+      ],
+      "ledgerRefs": [
+        "Q10"
+      ]
+    },
     "steps": [
       {
         "id": "resolve",
@@ -2147,14 +2202,25 @@
         "cause": "Qloo ranked them for this crowd, and every one is open Wednesday. That's short of the 15 the list aims for, so treat it as a starting list."
       },
       {
+        "id": "partners-popular",
+        "kind": "partners",
+        "label": "Popularity check",
+        "decision": "Checked against popularity alone: 5 of the 6 partners wouldn't make a list of the most popular places near the venue.",
+        "status": "ok",
+        "ledgerRefs": [
+          "Q10"
+        ],
+        "cause": "The same search in each area without the bill as the signal returns places in popularity order; each area's list is cut to as many places as it has partners. It says nothing about ticket sales."
+      },
+      {
         "id": "prepost",
         "kind": "prepost",
         "label": "Before and after",
         "decision": "Picked 3 spots within 2.5 km of the room, open on show night.",
         "status": "partial",
         "ledgerRefs": [
-          "Q10",
-          "Q11"
+          "Q11",
+          "Q12"
         ],
         "cause": "Fewer than 6 came back inside 1.5 km, so the search widened to 2.5 km."
       },
@@ -2165,8 +2231,8 @@
         "decision": "Added 3 podcasts; no sponsor brand came back.",
         "status": "partial",
         "ledgerRefs": [
-          "Q12",
-          "Q13"
+          "Q13",
+          "Q14"
         ],
         "cause": "All are labelled national: local ranking isn't verified yet. Alcohol, tobacco and gambling brands are left out: Ticketmaster doesn't list an age limit for the show."
       },
@@ -2177,7 +2243,7 @@
         "decision": "Wrote the summary and 1 fan copy line from a fixed template; no model was called.",
         "status": "ok",
         "ledgerRefs": [
-          "Q15"
+          "Q16"
         ],
         "cause": "Only 1 copy line passed the tag allowlist and the checks."
       },

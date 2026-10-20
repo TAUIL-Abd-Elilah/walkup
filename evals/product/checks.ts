@@ -211,7 +211,7 @@ export interface BudgetBounds {
   fallbackMax: number;
   /** Q11 pick-list lookups for typed partner names (cap 20). */
   typedMax: number;
-  /** Trust checks: up to 4 split-half heatmaps and one house twin per partner pool (3). */
+  /** Trust checks: up to 4 split-half heatmaps, and one house twin and one popularity twin per partner pool (3 each). */
   checksMax: number;
   /** Qloo calls by comparison arms. None run, so this stays 0. */
   armsMax: number;
@@ -225,7 +225,7 @@ export const DEFAULT_BOUNDS: BudgetBounds = {
   venueMax: BUDGET_TARGET.coldVenueExtra.max,
   fallbackMax: 10,
   typedMax: 20,
-  checksMax: 7,
+  checksMax: 10,
   armsMax: 0,
 };
 
@@ -241,8 +241,11 @@ const FALLBACK_NODES: { re: RegExp; card: CardKey; reason: RegExp; extra: boolea
   { re: /^Q5 house heat \(tag baseline\)$/, card: "liftMap", reason: /compares this bill with/, extra: false },
 ];
 const TYPED_NODE = /^Q11 declared pick list$/;
-/** Trust checks on top of the plan: split-half heatmaps (Q4 halves bill-level, Q5 halves venue-level) and partner house twins (bill-level). */
-const CHECK_NODES_BILL = [/^Q4 .*\(split-half check\)$/, /^Q9 house twin\b/];
+/**
+ * Trust checks on top of the plan: split-half heatmaps (Q4 halves bill-level, Q5 halves venue-level), partner house
+ * twins and partner popularity twins (bill-level).
+ */
+const CHECK_NODES_BILL = [/^Q4 .*\(split-half check\)$/, /^Q9 house twin\b/, /^Q9 popularity twin\b/];
 const CHECK_NODES_VENUE = [/^Q5 .*\(split-half check\)$/];
 
 export function sumBudgets(a: CallBudget, b: CallBudget | undefined): CallBudget {
@@ -270,7 +273,7 @@ export interface BudgetReading {
   venue: number;
   fallback: number;
   typed: number;
-  /** Trust-check calls (split-half heatmaps and partner house twins), bill- and venue-level together. */
+  /** Trust-check calls (split-half heatmaps, partner house and popularity twins), bill- and venue-level together. */
   checks: number;
   arms: number;
   fallbackNodes: string[];

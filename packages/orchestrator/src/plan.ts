@@ -55,6 +55,7 @@ import {
   mediaTrace,
   narrateTrace,
   partnersTrace,
+  popularityTrace,
   prePostTrace,
   resolveTrace,
   usualCrowdTrace,
@@ -300,7 +301,11 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   partners.partners = explained;
   partners.card = { ...partners.card, results: explained };
   emit(ctx, "partners", partners.card);
-  trace.add(quiet(() => partnersTrace(ctx, partners), null), quiet(() => usualCrowdTrace(ctx, resolved, heat, partners), null));
+  trace.add(
+    quiet(() => partnersTrace(ctx, partners), null),
+    quiet(() => usualCrowdTrace(ctx, resolved, heat, partners), null),
+    quiet(() => popularityTrace(partners), null),
+  );
 
   const declared = await safe(() => runDeclared(ctx, seeds), (err) => failure(err, [], "Your list, in call order"));
   emit(ctx, "declared", declared);
@@ -388,6 +393,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     limits,
   };
   if (budgetSplit.length > 0) sheet.budgetSplit = budgetSplit;
+  if (partners.popularity?.check) sheet.popularityCheck = partners.popularity.check;
   const paired = request.pairedPlanId ?? preset?.pairedWith;
   if (paired) sheet.pairedPlanId = paired;
 

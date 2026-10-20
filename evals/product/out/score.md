@@ -1,7 +1,7 @@
 # Product eval score
 
 Source: fixture world (synthetic stand-in for Qloo and Ticketmaster; seed `houselights-world-v1`). No live API was called.
-Generated: 2026-10-20T05:32:06.577Z
+Generated: 2026-10-20T16:58:46.251Z
 
 **20 passed, 0 failed (0 on known product gaps only, 0 unexpected), 0 skipped, of 20 cases.**
 
@@ -52,31 +52,31 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 
 | Case | Sheet | partners | prePost | grounded | hoursUnverified | qlooFresh | coreBillCalls | venueCalls | fallbackCalls | guardDropped | citationDrops |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| C01 | g1-a | 24 | 8 | 32 | 2 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C02 | g1-b | 24 | 8 | 32 | 0 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C03 | g2 | 22 | 8 | 30 | 0 | 36 | 17 | 6 | 2 | 0 | 0 |
-| C04 | g3 | 6 | 3 | 9 | 0 | 15 | 10 | 3 | 2 | 0 | 0 |
+| C01 | g1-a | 24 | 8 | 32 | 2 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C02 | g1-b | 24 | 8 | 32 | 0 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C03 | g2 | 22 | 8 | 30 | 0 | 39 | 17 | 6 | 2 | 0 | 0 |
+| C04 | g3 | 6 | 3 | 9 | 0 | 16 | 10 | 3 | 2 | 0 | 0 |
 | C05 | g2 resumed | 22 | 8 | 30 | 0 | 15 | 12 | 0 | 2 | 0 | 0 |
-| C06 | g1-a, empty compare | 24 | 8 | 32 | 2 | 31 | 14 | 6 | 2 | 0 | 0 |
-| C07 | g1-a, thin heatmap | 16 | 8 | 24 | 0 | 28 | 13 | 6 | 1 | 0 | 0 |
-| C08 | g1-a, lift weak | 8 | 8 | 16 | 0 | 25 | 12 | 6 | 0 | 0 | 0 |
-| C09 | g1-b all-ages, model | 24 | 8 | 32 | 0 | 29 | 14 | 6 | 0 | 1 | 0 |
-| C09 | g1-a 21+, model | 24 | 8 | 32 | 2 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C10 | g2, model tries denied words | 22 | 8 | 30 | 0 | 36 | 17 | 6 | 2 | 2 | 0 |
-| C11 | g1-a, closed places | 24 | 8 | 32 | 2 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C12 | g1-a, unknown hours | 24 | 8 | 32 | 12 | 29 | 14 | 6 | 0 | 0 | 0 |
+| C06 | g1-a, empty compare | 24 | 8 | 32 | 2 | 34 | 14 | 6 | 2 | 0 | 0 |
+| C07 | g1-a, thin heatmap | 16 | 8 | 24 | 0 | 30 | 13 | 6 | 1 | 0 | 0 |
+| C08 | g1-a, lift weak | 8 | 8 | 16 | 0 | 26 | 12 | 6 | 0 | 0 | 0 |
+| C09 | g1-b all-ages, model | 24 | 8 | 32 | 0 | 32 | 14 | 6 | 0 | 1 | 0 |
+| C09 | g1-a 21+, model | 24 | 8 | 32 | 2 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C10 | g2, model tries denied words | 22 | 8 | 30 | 0 | 39 | 17 | 6 | 2 | 2 | 0 |
+| C11 | g1-a, closed places | 24 | 8 | 32 | 2 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C12 | g1-a, unknown hours | 24 | 8 | 32 | 12 | 32 | 14 | 6 | 0 | 0 | 0 |
 | C13 | g1-a from cache under the guard | 24 | 8 | 32 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
 | C13 | g1-b under the guard | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
-| C14 | g1-a, 429 once | 24 | 8 | 32 | 2 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C15 | g1-b, 23 declared partners | 24 | 8 | 32 | 0 | 47 | 14 | 6 | 0 | 0 | 0 |
-| C16 | g1-a, bar-heavy categories | 16 | 8 | 24 | 0 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C17 | g1-a, budget split | 24 | 8 | - | - | 29 | 14 | 6 | 0 | 0 | 0 |
-| C17 | g2, budget split | 22 | 8 | - | - | 36 | 17 | 6 | 2 | 0 | 0 |
-| C17 | g3, budget split | 6 | 3 | - | - | 15 | 10 | 3 | 2 | 0 | 0 |
-| C18 | g1-b after g1-a (warm venue) | 24 | 8 | - | - | 20 | 14 | 1 | 0 | 0 | 0 |
-| C19 | g1-a, house heat fails | 8 | 8 | 16 | 0 | 23 | 12 | 7 | 0 | 0 | 0 |
-| C20 | g1-a, no model | 24 | 8 | 32 | 2 | 29 | 14 | 6 | 0 | 0 | 0 |
-| C20 | g1-a, model error | 24 | 8 | - | - | 29 | 14 | 6 | 0 | 0 | 0 |
-| C20 | g1-a, off-schema draft | 24 | 8 | - | - | 29 | 14 | 6 | 0 | 0 | 0 |
+| C14 | g1-a, 429 once | 24 | 8 | 32 | 2 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C15 | g1-b, 23 declared partners | 24 | 8 | 32 | 0 | 50 | 14 | 6 | 0 | 0 | 0 |
+| C16 | g1-a, bar-heavy categories | 16 | 8 | 24 | 0 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C17 | g1-a, budget split | 24 | 8 | - | - | 32 | 14 | 6 | 0 | 0 | 0 |
+| C17 | g2, budget split | 22 | 8 | - | - | 39 | 17 | 6 | 2 | 0 | 0 |
+| C17 | g3, budget split | 6 | 3 | - | - | 16 | 10 | 3 | 2 | 0 | 0 |
+| C18 | g1-b after g1-a (warm venue) | 24 | 8 | - | - | 23 | 14 | 1 | 0 | 0 | 0 |
+| C19 | g1-a, house heat fails | 8 | 8 | 16 | 0 | 24 | 12 | 7 | 0 | 0 | 0 |
+| C20 | g1-a, no model | 24 | 8 | 32 | 2 | 32 | 14 | 6 | 0 | 0 | 0 |
+| C20 | g1-a, model error | 24 | 8 | - | - | 32 | 14 | 6 | 0 | 0 | 0 |
+| C20 | g1-a, off-schema draft | 24 | 8 | - | - | 32 | 14 | 6 | 0 | 0 | 0 |
 
 Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.

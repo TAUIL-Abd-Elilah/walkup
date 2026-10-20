@@ -24,7 +24,7 @@ The same content is served by the app at `/system-card`. The probe outcomes belo
 
 Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. Global limit 3 requests/second with at most 2 retries on 429/5xx. A month guard reads `x-month-ratelimit-remaining`; below 1,500, fresh runs stop and presets are served from cache.
 
-About **15 to 29 calls per fresh run**, counted from the sample run (G1-A makes 29 from cold, including the signal check, 4 split-half heatmaps and 3 partner usual-crowd searches; G3, with no lift map, makes 15). Full request shapes: [mapping-table.md](mapping-table.md).
+About **16 to 32 calls per fresh run**, counted from the sample run (G1-A makes 32 from cold, including the signal check, 4 split-half heatmaps, 3 partner usual-crowd searches and 3 partner popularity searches; G3, with no lift map, makes 16). Full request shapes: [mapping-table.md](mapping-table.md).
 
 | Call | Endpoint | Calls per run | Probe outcome |
 |---|---|---|---|
@@ -37,6 +37,7 @@ About **15 to 29 calls per fresh run**, counted from the sample run (G1-A makes 
 | Q7 | `GET /v2/insights?filter.type=urn:demographics` | 1 | Verified Oct 15: one block per signal, 6 age buckets, 2 gender keys. `signal.demographics.age` is not used: its check ran on a seed Qloo had no taste data for, so it showed nothing |
 | Q8 | `GET /v2/analysis/compare` | 1 (+2 on tag-diff fallback) | Verified Oct 15; `take` has no effect, so each list is cut on our side (`degraded: tag diff` if generic) |
 | Q9 | `GET /v2/insights?filter.type=urn:entity:place` per top tile, explainability on | 3 | Verified Oct 15; `filter.hours` honoured (5 places closed that day without it, 0 with it); 11 of 14 category tags pinned; `filter.exclude.tags` and `filter.exclude.entities` not checked yet |
+| Q9 popularity twin | `GET /v2/insights?filter.type=urn:entity:place`, the same request as a Q9 pool with no signal and no explainability | 1-3 (one per pool that gave partners) | Verified Oct 15 (probe 1, KG1): with no signal Qloo returns the pool in popularity order |
 | Q10 | `GET /v2/insights?filter.type=urn:entity:place` at the venue (+ weekly house twin) | 1 (+1 weekly) | Verified Oct 15 (same shape as Q9) |
 | Q11 | `GET /v2/insights?filter.type=urn:entity:place&filter.results.entities=` | 1 (+1 pick-list search per typed partner, cap 20) | Verified Oct 15 (a 10-entity shortlist fully scored). `filter.results.entities.query` (names instead of ids): 400, never sent |
 | Q12 | `GET /v2/insights?filter.type=urn:entity:podcast` with `signal.location` | 1 | Verified Oct 15: 200, 15 rows with a usable seed. The day-one 400s came from a seed Qloo had no taste data for. Location effect not shown, so podcasts are labelled national |
@@ -127,6 +128,7 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 | `signal.location` does not move podcast or brand rankings | Labelled "national, not local" |
 | Fewer than 8 partners in a tile | Radius 3,500 m, then a wider category set, `partial`; closed places dropped and counted |
 | A national chain among the partners or spots | Listed after the local places and kept only for a slot no local place fills; the card says how many moved and the steps name any that fell off the list. Chains are spotted by name from a hand-kept list ([`config/chains.json`](../config/chains.json)), so one not on it is listed like a local place |
+| A popularity twin fails or comes back empty | No popularity number on the sheet or the card; the "Popularity check" step says which area and why. The partner list is unchanged |
 | No sponsor survives exclusions | Sponsor card hidden with an `empty` badge |
 | One headliner dominates the explainability | Balance check down-weights it and shows "headliner was dominating; rebalanced". Off: explainability scores are shares per place, not shown informative on Oct 15 |
 | LLM refusal, outage or spend cap reached | Deterministic template narration, labelled; revision notes read by fixed rules, labelled |

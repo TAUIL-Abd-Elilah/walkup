@@ -12,22 +12,25 @@ import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
 import { findAlcoholTerm, findDeniedTerm, isDeniedTag } from "@walkup/engine";
 import { BUDGET_TARGET, CARD_ORDER, createMemoryChoiceStore, createMemoryPlanStore, type CallBudget, type CardKey, type PlanResult } from "../src/index";
 import { MIN_BILL_PCT, SPLIT_HALF_NODE } from "../src/steps/heat";
-import { HOUSE_TWIN_CHIP, HOUSE_TWIN_NODE, PARTNER_TILES } from "../src/steps/partners";
+import { HOUSE_TWIN_CHIP, HOUSE_TWIN_NODE, PARTNER_TILES, POPULARITY_TWIN_NODE } from "../src/steps/partners";
 import { allEntities, citedRefs, deps, runPreset, sheetOf } from "./helpers";
 
-/** Trust-check calls in a budget: split-half heatmaps (bill halves, house halves) and partner house twins. */
-function checks(b: CallBudget): { billHalves: number; houseHalves: number; twins: number; bill: number; venue: number; total: number } {
+/** Trust-check calls in a budget: split-half heatmaps (bill halves, house halves), partner house twins and popularity twins. */
+function checks(b: CallBudget): { billHalves: number; houseHalves: number; twins: number; popular: number; bill: number; venue: number; total: number } {
   let billHalves = 0;
   let houseHalves = 0;
   let twins = 0;
+  let popular = 0;
   for (const [node, n] of Object.entries(b.byNode)) {
     if (node.endsWith(SPLIT_HALF_NODE)) {
       if (node.startsWith("Q4 ")) billHalves += n;
       else if (node.startsWith("Q5 ")) houseHalves += n;
     }
     if (node.startsWith(HOUSE_TWIN_NODE)) twins += n;
+    if (node.startsWith(POPULARITY_TWIN_NODE)) popular += n;
   }
-  return { billHalves, houseHalves, twins, bill: billHalves + twins, venue: houseHalves, total: billHalves + houseHalves + twins };
+  const bill = billHalves + twins + popular;
+  return { billHalves, houseHalves, twins, popular, bill, venue: houseHalves, total: bill + houseHalves };
 }
 
 const runs: Record<string, { first: PlanResult; final: PlanResult; cards: CardKey[] }> = {};
@@ -323,11 +326,12 @@ describe("G3: the hardest room first", () => {
 });
 
 describe("call budget", () => {
-  it("stays within about 14-18 plan calls with the venue baseline cached, plus 4-6 on a cold venue, plus at most 7 trust checks", () => {
-    // Trust checks are counted apart: at most 4 split-half heatmaps (2 bill, 2 house) and one house twin per partner pool.
+  it("stays within about 14-18 plan calls with the venue baseline cached, plus 4-6 on a cold venue, plus at most 10 trust checks", () => {
+    // Trust checks are counted apart: at most 4 split-half heatmaps (2 bill, 2 house), one house twin and one
+    // popularity twin per partner pool.
     const coldA = runs["g1-a"]!.final.budget;
     const ca = checks(coldA);
-    expect(ca).toMatchObject({ billHalves: 2, houseHalves: 2, twins: PARTNER_TILES });
+    expect(ca).toMatchObject({ billHalves: 2, houseHalves: 2, twins: PARTNER_TILES, popular: PARTNER_TILES });
     expect(coldA.venueLevel - ca.venue).toBeGreaterThanOrEqual(BUDGET_TARGET.coldVenueExtra.min);
     expect(coldA.venueLevel - ca.venue).toBeLessThanOrEqual(BUDGET_TARGET.coldVenueExtra.max);
     expect(coldA.billLevel - ca.bill).toBeGreaterThanOrEqual(BUDGET_TARGET.billLevel.min);
@@ -351,7 +355,8 @@ describe("call budget", () => {
       const c = checks(b);
       expect(c.billHalves + c.houseHalves, id).toBeLessThanOrEqual(4);
       expect(c.twins, id).toBeLessThanOrEqual(PARTNER_TILES);
-      expect(c.total, id).toBeLessThanOrEqual(7);
+      expect(c.popular, id).toBeLessThanOrEqual(PARTNER_TILES);
+      expect(c.total, id).toBeLessThanOrEqual(10);
       expect(b.qlooFresh).toBe(b.billLevel + b.venueLevel + b.arms);
       // No comparison arm runs, and nothing calls Google Places.
       expect(b.arms).toBe(0);

@@ -420,6 +420,34 @@ export function usualCrowdStep(i: UsualCrowdStepInput): TraceStep {
   return traceStep("partners-usual", "partners", "Usual-crowd overlap", `None of the ${countOf(i.kept, "place")} ranks as high for ${b}`, status, i.ledgerRefs, joinSentences([failedLine]));
 }
 
+export interface PopularityStepInput {
+  /** The check's totals, or null when it did not run. */
+  partners: number | null;
+  notInPopularTop: number | null;
+  areas: number;
+  /** The only area is the near-venue list. */
+  nearVenueOnly?: boolean;
+  /** Why there is no number: each area whose search without the bill failed or came back empty, e.g. "area 2 (Qloo returned HTTP 500)". */
+  failed: string[];
+  ledgerRefs: string[];
+}
+
+/** The popularity check: the partner list against the same searches without the bill (popularity order). */
+export function popularityStep(i: PopularityStepInput): TraceStep {
+  const how = "The same search in each area without the bill as the signal returns places in popularity order; each area's list is cut to as many places as it has partners";
+  if (i.partners === null || i.notInPopularTop === null) {
+    const why = i.failed.length > 0 ? `The search without the bill failed or came back empty for ${joinAnd(i.failed)}, so there is no number` : "No search without the bill ran, so there is no number";
+    return traceStep("partners-popular", "partners", "Popularity check", "Skipped the popularity check", "partial", i.ledgerRefs, joinSentences([why]));
+  }
+  const where = i.nearVenueOnly ? "near the venue" : i.areas === 1 ? (i.partners === 1 ? "in its area" : "in their area") : "in their areas";
+  const list = `a list of the most popular places ${where}`;
+  let decision: string;
+  if (i.partners === 1) decision = `Checked against popularity alone: the one partner ${i.notInPopularTop === 1 ? "wouldn't make" : "would also make"} ${list}`;
+  else if (i.notInPopularTop === 0) decision = `Checked against popularity alone: all ${countOf(i.partners, "partner")} would also make ${list}`;
+  else decision = `Checked against popularity alone: ${i.notInPopularTop} of the ${countOf(i.partners, "partner")} wouldn't make ${list}`;
+  return traceStep("partners-popular", "partners", "Popularity check", decision, "ok", i.ledgerRefs, joinSentences([how, "It says nothing about ticket sales"]));
+}
+
 export interface DeclaredStepInput {
   status: EnvelopeStatus;
   declared: number;

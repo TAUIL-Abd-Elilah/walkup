@@ -469,6 +469,39 @@ export interface StreetSheet {
   steps?: TraceStep[];
   /** Set when this sheet revises another one. */
   revision?: SheetRevision;
+  /**
+   * How many partners a popularity ranking alone would not have picked. Absent when the check did not run or a
+   * search failed or came back empty (the step stream says why), and on sheets made before it existed.
+   */
+  popularityCheck?: PopularityCheck;
+}
+
+/** One partner area in the popularity check. */
+export interface PopularityCheckArea {
+  /** The area's tile, or null for the near-venue list. */
+  tileGeohash: string | null;
+  tileName?: string;
+  /** Partners picked in the area: k, the length of the popularity list they are compared with. */
+  partners: number;
+  /** Of them, how many are not among the area's k most popular places. */
+  notInPopularTop: number;
+  /** Ledger id of the area's popularity twin. */
+  ledgerRef: string;
+}
+
+/**
+ * Qloo with the bill as the signal against Qloo with no signal, same pool: per partner area, the same place search
+ * without `signal.interests.entities` (Qloo answers it in popularity order), cut to as many places as the area has
+ * partners, after the same eligibility rules. It says nothing about ticket sales.
+ */
+export interface PopularityCheck {
+  /** Partners compared (every partner on the sheet). */
+  partners: number;
+  /** Partners not among their area's most popular places. */
+  notInPopularTop: number;
+  perArea: PopularityCheckArea[];
+  /** Ledger ids of the popularity twin calls. */
+  ledgerRefs: string[];
 }
 
 // ---------------------------------------------------------------------------

@@ -124,10 +124,10 @@ function textsOf(s: StreetSheet): { where: string; text: string; extraNumbers?: 
 
 describe("the step stream", () => {
   const order: Record<string, string[]> = {
-    "g1-a": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard"],
-    "g1-b": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard"],
-    g2: ["pause-1", "resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "declared", "prepost", "media", "narrate", "guard"],
-    g3: ["resolve", "baseline", "heat", "partners", "prepost", "media", "narrate", "guard"],
+    "g1-a": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "partners-popular", "declared", "prepost", "media", "narrate", "guard"],
+    "g1-b": ["resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "partners-popular", "declared", "prepost", "media", "narrate", "guard"],
+    g2: ["pause-1", "resolve", "baseline", "heat", "heat-check", "partners", "partners-usual", "partners-popular", "declared", "prepost", "media", "narrate", "guard"],
+    g3: ["resolve", "baseline", "heat", "partners", "partners-popular", "prepost", "media", "narrate", "guard"],
   };
   for (const id of IDS) {
     it(`${id}: one step per decision, in run order, with receipts from this run`, () => {
@@ -298,8 +298,9 @@ describe("plain and traceable", () => {
       const notes = s.ledger.map((e) => e.note ?? "").join("\n");
       expect(notes).not.toMatch(/discovery|explain|trace/i);
     }
-    // 28 plan calls plus the one Q1 signal check (Oct 15: Qloo can list an act it has no taste data for).
-    expect(runs["g1-a"]!.final.budget.qlooFresh).toBe(29);
+    // 28 plan calls plus the one Q1 signal check (Oct 15: Qloo can list an act it has no taste data for), plus one
+    // popularity twin per partner pool.
+    expect(runs["g1-a"]!.final.budget.qlooFresh).toBe(32);
   });
 });
 

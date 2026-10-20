@@ -6,14 +6,20 @@
  * penalty and the "tonight vs house" chip), the probe-gated balance check,
  * and deterministic scoring with the diversity caps. National chains on the
  * hand-kept list (config/chains.json) are listed after the local places.
+ * Last, the popularity twin of each pool that gave partners (the same request
+ * with no signal, which Qloo answers in popularity order) for the popularity
+ * check: how many partners a popularity list of the same length would miss.
  */
-import type { Chip, LiftTile, Partner, QlooEntity, StreetSheetCards, Weekday } from "@walkup/contracts";
+import type { Chip, LiftTile, Partner, PopularityCheck, QlooEntity, StreetSheetCards, Weekday } from "@walkup/contracts";
 import {
   balanceCheck,
   DEFAULT_BAR_CATEGORIES,
   mergeRankedLists,
+  popularityCheck,
   scorePartnersWithReport,
   type PartnerPool,
+  type PartnerScoringOptions,
+  type PopularityTwin,
   type PartnerScoringReport,
   type PoolHouseTwin,
 } from "@walkup/engine";
@@ -34,8 +40,19 @@ export const HOUSE_TWIN_NODE = "Q9 house twin";
 export const HOUSE_TWIN_CHIP = "tonight vs house";
 export const HOUSE_TWIN_LIMIT =
   "The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.";
+/** Node label of a pool's popularity twin (one per pool that gave partners, at most PARTNER_TILES per run). */
+export const POPULARITY_TWIN_NODE = "Q9 popularity twin";
+export const POPULARITY_LIMIT =
+  "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.";
 
 type PartnersCard = StreetSheetCards["partners"];
+
+/** The popularity check of one run: the number (or null), the areas whose twin failed or came back empty, and every twin call. */
+export interface PopularityRun {
+  check: PopularityCheck | null;
+  failed: string[];
+  ledgerRefs: string[];
+}
 
 export interface PartnersResult {
   card: PartnersCard;
@@ -45,6 +62,8 @@ export interface PartnersResult {
   /** Pool request shape per tile, reused by arms S and P. */
   poolSpecs: PoolSpec[];
   categories: string[];
+  /** Absent when the step stopped before picking partners. */
+  popularity?: PopularityRun;
 }
 
 export interface PoolSpec {
@@ -148,6 +167,61 @@ async function fetchHouseTwin(
     if (e.entityId && !ranks.has(e.entityId)) ranks.set(e.entityId, i + 1);
   });
   return { ranks, size: r.value.length, ledgerRef: r.ledgerRef };
+}
+
+/**
+ * The popularity twin of one pool: the same tile point, radius, category tags, street-team hours, price cap,
+ * exclusions and take as the pool, with no signal at all, which Qloo answers in popularity order (probe 1 / KG1,
+ * Oct 15). Bill-level: its point is the bill's tile.
+ */
+async function fetchPopularityTwin(ctx: RunContext, spec: PoolSpec, where: string, excludeIds: string[]): Promise<PopularityTwin> {
+  node(ctx, `${POPULARITY_TWIN_NODE}, ${where}`, "bill");
+  const r = await ctx.qloo.placeInsights({
+    signalEntities: [],
+    point: spec.point,
+    radiusM: spec.radiusM,
+    tags: spec.tags,
+    operator: "union",
+    hours: streetDay(ctx),
+    priceMax: PRICE_MAX,
+    excludeTags: excludeTagsFor(ctx),
+    excludeEntities: excludeIds,
+    take: 50,
+  });
+  return { tileGeohash: spec.tileGeohash, entities: r.value, ledgerRef: r.ledgerRef };
+}
+
+/**
+ * One popularity twin per pool that gave partners, then the check (engine `popularityCheck`). A failed or empty
+ * twin means no number: the run records why and the card says nothing.
+ */
+async function runPopularity(ctx: RunContext, specs: readonly PoolSpec[], partners: readonly Partner[], excludeIds: string[], opts: PartnerScoringOptions): Promise<PopularityRun> {
+  const out: PopularityRun = { check: null, failed: [], ledgerRefs: [] };
+  const twins: PopularityTwin[] = [];
+  for (let i = 0; i < specs.length; i++) {
+    const spec = specs[i] as PoolSpec;
+    if (!partners.some((p) => p.tileGeohash === spec.tileGeohash)) continue;
+    const where = spec.tileGeohash ? `tile ${i + 1}` : "near venue";
+    const area = where.replace(/^tile /, "area ");
+    try {
+      const twin = await fetchPopularityTwin(ctx, spec, where, excludeIds);
+      out.ledgerRefs.push(twin.ledgerRef);
+      if (twin.entities.length > 0) twins.push(twin);
+      else out.failed.push(`${area} (no places came back)`);
+    } catch (err) {
+      const ref = (err as { ledgerRef?: string }).ledgerRef;
+      if (ref) out.ledgerRefs.push(ref);
+      out.failed.push(`${area} (${errorStatus(err).reason})`);
+    }
+  }
+  if (out.failed.length > 0) return out;
+  const res = popularityCheck(partners, twins, opts);
+  out.check = res.check;
+  for (const m of res.missing) {
+    const i = specs.findIndex((s) => s.tileGeohash === m.tileGeohash);
+    out.failed.push(`${m.tileGeohash ? `area ${i + 1}` : "near venue"} (${m.why})`);
+  }
+  return out;
 }
 
 function seedNames(seeds: Seed[]): Map<string, string> {
@@ -274,11 +348,10 @@ export async function runPartners(
   const twinByPool = new Map<string, PoolHouseTwin>();
   for (const p of pools) if (p.house) twinByPool.set(p.ledgerRef, p.house);
   const excludedCats = excludedCategoriesFor(ctx);
+  // The eligibility rules, shared by the scoring and the popularity list.
+  const eligibility: PartnerScoringOptions = { weekday: streetDay(ctx), categoryTags: categoryTagMap(ctx.pins), excludeEntityIds: excludeIds, excludeCategories: excludedCats };
   const { partners, report } = scorePartnersWithReport(pools, top, {
-    weekday: streetDay(ctx),
-    categoryTags: categoryTagMap(ctx.pins),
-    excludeEntityIds: excludeIds,
-    excludeCategories: excludedCats,
+    ...eligibility,
     chains: CHAINS,
     extraChips: (e, c): Chip[] => {
       const chips: Chip[] = [];
@@ -316,13 +389,18 @@ export async function runPartners(
   if (status === "ok" && (widenedRadius > 0 || widenedCats > 0 || report.belowMinimum || tiles.length < PARTNER_TILES || cats.skipped.length > 0 || rebalanced || worstDrop.share === "some")) status = "partial";
   if (report.belowMinimum) ctx.thinSignal = true;
   if (status === "empty" && reasons.length === 0) reasons.push("No place passed the filters.");
+  // Popularity check (after the list is final): never changes the list; with no number the card says nothing.
+  const popularity = await runPopularity(ctx, specs, cleaned, excludeIds, eligibility);
+  provenance.push(...popularity.ledgerRefs);
   const limits = ["Suggested, not affiliated: no partner has agreed to anything."];
   if (twinByPool.size > 0) limits.push(HOUSE_TWIN_LIMIT);
   if (report.chains > 0) limits.push(CHAIN_LIMIT);
+  if (popularity.check) limits.push(POPULARITY_LIMIT);
   base.card = envelope(status, summary, cleaned, provenance, reasons.length > 0 ? reasons.join(" ") : undefined, limits);
   base.partners = cleaned;
   base.report = report;
   base.pools = pools;
   base.poolSpecs = specs;
+  base.popularity = popularity;
   return base;
 }

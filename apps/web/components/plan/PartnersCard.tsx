@@ -5,6 +5,7 @@ import { shortUrl, telHref } from "../../lib/format";
 import { categoryLabel } from "../../lib/labels";
 import { areaName, formatHours, isThinSignal, normalizeName, partnerLine, partnerSummary, topTiles } from "../../lib/sheet-utils";
 import { LESS_SURE_NOTE, partnerLessSure } from "@walkup/exports/format";
+import { popularitySentence } from "@walkup/engine/popularity";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
 import { Refs } from "./receipts";
@@ -121,6 +122,7 @@ export function PartnersCard({
   canRevise?: boolean;
 }) {
   const env = sheet.cards.partners;
+  const popularity = sheet.popularityCheck;
   const day = streetDayShort(sheet.operator.streetTeamDays);
   const top = useMemo(() => topTiles(sheet), [sheet]);
   // The areas the partner pools came from, numbered and named as on the map.
@@ -322,6 +324,13 @@ export function PartnersCard({
         </table>
       )}
       {anyThin && rows.length > 0 ? <p className="mt-3 max-w-[760px] text-sm text-muted">{LESS_SURE_NOTE} &ldquo;Why this place&rdquo; gives the reason.</p> : null}
+      {/* Qloo with the bill vs Qloo without a signal, same searches: absent when a twin failed or came back empty. */}
+      {popularity && env.results.length > 0 ? (
+        <p className="mt-3 max-w-[760px]" data-testid="popularity-check">
+          {popularitySentence(popularity)}
+          <Refs ids={popularity.ledgerRefs} />
+        </p>
+      ) : null}
       <p className="mt-4 max-w-[760px]">
         {notes.join(" ")} Call before you drop posters.
         {anyWhy ? " Open “Why this place” for what to ask and how sure the pick is." : ""}

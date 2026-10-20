@@ -561,6 +561,30 @@ describe("sheet page patterns from the design research", () => {
     expect(text).not.toMatch(BANNED);
   });
 
+  it("says the popularity check in one sentence with its receipts, and nothing when the sheet has none", () => {
+    const { sheet } = fixture("g1-a");
+    const c = sheet.popularityCheck!;
+    const html = renderView(sheet);
+    expect(visibleText(html)).toContain(`${c.notInPopularTop} of the ${c.partners} partners would not make a list of the most popular places in their areas.`);
+    const line = /<p[^>]*data-testid="popularity-check"[^>]*>([\s\S]*?)<\/p>/.exec(html)?.[1] ?? "";
+    // Footnote receipts: consecutive ids collapse into one range ("Q20–Q22").
+    expect(line).toContain(`#receipt-${c.ledgerRefs[0]}`);
+    expect(line).toContain(`aria-label="Receipts ${c.ledgerRefs[0]} to ${c.ledgerRefs.at(-1)}"`);
+    const without = structuredClone(sheet);
+    delete without.popularityCheck;
+    expect(renderView(without)).not.toContain('data-testid="popularity-check"');
+  });
+
+  it("marks a national chain in the type column and the spot line", () => {
+    const a = structuredClone(fixture("g1-a").sheet);
+    a.cards.partners.results[0]!.chain = true;
+    a.cards.prePost.results[0]!.chain = true;
+    const text = visibleText(renderView(a));
+    expect(text).toMatch(/, national chain/);
+    expect(text).toMatch(/· national chain/);
+    expect(visibleText(renderView(fixture("g1-a").sheet))).not.toMatch(/national chain/);
+  });
+
   it("marks thin-signal places with a dagger and new partners with the word new", () => {
     const g3 = fixture("g3").sheet;
     const html = renderView(g3);

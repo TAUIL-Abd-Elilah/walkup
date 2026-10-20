@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./popularity": "./src/popularity.ts"
   },
   "dependencies": {
     "ngeohash": "^0.6.4"

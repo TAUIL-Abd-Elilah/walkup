@@ -21,6 +21,7 @@ import {
   PARTNER_DEFAULTS,
   partnersStep,
   pauseStep,
+  popularityStep,
   prePostStep,
   resolveStep,
   ubiquityDrops,
@@ -31,7 +32,17 @@ import { categoryTagMap, categoryUrns, isComedyClassification } from "../tags";
 import type { RunContext } from "../context";
 import type { CopyResult } from "./copy";
 import { MIN_BILL_PCT, MIN_SPLIT_HALF, SPLIT_HALF_NODE, THIN_CELLS, type HeatResult } from "./heat";
-import { excludedCategoriesFor, HOUSE_TWIN_NODE, PARTNER_TILES, partnerCategories, streetDay, TILE_RADIUS_M, TILE_RADIUS_WIDE_M, type PartnersResult } from "./partners";
+import {
+  excludedCategoriesFor,
+  HOUSE_TWIN_NODE,
+  PARTNER_TILES,
+  partnerCategories,
+  POPULARITY_TWIN_NODE,
+  streetDay,
+  TILE_RADIUS_M,
+  TILE_RADIUS_WIDE_M,
+  type PartnersResult,
+} from "./partners";
 import { CALL_AHEAD_CHIP, MIN_SPOTS, PREPOST_RADIUS_M, prePostChainMoves, prePostTypeDrops } from "./prepost";
 import { CHAINS } from "../chains";
 import { HOUSE_MIN_RESOLVED, type ResolveResult } from "./resolve";
@@ -242,7 +253,7 @@ export function partnersTrace(ctx: RunContext, partners: PartnersResult): TraceS
   const byId = ledgerIndex(ctx);
   const card = partners.card;
   const list = partners.partners;
-  const refs = card.provenance.filter((r) => !nodeOf(byId.get(r)).startsWith(HOUSE_TWIN_NODE));
+  const refs = card.provenance.filter((r) => !nodeOf(byId.get(r)).startsWith(HOUSE_TWIN_NODE) && !nodeOf(byId.get(r)).startsWith(POPULARITY_TWIN_NODE));
   const keys = partnerCategories(ctx);
   const cats = categoryUrns(ctx.pins, keys);
   const tilePools = partners.poolSpecs.filter((s) => s.tileGeohash !== null);
@@ -309,6 +320,21 @@ export function usualCrowdTrace(ctx: RunContext, resolved: ResolveResult, heat: 
     penalized: partners.report?.penalized ?? 0,
     kept: partners.partners.length,
     ledgerRefs: refs,
+  });
+}
+
+/** The popularity check: the number, or why there is none. Null when no partner was picked (no check ran). */
+export function popularityTrace(partners: PartnersResult): TraceStep | null {
+  const run = partners.popularity;
+  if (!run || partners.partners.length === 0) return null;
+  const c = run.check;
+  return popularityStep({
+    partners: c ? c.partners : null,
+    notInPopularTop: c ? c.notInPopularTop : null,
+    areas: c ? c.perArea.length : 0,
+    nearVenueOnly: !!c && c.perArea.length === 1 && c.perArea[0]?.tileGeohash === null,
+    failed: run.failed,
+    ledgerRefs: run.ledgerRefs,
   });
 }
 

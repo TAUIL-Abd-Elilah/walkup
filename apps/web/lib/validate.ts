@@ -384,6 +384,30 @@ export function validateSheet(sheet: unknown): string[] {
     if (split.length > 0) c.check(Math.abs(total - 1) < 0.011, "sheet.budgetSplit", `shares sum to ${total.toFixed(3)}, expected 1`);
   }
 
+  if (s.popularityCheck !== undefined) {
+    const pc = c.obj(s, "popularityCheck", "sheet");
+    c.num(pc, "partners", "sheet.popularityCheck", { min: 1 });
+    c.num(pc, "notInPopularTop", "sheet.popularityCheck", { min: 0 });
+    let sumPartners = 0;
+    let sumNotIn = 0;
+    c.arr(pc, "perArea", "sheet.popularityCheck").forEach((a, i) => {
+      const ap = `sheet.popularityCheck.perArea[${i}]`;
+      if (!c.check(isObj(a), ap, "expected area")) return;
+      const ao = a as Obj;
+      if (ao.tileGeohash !== null) c.check(tileHashes.has(String(ao.tileGeohash)), `${ap}.tileGeohash`, "tile not on the lift map");
+      c.num(ao, "partners", ap, { min: 1 });
+      c.num(ao, "notInPopularTop", ap, { min: 0 });
+      const k = ao.partners;
+      const n = ao.notInPopularTop;
+      if (typeof k === "number" && typeof n === "number") c.check(n <= k, `${ap}.notInPopularTop`, "more than the area's partners");
+      c.check(ledgerIds.has(String(ao.ledgerRef)), `${ap}.ledgerRef`, "not in the ledger");
+      sumPartners += typeof k === "number" ? k : 0;
+      sumNotIn += typeof n === "number" ? n : 0;
+    });
+    c.check(pc.partners === sumPartners && pc.notInPopularTop === sumNotIn, "sheet.popularityCheck", "totals do not add up over the areas");
+    c.arr(pc, "ledgerRefs", "sheet.popularityCheck").forEach((r, i) => c.check(ledgerIds.has(String(r)), `sheet.popularityCheck.ledgerRefs[${i}]`, "not in the ledger"));
+  }
+
   if (s.narration !== undefined) {
     const n = c.obj(s, "narration", "sheet");
     c.str(n, "summary", "sheet.narration");

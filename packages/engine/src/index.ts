@@ -26,3 +26,4 @@ export * from "./balance";
 export * from "./steps";
 export * from "./explain";
 export * from "./discovery";
+export * from "./popularity";

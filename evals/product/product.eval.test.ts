@@ -269,12 +269,12 @@ describe("budget reading", () => {
     });
     expect([b.core, b.fallback, b.typed, b.venue]).toEqual([18, 3, 3, 6]);
   });
-  it("splits the trust checks (split-half heatmaps, partner house twins) out of the bill and venue counts", () => {
+  it("splits the trust checks (split-half heatmaps, partner house and popularity twins) out of the bill and venue counts", () => {
     const b = readBudget({
-      qlooFresh: 28,
+      qlooFresh: 31,
       qlooCached: 0,
-      qlooTotal: 28,
-      billLevel: 20,
+      qlooTotal: 31,
+      billLevel: 23,
       venueLevel: 8,
       arms: 0,
       tm: 2,
@@ -289,9 +289,12 @@ describe("budget reading", () => {
         "Q9 house twin, tile 1": 1,
         "Q9 house twin, tile 2": 1,
         "Q9 house twin, tile 3": 1,
+        "Q9 popularity twin, tile 1": 1,
+        "Q9 popularity twin, tile 2": 1,
+        "Q9 popularity twin, near venue": 1,
       },
     });
-    expect([b.core, b.venue, b.checks]).toEqual([15, 6, 7]);
+    expect([b.core, b.venue, b.checks]).toEqual([15, 6, 10]);
   });
 });
 

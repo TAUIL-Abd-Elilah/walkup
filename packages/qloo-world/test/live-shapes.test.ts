@@ -199,3 +199,47 @@ describe("scripted not_found case", () => {
     expect(check.ledgerRefById[solo.id]).toBe(check.ledgerRefs[0]);
   });
 });
+
+describe("place insights with no signal", () => {
+  // Live (probe 1 / KG1, Oct 15): the same place request without signal.interests.entities comes back in popularity
+  // order. The partner popularity twin relies on it.
+  const params = {
+    "filter.type": "urn:entity:place",
+    "filter.location": POINT,
+    "filter.location.radius": "2000",
+    "filter.tags": Object.values(WORLD_TAG_PINS.categories).slice(0, 4).join(","),
+    "operator.filter.tags": "union",
+    "filter.hours": "thursday",
+    "filter.price_level.max": "3",
+    take: "50",
+  };
+
+  it("answers 200 in popularity order, with no affinity and no warning", async () => {
+    const r = await raw(createWorld(), "/v2/insights", params);
+    expect(r.status).toBe(200);
+    const list = rows(r.body);
+    expect(list.length).toBeGreaterThan(10);
+    const pops = list.map((row) => row.popularity as number);
+    for (let i = 1; i < pops.length; i++) expect(pops[i - 1]!).toBeGreaterThanOrEqual(pops[i]!);
+    expect(list.every((row) => (row.query as Rec | undefined)?.affinity === undefined)).toBe(true);
+    expect(r.body.warnings).toBeUndefined();
+  });
+
+  it("is deterministic: the same request on a fresh world gives the same list", async () => {
+    const a = rows((await raw(createWorld(), "/v2/insights", params)).body).map((row) => row.entity_id);
+    const b = rows((await raw(createWorld(), "/v2/insights", params)).body).map((row) => row.entity_id);
+    expect(a).toEqual(b);
+  });
+
+  it("ranks the same places as the bill's request, in another order", async () => {
+    // A radius small enough that every candidate fits in one page.
+    const world = createWorld();
+    const small = { ...params, "filter.location.radius": "700" };
+    const plain = rows((await raw(world, "/v2/insights", small)).body).map((row) => row.entity_id as string);
+    const withBill = rows((await raw(world, "/v2/insights", { ...small, "signal.interests.entities": hollis.id })).body).map((row) => row.entity_id as string);
+    expect(plain.length).toBeGreaterThan(5);
+    expect(plain.length).toBeLessThan(50);
+    expect(new Set(plain)).toEqual(new Set(withBill));
+    expect(plain).not.toEqual(withBill);
+  });
+});

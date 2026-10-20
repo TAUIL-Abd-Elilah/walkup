@@ -67,6 +67,8 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q9 | | `results.entities[].query.explainability["signal.interests.entities"][]` `{entity_id, score}` | output | `QlooEntity.explainability` (`ExplainContribution[]`); balance check | `qloo` -> `engine` |
 | Q9 | | position in the response | output | `Partner.qlooRank` -> `Partner.score`; `Partner.chips[].ledgerRef = "Q9"` | `engine` |
 | Q9 | [`config/chains.json`](../config/chains.json) (hand-kept chain names) | none | n/a | `Partner.chain` when `results.entities[].name` is on the list: listed after every local place of its area | `engine` |
+| **Q9 popularity twin** | the pool's final request (after any widening), per pool that gave partners | the same `filter.*`, `operator.filter.tags` and `take=50`; no `signal.interests.entities`, no `feature.explainability` | filter | n/a | `qloo` |
+| Q9 popularity twin | | `results.entities[]` order (popularity order, probe 1 / KG1, Oct 15) | output | `StreetSheet.popularityCheck` (`partners`, `notInPopularTop`, `perArea[]` with `ledgerRef`, `ledgerRefs`): partners not among the first k eligible places, k = partners in the area | `qloo` -> `engine` |
 | **Q10** pre/post | resolved bill entity IDs | `signal.interests.entities` | signal | n/a | `qloo` |
 | Q10 | `Venue.lon`, `Venue.lat` | `filter.location=POINT(lon lat)`, `filter.location.radius=1500` (2500 on fallback) | filter | n/a | `qloo` |
 | Q10 | `restaurant`, `bar`, `cafe` from `config/tags.json` | `filter.tags` | filter | n/a | `qloo` |

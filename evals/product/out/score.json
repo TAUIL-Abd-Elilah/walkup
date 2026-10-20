@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-20T05:32:06.577Z",
+  "generatedAt": "2026-10-20T16:58:46.251Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -365,7 +365,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a"
         },
@@ -484,14 +484,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a"
         },
@@ -512,7 +512,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a"
         },
@@ -540,7 +540,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a"
         },
@@ -582,7 +582,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a"
         },
@@ -621,8 +621,8 @@
         "g1-a.hoursUnverified": 2,
         "g1-a.partnersCallAhead": 2,
         "g1-a.openAllStreetDays": 22,
-        "g1-a.ledgerEntries": 31,
-        "g1-a.qlooFresh": 29,
+        "g1-a.ledgerEntries": 34,
+        "g1-a.qlooFresh": 32,
         "g1-a.qlooCached": 0,
         "g1-a.coreBillCalls": 14,
         "g1-a.venueCalls": 6,
@@ -758,7 +758,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-b"
         },
@@ -877,14 +877,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-b"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-b"
         },
@@ -905,7 +905,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 46 tag ids, 29 responses",
+          "detail": "46 entity ids, 46 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-b"
         },
@@ -933,7 +933,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-b"
         },
@@ -975,7 +975,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-b"
         },
@@ -1014,8 +1014,8 @@
         "g1-b.hoursUnverified": 0,
         "g1-b.partnersCallAhead": 0,
         "g1-b.openAllStreetDays": 23,
-        "g1-b.ledgerEntries": 31,
-        "g1-b.qlooFresh": 29,
+        "g1-b.ledgerEntries": 34,
+        "g1-b.qlooFresh": 32,
         "g1-b.qlooCached": 0,
         "g1-b.coreBillCalls": 14,
         "g1-b.venueCalls": 6,
@@ -1179,7 +1179,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 37",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 40",
           "clause": "D1",
           "subject": "g2"
         },
@@ -1298,14 +1298,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "152 refs",
+          "detail": "155 refs",
           "clause": "D4",
           "subject": "g2"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "37",
+          "detail": "40",
           "clause": "D4",
           "subject": "g2"
         },
@@ -1326,7 +1326,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "43 entity ids, 46 tag ids, 36 responses",
+          "detail": "43 entity ids, 46 tag ids, 39 responses",
           "clause": "D4",
           "subject": "g2"
         },
@@ -1354,7 +1354,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "36 fresh (17 core bill-level, 6 venue, 2 fallback, 4 typed lookups, 7 trust checks, 0 arms), 7 cached",
+          "detail": "39 fresh (17 core bill-level, 6 venue, 2 fallback, 4 typed lookups, 10 trust checks, 0 arms), 7 cached",
           "clause": "S1",
           "subject": "g2"
         },
@@ -1396,7 +1396,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g2"
         },
@@ -1435,8 +1435,8 @@
         "g2.hoursUnverified": 0,
         "g2.partnersCallAhead": 0,
         "g2.openAllStreetDays": 21,
-        "g2.ledgerEntries": 37,
-        "g2.qlooFresh": 36,
+        "g2.ledgerEntries": 40,
+        "g2.qlooFresh": 39,
         "g2.qlooCached": 7,
         "g2.coreBillCalls": 17,
         "g2.venueCalls": 6,
@@ -1579,7 +1579,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 17",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 18",
           "clause": "D1",
           "subject": "g3"
         },
@@ -1698,14 +1698,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "37 refs",
+          "detail": "38 refs",
           "clause": "D4",
           "subject": "g3"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "17",
+          "detail": "18",
           "clause": "D4",
           "subject": "g3"
         },
@@ -1726,7 +1726,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "10 entity ids, 18 tag ids, 15 responses",
+          "detail": "10 entity ids, 18 tag ids, 16 responses",
           "clause": "D4",
           "subject": "g3"
         },
@@ -1754,7 +1754,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "15 fresh (10 core bill-level, 3 venue, 2 fallback, 0 typed lookups, 0 trust checks, 0 arms), 0 cached",
+          "detail": "16 fresh (10 core bill-level, 3 venue, 2 fallback, 0 typed lookups, 1 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g3"
         },
@@ -1796,7 +1796,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g3"
         },
@@ -1835,8 +1835,8 @@
         "g3.hoursUnverified": 0,
         "g3.partnersCallAhead": 0,
         "g3.openAllStreetDays": 6,
-        "g3.ledgerEntries": 17,
-        "g3.qlooFresh": 15,
+        "g3.ledgerEntries": 18,
+        "g3.qlooFresh": 16,
         "g3.qlooCached": 0,
         "g3.coreBillCalls": 10,
         "g3.venueCalls": 3,
@@ -1995,7 +1995,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 37",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 40",
           "clause": "D1",
           "subject": "g2 resumed"
         },
@@ -2107,14 +2107,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "152 refs",
+          "detail": "155 refs",
           "clause": "D4",
           "subject": "g2 resumed"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "37",
+          "detail": "40",
           "clause": "D4",
           "subject": "g2 resumed"
         },
@@ -2135,7 +2135,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "43 entity ids, 46 tag ids, 52 responses",
+          "detail": "43 entity ids, 46 tag ids, 55 responses",
           "clause": "D4",
           "subject": "g2 resumed"
         },
@@ -2163,7 +2163,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "15 fresh (12 core bill-level, 0 venue, 2 fallback, 0 typed lookups, 1 trust checks, 0 arms), 28 cached",
+          "detail": "15 fresh (12 core bill-level, 0 venue, 2 fallback, 0 typed lookups, 1 trust checks, 0 arms), 31 cached",
           "clause": "S1",
           "subject": "g2 resumed"
         },
@@ -2205,7 +2205,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g2 resumed"
         },
@@ -2244,9 +2244,9 @@
         "g2 resumed.hoursUnverified": 0,
         "g2 resumed.partnersCallAhead": 0,
         "g2 resumed.openAllStreetDays": 21,
-        "g2 resumed.ledgerEntries": 37,
+        "g2 resumed.ledgerEntries": 40,
         "g2 resumed.qlooFresh": 15,
-        "g2 resumed.qlooCached": 28,
+        "g2 resumed.qlooCached": 31,
         "g2 resumed.coreBillCalls": 12,
         "g2 resumed.venueCalls": 0,
         "g2 resumed.fallbackCalls": 2,
@@ -2328,7 +2328,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 33",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 36",
           "clause": "D1",
           "subject": "g1-a, empty compare"
         },
@@ -2440,14 +2440,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "158 refs",
+          "detail": "161 refs",
           "clause": "D4",
           "subject": "g1-a, empty compare"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "33",
+          "detail": "36",
           "clause": "D4",
           "subject": "g1-a, empty compare"
         },
@@ -2468,7 +2468,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 47 tag ids, 31 responses",
+          "detail": "46 entity ids, 47 tag ids, 34 responses",
           "clause": "D4",
           "subject": "g1-a, empty compare"
         },
@@ -2496,7 +2496,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "31 fresh (14 core bill-level, 6 venue, 2 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "34 fresh (14 core bill-level, 6 venue, 2 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, empty compare"
         },
@@ -2538,7 +2538,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, empty compare"
         },
@@ -2577,8 +2577,8 @@
         "g1-a, empty compare.hoursUnverified": 2,
         "g1-a, empty compare.partnersCallAhead": 2,
         "g1-a, empty compare.openAllStreetDays": 22,
-        "g1-a, empty compare.ledgerEntries": 33,
-        "g1-a, empty compare.qlooFresh": 31,
+        "g1-a, empty compare.ledgerEntries": 36,
+        "g1-a, empty compare.qlooFresh": 34,
         "g1-a, empty compare.qlooCached": 0,
         "g1-a, empty compare.coreBillCalls": 14,
         "g1-a, empty compare.venueCalls": 6,
@@ -2667,7 +2667,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 30",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 32",
           "clause": "D1",
           "subject": "g1-a, thin heatmap"
         },
@@ -2730,14 +2730,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "115 refs",
+          "detail": "117 refs",
           "clause": "D4",
           "subject": "g1-a, thin heatmap"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "30",
+          "detail": "32",
           "clause": "D4",
           "subject": "g1-a, thin heatmap"
         },
@@ -2758,7 +2758,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "36 entity ids, 41 tag ids, 28 responses",
+          "detail": "36 entity ids, 41 tag ids, 30 responses",
           "clause": "D4",
           "subject": "g1-a, thin heatmap"
         },
@@ -2786,7 +2786,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "28 fresh (13 core bill-level, 6 venue, 1 fallback, 2 typed lookups, 6 trust checks, 0 arms), 0 cached",
+          "detail": "30 fresh (13 core bill-level, 6 venue, 1 fallback, 2 typed lookups, 8 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, thin heatmap"
         },
@@ -2828,7 +2828,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, thin heatmap"
         },
@@ -2867,8 +2867,8 @@
         "g1-a, thin heatmap.hoursUnverified": 0,
         "g1-a, thin heatmap.partnersCallAhead": 0,
         "g1-a, thin heatmap.openAllStreetDays": 16,
-        "g1-a, thin heatmap.ledgerEntries": 30,
-        "g1-a, thin heatmap.qlooFresh": 28,
+        "g1-a, thin heatmap.ledgerEntries": 32,
+        "g1-a, thin heatmap.qlooFresh": 30,
         "g1-a, thin heatmap.qlooCached": 0,
         "g1-a, thin heatmap.coreBillCalls": 13,
         "g1-a, thin heatmap.venueCalls": 6,
@@ -2957,7 +2957,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 27",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 28",
           "clause": "D1",
           "subject": "g1-a, lift weak"
         },
@@ -3020,14 +3020,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "80 refs",
+          "detail": "81 refs",
           "clause": "D4",
           "subject": "g1-a, lift weak"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "27",
+          "detail": "28",
           "clause": "D4",
           "subject": "g1-a, lift weak"
         },
@@ -3048,7 +3048,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "28 entity ids, 41 tag ids, 25 responses",
+          "detail": "28 entity ids, 41 tag ids, 26 responses",
           "clause": "D4",
           "subject": "g1-a, lift weak"
         },
@@ -3076,7 +3076,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "25 fresh (12 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 5 trust checks, 0 arms), 0 cached",
+          "detail": "26 fresh (12 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 6 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, lift weak"
         },
@@ -3118,7 +3118,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, lift weak"
         },
@@ -3157,8 +3157,8 @@
         "g1-a, lift weak.hoursUnverified": 0,
         "g1-a, lift weak.partnersCallAhead": 0,
         "g1-a, lift weak.openAllStreetDays": 8,
-        "g1-a, lift weak.ledgerEntries": 27,
-        "g1-a, lift weak.qlooFresh": 25,
+        "g1-a, lift weak.ledgerEntries": 28,
+        "g1-a, lift weak.qlooFresh": 26,
         "g1-a, lift weak.qlooCached": 0,
         "g1-a, lift weak.coreBillCalls": 12,
         "g1-a, lift weak.venueCalls": 6,
@@ -3213,14 +3213,14 @@
         {
           "name": "all-ages: partner pools exclude night clubs",
           "status": "pass",
-          "detail": "6 pool call(s)",
+          "detail": "9 pool call(s)",
           "clause": "S3",
           "subject": "alcohol rule"
         },
         {
           "name": "21+: no exclusion",
           "status": "pass",
-          "detail": "6 pool call(s)",
+          "detail": "9 pool call(s)",
           "clause": "S3",
           "subject": "alcohol rule"
         },
@@ -3276,7 +3276,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-b all-ages, model"
         },
@@ -3332,14 +3332,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "157 refs",
+          "detail": "160 refs",
           "clause": "D4",
           "subject": "g1-b all-ages, model"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "32",
+          "detail": "35",
           "clause": "D4",
           "subject": "g1-b all-ages, model"
         },
@@ -3360,7 +3360,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 46 tag ids, 29 responses",
+          "detail": "46 entity ids, 46 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-b all-ages, model"
         },
@@ -3388,7 +3388,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-b all-ages, model"
         },
@@ -3430,7 +3430,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-b all-ages, model"
         },
@@ -3486,7 +3486,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a 21+, model"
         },
@@ -3542,14 +3542,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "157 refs",
+          "detail": "160 refs",
           "clause": "D4",
           "subject": "g1-a 21+, model"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "32",
+          "detail": "35",
           "clause": "D4",
           "subject": "g1-a 21+, model"
         },
@@ -3570,7 +3570,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a 21+, model"
         },
@@ -3598,7 +3598,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a 21+, model"
         },
@@ -3640,7 +3640,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a 21+, model"
         },
@@ -3679,8 +3679,8 @@
         "g1-b all-ages, model.hoursUnverified": 0,
         "g1-b all-ages, model.partnersCallAhead": 0,
         "g1-b all-ages, model.openAllStreetDays": 23,
-        "g1-b all-ages, model.ledgerEntries": 32,
-        "g1-b all-ages, model.qlooFresh": 29,
+        "g1-b all-ages, model.ledgerEntries": 35,
+        "g1-b all-ages, model.qlooFresh": 32,
         "g1-b all-ages, model.qlooCached": 0,
         "g1-b all-ages, model.coreBillCalls": 14,
         "g1-b all-ages, model.venueCalls": 6,
@@ -3695,8 +3695,8 @@
         "g1-a 21+, model.hoursUnverified": 2,
         "g1-a 21+, model.partnersCallAhead": 2,
         "g1-a 21+, model.openAllStreetDays": 22,
-        "g1-a 21+, model.ledgerEntries": 32,
-        "g1-a 21+, model.qlooFresh": 29,
+        "g1-a 21+, model.ledgerEntries": 35,
+        "g1-a 21+, model.qlooFresh": 32,
         "g1-a 21+, model.qlooCached": 0,
         "g1-a 21+, model.coreBillCalls": 14,
         "g1-a 21+, model.venueCalls": 6,
@@ -3792,7 +3792,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 37",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 40",
           "clause": "D1",
           "subject": "g2, model tries denied words"
         },
@@ -3841,14 +3841,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "153 refs",
+          "detail": "156 refs",
           "clause": "D4",
           "subject": "g2, model tries denied words"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "38",
+          "detail": "41",
           "clause": "D4",
           "subject": "g2, model tries denied words"
         },
@@ -3869,7 +3869,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "43 entity ids, 45 tag ids, 36 responses",
+          "detail": "43 entity ids, 45 tag ids, 39 responses",
           "clause": "D4",
           "subject": "g2, model tries denied words"
         },
@@ -3897,7 +3897,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "36 fresh (17 core bill-level, 6 venue, 2 fallback, 4 typed lookups, 7 trust checks, 0 arms), 7 cached",
+          "detail": "39 fresh (17 core bill-level, 6 venue, 2 fallback, 4 typed lookups, 10 trust checks, 0 arms), 7 cached",
           "clause": "S1",
           "subject": "g2, model tries denied words"
         },
@@ -3939,7 +3939,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g2, model tries denied words"
         },
@@ -3978,8 +3978,8 @@
         "g2, model tries denied words.hoursUnverified": 0,
         "g2, model tries denied words.partnersCallAhead": 0,
         "g2, model tries denied words.openAllStreetDays": 21,
-        "g2, model tries denied words.ledgerEntries": 38,
-        "g2, model tries denied words.qlooFresh": 36,
+        "g2, model tries denied words.ledgerEntries": 41,
+        "g2, model tries denied words.qlooFresh": 39,
         "g2, model tries denied words.qlooCached": 7,
         "g2, model tries denied words.coreBillCalls": 17,
         "g2, model tries denied words.venueCalls": 6,
@@ -4048,7 +4048,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, closed places"
         },
@@ -4104,14 +4104,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a, closed places"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a, closed places"
         },
@@ -4132,7 +4132,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, closed places"
         },
@@ -4160,7 +4160,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, closed places"
         },
@@ -4202,7 +4202,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, closed places"
         },
@@ -4241,8 +4241,8 @@
         "g1-a, closed places.hoursUnverified": 2,
         "g1-a, closed places.partnersCallAhead": 1,
         "g1-a, closed places.openAllStreetDays": 23,
-        "g1-a, closed places.ledgerEntries": 31,
-        "g1-a, closed places.qlooFresh": 29,
+        "g1-a, closed places.ledgerEntries": 34,
+        "g1-a, closed places.qlooFresh": 32,
         "g1-a, closed places.qlooCached": 0,
         "g1-a, closed places.coreBillCalls": 14,
         "g1-a, closed places.venueCalls": 6,
@@ -4318,7 +4318,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, unknown hours"
         },
@@ -4374,14 +4374,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a, unknown hours"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a, unknown hours"
         },
@@ -4402,7 +4402,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, unknown hours"
         },
@@ -4430,7 +4430,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, unknown hours"
         },
@@ -4472,7 +4472,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, unknown hours"
         },
@@ -4511,8 +4511,8 @@
         "g1-a, unknown hours.hoursUnverified": 12,
         "g1-a, unknown hours.partnersCallAhead": 8,
         "g1-a, unknown hours.openAllStreetDays": 16,
-        "g1-a, unknown hours.ledgerEntries": 31,
-        "g1-a, unknown hours.qlooFresh": 29,
+        "g1-a, unknown hours.ledgerEntries": 34,
+        "g1-a, unknown hours.qlooFresh": 32,
         "g1-a, unknown hours.qlooCached": 0,
         "g1-a, unknown hours.coreBillCalls": 14,
         "g1-a, unknown hours.venueCalls": 6,
@@ -4588,7 +4588,7 @@
         {
           "name": "every Qloo call is a cache hit",
           "status": "pass",
-          "detail": "29 calls",
+          "detail": "32 calls",
           "clause": "S1",
           "subject": "quota guard"
         },
@@ -4630,7 +4630,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a from cache under the guard"
         },
@@ -4742,14 +4742,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a from cache under the guard"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a from cache under the guard"
         },
@@ -4770,7 +4770,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 30 responses",
+          "detail": "46 entity ids, 42 tag ids, 33 responses",
           "clause": "D4",
           "subject": "g1-a from cache under the guard"
         },
@@ -4798,7 +4798,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "0 fresh (0 core bill-level, 0 venue, 0 fallback, 0 typed lookups, 0 trust checks, 0 arms), 29 cached",
+          "detail": "0 fresh (0 core bill-level, 0 venue, 0 fallback, 0 typed lookups, 0 trust checks, 0 arms), 32 cached",
           "clause": "S1",
           "subject": "g1-a from cache under the guard"
         },
@@ -4840,7 +4840,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a from cache under the guard"
         },
@@ -4973,7 +4973,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "2 entity ids, 5 tag ids, 30 responses",
+          "detail": "2 entity ids, 5 tag ids, 33 responses",
           "clause": "D4",
           "subject": "g1-b under the guard"
         },
@@ -5068,9 +5068,9 @@
         "g1-a from cache under the guard.hoursUnverified": 2,
         "g1-a from cache under the guard.partnersCallAhead": 2,
         "g1-a from cache under the guard.openAllStreetDays": 22,
-        "g1-a from cache under the guard.ledgerEntries": 31,
+        "g1-a from cache under the guard.ledgerEntries": 34,
         "g1-a from cache under the guard.qlooFresh": 0,
-        "g1-a from cache under the guard.qlooCached": 29,
+        "g1-a from cache under the guard.qlooCached": 32,
         "g1-a from cache under the guard.coreBillCalls": 0,
         "g1-a from cache under the guard.venueCalls": 0,
         "g1-a from cache under the guard.fallbackCalls": 0,
@@ -5111,7 +5111,7 @@
         {
           "name": "every fresh Qloo call shows its retry in the ledger",
           "status": "pass",
-          "detail": "29 of 29",
+          "detail": "32 of 32",
           "clause": "S1",
           "subject": "g1-a, 429 once"
         },
@@ -5125,7 +5125,7 @@
         {
           "name": "a retry is not a second ledger entry",
           "status": "pass",
-          "detail": "29",
+          "detail": "32",
           "clause": "S1",
           "subject": "g1-a, 429 once"
         },
@@ -5160,7 +5160,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, 429 once"
         },
@@ -5272,14 +5272,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a, 429 once"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a, 429 once"
         },
@@ -5300,7 +5300,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 58 responses",
+          "detail": "46 entity ids, 42 tag ids, 64 responses",
           "clause": "D4",
           "subject": "g1-a, 429 once"
         },
@@ -5328,7 +5328,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, 429 once"
         },
@@ -5370,7 +5370,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, 429 once"
         },
@@ -5409,8 +5409,8 @@
         "g1-a, 429 once.hoursUnverified": 2,
         "g1-a, 429 once.partnersCallAhead": 2,
         "g1-a, 429 once.openAllStreetDays": 22,
-        "g1-a, 429 once.ledgerEntries": 31,
-        "g1-a, 429 once.qlooFresh": 29,
+        "g1-a, 429 once.ledgerEntries": 34,
+        "g1-a, 429 once.qlooFresh": 32,
         "g1-a, 429 once.qlooCached": 0,
         "g1-a, 429 once.coreBillCalls": 14,
         "g1-a, 429 once.venueCalls": 6,
@@ -5521,7 +5521,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 49",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 52",
           "clause": "D1",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5577,14 +5577,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "171 refs",
+          "detail": "174 refs",
           "clause": "D4",
           "subject": "g1-b, 23 declared partners"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "49",
+          "detail": "52",
           "clause": "D4",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5605,7 +5605,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "43 entity ids, 46 tag ids, 47 responses",
+          "detail": "43 entity ids, 46 tag ids, 50 responses",
           "clause": "D4",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5633,7 +5633,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "47 fresh (14 core bill-level, 6 venue, 0 fallback, 20 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "50 fresh (14 core bill-level, 6 venue, 0 fallback, 20 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5675,7 +5675,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5714,8 +5714,8 @@
         "g1-b, 23 declared partners.hoursUnverified": 0,
         "g1-b, 23 declared partners.partnersCallAhead": 0,
         "g1-b, 23 declared partners.openAllStreetDays": 23,
-        "g1-b, 23 declared partners.ledgerEntries": 49,
-        "g1-b, 23 declared partners.qlooFresh": 47,
+        "g1-b, 23 declared partners.ledgerEntries": 52,
+        "g1-b, 23 declared partners.qlooFresh": 50,
         "g1-b, 23 declared partners.qlooCached": 0,
         "g1-b, 23 declared partners.coreBillCalls": 14,
         "g1-b, 23 declared partners.venueCalls": 6,
@@ -5839,7 +5839,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -5888,14 +5888,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "124 refs",
+          "detail": "127 refs",
           "clause": "D4",
           "subject": "g1-a, bar-heavy categories"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -5916,7 +5916,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "38 entity ids, 43 tag ids, 29 responses",
+          "detail": "38 entity ids, 43 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -5944,7 +5944,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -5986,7 +5986,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -6025,8 +6025,8 @@
         "g1-a, bar-heavy categories.hoursUnverified": 0,
         "g1-a, bar-heavy categories.partnersCallAhead": 0,
         "g1-a, bar-heavy categories.openAllStreetDays": 16,
-        "g1-a, bar-heavy categories.ledgerEntries": 31,
-        "g1-a, bar-heavy categories.qlooFresh": 29,
+        "g1-a, bar-heavy categories.ledgerEntries": 34,
+        "g1-a, bar-heavy categories.qlooFresh": 32,
         "g1-a, bar-heavy categories.qlooCached": 0,
         "g1-a, bar-heavy categories.coreBillCalls": 14,
         "g1-a, bar-heavy categories.venueCalls": 6,
@@ -6152,7 +6152,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, budget split"
         },
@@ -6201,14 +6201,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a, budget split"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a, budget split"
         },
@@ -6229,7 +6229,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, budget split"
         },
@@ -6264,7 +6264,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, budget split"
         },
@@ -6320,7 +6320,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 37",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 40",
           "clause": "D1",
           "subject": "g2, budget split"
         },
@@ -6369,14 +6369,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "152 refs",
+          "detail": "155 refs",
           "clause": "D4",
           "subject": "g2, budget split"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "37",
+          "detail": "40",
           "clause": "D4",
           "subject": "g2, budget split"
         },
@@ -6397,7 +6397,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "43 entity ids, 46 tag ids, 36 responses",
+          "detail": "43 entity ids, 46 tag ids, 39 responses",
           "clause": "D4",
           "subject": "g2, budget split"
         },
@@ -6432,7 +6432,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g2, budget split"
         },
@@ -6488,7 +6488,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 17",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 18",
           "clause": "D1",
           "subject": "g3, budget split"
         },
@@ -6537,14 +6537,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "37 refs",
+          "detail": "38 refs",
           "clause": "D4",
           "subject": "g3, budget split"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "17",
+          "detail": "18",
           "clause": "D4",
           "subject": "g3, budget split"
         },
@@ -6565,7 +6565,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "10 entity ids, 18 tag ids, 15 responses",
+          "detail": "10 entity ids, 18 tag ids, 16 responses",
           "clause": "D4",
           "subject": "g3, budget split"
         },
@@ -6600,7 +6600,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g3, budget split"
         },
@@ -6639,8 +6639,8 @@
         "g1-a, budget split.hoursUnverified": null,
         "g1-a, budget split.partnersCallAhead": null,
         "g1-a, budget split.openAllStreetDays": null,
-        "g1-a, budget split.ledgerEntries": 31,
-        "g1-a, budget split.qlooFresh": 29,
+        "g1-a, budget split.ledgerEntries": 34,
+        "g1-a, budget split.qlooFresh": 32,
         "g1-a, budget split.qlooCached": 0,
         "g1-a, budget split.coreBillCalls": 14,
         "g1-a, budget split.venueCalls": 6,
@@ -6655,8 +6655,8 @@
         "g2, budget split.hoursUnverified": null,
         "g2, budget split.partnersCallAhead": null,
         "g2, budget split.openAllStreetDays": null,
-        "g2, budget split.ledgerEntries": 37,
-        "g2, budget split.qlooFresh": 36,
+        "g2, budget split.ledgerEntries": 40,
+        "g2, budget split.qlooFresh": 39,
         "g2, budget split.qlooCached": 7,
         "g2, budget split.coreBillCalls": 17,
         "g2, budget split.venueCalls": 6,
@@ -6671,8 +6671,8 @@
         "g3, budget split.hoursUnverified": null,
         "g3, budget split.partnersCallAhead": null,
         "g3, budget split.openAllStreetDays": null,
-        "g3, budget split.ledgerEntries": 17,
-        "g3, budget split.qlooFresh": 15,
+        "g3, budget split.ledgerEntries": 18,
+        "g3, budget split.qlooFresh": 16,
         "g3, budget split.qlooCached": 0,
         "g3, budget split.coreBillCalls": 10,
         "g3, budget split.venueCalls": 3,
@@ -6710,9 +6710,9 @@
           "subject": "swap"
         },
         {
-          "name": "bill B trust-check calls (split-half heatmaps and house twins)",
+          "name": "bill B trust-check calls (split-half heatmaps, house and popularity twins)",
           "status": "pass",
-          "detail": "5 (allowed 0-7)",
+          "detail": "8 (allowed 0-10)",
           "clause": "S1",
           "subject": "swap"
         },
@@ -6782,7 +6782,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-b after g1-a (warm venue)"
         },
@@ -6894,14 +6894,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-b after g1-a (warm venue)"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-b after g1-a (warm venue)"
         },
@@ -6922,14 +6922,14 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 46 tag ids, 49 responses",
+          "detail": "46 entity ids, 46 tag ids, 55 responses",
           "clause": "D4",
           "subject": "g1-b after g1-a (warm venue)"
         },
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "20 fresh (14 core bill-level, 1 venue, 0 fallback, 0 typed lookups, 5 trust checks, 0 arms), 9 cached",
+          "detail": "23 fresh (14 core bill-level, 1 venue, 0 fallback, 0 typed lookups, 8 trust checks, 0 arms), 9 cached",
           "clause": "S1",
           "subject": "g1-b after g1-a (warm venue)"
         },
@@ -6971,7 +6971,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-b after g1-a (warm venue)"
         },
@@ -7010,8 +7010,8 @@
         "g1-b after g1-a (warm venue).hoursUnverified": null,
         "g1-b after g1-a (warm venue).partnersCallAhead": null,
         "g1-b after g1-a (warm venue).openAllStreetDays": null,
-        "g1-b after g1-a (warm venue).ledgerEntries": 31,
-        "g1-b after g1-a (warm venue).qlooFresh": 20,
+        "g1-b after g1-a (warm venue).ledgerEntries": 34,
+        "g1-b after g1-a (warm venue).qlooFresh": 23,
         "g1-b after g1-a (warm venue).qlooCached": 9,
         "g1-b after g1-a (warm venue).coreBillCalls": 14,
         "g1-b after g1-a (warm venue).venueCalls": 1,
@@ -7112,7 +7112,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 25",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 26",
           "clause": "D1",
           "subject": "g1-a, house heat fails"
         },
@@ -7175,14 +7175,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "78 refs",
+          "detail": "79 refs",
           "clause": "D4",
           "subject": "g1-a, house heat fails"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "25",
+          "detail": "26",
           "clause": "D4",
           "subject": "g1-a, house heat fails"
         },
@@ -7203,7 +7203,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "28 entity ids, 41 tag ids, 27 responses",
+          "detail": "28 entity ids, 41 tag ids, 28 responses",
           "clause": "D4",
           "subject": "g1-a, house heat fails"
         },
@@ -7231,7 +7231,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "23 fresh (12 core bill-level, 7 venue, 0 fallback, 2 typed lookups, 2 trust checks, 0 arms), 0 cached",
+          "detail": "24 fresh (12 core bill-level, 7 venue, 0 fallback, 2 typed lookups, 3 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, house heat fails"
         },
@@ -7273,7 +7273,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, house heat fails"
         },
@@ -7312,8 +7312,8 @@
         "g1-a, house heat fails.hoursUnverified": 0,
         "g1-a, house heat fails.partnersCallAhead": 0,
         "g1-a, house heat fails.openAllStreetDays": 8,
-        "g1-a, house heat fails.ledgerEntries": 25,
-        "g1-a, house heat fails.qlooFresh": 23,
+        "g1-a, house heat fails.ledgerEntries": 26,
+        "g1-a, house heat fails.qlooFresh": 24,
         "g1-a, house heat fails.qlooCached": 0,
         "g1-a, house heat fails.coreBillCalls": 12,
         "g1-a, house heat fails.venueCalls": 7,
@@ -7466,7 +7466,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, no model"
         },
@@ -7578,14 +7578,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "156 refs",
+          "detail": "159 refs",
           "clause": "D4",
           "subject": "g1-a, no model"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "31",
+          "detail": "34",
           "clause": "D4",
           "subject": "g1-a, no model"
         },
@@ -7606,7 +7606,7 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, no model"
         },
@@ -7634,7 +7634,7 @@
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, no model"
         },
@@ -7676,7 +7676,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, no model"
         },
@@ -7732,7 +7732,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, model error"
         },
@@ -7844,14 +7844,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "157 refs",
+          "detail": "160 refs",
           "clause": "D4",
           "subject": "g1-a, model error"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "32",
+          "detail": "35",
           "clause": "D4",
           "subject": "g1-a, model error"
         },
@@ -7872,14 +7872,14 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, model error"
         },
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, model error"
         },
@@ -7921,7 +7921,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, model error"
         },
@@ -7977,7 +7977,7 @@
         {
           "name": "mode is labelled honestly",
           "status": "pass",
-          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 31",
+          "detail": "mode fixture, fixture limit line true, synthetic ledger notes 34",
           "clause": "D1",
           "subject": "g1-a, off-schema draft"
         },
@@ -8089,14 +8089,14 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "157 refs",
+          "detail": "160 refs",
           "clause": "D4",
           "subject": "g1-a, off-schema draft"
         },
         {
           "name": "ledger ids are unique",
           "status": "pass",
-          "detail": "32",
+          "detail": "35",
           "clause": "D4",
           "subject": "g1-a, off-schema draft"
         },
@@ -8117,14 +8117,14 @@
         {
           "name": "ID validator: every entity and tag id on the sheet came back in a Qloo response",
           "status": "pass",
-          "detail": "46 entity ids, 42 tag ids, 29 responses",
+          "detail": "46 entity ids, 42 tag ids, 32 responses",
           "clause": "D4",
           "subject": "g1-a, off-schema draft"
         },
         {
           "name": "call budget",
           "status": "pass",
-          "detail": "29 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 7 trust checks, 0 arms), 0 cached",
+          "detail": "32 fresh (14 core bill-level, 6 venue, 0 fallback, 2 typed lookups, 10 trust checks, 0 arms), 0 cached",
           "clause": "S1",
           "subject": "g1-a, off-schema draft"
         },
@@ -8166,7 +8166,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, off-schema draft"
         },
@@ -8205,8 +8205,8 @@
         "g1-a, no model.hoursUnverified": 2,
         "g1-a, no model.partnersCallAhead": 2,
         "g1-a, no model.openAllStreetDays": 22,
-        "g1-a, no model.ledgerEntries": 31,
-        "g1-a, no model.qlooFresh": 29,
+        "g1-a, no model.ledgerEntries": 34,
+        "g1-a, no model.qlooFresh": 32,
         "g1-a, no model.qlooCached": 0,
         "g1-a, no model.coreBillCalls": 14,
         "g1-a, no model.venueCalls": 6,
@@ -8221,8 +8221,8 @@
         "g1-a, model error.hoursUnverified": null,
         "g1-a, model error.partnersCallAhead": null,
         "g1-a, model error.openAllStreetDays": null,
-        "g1-a, model error.ledgerEntries": 32,
-        "g1-a, model error.qlooFresh": 29,
+        "g1-a, model error.ledgerEntries": 35,
+        "g1-a, model error.qlooFresh": 32,
         "g1-a, model error.qlooCached": 0,
         "g1-a, model error.coreBillCalls": 14,
         "g1-a, model error.venueCalls": 6,
@@ -8237,8 +8237,8 @@
         "g1-a, off-schema draft.hoursUnverified": null,
         "g1-a, off-schema draft.partnersCallAhead": null,
         "g1-a, off-schema draft.openAllStreetDays": null,
-        "g1-a, off-schema draft.ledgerEntries": 32,
-        "g1-a, off-schema draft.qlooFresh": 29,
+        "g1-a, off-schema draft.ledgerEntries": 35,
+        "g1-a, off-schema draft.qlooFresh": 32,
         "g1-a, off-schema draft.qlooCached": 0,
         "g1-a, off-schema draft.coreBillCalls": 14,
         "g1-a, off-schema draft.venueCalls": 6,
