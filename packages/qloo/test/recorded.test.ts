@@ -116,7 +116,9 @@ describe.skipIf(recorded.length === 0)(`recorded live bodies (${recorded.length}
       for (const e of n.value) {
         expect(e.properties.neighborhood, r.file).toBeUndefined();
         if (e.explainability && e.explainability.length > 1) {
-          expect(e.explainability.reduce((s, c) => s + c.score, 0), r.file).toBeCloseTo(1, 2);
+          // Live bodies (Oct 20) carry shares that sum to 1 or a little less (0.936 seen), never more.
+          const total = e.explainability.reduce((s, c) => s + c.score, 0);
+          expect(total > 0 && total <= 1.005, `${r.file}: ${total}`).toBe(true);
         }
       }
       if (r.params.get("filter.type") === "urn:entity:place") {
@@ -150,13 +152,17 @@ describe.skipIf(recorded.length === 0)(`recorded live bodies (${recorded.length}
     }
   });
 
-  it.skipIf(demographics.length === 0)("demographics: one block per signal (entity or tag), keyed by entity_id, six age buckets at most (F8)", () => {
+  it.skipIf(demographics.length === 0)("demographics: at most one block per signal (entity or tag), keyed by entity_id, six age buckets at most (F8)", () => {
     for (const r of demographics) {
       const n = normalizeDemographics(r.body);
       expect(n.reason, r.file).toBeUndefined();
       expect(n.skipped, r.file).toBe(0);
       const signals = [...(r.params.get("signal.interests.entities") ?? "").split(","), ...(r.params.get("signal.interests.tags") ?? "").split(",")].filter(Boolean);
-      expect(n.value.length, r.file).toBe(signals.length);
+      // Qloo leaves out the block of a signal it has no demographics for, with no warning (2 of 15 on Oct 20);
+      // the demographics card says which act has no age data.
+      expect(n.value.length, r.file).toBeLessThanOrEqual(signals.length);
+      expect(n.value.length, r.file).toBeGreaterThan(0);
+      expect(new Set(n.value.map((b) => b.entityId)).size, r.file).toBe(n.value.length);
       for (const b of n.value) {
         expect(signals.includes(b.entityId), r.file).toBe(true);
         for (const k of Object.keys(b.age)) expect((AGE_BUCKETS as readonly string[]).includes(k), r.file).toBe(true);
