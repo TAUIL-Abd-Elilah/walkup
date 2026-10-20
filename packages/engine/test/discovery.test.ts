@@ -123,6 +123,12 @@ describe("partner rule", () => {
       "Slate Cafe ranks 2nd for this crowd and doesn't come up for the room's usual crowd.",
     );
   });
+  it("never picks a national chain", () => {
+    const chain = { ...partner("Mall Outfitters", "clothing_store", 0.8, 3, 30), chain: true };
+    const d = partnerDiscovery({ partners: [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.85, 2, 3), chain, partner("Slate Cafe", "cafe", 0.7, 4, 12)], baseline: "house" });
+    expect(d?.entityId).toBe("E-Slate Cafe");
+    expect(partnerDiscovery({ partners: [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.85, 2, 3), chain], baseline: "house" })).toBeNull();
+  });
   it("finds nothing without the room's own crowd, a house rank, a gap, or a less common type", () => {
     expect(partnerDiscovery({ partners: list.slice(0, 7), baseline: "tag" })).toBeNull();
     expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 1, 2), partner("B", "cafe", 0.8, 3, undefined), partner("C", "bar", 0.7, 2, 3)], baseline: "house" })).toBeNull();

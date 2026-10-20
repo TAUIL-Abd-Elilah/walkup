@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { ReactElement } from "react";
 import { describe, expect, it } from "vitest";
 import type { StreetSheet } from "@walkup/contracts";
-import { countPdfPages, FORM_ROW_PT, renderStreetSheetPdf, streetSheetDocument, toPdf } from "../src/pdf";
+import { breakUrl, countPdfPages, FORM_ROW_PT, renderStreetSheetPdf, streetSheetDocument, toPdf } from "../src/pdf";
 import { pdfText, isPdfSafe } from "../src/winansi";
 import { ACTS, makeBusySheet, makeExplainedSheet, makeSheet } from "./helpers";
 import { countOccurrences, pdfPlainText } from "./pdf-text";
@@ -301,4 +301,15 @@ describe("repository fixtures", () => {
     },
     SLOW * 2,
   );
+});
+
+describe("breakUrl", () => {
+  it("puts the URL on its own lines, broken after its last slash, with no character added or lost", () => {
+    const url = "https://walkup.example/plan/4d6d12a8-4a26-42a2-b718-5a82cdcf2133#ledger";
+    const line = `34 requests: Q1-Q30. Receipts for every Q number: ${url} (also in sheet.json). Plan 4d6d.`;
+    const out = breakUrl(line, url);
+    expect(out).toBe(`34 requests: Q1-Q30. Receipts for every Q number:\nhttps://walkup.example/plan/\n4d6d12a8-4a26-42a2-b718-5a82cdcf2133#ledger (also in sheet.json). Plan 4d6d.`);
+    expect(out.replace(/\n/g, "")).toBe(line.replace(" https", "https"));
+    expect(breakUrl("no link here", url)).toBe("no link here");
+  });
 });

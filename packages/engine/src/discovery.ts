@@ -13,9 +13,10 @@
  *    fans-alone rank is at least 5 places lower than its lift rank: counting
  *    fans, you would miss it. It is named by its number.
  * 2. Partner rule, when no area qualifies. Take the highest-scoring partner in
- *    a top area whose type is not the most common type on the list (ties all
- *    count as most common) and that the room's usual crowd ranks at least 5
- *    places lower, or not at all (the pool's house twin).
+ *    a top area that is not a national chain (config/chains.json), whose type
+ *    is not the most common type on the list (ties all count as most common)
+ *    and that the room's usual crowd ranks at least 5 places lower, or not at
+ *    all (the pool's house twin).
  * 3. Otherwise none.
  */
 import type { LiftTile, Partner, SheetDiscovery } from "@walkup/contracts";
@@ -32,7 +33,7 @@ export const DISCOVERY_RULES = {
 
 export const AREA_RULE = "the highest-lift numbered area that ranks at least 5 places lower when you look at this crowd on its own.";
 export const PARTNER_RULE =
-  "the best-scoring partner in a top area that isn't the most common type on the list and that the room's usual crowd ranks at least 5 places lower, or not at all. Walkup tries the area rule first; no numbered area met it on this sheet.";
+  "the best-scoring partner in a top area that isn't a national chain or the most common type on the list and that the room's usual crowd ranks at least 5 places lower, or not at all. Walkup tries the area rule first; no numbered area met it on this sheet.";
 
 export interface AreaRank {
   tile: LiftTile;
@@ -121,7 +122,7 @@ export function partnerDiscovery(i: PartnerDiscoveryInput): SheetDiscovery | nul
   const common = new Set(mostCommonCategories(i.partners));
   const ordered = i.partners.map((p, idx) => ({ p, idx })).sort((a, b) => b.p.score - a.p.score || a.idx - b.idx);
   const hit = ordered.find(({ p }) => {
-    if (p.tileGeohash === null || common.has(p.category)) return false;
+    if (p.tileGeohash === null || p.chain === true || common.has(p.category)) return false;
     if (p.houseRank === undefined) return false;
     // "Not at all" counts only when the usual crowd's list actually came back with places in it.
     if (p.houseRank === null) return (i.twinSize?.(p) ?? 1) > 0;

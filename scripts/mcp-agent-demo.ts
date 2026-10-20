@@ -21,7 +21,7 @@ const MODEL = process.env["OPENROUTER_MODEL"]?.trim() || "anthropic/claude-opus-
 const MAX_TURNS = 8;
 const TASK =
   "I promote FLO's show at The Anthem in Washington DC (Walkup preset g1-b). Plan where my street team should go. " +
-  'Then change the plan to "All ages, no bars" and get me the final sheet. Tell me in three short lines where to start and what changed.';
+  'Then change the plan to "All ages, no bars" and fetch the final sheet with get_sheet. Tell me in three short lines where to start and what changed.';
 
 function loadDotEnv(): void {
   const p = resolve(ROOT, ".env");
@@ -82,7 +82,7 @@ async function main(): Promise<number> {
   const fnTools = tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description ?? "", parameters: t.inputSchema } }));
   type Msg = Record<string, unknown>;
   const messages: Msg[] = [
-    { role: "system", content: "You are a promoter's assistant. Use the Walkup tools to answer; never invent places or numbers. Keep the final answer to three short lines." },
+    { role: "system", content: "You are a promoter's assistant. Use the Walkup tools to answer; never invent places or numbers. Keep the final answer to three short lines of plain text, no markdown." },
     { role: "user", content: TASK },
   ];
   say("task", TASK);

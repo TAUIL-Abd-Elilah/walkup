@@ -420,11 +420,24 @@ function footer(m: SheetModel, st: Styles): El {
     view(
       { width: "32%" },
       head(f.receiptsTitle),
-      f.ledgerUrl ? h(Link, { src: f.ledgerUrl, style: { color: INK, textDecoration: "none" } }, text(st.small, f.ledgerLine)) : text(st.small, f.ledgerLine),
+      f.ledgerUrl
+        ? h(Link, { src: f.ledgerUrl, style: { color: INK, textDecoration: "none" } }, text(st.small, breakUrl(f.ledgerLine, f.ledgerUrl)))
+        : text(st.small, f.ledgerLine),
       text([st.small, st.gap(1.5)], f.elsewhere),
       text([st.small, st.gap(1.5)], f.attribution),
     ),
   );
+}
+
+/**
+ * A URL is one long word, and a break inside a word would print a hyphen into it, so the line is broken by hand:
+ * before the URL and after its last slash (the plan id stays whole on its own line).
+ */
+export function breakUrl(line: string, url: string): string {
+  const at = line.indexOf(url);
+  const slash = url.lastIndexOf("/");
+  if (at < 0 || slash < 0) return line;
+  return `${line.slice(0, at).trimEnd()}\n${url.slice(0, slash + 1)}\n${url.slice(slash + 1)}${line.slice(at + url.length)}`;
 }
 
 /** One small line at the foot of the page: the headliner, room and date, the print date, the data date, "Sample" on fixtures. */

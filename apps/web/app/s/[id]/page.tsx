@@ -554,7 +554,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
             </div>
             <div>
               <h2 className="text-[1em] font-semibold">{m.footer.receiptsTitle}</h2>
-              <p className="mt-0.5 text-muted">{m.footer.ledgerLine}</p>
+              <p className="mt-0.5 break-words text-muted">{m.footer.ledgerLine}</p>
               <p className="no-print mt-0.5">
                 <a href={`/plan/${s.planId}#ledger`} className="link">
                   Open the requests on the plan page

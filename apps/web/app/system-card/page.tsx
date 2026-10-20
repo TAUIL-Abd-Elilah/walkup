@@ -197,8 +197,8 @@ export default function SystemCardPage() {
           <p>
             &ldquo;Start in this area&rdquo; or &ldquo;Start with this place&rdquo; at the top of a sheet comes from a fixed rule, never from the model. The area rule
             goes first: of the numbered areas on the map (the 1 to 5 the area list and the partner table share), the highest-lift one that ranks at least 5
-            places lower when you look at this crowd on its own. If none qualifies, the partner rule: the best-scoring partner in a top area that isn&apos;t the
-            most common type on the list (ties all count as most common) and that the room&apos;s usual crowd ranks at least 5 places lower, or not at all.
+            places lower when you look at this crowd on its own. If none qualifies, the partner rule: the best-scoring partner in a top area that isn&apos;t a
+            national chain or the most common type on the list (ties all count as most common) and that the room&apos;s usual crowd ranks at least 5 places lower, or not at all.
             If neither finds one, the sheet has no top pick. Both need the room&apos;s own crowd as the baseline, and the area rule needs a map that passed its
             checks.
           </p>
