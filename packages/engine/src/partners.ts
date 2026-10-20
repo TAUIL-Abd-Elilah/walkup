@@ -25,6 +25,15 @@
  * room, otherwise swapped for the tile's lowest-scored bar. Fewer than
  * `minTotal` (15) picks sets `belowMinimum` so the caller can widen the radius.
  *
+ * National chains (only when `chains` is given: a hand-kept list, see
+ * chains.ts): a candidate whose name is on the list sorts after every
+ * non-chain candidate, ahead of score, in the greedy pass and in the listed
+ * order. Its score is unchanged and the caps still apply, so a chain is kept
+ * only for a slot no local place can fill. The report counts the chains the
+ * rule moved: those on the list the same pass makes without the rule that are
+ * now off the list, or listed after a local place of their area that scores
+ * lower; `chainsOffList` names the ones now off the list.
+ *
  * Eligibility: an entity id, not excluded (the venue), not in an excluded
  * category, not `is_closed`, and not explicitly closed on the street-team
  * weekday according to `properties.hours` (unknown hours are kept; Qloo's
@@ -32,6 +41,7 @@
  */
 import type { Chip, LiftTile, Partner, QlooEntity, Weekday } from "@walkup/contracts";
 import { DEFAULT_BAR_CATEGORIES, distanceOf, isBarCategory, isClosedEntity, propString, resolveCategory, type CategoryOptions } from "./category";
+import { chainIndex as toChainIndex, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
 import { hoursOnDay, type HoursOptions } from "./hours";
 import { clamp, cmpNum, cmpStr, isFiniteNumber } from "./num";
 
@@ -98,6 +108,8 @@ export interface PartnerScoringOptions extends CategoryOptions {
   hours?: HoursOptions;
   /** "tile" (default): grouped by tile in lift order, then score. "score": global score order. */
   order?: "tile" | "score";
+  /** Hand-kept chain list: chains sort after every local place (see the module comment). Absent or null: no chain rule. */
+  chains?: ChainList | ChainIndex | readonly ChainEntry[] | null;
 }
 
 export const PARTNER_DEFAULTS = {
@@ -127,6 +139,14 @@ export interface PartnerScoringReport {
   penalized: number;
   nonBarAdded: number;
   nonBarSwaps: number;
+  /** Eligible candidates (distinct) on the chain list. 0 without a list. */
+  chains: number;
+  /** Chains on the list the same pass makes without the chain rule that the rule moved (off the list, or below a lower-scored local of their area). */
+  chainsMovedDown: number;
+  /** Names of the moved chains that are no longer on the list (a local place took the slot). */
+  chainsOffList: string[];
+  /** Picks on the chain list. */
+  chainsKept: number;
   selected: number;
   belowMinimum: boolean;
   /** Picks per tile; the near-venue pool is keyed "near-venue". */
@@ -149,11 +169,18 @@ interface Candidate {
   isBar: boolean;
   hoursText: string | null;
   hoursKnown: boolean;
+  /** On the chain list (always false without one). */
+  chain: boolean;
 }
 
 const NEAR_VENUE = "near-venue";
 
 function compareCandidates(a: Candidate, b: Candidate): number {
+  return Number(a.chain) - Number(b.chain) || compareByScore(a, b);
+}
+
+/** The order without the chain rule. */
+function compareByScore(a: Candidate, b: Candidate): number {
   return (
     cmpNum(b.score, a.score) ||
     cmpNum(a.distance, b.distance) ||
@@ -165,6 +192,66 @@ function compareCandidates(a: Candidate, b: Candidate): number {
 
 function intOpt(v: number | undefined, d: number): number {
   return isFiniteNumber(v) ? Math.max(0, Math.floor(v)) : d;
+}
+
+interface Caps {
+  maxPerCat: number;
+  maxPerTile: number;
+  maxTotal: number;
+}
+
+interface Selection {
+  picked: Candidate[];
+  duplicates: number;
+  nonBarAdded: number;
+  nonBarSwaps: number;
+}
+
+/**
+ * The greedy pass over `eligible` (already sorted by `cmp`) with the caps,
+ * then at least one non-bar per tile when one is available.
+ */
+function select(eligible: readonly Candidate[], caps: Caps, cmp: (a: Candidate, b: Candidate) => number): Selection {
+  const out: Selection = { picked: [], duplicates: 0, nonBarAdded: 0, nonBarSwaps: 0 };
+  const picked = out.picked;
+  const pickedIds = new Set<string>();
+  const perTile = new Map<string, number>();
+  const perTileCat = new Map<string, number>();
+  const catKey = (c: Candidate) => `${c.tileKey}\u0000${c.category}`;
+
+  for (const c of eligible) {
+    if (pickedIds.has(c.id)) {
+      out.duplicates++;
+      continue;
+    }
+    if (picked.length >= caps.maxTotal || (perTile.get(c.tileKey) ?? 0) >= caps.maxPerTile || (perTileCat.get(catKey(c)) ?? 0) >= caps.maxPerCat) {
+      continue;
+    }
+    picked.push(c);
+    pickedIds.add(c.id);
+    perTile.set(c.tileKey, (perTile.get(c.tileKey) ?? 0) + 1);
+    perTileCat.set(catKey(c), (perTileCat.get(catKey(c)) ?? 0) + 1);
+  }
+
+  // At least one non-bar per tile when one is available.
+  const tileKeys = [...new Set(picked.map((c) => c.tileKey))].sort(cmpStr);
+  for (const key of tileKeys) {
+    const inTile = picked.filter((c) => c.tileKey === key);
+    if (inTile.length === 0 || inTile.some((c) => !c.isBar)) continue;
+    const best = eligible.find((c) => c.tileKey === key && !c.isBar && !pickedIds.has(c.id));
+    if (!best) continue;
+    if (inTile.length < caps.maxPerTile && picked.length < caps.maxTotal) {
+      picked.push(best);
+      out.nonBarAdded++;
+    } else {
+      const worst = [...inTile].sort(cmp).at(-1) as Candidate;
+      picked.splice(picked.indexOf(worst), 1, best);
+      pickedIds.delete(worst.id);
+      out.nonBarSwaps++;
+    }
+    pickedIds.add(best.id);
+  }
+  return out;
 }
 
 export function scorePartnersWithReport(
@@ -180,6 +267,7 @@ export function scorePartnersWithReport(
   const chipLabel = opts.chipLabel ?? PARTNER_DEFAULTS.chipLabel;
   const excluded = new Set(opts.excludeEntityIds ?? []);
   const excludedCats = new Set(opts.excludeCategories ?? []);
+  const chainIndex = opts.chains ? toChainIndex(opts.chains) : null;
 
   const tileByGh = new Map<string, LiftTile>();
   for (const t of tiles) if (!tileByGh.has(t.geohash)) tileByGh.set(t.geohash, t);
@@ -203,6 +291,10 @@ export function scorePartnersWithReport(
     penalized: 0,
     nonBarAdded: 0,
     nonBarSwaps: 0,
+    chains: 0,
+    chainsMovedDown: 0,
+    chainsOffList: [],
+    chainsKept: 0,
     selected: 0,
     belowMinimum: false,
     perTile: {},
@@ -260,6 +352,7 @@ export function scorePartnersWithReport(
         isBar: isBarCategory(category, barCats),
         hoursText,
         hoursKnown,
+        chain: chainIndex ? chainIndex.match(entity.name) !== null : false,
       };
       if (pool.house) {
         const houseRank = pool.house.ranks.get(id) ?? null;
@@ -272,45 +365,24 @@ export function scorePartnersWithReport(
     });
   }
 
+  const caps: Caps = { maxPerCat, maxPerTile, maxTotal };
   eligible.sort(compareCandidates);
+  const chosen = select(eligible, caps, compareCandidates);
+  const picked = chosen.picked;
+  report.duplicates = chosen.duplicates;
+  report.nonBarAdded = chosen.nonBarAdded;
+  report.nonBarSwaps = chosen.nonBarSwaps;
 
-  const picked: Candidate[] = [];
-  const pickedIds = new Set<string>();
-  const perTile = new Map<string, number>();
-  const perTileCat = new Map<string, number>();
-  const catKey = (c: Candidate) => `${c.tileKey}\u0000${c.category}`;
-
-  for (const c of eligible) {
-    if (pickedIds.has(c.id)) {
-      report.duplicates++;
-      continue;
-    }
-    if (picked.length >= maxTotal || (perTile.get(c.tileKey) ?? 0) >= maxPerTile || (perTileCat.get(catKey(c)) ?? 0) >= maxPerCat) {
-      continue;
-    }
-    picked.push(c);
-    pickedIds.add(c.id);
-    perTile.set(c.tileKey, (perTile.get(c.tileKey) ?? 0) + 1);
-    perTileCat.set(catKey(c), (perTileCat.get(catKey(c)) ?? 0) + 1);
-  }
-
-  // At least one non-bar per tile when one is available.
-  const tileKeys = [...new Set(picked.map((c) => c.tileKey))].sort(cmpStr);
-  for (const key of tileKeys) {
-    const inTile = picked.filter((c) => c.tileKey === key);
-    if (inTile.length === 0 || inTile.some((c) => !c.isBar)) continue;
-    const best = eligible.find((c) => c.tileKey === key && !c.isBar && !pickedIds.has(c.id));
-    if (!best) continue;
-    if (inTile.length < maxPerTile && picked.length < maxTotal) {
-      picked.push(best);
-      report.nonBarAdded++;
-    } else {
-      const worst = [...inTile].sort(compareCandidates).at(-1) as Candidate;
-      picked.splice(picked.indexOf(worst), 1, best);
-      pickedIds.delete(worst.id);
-      report.nonBarSwaps++;
-    }
-    pickedIds.add(best.id);
+  // What the chain rule changed: the same pass in score order alone.
+  const chainIds = new Set(eligible.filter((c) => c.chain).map((c) => c.id));
+  if (chainIds.size > 0) {
+    report.chains = chainIds.size;
+    const plain = select([...eligible].sort(compareByScore), caps, compareByScore).picked.sort(compareByScore);
+    const keptIds = new Set(picked.map((c) => c.id));
+    // Moved: off the list now, or listed after a local place of its area that scores lower.
+    const moved = plain.filter((c) => c.chain && (!keptIds.has(c.id) || picked.some((d) => !d.chain && d.tileKey === c.tileKey && compareByScore(c, d) < 0)));
+    report.chainsMovedDown = moved.length;
+    report.chainsOffList = moved.filter((c) => !keptIds.has(c.id)).map((c) => c.entity.name);
   }
 
   const order = opts.order ?? "tile";
@@ -336,6 +408,7 @@ export function scorePartnersWithReport(
     if (opts.weekday) p.hoursOnDay = c.hoursText;
     if (c.houseRank !== undefined) p.houseRank = c.houseRank;
     if (c.ubiquityPenalty !== undefined) p.ubiquityPenalty = c.ubiquityPenalty;
+    if (c.chain) p.chain = true;
     return p;
   });
 
@@ -343,6 +416,7 @@ export function scorePartnersWithReport(
   report.notSelected = eligibleIds.size - picked.length;
   report.selected = picked.length;
   report.penalized = picked.filter((c) => (c.ubiquityPenalty ?? 0) > 0).length;
+  report.chainsKept = picked.filter((c) => c.chain).length;
   report.hoursUnknown = opts.weekday ? picked.filter((c) => !c.hoursKnown).length : 0;
   report.belowMinimum = picked.length < minTotal;
   for (const c of picked) report.perTile[c.tileKey] = (report.perTile[c.tileKey] ?? 0) + 1;

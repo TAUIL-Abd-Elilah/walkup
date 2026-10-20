@@ -111,7 +111,7 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
                 <td>
                   <span className="font-semibold">{s.entity.name}</span>
                   <span className="mt-0.5 block text-sm text-muted">
-                    {[placeType(s.entity, s.category), !s.fanFacingAllowed ? "not shown to fans" : null].filter(Boolean).join(" · ")}
+                    {[placeType(s.entity, s.category), s.chain ? "national chain" : null, !s.fanFacingAllowed ? "not shown to fans" : null].filter(Boolean).join(" · ")}
                     {formatDistance(s.entity.distanceM) ? <span className="sm:hidden"> · {formatDistance(s.entity.distanceM)} away</span> : null}
                   </span>
                   {s.chips.length > 0 ? (

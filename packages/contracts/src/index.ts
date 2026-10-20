@@ -360,6 +360,11 @@ export interface Partner {
    * 0..1 where 0 is none. Already applied to `score`.
    */
   ubiquityPenalty?: number;
+  /**
+   * True when the name is on the hand-kept list of national chains (config/chains.json): listed after every local
+   * place of its area. Absent otherwise, and on sheets made before the list existed.
+   */
+  chain?: boolean;
   /** Parts of the "why" for the partner panel. */
   explain?: PartnerExplain;
 }
@@ -381,6 +386,8 @@ export interface PrePostSpot {
   fanFacingAllowed: boolean; // false for bars on all-ages shows
   /** Pinned category key, as on Partner (e.g. "bar", "coffee"). Optional for older sheets. */
   category?: string;
+  /** True when the name is on the hand-kept chain list: listed after the local spots. Absent otherwise. */
+  chain?: boolean;
   chips: Chip[];
 }
 

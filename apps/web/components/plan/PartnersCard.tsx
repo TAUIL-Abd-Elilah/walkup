@@ -16,6 +16,9 @@ const tagWord = (name: string) =>
     .map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase()))
     .join(" ");
 
+/** The Type cell: the kind of place, and "national chain" when the name is on the hand-kept list. */
+const typeWords = (p: Partner) => (p.chain ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category));
+
 /** The "Why this place" detail under a partner row (only when the sheet carries `partner.explain`). */
 export function PartnerWhy({ p, area }: { p: Partner; area?: string }) {
   const x = p.explain;
@@ -295,12 +298,12 @@ export function PartnersCard({
                       ) : null}
                       <span className="mt-0.5 block text-sm text-muted md:hidden">
                         {areaWords(p, area)}
-                        {` · ${categoryLabel(p.category)} · ${day ? `${day} ${hours}` : hours}`}
+                        {` · ${typeWords(p)} · ${day ? `${day} ${hours}` : hours}`}
                       </span>
                       <Contact p={p} />
                       <span className="mt-1 block text-sm sm:hidden">{whyCell(p)}</span>
                     </td>
-                    <td className="hidden md:table-cell">{categoryLabel(p.category)}</td>
+                    <td className="hidden md:table-cell">{typeWords(p)}</td>
                     <td className="hidden md:table-cell">{areaWords(p, area)}</td>
                     <td className={`hidden md:table-cell ${p.hoursOnDay ? "tabular" : "text-sm"}`}>{hours}</td>
                     <td className="hidden sm:table-cell">{whyCell(p)}</td>

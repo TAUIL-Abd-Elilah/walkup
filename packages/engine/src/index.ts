@@ -12,6 +12,7 @@ export * from "./lift";
 export * from "./kg";
 export * from "./hours";
 export * from "./category";
+export * from "./chains";
 export * from "./partners";
 export * from "./declared";
 export * from "./loadBalance";

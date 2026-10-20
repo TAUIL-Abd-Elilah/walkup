@@ -126,6 +126,7 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 | Compare returns only shared or generic tags | Two `urn:tag` calls diffed by rank, `degraded: tag diff` |
 | `signal.location` does not move podcast or brand rankings | Labelled "national, not local" |
 | Fewer than 8 partners in a tile | Radius 3,500 m, then a wider category set, `partial`; closed places dropped and counted |
+| A national chain among the partners or spots | Listed after the local places and kept only for a slot no local place fills; the card says how many moved and the steps name any that fell off the list. Chains are spotted by name from a hand-kept list ([`config/chains.json`](../config/chains.json)), so one not on it is listed like a local place |
 | No sponsor survives exclusions | Sponsor card hidden with an `empty` badge |
 | One headliner dominates the explainability | Balance check down-weights it and shows "headliner was dominating; rebalanced". Off: explainability scores are shares per place, not shown informative on Oct 15 |
 | LLM refusal, outage or spend cap reached | Deterministic template narration, labelled; revision notes read by fixed rules, labelled |

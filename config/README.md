@@ -1,5 +1,20 @@
 # config
 
+## `chains.json`: national chains, by name
+
+A hand-kept list of national and large regional US chain brands that show up as Qloo places: coffee, bakeries and desserts, fast food, fast casual, pizza, casual dining, sports bars, retail, book stores, barbers and salons (195 brands, reviewed Oct 20 2026). Partner and pre/post lists put a place whose name is on it after the local places; nothing on the list is dropped, and a chain is kept when no local place can fill its slot. The rule and the matcher are in [`packages/engine`](../packages/engine/README.md#partners).
+
+Shape (JSON Schema: [`chains.schema.json`](chains.schema.json)): `version`, `about` (what the list is), `reviewedAt` (date of the last review), and `chains[]`, each with:
+
+| Field | Meaning |
+|---|---|
+| `name` | The brand as it usually appears on a store ("Starbucks", "Dunkin'") |
+| `aliases` | Other names the brand's stores use ("Starbucks Coffee Company", "Dunkin' Donuts") |
+| `kind` | `coffee`, `bakery_dessert`, `fast_food`, `fast_casual`, `pizza`, `casual_dining`, `sports_bar`, `retail`, `book_store` or `beauty_barber`; for review only |
+| `exact` | `true` for a brand named with a common word or a town ("Target", "Gap", "Burlington"): it matches only as the whole name, never as the start of a longer one |
+
+A name matches when its words equal a brand's words or start with them, after case, accents, apostrophes, periods and `&`/"and" are normalized ("Potbelly Sandwich Shop" is Potbelly; "Jerry's Seafood" is not Jerry's Subs & Pizza). Before adding a brand, check that no local business is likely to start its name with the brand's words; if one could, mark it `exact` or use a longer name. `node --test config/test/chains.test.mjs` checks the shape, that no name is claimed twice and that common one-word names are `exact`. The list is bundled with the code, so a change ships with the next build.
+
 ## `tags.json`: pinned Qloo tag URNs
 
 Walkup never sends a free-text tag to Qloo at runtime. Every tag ID in a request (partner categories in `filter.tags`, exclusions in `filter.exclude.tags`, the generic heatmap baseline, the comedian check) comes from this file, where it was pinned once from `GET /v2/tags` (call Q16) and validated.

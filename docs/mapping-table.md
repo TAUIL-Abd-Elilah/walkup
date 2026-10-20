@@ -66,12 +66,14 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q9 | | `results.entities[].query.distance` | output | `QlooEntity.distanceM` (tie-break) | `qloo` -> `engine` |
 | Q9 | | `results.entities[].query.explainability["signal.interests.entities"][]` `{entity_id, score}` | output | `QlooEntity.explainability` (`ExplainContribution[]`); balance check | `qloo` -> `engine` |
 | Q9 | | position in the response | output | `Partner.qlooRank` -> `Partner.score`; `Partner.chips[].ledgerRef = "Q9"` | `engine` |
+| Q9 | [`config/chains.json`](../config/chains.json) (hand-kept chain names) | none | n/a | `Partner.chain` when `results.entities[].name` is on the list: listed after every local place of its area | `engine` |
 | **Q10** pre/post | resolved bill entity IDs | `signal.interests.entities` | signal | n/a | `qloo` |
 | Q10 | `Venue.lon`, `Venue.lat` | `filter.location=POINT(lon lat)`, `filter.location.radius=1500` (2500 on fallback) | filter | n/a | `qloo` |
 | Q10 | `restaurant`, `bar`, `cafe` from `config/tags.json` | `filter.tags` | filter | n/a | `qloo` |
 | Q10 | `Bill.weekday` | `filter.hours=<show weekday>` | filter | n/a | `qloo` |
 | Q10 | house set entity IDs (weekly twin call) | `signal.interests.entities` | signal | `PrePostSpot.deltaRank` | `qloo` -> `engine` |
 | Q10 | | `results.entities[]` (as Q9) | output | `PrePostSpot.entity`, `.chips` | `qloo` |
+| Q10 | `config/chains.json` | none | n/a | `PrePostSpot.chain`: chains go after the local spots before the list is cut to 8 | `engine` |
 | Q10 | operator-editable capacities; attendance what-if | none | n/a | `PrePostSpot.expectedShare`, `.assumedCapacity` (load balancer) | `engine` |
 | Q10 | `Bill.legalAgeEnforced` + category | none | n/a | `PrePostSpot.fanFacingAllowed` | `engine` |
 | **Q11** declared partners | `DeclaredPartner.label` | `GET /search?query=` (pick list, typed) | lookup | `DeclaredPartner.qlooEntityId` (operator picks) | `apps/web` -> `qloo` |

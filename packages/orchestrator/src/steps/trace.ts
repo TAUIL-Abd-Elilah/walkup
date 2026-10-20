@@ -32,7 +32,8 @@ import type { RunContext } from "../context";
 import type { CopyResult } from "./copy";
 import { MIN_BILL_PCT, MIN_SPLIT_HALF, SPLIT_HALF_NODE, THIN_CELLS, type HeatResult } from "./heat";
 import { excludedCategoriesFor, HOUSE_TWIN_NODE, PARTNER_TILES, partnerCategories, streetDay, TILE_RADIUS_M, TILE_RADIUS_WIDE_M, type PartnersResult } from "./partners";
-import { CALL_AHEAD_CHIP, MIN_SPOTS, PREPOST_RADIUS_M, prePostTypeDrops } from "./prepost";
+import { CALL_AHEAD_CHIP, MIN_SPOTS, PREPOST_RADIUS_M, prePostChainMoves, prePostTypeDrops } from "./prepost";
+import { CHAINS } from "../chains";
 import { HOUSE_MIN_RESOLVED, type ResolveResult } from "./resolve";
 
 /** Streams each step as the run reaches it (SSE "step" events). */
@@ -271,6 +272,8 @@ export function partnersTrace(ctx: RunContext, partners: PartnersResult): TraceS
     belowMinimum: r?.belowMinimum ?? false,
     minTotal: PARTNER_DEFAULTS.minTotal,
     skippedCategories: cats.skipped.length,
+    chainsMoved: r?.chainsMovedDown ?? 0,
+    chainsOffList: r?.chainsOffList ?? [],
     failure,
     ledgerRefs: refs,
   });
@@ -295,6 +298,7 @@ export function usualCrowdTrace(ctx: RunContext, resolved: ResolveResult, heat: 
     categoryTags: categoryTagMap(ctx.pins),
     excludeEntityIds: resolved.venueEntityId ? [resolved.venueEntityId] : [],
     excludeCategories: excludedCategoriesFor(ctx),
+    chains: CHAINS,
   });
   const refs = [...pools.flatMap((p) => (p.house ? [p.house.ledgerRef] : [])), ...drops.map((d) => d.ledgerRef)];
   return usualCrowdStep({
@@ -333,6 +337,8 @@ export function prePostTrace(ctx: RunContext, card: StreetSheetCards["prePost"])
     barsOperatorOnly: card.results.filter((s) => !s.fanFacingAllowed).length,
     legalAgeEnforced: ctx.bill.legalAgeEnforced,
     typeDrops: prePostTypeDrops(ctx),
+    chainsMoved: prePostChainMoves(ctx)?.chainsMovedDown ?? 0,
+    chainsOffList: prePostChainMoves(ctx)?.chainsOffList ?? [],
     failure,
     ledgerRefs: card.provenance,
   });

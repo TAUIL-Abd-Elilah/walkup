@@ -1,10 +1,12 @@
 /**
  * Q10: pre/post-show spots near the venue, open on show night, with the
  * house-signal twin for the delta rank and the load balancer. Bars are never
- * fan-facing unless Ticketmaster says the show is 21+.
+ * fan-facing unless Ticketmaster says the show is 21+. National chains on the
+ * hand-kept list go after the local spots.
  */
 import type { PrePostSpot, QlooEntity, StreetSheetCards } from "@walkup/contracts";
-import { buildPrePostSpots, hoursOnDay, resolveCategory } from "@walkup/engine";
+import { buildPrePostSpots, hoursOnDay, resolveCategory, type PrePostReport } from "@walkup/engine";
+import { CHAIN_LIMIT, chainLine, CHAINS } from "../chains";
 import { categoryTagMap, categoryUrns, PREPOST_CATEGORIES } from "../tags";
 import { cite, clean, droppedFrom, droppedReason, envelope, failure, node, plural, signal, venuePoint, type HouseSet, type RunContext, type Seed } from "../context";
 import { excludedCategoriesFor } from "./partners";
@@ -33,6 +35,12 @@ export interface PrePostTypeDrops {
 }
 
 const TYPE_DROPS = new WeakMap<RunContext, PrePostTypeDrops>();
+const CHAIN_MOVES = new WeakMap<RunContext, Pick<PrePostReport, "chains" | "chainsMovedDown" | "chainsOffList">>();
+
+/** What the chain rule did to this run's spots (null before runPrePost picked them). */
+export function prePostChainMoves(ctx: RunContext): Pick<PrePostReport, "chains" | "chainsMovedDown" | "chainsOffList"> | null {
+  return CHAIN_MOVES.get(ctx) ?? null;
+}
 
 /** The spots runPrePost left out by type (null before it ran or when none were). */
 export function prePostTypeDrops(ctx: RunContext): PrePostTypeDrops | null {
@@ -132,7 +140,9 @@ export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet
     excludeEntityIds: exclude,
     categoryTags: categoryTagMap(ctx.pins),
     chipLabel: OPEN_CHIP,
+    chains: CHAINS,
   });
+  CHAIN_MOVES.set(ctx, { chains: report.chains, chainsMovedDown: report.chainsMovedDown, chainsOffList: report.chainsOffList });
   // Closed spots are already dropped. A spot whose hours are not listed for show night is kept, but never
   // presented as open: its chip and the card say "call ahead".
   let unknownHours = 0;
@@ -159,6 +169,8 @@ export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet
   if (report.droppedClosed > 0) summary += ` Dropped ${plural(report.droppedClosed, "place")} marked closed.`;
   const typeDrops = prePostTypeDrops(ctx);
   if (typeDrops) summary += ` ${plural(typeDrops.count, "place")} left out by type (${typeDrops.reason}).`;
+  const chains = chainLine(report.chainsMovedDown, report.chainsOffList.length);
+  if (chains) summary += ` ${chains}`;
   if (!report.capacityApplied) reasons.push("no capacity entered, so shares follow rank only");
   let status: PrePostCard["status"] = cleaned.length === 0 ? "empty" : "ok";
   if (status === "ok" && (radiusM > PREPOST_RADIUS_M || cleaned.length < MIN_SPOTS)) status = "partial";
@@ -166,7 +178,7 @@ export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet
   if (status === "empty" && reasons.length === 0) reasons.push("no spot near the room passed the filters");
   const joined = reasons.join("; ");
   const reason = joined ? `${joined.charAt(0).toUpperCase()}${joined.slice(1)}.` : undefined;
-  return envelope(status, summary, cleaned, provenance, status === "ok" ? undefined : reason, [
-    "Expected shares are a heuristic with assumed capacities, not a forecast.",
-  ]);
+  const limits = ["Expected shares are a heuristic with assumed capacities, not a forecast."];
+  if (report.chains > 0) limits.push(CHAIN_LIMIT);
+  return envelope(status, summary, cleaned, provenance, status === "ok" ? undefined : reason, limits);
 }

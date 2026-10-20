@@ -4,7 +4,8 @@
  * the near-venue pool when lift is weak, the house twin of each pool (the
  * same request with the room's usual crowd as the signal, for the ubiquity
  * penalty and the "tonight vs house" chip), the probe-gated balance check,
- * and deterministic scoring with the diversity caps.
+ * and deterministic scoring with the diversity caps. National chains on the
+ * hand-kept list (config/chains.json) are listed after the local places.
  */
 import type { Chip, LiftTile, Partner, QlooEntity, StreetSheetCards, Weekday } from "@walkup/contracts";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@walkup/engine";
 import { errorStatus } from "@walkup/qloo";
 import { categoryTagMap, categoryUrns, DEFAULT_PARTNER_CATEGORIES, WIDEN_CATEGORIES } from "../tags";
+import { CHAIN_LIMIT, chainLine, CHAINS } from "../chains";
 import { cite, clean, droppedFrom, droppedReason, envelope, failure, node, plural, signal, venuePoint, type DroppedCheck, type HouseSet, type RunContext, type Seed } from "../context";
 import { houseFor } from "./heat";
 
@@ -277,6 +279,7 @@ export async function runPartners(
     categoryTags: categoryTagMap(ctx.pins),
     excludeEntityIds: excludeIds,
     excludeCategories: excludedCats,
+    chains: CHAINS,
     extraChips: (e, c): Chip[] => {
       const chips: Chip[] = [];
       const t = c.tileGeohash ? tileByGh.get(c.tileGeohash) : undefined;
@@ -307,12 +310,15 @@ export async function runPartners(
   if (report.droppedCategory > 0) {
     summary += ` ${plural(report.droppedCategory, "place")} left out by category (${ctx.operator.allAges === true ? "all-ages show" : "your exclusions"}).`;
   }
+  const chains = chainLine(report.chainsMovedDown, report.chainsOffList.length);
+  if (chains) summary += ` ${chains}`;
   let status: PartnersCard["status"] = cleaned.length === 0 ? "empty" : "ok";
   if (status === "ok" && (widenedRadius > 0 || widenedCats > 0 || report.belowMinimum || tiles.length < PARTNER_TILES || cats.skipped.length > 0 || rebalanced || worstDrop.share === "some")) status = "partial";
   if (report.belowMinimum) ctx.thinSignal = true;
   if (status === "empty" && reasons.length === 0) reasons.push("No place passed the filters.");
   const limits = ["Suggested, not affiliated: no partner has agreed to anything."];
   if (twinByPool.size > 0) limits.push(HOUSE_TWIN_LIMIT);
+  if (report.chains > 0) limits.push(CHAIN_LIMIT);
   base.card = envelope(status, summary, cleaned, provenance, reasons.length > 0 ? reasons.join(" ") : undefined, limits);
   base.partners = cleaned;
   base.report = report;

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Walkup chain brands",
+  "description": "National and large regional US chain brands. Partner and pre/post lists put a place whose name matches one of these after the local places. Kept by hand.",
+  "type": "object",
+  "required": [
+    "version",
+    "about",
+    "reviewedAt",
+    "chains"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    },
+    "about": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewedAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "chains": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/chain"
+      }
+    }
+  },
+  "$defs": {
+    "chain": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The brand as it usually appears on a store"
+        },
+        "aliases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Other names the same brand's stores use"
+        },
+        "kind": {
+          "enum": [
+            "coffee",
+            "bakery_dessert",
+            "fast_food",
+            "fast_casual",
+            "pizza",
+            "casual_dining",
+            "sports_bar",
+            "retail",
+            "book_store",
+            "beauty_barber"
+          ]
+        },
+        "exact": {
+          "const": true,
+          "description": "The name is a common word or a place name: it matches only as the whole name (a store number, or a part after \" - \", \"(\" or \",\", may follow), never as the start of a longer name"
+        }
+      }
+    }
+  }
+}

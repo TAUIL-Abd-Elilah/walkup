@@ -320,9 +320,24 @@ export interface PartnersStepInput {
   belowMinimum: boolean;
   minTotal: number;
   skippedCategories: number;
+  /** National chains (hand-kept list) the chain rule moved below local places, and the names of those now off the list. */
+  chainsMoved?: number;
+  chainsOffList?: readonly string[];
   /** Set when the partner step failed: what happened, in one sentence. */
   failure?: string | null;
   ledgerRefs: string[];
+}
+
+/** The chain rule's trace line: how many chains moved below local places, and which ones fell off the list. */
+export function chainsCause(moved: number | undefined, offList: readonly string[] | undefined, local: string): string | null {
+  const n = moved ?? 0;
+  if (n <= 0) return null;
+  // Two stores of one brand read "Panera Bread (2)".
+  const counts = new Map<string, number>();
+  for (const name of offList ?? []) counts.set(name, (counts.get(name) ?? 0) + 1);
+  const off = [...counts].map(([name, k]) => (k > 1 ? `${name} (${k})` : name));
+  const head = `Moved ${countOf(n, "national chain")} below the local ${local}`;
+  return off.length > 0 ? `${head}; ${joinAnd(off)} no longer ${(offList ?? []).length === 1 ? "makes" : "make"} the list` : head;
 }
 
 export function partnersStep(i: PartnersStepInput): TraceStep {
@@ -345,6 +360,7 @@ export function partnersStep(i: PartnersStepInput): TraceStep {
     i.widenedRadius > 0 ? `${countOf(i.widenedRadius, "area search", "area searches")} came back short and widened to ${i.widenedRadiusM.toLocaleString("en-US")} m` : null,
     i.widenedCategories > 0 ? `${countOf(i.widenedCategories, "search", "searches")} also took in more kinds of places` : null,
     i.skippedCategories > 0 ? `${countOf(i.skippedCategories, "kind")} of place skipped: no pinned tag yet` : null,
+    chainsCause(i.chainsMoved, i.chainsOffList, "places"),
     i.belowMinimum ? `That's short of the ${i.minTotal} the list aims for, so treat it as a starting list` : null,
   ]);
   return traceStep("partners", "partners", "Partners", decision, i.status, i.ledgerRefs, cause);
@@ -430,6 +446,9 @@ export interface PrePostStepInput {
   legalAgeEnforced: boolean | null;
   /** Spots left out by type before picking (operator exclusions, or every bar on an all-ages show). */
   typeDrops?: { count: number; reason: string } | null;
+  /** National chains the chain rule moved below local spots, and the names of those now off the list. */
+  chainsMoved?: number;
+  chainsOffList?: readonly string[];
   failure?: string | null;
   ledgerRefs: string[];
 }
@@ -444,6 +463,7 @@ export function prePostStep(i: PrePostStepInput): TraceStep {
   const cause = joinSentences([
     i.widened && i.radiusM !== null ? `Fewer than ${i.widened.minSpots} came back inside ${kmFromM(i.widened.fromM)} km, so the search widened to ${kmFromM(i.radiusM)} km` : null,
     i.typeDrops && i.typeDrops.count > 0 ? `Left out ${countOf(i.typeDrops.count, "place")} by type (${i.typeDrops.reason})` : null,
+    chainsCause(i.chainsMoved, i.chainsOffList, "spots"),
     i.barsOperatorOnly > 0
       ? `Bars stay off fan copy: ${i.legalAgeEnforced === false ? "Ticketmaster lists the show as all ages" : "Ticketmaster doesn't list an age limit for the show"}`
       : null,

@@ -75,7 +75,7 @@ Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only.
 
 **The house baseline.** A raw heatmap mostly shows where people are: downtown wins for every audience. Walkup divides the bill's heat by the heat of the acts this room usually hosts, built from the venue's own upcoming Ticketmaster roster. What's left is where *this* bill's crowd over-indexes versus the room's usual crowd: the people the venue's list probably hasn't reached. Affinities are compared only as percentile ranks inside one response, never across calls. Two checks guard the map. If lift tracks general foot traffic too closely (Spearman above 0.9 against a restaurant heatmap), the map shows a `lift weak` badge. If lift ranks areas almost like the bill's own map (Spearman above 0.9), the card says the map shows where this crowd is, not where it stands out; a comedian's map against the restaurant baseline scored 0.98 on Oct 15. Either way, partners fall back to near-venue ranking.
 
-**Deterministic scoring.** Partner score inside a tile is `(1 - (qloo_rank - 1) / n) × (tile lift / max lift)`, with at most 2 partners per category per tile, at least 1 non-bar per tile, at most 8 per tile, ties broken by distance, closed places dropped and hours checked against the street-team day. Code ranks; the model does not.
+**Deterministic scoring.** Partner score inside a tile is `(1 - (qloo_rank - 1) / n) × (tile lift / max lift)`, with at most 2 partners per category per tile, at least 1 non-bar per tile, at most 8 per tile, ties broken by distance, closed places dropped and hours checked against the street-team day. National chains (Starbucks, Hooters, Panera Bread and the like, by name from a hand-kept list in [`config/chains.json`](config/chains.json)) are listed after every local place of their area, and kept only for a slot no local place can fill; the same goes for the spots near the venue. The card says how many moved ("National chains are listed after local places (3 moved down).") and the steps name any that fell off the list. Code ranks; the model does not.
 
 ### Verified on hackathon.api.qloo.com, Oct 15 2026
 
@@ -233,6 +233,7 @@ Also:
 - **Comedy has no genre baseline.** On Oct 15 the stand-up comedy tag map came back empty near a comedy club, so a comedy room whose roster resolves fewer than 5 comedians gets no lift map, and partners are picked near the venue. No music genre baseline is pinned yet either: none has been checked.
 - **Qloo can list an act it has no taste data for.** The signal check catches it before planning and the sheet names the swap. If Qloo still ignores every seed on a later call, that card leaves the list out rather than show general popularity as this bill's list.
 - **New venues.** A room that opened recently may not be a Qloo place yet; the run uses the Ticketmaster coordinates as a `POINT` and says so. Partners do not depend on the venue entity.
+- **Chains are spotted by name.** The chain list is kept by hand. A chain that is not on it, or a store Qloo names another way, is listed like a local place.
 - **Generic compare results.** When bill-versus-house compare returns only shared, generic tags, the card falls back to a tag diff and is marked `degraded`.
 - **Local or national.** Podcast and brand rankings with `signal.location` may not move with location; when they don't, they are labelled "national, not local".
 - **No live sheet yet.** Every sheet today is sample data. The Oct 15 checks show which request shapes work on the live host, not that Qloo's picks beat a popularity ranking or any other list.
@@ -269,13 +270,14 @@ Other public 2026 projects built on Qloo work on nearby problems. Descriptions a
 |---|---|
 | [`packages/contracts/`](packages/contracts/src/index.ts) | Shared types: envelope, ledger, entities, lift tiles, Street Sheet cards, policy constants |
 | [`packages/qloo/`](packages/qloo/) | Qloo client: request shapes Q1-Q16, rate limiter, month guard, private cache, ledger writer, fixture record and replay |
-| [`packages/engine/`](packages/engine/) | Pure code, no I/O: lift, partner scoring, diversity rules, load balancer, budget heuristic, guard, denylist |
+| [`packages/engine/`](packages/engine/) | Pure code, no I/O: lift, partner scoring, diversity rules, chain matcher, load balancer, budget heuristic, guard, denylist |
 | [`packages/narrator/`](packages/narrator/) | Schema-constrained narration and the labelled template fallback |
 | [`packages/tm/`](packages/tm/) | Ticketmaster Discovery: intake, venue roster, age policy |
 | [`packages/places/`](packages/places/) | Google Places (New) client, used only by the P1 research harness, not by the product |
 | [`packages/acs/`](packages/acs/), [`packages/gazetteer/`](packages/gazetteer/) | Census ACS lookups; neighbourhood and ZCTA naming for tiles |
 | [`apps/web/`](apps/web/) | Next.js app: Street Sheet, map, receipt drawer, confirm dialog, exports |
 | [`config/tags.json`](config/tags.json) | Pinned Qloo tag URNs (see [`config/README.md`](config/README.md)) |
+| [`config/chains.json`](config/chains.json) | The hand-kept list of national chains that partner and pre/post lists put after local places |
 | [`skills/walkup/`](skills/walkup/SKILL.md) | Agent Skill and CLI |
 | [`evals/`](evals/), [`docs/preregistration/`](docs/preregistration/) | The product eval; the sealed P1 plan and its analysis code (designed, not run) |
 | [`scripts/`](scripts/) | Probe script, no-raw-bodies check |

@@ -279,6 +279,7 @@ export function validateSheet(sheet: unknown): string[] {
       c.str(po, "category", pp);
       c.num(po, "score", pp, { min: 0, max: 1 });
       c.num(po, "qlooRank", pp, { min: 1 });
+      if (po.chain !== undefined) c.bool(po, "chain", pp);
       checkChips(c, po, pp, ledgerIds);
     });
   }
@@ -308,6 +309,7 @@ export function validateSheet(sheet: unknown): string[] {
       c.num(xo, "expectedShare", xp, { min: 0, max: 1 });
       c.num(xo, "assumedCapacity", xp, { min: 0 });
       c.bool(xo, "fanFacingAllowed", xp);
+      if (xo.chain !== undefined) c.bool(xo, "chain", xp);
       checkChips(c, xo, xp, ledgerIds);
     });
   }
