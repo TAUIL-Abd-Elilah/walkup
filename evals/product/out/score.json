@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-20T16:58:46.251Z",
+  "generatedAt": "2026-10-20T21:42:24.283Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -1474,7 +1474,7 @@
         {
           "name": "at most 8 pre/post spots",
           "status": "pass",
-          "detail": "3 spots",
+          "detail": "2 spots",
           "clause": "D1",
           "subject": "g3"
         },
@@ -1698,7 +1698,7 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "38 refs",
+          "detail": "37 refs",
           "clause": "D4",
           "subject": "g3"
         },
@@ -1712,7 +1712,7 @@
         {
           "name": "every cited entity traces to a Qloo call of this run that returned results",
           "status": "pass",
-          "detail": "18 entities",
+          "detail": "17 entities",
           "clause": "D4",
           "subject": "g3"
         },
@@ -1740,7 +1740,7 @@
         {
           "name": "every pre/post spot open on show night per Qloo's hours",
           "status": "pass",
-          "detail": "3 spots checked",
+          "detail": "2 spots checked",
           "clause": "D3",
           "subject": "g3"
         },
@@ -1829,8 +1829,8 @@
       },
       "metrics": {
         "g3.partners": 6,
-        "g3.prePost": 3,
-        "g3.grounded": 9,
+        "g3.prePost": 2,
+        "g3.grounded": 8,
         "g3.groundingFailures": 0,
         "g3.hoursUnverified": 0,
         "g3.partnersCallAhead": 0,
@@ -3227,14 +3227,14 @@
         {
           "name": "all-ages: bars near the room are operator-only",
           "status": "pass",
-          "detail": "2 bar(s)",
+          "detail": "6 bar(s)",
           "clause": "S3",
           "subject": "alcohol rule"
         },
         {
           "name": "21+: bars near the room may face fans",
           "status": "pass",
-          "detail": "6 bar(s)",
+          "detail": "7 bar(s)",
           "clause": "S3",
           "subject": "alcohol rule"
         },
@@ -4104,7 +4104,7 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "159 refs",
+          "detail": "158 refs",
           "clause": "D4",
           "subject": "g1-a, closed places"
         },
@@ -4508,7 +4508,7 @@
         "g1-a, unknown hours.prePost": 8,
         "g1-a, unknown hours.grounded": 32,
         "g1-a, unknown hours.groundingFailures": 0,
-        "g1-a, unknown hours.hoursUnverified": 12,
+        "g1-a, unknown hours.hoursUnverified": 13,
         "g1-a, unknown hours.partnersCallAhead": 8,
         "g1-a, unknown hours.openAllStreetDays": 16,
         "g1-a, unknown hours.ledgerEntries": 34,
@@ -6537,7 +6537,7 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "38 refs",
+          "detail": "37 refs",
           "clause": "D4",
           "subject": "g3, budget split"
         },
@@ -6551,7 +6551,7 @@
         {
           "name": "every cited entity traces to a Qloo call of this run that returned results",
           "status": "pass",
-          "detail": "18 entities",
+          "detail": "17 entities",
           "clause": "D4",
           "subject": "g3, budget split"
         },
@@ -6665,7 +6665,7 @@
         "g2, budget split.guardDropped": 0,
         "g2, budget split.citationDrops": 0,
         "g3, budget split.partners": 6,
-        "g3, budget split.prePost": 3,
+        "g3, budget split.prePost": 2,
         "g3, budget split.grounded": null,
         "g3, budget split.groundingFailures": null,
         "g3, budget split.hoursUnverified": null,
@@ -7022,7 +7022,7 @@
         "top8Overlap": 0,
         "top8Jaccard": 0,
         "sharedTopTiles": 0,
-        "prePostOverlap": 2
+        "prePostOverlap": 5
       }
     },
     {
