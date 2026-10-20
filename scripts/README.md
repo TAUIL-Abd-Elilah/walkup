@@ -11,6 +11,7 @@ Day-one API probe, the key-day room tool and repository hygiene.
 | `lib/stats.ts` | `kendallTau` (tau-b), `kendallTauFromOrders`, `spearman`, `pearson`, `ranks`, `pctRank`, `topKOverlap`, `jaccard`. Pure; NaN when undefined. |
 | `lib/probe/*` | Request builders, client, extractors, lift math, gate arithmetic, the 20 probes, runner, SUMMARY writer. |
 | `llm-check.ts` | `npm run llm:check`: three small synthetic requests through the LLM route `.env` selects (OpenRouter or Anthropic): two tool calls in one turn, a question for a note it cannot apply, and a schema-bound narration. PASS/FAIL plus the ledger; no Qloo call. |
+| `mcp-agent-demo.ts` | `npm run agent:demo`: an agent using Walkup over MCP. Connects to `WALKUP_URL` (default the hosted site) at `/mcp`, gives its tools to Claude through OpenRouter (`OPENROUTER_API_KEY`), and works a promoter's request: plan a preset show, make it "All ages, no bars", fetch the final sheet. Prints each tool call and a short view of the result; `--transcript=path` writes them as JSON lines. The revision is a fresh run on the server and counts against its caps. |
 | `check-no-raw.mjs` | Fails when git would publish private data or raw API bodies (`npm run check:no-raw`). |
 | `../.githooks/pre-commit` | Runs `check-no-raw.mjs` before every commit. `../.githooks/.gitattributes` keeps it LF so `sh` can run it on Windows checkouts. |
 | `test/` | Vitest suites (offline; synthetic data only). |

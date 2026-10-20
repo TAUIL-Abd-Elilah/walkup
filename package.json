@@ -16,6 +16,7 @@
     "probe": "tsx scripts/probe.ts",
     "llm:check": "tsx scripts/llm-check.ts",
     "tm:room": "tsx scripts/tm-room.ts",
+    "agent:demo": "tsx scripts/mcp-agent-demo.ts",
     "dev": "npm run dev -w @walkup/web",
     "check:no-raw": "node scripts/check-no-raw.mjs",
     "eval:product": "tsx evals/product/run.ts",
