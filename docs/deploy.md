@@ -211,8 +211,10 @@ and makes nothing new. The web app calls this **recorded** mode:
   from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
   sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
   "Planned <date>", on the page and in the PDF.
-- New plans, the show and title searches, picks, revisions and the MCP tools other than `get_sheet` answer with
-  `"mode": "recorded"` and one plain reason (HTTP 503 on the REST routes). Nothing calls Qloo or Ticketmaster.
+- New plans, the show and title searches, picks and revisions answer with `"mode": "recorded"` and one plain reason
+  (HTTP 503 on the REST routes). Nothing calls Qloo or Ticketmaster. Over MCP, the tools that only read stored sheets
+  still answer (`get_sheet`, `bill_vs_house`, `plan_show` for a preset or a plan id); `rank_partners` and new plans
+  refuse, and `revise_plan` refuses with the ids of any revisions of that plan recorded while the server was live.
 
 The server is in recorded mode when `WALKUP_MODE=recorded`, when the time in `WALKUP_QLOO_UNTIL` has passed, or when
 Qloo has rejected the configured key and the plan store holds a live sheet. A rejected key with no live sheet stored

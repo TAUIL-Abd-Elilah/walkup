@@ -7,7 +7,7 @@
  * same orchestrator deps and plan store (plans made here open at /s/<planId>),
  * the same preset sheets, the same per-IP fresh-run allowance, the same
  * fixture-mode rule (presets only), the same recorded-mode rule (Qloo is no
- * longer available: only get_sheet answers), and the same quota and
+ * longer available: only the reading tools answer), and the same quota and
  * rejected-key bookkeeping after live runs.
  *
  * Add it to Claude Code with: claude mcp add --transport http walkup <origin>/mcp
@@ -85,7 +85,7 @@ const SERVICES_KEY = Symbol.for("walkup.web.mcpServices");
 
 /**
  * One set of MCP services per runtime mode, shared by every request in this process. Recorded mode runs
- * nothing: its services sit on the fixture deps and every tool but get_sheet refuses.
+ * nothing: its services sit on the fixture deps, and only the tools that read stored sheets answer.
  */
 function servicesFor(mode: Mode): McpServices {
   const g = globalThis as unknown as Record<symbol, Partial<Record<Mode, McpServices>> | undefined>;

@@ -194,7 +194,7 @@ describe("live runs recorded, then Qloo goes away", () => {
     expect(g3.mode).toBe("fixture");
   });
 
-  it("answers get_sheet over /mcp with the recording, and refuses plan_show with mode recorded", async () => {
+  it("answers get_sheet and plan_show over /mcp with the recording, and refuses a new run with mode recorded", async () => {
     process.env.WALKUP_MODE = "recorded";
     const sheet = await mcpCall("get_sheet", { planId: "g1-a" });
     expect(sheet?.isError).toBeFalsy();
@@ -203,8 +203,11 @@ describe("live runs recorded, then Qloo goes away", () => {
     expect(sheet?.content.map((c) => c.text ?? "").join("\n")).toMatch(/Mode: recorded \(a live run recorded on \d{4}-\d{2}-\d{2}; Qloo is no longer available/);
     const before = (await stores().plans.list(1000)).length;
     const plan = await mcpCall("plan_show", { presetId: "g1-a" });
-    expect(plan?.isError).toBe(true);
-    expect(plan?.structuredContent).toMatchObject({ status: "error", mode: "recorded", reason: RECORDED_REASON, results: null });
+    expect(plan?.isError).toBeFalsy();
+    expect(plan?.structuredContent).toMatchObject({ planId: recordedIds["g1-a"], mode: "recorded" });
+    const fresh = await mcpCall("plan_show", { presetId: "g1-a", operator: { seatsLeft: 100 } });
+    expect(fresh?.isError).toBe(true);
+    expect(fresh?.structuredContent).toMatchObject({ status: "error", mode: "recorded", reason: RECORDED_REASON, results: null });
     expect((await stores().plans.list(1000)).length).toBe(before);
   });
 });

@@ -11,7 +11,9 @@
  * Presets (and picks among the candidates a preset showed) are unlimited;
  * anything else that runs the planner is a fresh run and takes one unit from
  * the per-caller and daily caps. When the host serves recorded sheets only
- * (policy.recorded), every tool but get_sheet refuses with 503.
+ * (policy.recorded), the tools that only read stored sheets still answer (get_sheet,
+ * bill_vs_house, plan_show for a preset or plan id); everything that would run
+ * refuses with 503, and revise_plan names any recorded revision of the plan.
  */
 import { createHash } from "node:crypto";
 import { createMemoryLedger, type DeclaredPartnerScore, type EnvelopeStatus, type OperatorInputs, type Resolution, type StreetSheet } from "@walkup/contracts";
@@ -70,7 +72,7 @@ function fail(services: McpServices, httpStatus: number, reason: string, extras:
   return { envelope: errorEnvelope(reason, services.mode, extras), httpStatus };
 }
 
-/** Recorded state (Qloo is no longer available): the refusal every tool but get_sheet answers with, or null. */
+/** Recorded state (Qloo is no longer available): the refusal for anything that would run, or null. */
 function recordedRefusal(services: McpServices): ToolOutcome<null> | null {
   const reason = services.policy.recorded;
   return reason ? { envelope: errorEnvelope(reason, "recorded"), httpStatus: 503 } : null;
@@ -323,9 +325,18 @@ async function resumeStored(services: McpServices, caller: Caller, stored: Store
   return ok(envelopeOfView(viewOfResult(await run(services, request, depsFor(services, caller.ip))), caller.origin));
 }
 
+/** A preset's view; in the recorded state a preset with nothing recorded answers like any refusal (503). */
+function recordedOr(services: McpServices, caller: Caller, v: PlanView): ToolOutcome {
+  if (services.policy.recorded && v.kind === "error") return recordedRefusal(services) as ToolOutcome;
+  return ok(envelopeOfView(v, caller.origin, { recorded: Boolean(services.policy.recorded) }));
+}
+
 export async function planShowTool(services: McpServices, caller: Caller, args: PlanShowArgs): Promise<ToolOutcome> {
-  const off = recordedRefusal(services);
+  // Recorded state: reading a preset's recorded sheet or a stored plan still works; anything that would run does not.
+  const reads = args.event === undefined && args.picks === undefined && !operatorOverrides(args.operator) && (args.presetId !== undefined || args.planId !== undefined);
+  const off = reads ? null : recordedRefusal(services);
   if (off) return off;
+  const rec = { recorded: Boolean(services.policy.recorded) };
   const which = exactlyOne({ event: args.event, presetId: args.presetId, planId: args.planId });
   if (which) return fail(services, 400, which);
   const problem = inputProblem([{ field: "event", value: args.event }, ...(args.picks ?? []).map((p) => ({ field: "picks", value: p.input }))]);
@@ -345,16 +356,16 @@ export async function planShowTool(services: McpServices, caller: Caller, args: 
       return freshRun(services, caller, presetAsEvent(preset, shown.show, overrides, picked.resolutions));
     }
     if (args.picks) return resumePreset(services, preset.id, args.picks, caller);
-    return ok(envelopeOfView(await presetView(services, preset.id, "page"), caller.origin));
+    return recordedOr(services, caller, await presetView(services, preset.id, "page"));
   }
 
   if (args.planId !== undefined) {
     if (overrides) return fail(services, 400, "Operator what-ifs start a new plan: pass them with event or presetId, not planId.");
     const preset = presetById(args.planId);
-    if (preset) return args.picks ? resumePreset(services, preset.id, args.picks, caller) : ok(envelopeOfView(await presetView(services, preset.id, "page"), caller.origin));
+    if (preset) return args.picks ? resumePreset(services, preset.id, args.picks, caller) : recordedOr(services, caller, await presetView(services, preset.id, "page"));
     const stored = await services.store.get(args.planId);
     if (!stored) return fail(services, 404, `No plan with id ${args.planId}.`);
-    if (!args.picks || stored.status === "complete") return ok(envelopeOfView(viewOfStored(stored), caller.origin));
+    if (!args.picks || stored.status === "complete") return ok(envelopeOfView(viewOfStored(stored), caller.origin, rec));
     return resumeStored(services, caller, stored, args.picks);
   }
 
@@ -513,8 +524,7 @@ export function billVsHouseOf(sheet: StreetSheet): BillVsHouse {
 }
 
 export async function billVsHouseTool(services: McpServices, caller: Caller, args: PlanRefArgs): Promise<ToolOutcome> {
-  const off = recordedRefusal(services);
-  if (off) return off;
+  // Reads a stored sheet only, so it works in the recorded state too.
   const v = await readView(services, args.planId);
   if (!v) return fail(services, 404, `No plan with id ${args.planId}.`);
   if (v.kind !== "sheet") {
@@ -539,7 +549,7 @@ export async function billVsHouseTool(services: McpServices, caller: Caller, arg
     planId: sheet.planId,
     sheetUrl: sheetUrlFor(caller.origin, sheet.planId),
     planUrl: planUrlFor(caller.origin, sheet.planId),
-    mode: sheet.mode,
+    mode: services.policy.recorded && sheet.mode === "live" ? "recorded" : sheet.mode,
     results,
     resolution: sheet.cards.resolution.results,
     ...(status !== "ok" && reason ? { reason } : {}),
@@ -560,6 +570,31 @@ export async function getSheetTool(services: McpServices, caller: Caller, args: 
 // revise_plan
 // ---------------------------------------------------------------------------
 
+/** How many recent live sheets the recorded state searches for revisions of a plan. */
+const RECORDED_REVISION_LOOKBACK = 30;
+
+/**
+ * The recorded state cannot revise, but a revision made while the server was live is still stored: the refusal
+ * names it (plan id, note and sheet link) so an agent can read it with get_sheet.
+ */
+async function withRecordedRevisions(services: McpServices, caller: Caller, planId: string, off: ToolOutcome<null>): Promise<ToolOutcome<null>> {
+  try {
+    const parent = await readView(services, planId);
+    const parentId = parent?.kind === "sheet" ? parent.sheet.planId : planId;
+    const recent = await services.store.listComplete({ mode: "live" }, RECORDED_REVISION_LOOKBACK);
+    const revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 3);
+    if (revisions.length === 0) return off;
+    const named = revisions.map((p) => {
+      const url = sheetUrlFor(caller.origin, p.planId);
+      return `${p.planId} ("${p.sheet?.revision?.instruction ?? ""}")${url ? `, ${url}` : ""}`;
+    });
+    const reason = `${off.envelope.reason} Recorded ${revisions.length === 1 ? "revision" : "revisions"} of this plan, readable with get_sheet: ${named.join("; ")}.`;
+    return { ...off, envelope: { ...off.envelope, summary: reason, reason } };
+  } catch {
+    return off;
+  }
+}
+
 export const REVISE_QUESTION_REASON = "Nothing was changed. Put the question to the user, then call revise_plan again with their clearer note.";
 
 /**
@@ -571,7 +606,7 @@ export const REVISE_QUESTION_REASON = "Nothing was changed. Put the question to 
  */
 export async function revisePlanTool(services: McpServices, caller: Caller, args: RevisePlanArgs): Promise<ToolOutcome> {
   const off = recordedRefusal(services);
-  if (off) return off;
+  if (off) return withRecordedRevisions(services, caller, args.planId, off);
   const problem = inputProblem([{ field: "instruction", value: args.instruction }]);
   if (problem) return fail(services, 400, problem.reason);
   const v = await readView(services, args.planId);

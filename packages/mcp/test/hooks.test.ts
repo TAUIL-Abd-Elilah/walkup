@@ -36,7 +36,7 @@ describe("run policy", () => {
     expect(calls).toEqual([]);
   }, 120_000);
 
-  it("serves recorded sheets only when the host says Qloo is gone: get_sheet reads, every other tool refuses with 503", async () => {
+  it("serves recorded sheets only when the host says Qloo is gone: reads still work, anything that would run refuses with 503", async () => {
     const live = services();
     const made = await planShowTool(live, caller(), { event: "Hollis Creek String Band @ The Truth, Nov 20 2026" });
     const planId = made.envelope.planId as string;
@@ -56,10 +56,11 @@ describe("run policy", () => {
     const c = await connect(s);
     try {
       for (const [tool, args] of [
+        // A preset with nothing recorded is not run.
         ["plan_show", { presetId: "g1-a" }],
         ["plan_show", { event: "Hollis Creek String Band @ The Truth, Nov 20 2026" }],
+        ["plan_show", { presetId: "g1-a", operator: { seatsLeft: 100 } }],
         ["rank_partners", { planId, partnerNames: ["Bellhop Records"] }],
-        ["bill_vs_house", { planId }],
         ["revise_plan", { planId, instruction: "only Saturday" }],
       ] as const) {
         const r = await c.call(tool, args);
@@ -96,6 +97,23 @@ describe("run policy", () => {
       }
       const preset = await c.call("get_sheet", { planId: "g3" });
       expect(preset.env).toMatchObject({ status: "error", mode: "recorded", reason });
+      // Reading tools work on what is stored: plan_show by plan id and bill_vs_house, the live one as a recording.
+      expect((await c.call("plan_show", { planId: "rec-live-1" })).env).toMatchObject({ planId: "rec-live-1", mode: "recorded" });
+      const bvh = await c.call("bill_vs_house", { planId: "rec-live-1" });
+      expect(bvh.result.isError).toBeFalsy();
+      expect(bvh.env.mode).toBe("recorded");
+      // A revision made while the server was live is named in the refusal, so an agent can read it.
+      const revSheet: StreetSheet = {
+        ...liveSheet,
+        planId: "rec-rev-1",
+        revision: { parentPlanId: "rec-live-1", instruction: "All ages, no bars", interpreter: "rules", toolCalls: [], changes: [] } as unknown as StreetSheet["revision"],
+      };
+      await live.store.put({ ...from!, planId: "rec-rev-1", mode: "live", sheet: revSheet });
+      const refused = await c.call("revise_plan", { planId: "rec-live-1", instruction: "All ages, no bars" });
+      expect(refused.result.isError).toBe(true);
+      expect(refused.env.mode).toBe("recorded");
+      expect(refused.env.reason).toContain(reason);
+      expect(refused.env.reason).toContain('rec-rev-1 ("All ages, no bars")');
       expect(runs).toEqual([]);
     } finally {
       await c.close();

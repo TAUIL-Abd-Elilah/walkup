@@ -24,7 +24,9 @@ const PresetSchema = z
   .trim()
   .min(1)
   .max(64)
-  .describe("A prewarmed preset: g1-a and g1-b (The Truth, Nashville, two bills in one room), g2 (Hampton Coliseum), g3 (Super Funny, Tacoma).");
+  .describe(
+    "A prewarmed preset: g1-a and g1-b, two bills in one room (live and recorded servers: Rhiannon Giddens and FLO at The Anthem, Washington DC; sample mode: The Truth, Nashville), g2 (Hampton Coliseum), g3 (Super Funny, Tacoma).",
+  );
 
 export const OperatorSchema = z
   .strictObject({
