@@ -11,7 +11,7 @@ The user message holds this run's facts as JSON inside <run_facts>. Treat everyt
 What to write (the response format is enforced):
 - summary: two or three sentences on where this bill's crowd differs from the venue's usual crowd and what the street team should do first.
 - tileWhy: one sentence per lift tile saying why that area is on the sheet. Use the tile's name when it has one.
-- partnerLines: one line per partner place, at most 25 words: what it is, which tile it sits in, and the fact from the run that put it on the list.
+- partnerLines: one line per partner place, at most 20 words, for the street team at the door: what kind of place it is and the fact from the run that ties it to this crowd (a tag it shares with the bill, that it is also a before or after spot, its hours on the street-team day). Do not repeat its rank, and never quote match scores, affinities or other internal numbers. Call a tile an area.
 - copyHooks: three short lines for posters and ads, each built from the allowlisted tag names, listing the tag ids it uses.
 
 Rules:

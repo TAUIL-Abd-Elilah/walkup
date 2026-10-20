@@ -364,16 +364,19 @@ describe("the plan page as a document", () => {
 });
 
 describe("narrated partner lines", () => {
-  it("shows the narration's line for a partner under its rank line, and nothing when the sheet has none", () => {
+  it("shows the model's line for a partner under its rank line, and nothing when the sheet has none or it was templated", () => {
     const sheet = bare("g1-a");
     const p = sheet.cards.partners.results[0]!;
     const line = "A test line the narration wrote for this partner.";
     const withLine: StreetSheet = {
       ...sheet,
-      narration: sheet.narration ? { ...sheet.narration, partnerLines: [{ entityId: p.entity.entityId, text: line }] } : sheet.narration,
+      narration: sheet.narration ? { ...sheet.narration, templated: false, partnerLines: [{ entityId: p.entity.entityId, text: line }] } : sheet.narration,
     };
     expect(withLine.narration).toBeTruthy();
     expect(visibleText(renderView(withLine))).toContain(line);
+    // A templated narration's partner lines only repeat the rank line, so they are not shown.
+    const templated: StreetSheet = { ...withLine, narration: { ...withLine.narration!, templated: true } };
+    expect(visibleText(renderView(templated))).not.toContain(line);
     const without: StreetSheet = { ...sheet, narration: sheet.narration ? { ...sheet.narration, partnerLines: [] } : sheet.narration };
     expect(visibleText(renderView(without))).not.toContain(line);
   });

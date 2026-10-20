@@ -176,7 +176,8 @@ export function PartnersCard({
       (p.tileName ?? "Near the venue")
     );
 
-  const narrated = (p: Partner) => partnerLine(sheet, p.entity.entityId);
+  // Only the model's lines: the template's partner lines repeat the rank line above them.
+  const narrated = (p: Partner) => (sheet.narration?.templated ? undefined : partnerLine(sheet, p.entity.entityId));
 
   const whyCell = (p: Partner) => {
     const w = partnerWhy(p);
