@@ -1,6 +1,23 @@
 {
-  "generatedAt": "2026-10-13T08:54:44Z",
+  "generatedAt": "2026-10-20T15:42:23Z",
   "metros": {
+    "dc": {
+      "file": "dc.json",
+      "generatedAt": "2026-10-20T15:42:23Z",
+      "counts": {
+        "neighbourhoods": 2294,
+        "places": 301,
+        "zctas": 298
+      },
+      "adults21Total": 4696569,
+      "sources": {
+        "places": "ok",
+        "zctaPoints": "ok",
+        "osm": "ok",
+        "acs": "ok"
+      },
+      "errors": []
+    },
     "hampton_roads": {
       "file": "hampton_roads.json",
       "generatedAt": "2026-10-13T08:54:44Z",
