@@ -43,9 +43,19 @@ export interface UsageLike {
   iterations?: ReadonlyArray<unknown> | null;
 }
 
+/**
+ * The Anthropic model id for an OpenRouter slug ("anthropic/claude-opus-5.5" is
+ * "claude-opus-5-5"; OpenRouter bills Claude at Anthropic's list rates). Other ids
+ * pass through unchanged.
+ */
+export function canonicalModel(model: string): string {
+  if (!model.startsWith("anthropic/")) return model;
+  return model.slice("anthropic/".length).replace(/(\d)\.(\d)/g, "$1-$2");
+}
+
 export function ratesFor(model: string | null | undefined): ModelRates {
   if (!model) return MODEL_RATES[MODEL] as ModelRates;
-  return MODEL_RATES[model] ?? UNLISTED_MODEL_RATES;
+  return MODEL_RATES[canonicalModel(model)] ?? UNLISTED_MODEL_RATES;
 }
 
 function num(v: unknown): number {

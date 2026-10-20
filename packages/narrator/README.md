@@ -15,7 +15,38 @@ Every place Walkup calls Claude (`claude-opus-5-5`), and nothing else:
 
 Qloo decides; this package narrates. Scores, ranks and tiles come from `@walkup/engine` and arrive here as data.
 
+## Providers
+
+`createNarratorClient(env)` picks the route; every function above takes the result as `client`:
+
+| Keys set | Route | Client |
+|---|---|---|
+| `OPENROUTER_API_KEY` | OpenRouter, `https://openrouter.ai/api/v1/chat/completions`, model `anthropic/claude-opus-5.5` (`OPENROUTER_MODEL` overrides) | `createOpenRouterClient` (`src/openrouter.ts`) |
+| `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` (and no OpenRouter key, or `WALKUP_LLM_PROVIDER=anthropic`) | Anthropic Messages API through `@anthropic-ai/sdk` | `createAnthropicClient` |
+| neither | none: narration uses the labelled template, change notes the fixed rules | `null` |
+
+The OpenRouter client takes the same Messages API request and returns the same message shape, so the callers do not know which route ran. What carries over and what does not:
+
+| Feature | Anthropic route | OpenRouter route |
+|---|---|---|
+| Tools, `strict: true`, `tool_choice: auto`, parallel calls | yes | yes: sent as Chat Completions functions with `strict` |
+| `is_error` on a tool result | yes | no flag in Chat Completions: the result text starts with `Error: ` |
+| Structured output (`output_config.format`, per-run enums) | yes | `response_format: {type: "json_schema", strict: true}`; the answer is parsed and guarded the same way either way |
+| Effort (`low` / `medium`) | `output_config.effort` | OpenRouter's `verbosity` (`xhigh`/`max` become `high`) |
+| Thinking echoed in a tool loop | the assistant turn is sent back unchanged | `reasoning_details` from a tool-calling turn are sent back with that turn |
+| Prompt caching | `cache_control` on the system block | the same `cache_control` on the system text part; cached and written tokens are read from `prompt_tokens_details` |
+| Server-side refusal fallback (`server-side-fallback-2026-07-01`) | yes | **no**: `betas` and `fallbacks` are dropped; a refusal (`content_filter`, or Anthropic's own `refusal` when OpenRouter passes it through) goes to the template or the rules |
+| `stop_details` (refusal category) | yes | no (null) |
+| Provider routing | n/a | `provider.require_parameters: true`, so OpenRouter only routes to a host that supports every parameter sent (tools, response format) |
+| Retries | the SDK's (2, on 408/409/429/5xx) | the same policy in the client: 2 retries on 408/409/429/5xx and network errors, 1 s then 2 s |
+| Ledger | `/v1/messages`, curl with `$ANTHROPIC_API_KEY` | `/api/v1/chat/completions`, curl with `$OPENROUTER_API_KEY`, `provider: "openrouter"` in params |
+| Spend guard | Anthropic list rates | the same rates (the slug is mapped to `claude-opus-5-5` by `canonicalModel`); OpenRouter's own invoice can differ slightly |
+
+`npm run llm:check` sends three small synthetic requests through whichever route `.env` selects (a two-tool revision, a revision that needs a corrected tool call, and a schema-bound narration) and prints PASS/FAIL with the ledger. Run it after changing keys or the model slug.
+
 ## Request shape (all calls)
+
+As built by this package (the Anthropic route sends it as is; the OpenRouter route translates it as above):
 
 - `client.beta.messages.create` with `betas: ["server-side-fallback-2026-07-01"]` and `fallbacks: "default"` (server-side refusal fallback, scalar form).
 - `output_config.effort` set explicitly. No `thinking` param (thinking is always on for this model; sending `disabled` or a budget is a 400). No forced `tool_choice`, no prefill, no sampling params.
@@ -101,9 +132,11 @@ npx vitest run packages/narrator
 npx tsc -p tsconfig.json --noEmit 2>&1 | grep "packages/narrator"
 ```
 
-Tests inject a mock client (`test/helpers.ts`); nothing calls the API. Synthetic names and ids only. Covered: enums reject foreign ids and keep `enum` in the wire schema, refusal / parse failure / `max_tokens` / API error / spend cap fall back to the template, text after a fallback block, guard drops, the age-policy alcohol rule and identity-tag filter, parallel `tool_use` with `is_error` and order-independent merging, unseen place ids dropped, the 8-turn cap, re-prompt, overlap thresholds, cost math, file store (including no overwrite of a corrupt file), a failing spend store, show-query parsing, and revisions (`test/revise.test.ts`: tool schemas and enums from the sheet, the call checker, every rules phrasing and its questions, the model request shape, one turn when every call is valid, `is_error` and the fix, `ask_operator`, the re-prompt, and the rules fallback on refusal, API error and the spend cap).
+Tests inject a mock client (`test/helpers.ts`) or, for the OpenRouter route, a fake `fetch` (`test/openrouter.test.ts`); nothing calls an API. Synthetic names and ids only. Covered: enums reject foreign ids and keep `enum` in the wire schema, refusal / parse failure / `max_tokens` / API error / spend cap fall back to the template, text after a fallback block, guard drops, the age-policy alcohol rule and identity-tag filter, parallel `tool_use` with `is_error` and order-independent merging, unseen place ids dropped, the 8-turn cap, re-prompt, overlap thresholds, cost math, file store (including no overwrite of a corrupt file), a failing spend store, show-query parsing, and revisions (`test/revise.test.ts`: tool schemas and enums from the sheet, the call checker, every rules phrasing and its questions, the model request shape, one turn when every call is valid, `is_error` and the fix, `ask_operator`, the re-prompt, and the rules fallback on refusal, API error and the spend cap).
 
 ## Known limits
+
+- On the OpenRouter route there is no server-side refusal fallback and no refusal category; an `is_error` tool result is marked by its text only.
 
 - The per-run schema changes every run, so the structured-output grammar is compiled per request (some first-request latency) and the cached prefix covers the system prompt only when it reaches the model's minimum cacheable length.
 - The number guard is lexical: it catches digits, not spelled-out numbers ("three"), and it allows a run number used in the wrong context.

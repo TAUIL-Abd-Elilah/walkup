@@ -138,11 +138,11 @@ flowchart TD
   class PICK,CONFIRM,NOTE human
 ```
 
-The LLM (`claude-opus-5-5`) is called at four points only: parsing free text into a Ticketmaster query, narrating the finished sheet, the fair-control arm, and reading a change note. For a change note it sees a short summary of the sheet (areas, place types, settings; no partner names or contacts) and chooses among strict tools whose allowed values come from that sheet; it can also ask one question instead. It never ranks places: the tools only set inputs, and the plan runs again through Qloo and the same code. Without an Anthropic key, or when the call fails, fixed rules read common notes ("all ages", "no bars", "skip <area>", "only Saturday", "within 10 km") into the same tool calls, the sheet says the rules read it, and anything else gets a question. Which places, which tiles and in what order is decided by Qloo plus deterministic code. Narration is schema-constrained: each field can reference only the entity IDs and numbers returned in this run, and a validator drops anything else and shows the count.
+The LLM (`claude-opus-5-5`) is called at four points only: parsing free text into a Ticketmaster query, narrating the finished sheet, the fair-control arm, and reading a change note. For a change note it sees a short summary of the sheet (areas, place types, settings; no partner names or contacts) and chooses among strict tools whose allowed values come from that sheet; it can also ask one question instead. It never ranks places: the tools only set inputs, and the plan runs again through Qloo and the same code. Without a model key (OpenRouter or Anthropic), or when the call fails, fixed rules read common notes ("all ages", "no bars", "skip <area>", "only Saturday", "within 10 km") into the same tool calls, the sheet says the rules read it, and anything else gets a question. Which places, which tiles and in what order is decided by Qloo plus deterministic code. Narration is schema-constrained: each field can reference only the entity IDs and numbers returned in this run, and a validator drops anything else and shows the count.
 
 ### Without Qloo
 
-The **"Without Qloo"** list is the fair control, shown beside the Qloo list. On a live run with an Anthropic key it is the same model with the same system prompt and output schema, using Google Places Text Search and a Census ACS lookup as its tools. Without a model key, and in sample mode, fixed category searches ranked by Google rating stand in, and the sheet says so. The overlap is counted and the Qloo-only picks are marked. The app does not claim the control is worse; it shows where the two lists differ.
+The **"Without Qloo"** list is the fair control, shown beside the Qloo list. On a live run with a model key it is the same model with the same system prompt and output schema, using Google Places Text Search and a Census ACS lookup as its tools. Without a model key, and in sample mode, fixed category searches ranked by Google rating stand in, and the sheet says so. The overlap is counted and the Qloo-only picks are marked. The app does not claim the control is worse; it shows where the two lists differ.
 
 ## A request, end to end (redacted)
 
@@ -209,7 +209,8 @@ npm run dev                 # http://localhost:3000
 | `TICKETMASTER_API_KEY` | Event lookup, venue coordinates, age policy, venue roster | Sample mode |
 | `GOOGLE_PLACES_API_KEY` | The fair-control arm and grounding checks only | No "Without Qloo" list |
 | `CENSUS_API_KEY` | Live ACS lookups (`packages/acs`) | Adult counts come from the bundled gazetteer; the Census API redirected keyless requests to a missing-key page in October 2026, so live ACS calls need the (free) key |
-| `ANTHROPIC_API_KEY` | Narration, free-text parsing, the fair-control arm | Narration falls back to a labelled template; the fair control uses fixed searches |
+| `OPENROUTER_API_KEY` | Narration, free-text parsing, the fair-control arm and change notes, through OpenRouter (`anthropic/claude-opus-5.5`; `OPENROUTER_MODEL` overrides). Used first when set. No server-side refusal fallback on this route (see `packages/narrator/README.md`, "Providers") | Uses `ANTHROPIC_API_KEY` if set |
+| `ANTHROPIC_API_KEY` | The same calls through the Anthropic API directly (with the server-side refusal fallback). Used when no OpenRouter key is set, or when `WALKUP_LLM_PROVIDER=anthropic` | With neither key, narration falls back to a labelled template, change notes are read by fixed rules and the fair control uses fixed searches |
 | `RESEND_API_KEY`, `RESEND_FROM` | The confirm-gated send | The preview and the ledger entry are real, but nothing is sent ("demo: not sent") |
 
 Checks (the same ones CI runs):
@@ -243,7 +244,7 @@ Also:
 - **Local or national.** Podcast and brand rankings with `signal.location` may not move with location; when they don't, they are labelled "national, not local".
 - **No live sheet yet.** Every sheet today is sample data. The Oct 15 checks show which request shapes work on the live host, not that Qloo's picks beat a popularity ranking or the fair control.
 - **The fair control is a fair control, not every alternative.** It excludes Google Trends and Spotify's top cities because neither has an official API.
-- **Revisions change five settings only.** All ages, place types, areas, street-team days and radius. A note asking for anything else gets a question back. The fixed rules know a short list of phrasings; the model reads more, but only when an Anthropic key is set, and in sample mode the rules always read the note.
+- **Revisions change five settings only.** All ages, place types, areas, street-team days and radius. A note asking for anything else gets a question back. The fixed rules know a short list of phrasings; the model reads more, but only when a model key (OpenRouter or Anthropic) is set, and in sample mode the rules always read the note.
 - **Counts are what-ifs.** Seats left and capacity are operator inputs, marked as what-ifs wherever they appear. The presets carry no seats-left count. No sales data about any show is known or shown.
 
 ## Responsible by construction

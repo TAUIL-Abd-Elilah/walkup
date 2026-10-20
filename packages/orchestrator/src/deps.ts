@@ -11,7 +11,7 @@
 import { join, resolve } from "node:path";
 import { createMemoryLedger, type LedgerSink } from "@walkup/contracts";
 import { createAcsClient } from "@walkup/acs";
-import { createAnthropicClient, createFileSpendStore, createMemorySpendStore, SpendGuard, type NarratorClient } from "@walkup/narrator";
+import { createNarratorClient, createFileSpendStore, createMemorySpendStore, SpendGuard, type NarratorClient } from "@walkup/narrator";
 import { createMemoryCacheStore as createPlacesCache, createMemoryCounterStore as createPlacesCounter, createPlacesClient } from "@walkup/places";
 import {
   createMemoryFixtureStore,
@@ -110,7 +110,8 @@ export function liveKeysPresent(env: Record<string, string | undefined> = proces
 
 export function createDepsFromEnv(env: Record<string, string | undefined> = process.env, o: EnvDepsOptions = {}): PlanDeps & { world?: World } {
   const dataDir = resolve(/*turbopackIgnore: true*/ env.WALKUP_DATA_DIR ?? ".cache");
-  const narratorClient = createAnthropicClient(env as NodeJS.ProcessEnv);
+  // OpenRouter when OPENROUTER_API_KEY is set, else Anthropic, else null (template and rules).
+  const narratorClient = createNarratorClient(env as NodeJS.ProcessEnv);
   const spend = new SpendGuard({ store: createFileSpendStore(join(/*turbopackIgnore: true*/ dataDir, "anthropic-spend.json")) });
   if (!liveKeysPresent(env)) {
     return createFixtureDeps({

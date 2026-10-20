@@ -60,7 +60,7 @@ At `/mcp` the web app plugs in its own persistent per-IP limiter, so REST and MC
 - Tools refuse inputs that contain an email address, and political campaign events.
 - Partners are "suggested, not affiliated", and every rank result says so.
 - Seat counts are what-ifs.
-- Every result is scrubbed for the values of `QLOO_API_KEY`, `TICKETMASTER_API_KEY`, `GOOGLE_PLACES_API_KEY`, `CENSUS_API_KEY`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY` and `WALKUP_SIGNING_SECRET`. These are replaced by `$NAME`, as in the ledger's copy-as-curl, so no key leaves the server even if a dependency echoes one.
+- Every result is scrubbed for the values of `QLOO_API_KEY`, `TICKETMASTER_API_KEY`, `GOOGLE_PLACES_API_KEY`, `CENSUS_API_KEY`, `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `OPENROUTER_API_KEY`, `RESEND_API_KEY` and `WALKUP_SIGNING_SECRET`. These are replaced by `$NAME`, as in the ledger's copy-as-curl, so no key leaves the server even if a dependency echoes one.
 
 ## Transports
 
@@ -124,7 +124,7 @@ claude mcp add walkup -e WALKUP_DATA_DIR=/abs/path/walkup/.cache -- \
 }
 ```
 
-Add `QLOO_API_KEY` and `TICKETMASTER_API_KEY` (and optionally `GOOGLE_PLACES_API_KEY`, `ANTHROPIC_API_KEY`, `CENSUS_API_KEY`) to `env` only for a server on your own keys; they never leave that process. On Windows, use paths such as `C:/path/walkup/...`.
+Add `QLOO_API_KEY` and `TICKETMASTER_API_KEY` (and optionally `GOOGLE_PLACES_API_KEY`, `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY`, `CENSUS_API_KEY`) to `env` only for a server on your own keys; they never leave that process. On Windows, use paths such as `C:/path/walkup/...`.
 
 **OpenClaw**:
 

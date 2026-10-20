@@ -69,7 +69,7 @@ fly volumes create walkup_data --region iad --size 1 --snapshot-retention 14 --y
   TICKETMASTER_API_KEY=... \
   GOOGLE_PLACES_API_KEY=... \
   CENSUS_API_KEY=... \
-  ANTHROPIC_API_KEY=... \
+  OPENROUTER_API_KEY=... \
   RESEND_API_KEY=... \
   RESEND_FROM='Walkup <street-sheets@your-verified-domain.example>' \
   WALKUP_SIGNING_SECRET="$(openssl rand -hex 32)" \
@@ -113,7 +113,8 @@ The web app reads the mode per request.
 | `TICKETMASTER_API_KEY` | secret | |
 | `GOOGLE_PLACES_API_KEY` | secret | Also set a 300 requests/day quota on the Google Cloud project. |
 | `CENSUS_API_KEY` | secret | Optional: the gazetteer already carries adult counts. |
-| `ANTHROPIC_API_KEY` | secret | Without it, narration uses the labelled template. |
+| `OPENROUTER_API_KEY` | secret | Claude through OpenRouter (narration, change notes, arm F). `OPENROUTER_MODEL` (plain env) overrides the slug `anthropic/claude-opus-5.5`. |
+| `ANTHROPIC_API_KEY` | secret | Optional instead of the OpenRouter key: Claude directly, with the server-side refusal fallback. With neither key, narration uses the labelled template and change notes the fixed rules. |
 | `RESEND_API_KEY` | secret | |
 | `RESEND_FROM` | secret | A sender on a domain verified in Resend. Not sensitive, but set per deployment. |
 | `WALKUP_DATA_DIR` | `fly.toml` `[env]` and the image | `/data` (the volume). |
@@ -185,7 +186,7 @@ restarts, especially during PDF exports, and go back to 2 GB if they appear.
 |---|---|---|
 | Fly | about $15/month | Configuration: one machine of a fixed size, no autoscaling. |
 | Qloo | stop fresh calls below 1,500 left this month; fresh runs capped per IP and per day | `QLOO_MONTH_GUARD_FLOOR` in `packages/qloo`; the per-IP and daily caps in the web app. Cached answers are still served. |
-| Anthropic | $5/day | The narrator's spend guard; the spend file lives on the volume. Above the cap narration uses the labelled template. |
+| Claude (OpenRouter or Anthropic) | $5/day | The narrator's spend guard; the spend file lives on the volume. Above the cap narration uses the labelled template. |
 | Google Places | 300 requests/day | The client's daily cap, plus a quota on the Google Cloud project as a backstop. |
 | Resend | free tier, 100/day; 10 confirmed sends per requester per day | Resend's plan; `WALKUP_SEND_DAILY_CAP` in `packages/send`. Every send needs a human confirm in the app. |
 

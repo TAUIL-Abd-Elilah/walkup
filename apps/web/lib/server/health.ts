@@ -37,6 +37,9 @@ export const PROBE_URLS: Record<Service, string> = {
   anthropic: "https://api.anthropic.com/",
 };
 
+/** The LLM probe follows the configured route (OpenRouter or Anthropic). */
+export const OPENROUTER_PROBE_URL = "https://openrouter.ai/api/v1/";
+
 const KIND_TO_SERVICE: Partial<Record<LedgerEntry["kind"], Service>> = { qloo: "qloo", tm: "ticketmaster", places: "places", anthropic: "anthropic" };
 
 interface HealthState {
@@ -98,14 +101,19 @@ async function probeOne(url: string, fetchImpl: typeof fetch): Promise<ProbeResu
 }
 
 /** Starts a background probe round when the last one is stale. Never awaits on the request path. */
-export function refreshProbes(services: Service[], fetchImpl: typeof fetch = fetch, now: number = Date.now()): Promise<void> | null {
+export function refreshProbes(
+  services: Service[],
+  fetchImpl: typeof fetch = fetch,
+  now: number = Date.now(),
+  urls: Record<Service, string> = PROBE_URLS,
+): Promise<void> | null {
   const s = hs();
   if (s.probing || now - s.probedAt < PROBE_TTL_MS) return null;
   s.probing = true;
   s.probedAt = now;
   return (async () => {
     try {
-      const results = await Promise.all(services.map(async (svc) => [svc, await probeOne(PROBE_URLS[svc], fetchImpl)] as const));
+      const results = await Promise.all(services.map(async (svc) => [svc, await probeOne(urls[svc], fetchImpl)] as const));
       for (const [svc, r] of results) s.probes[svc] = r;
     } finally {
       s.probing = false;

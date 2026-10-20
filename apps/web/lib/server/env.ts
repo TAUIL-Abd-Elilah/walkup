@@ -7,6 +7,7 @@
  */
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { llmProvider } from "@walkup/narrator";
 
 export type Env = Record<string, string | undefined>;
 
@@ -53,6 +54,9 @@ export function keyPresence(env: Env = process.env) {
     ticketmaster: has(env, "TICKETMASTER_API_KEY"),
     places: has(env, "GOOGLE_PLACES_API_KEY"),
     anthropic: has(env, "ANTHROPIC_API_KEY") || has(env, "ANTHROPIC_AUTH_TOKEN"),
+    openrouter: has(env, "OPENROUTER_API_KEY"),
+    /** The route narration and revisions take: OpenRouter, Anthropic, or none (template and rules). */
+    llm: llmProvider(env as NodeJS.ProcessEnv),
     resend: has(env, "RESEND_API_KEY") && has(env, "RESEND_FROM"),
     census: has(env, "CENSUS_API_KEY"),
     signingSecret: (env.WALKUP_SIGNING_SECRET ?? "").length >= 32,

@@ -124,7 +124,8 @@ export default function SystemCardPage() {
         <Section id="models" title="Models and versions">
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <strong>Claude</strong> <span className="font-semibold">claude-opus-5-5</span>, through the Anthropic Messages API.
+              <strong>Claude</strong> <span className="font-semibold">claude-opus-5-5</span>, through OpenRouter when that key is set (no server-side refusal fallback on that route),
+              otherwise through the Anthropic Messages API.
             </li>
             <li>
               Narration: effort <span className="font-semibold">low</span>, structured output against a JSON schema built per run. It may cite only entity ids and
@@ -141,7 +142,7 @@ export default function SystemCardPage() {
               requests whose inputs didn&apos;t change come from the cache.
             </li>
             <li>
-              Without an Anthropic key, or when the model call fails, fixed rules read common notes (&ldquo;all ages&rdquo;, &ldquo;no bars&rdquo;,
+              Without a model key, or when the model call fails, fixed rules read common notes (&ldquo;all ages&rdquo;, &ldquo;no bars&rdquo;,
               &ldquo;skip an area&rdquo;, &ldquo;only Saturday&rdquo;, &ldquo;within 10 km&rdquo;) into the same tools, and the revised sheet says the rules
               read it. A note they can&apos;t read gets a question and no change.
             </li>
@@ -311,7 +312,7 @@ export default function SystemCardPage() {
         <Section id="costs" title="Cost caps">
           <ul className="list-disc space-y-1.5 pl-5">
             <li>Qloo: fresh runs stop when the monthly quota falls to 1,500; presets are served from cache. Fresh runs are capped at 3 per connection and 15 per day in total.</li>
-            <li>Anthropic: a daily spend cap; above it, narration uses the labelled template and change notes are read by the fixed rules.</li>
+            <li>Claude (OpenRouter or Anthropic): a daily spend cap; above it, narration uses the labelled template and change notes are read by the fixed rules.</li>
             <li>
               Revisions: on a live server a revision that runs again counts as a fresh run (same caps), and at most 12 per connection per hour; 30 per hour
               in sample mode.

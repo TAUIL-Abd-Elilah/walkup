@@ -6,7 +6,7 @@ import { FIXTURE_FRESH_RUNS_REASON } from "../api";
 import { runtimeMode } from "../mode";
 import { depsFor, stores } from "./engine";
 import { keyPresence } from "./env";
-import { lastCalls, probes, refreshProbes, type Service } from "./health";
+import { lastCalls, OPENROUTER_PROBE_URL, probes, PROBE_URLS, refreshProbes, type Service } from "./health";
 import type { RequestContext } from "./http";
 import { cleanText } from "./input";
 import { freshRuns, rateLimit } from "./limits";
@@ -78,8 +78,9 @@ export function health(): ServiceResponse {
   const services: Service[] = ["qloo", "ticketmaster", "places", "anthropic"];
   let quota: { remaining: number | null; limit: number | null; floor: number; guardTripped: boolean } | null = null;
   if (mode.kind === "live") {
-    const wanted = services.filter((s) => (s === "qloo" ? keys.qloo : s === "ticketmaster" ? keys.ticketmaster : s === "places" ? keys.places : keys.anthropic));
-    void refreshProbes(wanted);
+    const wanted = services.filter((s) => (s === "qloo" ? keys.qloo : s === "ticketmaster" ? keys.ticketmaster : s === "places" ? keys.places : keys.llm !== null));
+    const urls = keys.llm === "openrouter" ? { ...PROBE_URLS, anthropic: OPENROUTER_PROBE_URL } : PROBE_URLS;
+    void refreshProbes(wanted, fetch, Date.now(), urls);
     try {
       const deps = depsFor("live");
       const q = deps.qloo.quota();

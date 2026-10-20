@@ -26,6 +26,9 @@ export type {
 
 export {
   createAnthropicClient,
+  createNarratorClient,
+  llmProvider,
+  type LlmProvider,
   finalText,
   servedByFallback,
   type NarratorClient,
@@ -37,6 +40,7 @@ export {
   createMemorySpendStore,
   estimateCostUsd,
   ratesFor,
+  canonicalModel,
   DEFAULT_DAILY_CAP_USD,
   MODEL_RATES,
   UNLISTED_MODEL_RATES,
@@ -45,6 +49,19 @@ export {
   type SpendStore,
   type UsageLike,
 } from "./spend";
+
+export {
+  createOpenRouterClient,
+  toChatRequest,
+  fromChatResponse,
+  stopReasonOf,
+  OpenRouterError,
+  type OpenRouterClient,
+  type OpenRouterOptions,
+  type ChatRequest,
+  type ChatResponse,
+} from "./openrouter";
+export { OPENROUTER_MODEL, OPENROUTER_BASE_URL } from "./constants";
 
 export { prepareRun, renderFactsMessage, type PreparedRun, type RunIds, type AllowTag } from "./facts";
 export { buildNarrationSchema, toDraft, type NarrationDraft, type NarrationWire } from "./schema";

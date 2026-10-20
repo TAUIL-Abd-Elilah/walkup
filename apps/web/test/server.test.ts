@@ -30,7 +30,7 @@ import { loadPlan, planSnapshot, resolvePlan, startPlan } from "../lib/server/se
 import { planEventStream, staticFrames } from "../lib/server/stream";
 import { addPartnerHouseRanks, continueLedger, houseSignalOf, TWIN_CHIP_PREFIX, twinChipLabel } from "../lib/server/twin";
 
-const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE"];
+const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "GOOGLE_PLACES_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE"];
 const saved: Record<string, string | undefined> = {};
 let dir = "";
 

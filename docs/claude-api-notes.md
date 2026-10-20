@@ -26,3 +26,7 @@ for (const block of response.content) {
 }
 ```
 Parallel tool calls: return every `tool_result` in a single user message; on tool failure send `is_error: true`, never drop it.
+
+## OpenRouter route (Oct 20 2026)
+
+When `OPENROUTER_API_KEY` is set, `createNarratorClient` returns `createOpenRouterClient` (`packages/narrator/src/openrouter.ts`) instead of the SDK. It posts to `https://openrouter.ai/api/v1/chat/completions` with model `anthropic/claude-opus-5.5` and translates the Messages request: system blocks (with `cache_control`), turns, strict function tools, `tool_choice: "auto"`, `response_format: json_schema` from `output_config.format`, `verbosity` from `output_config.effort`, `provider.require_parameters: true`. Tool results become `tool` messages (`is_error` as an `Error: ` prefix). `betas` / `fallbacks` are not sent: the server-side refusal fallback exists only on the Anthropic route. The feature table is in `packages/narrator/README.md` ("Providers"); `npm run llm:check` checks tools, the is_error loop and structured output live.

@@ -5,6 +5,8 @@
  * server-side refusal fallback (`fallbacks: "default"` + the
  * `server-side-fallback-2026-07-01` beta) is only typed on the beta surface.
  * The client is injected so tests run against a mock and never reach the API.
+ * With OPENROUTER_API_KEY set, the client is the OpenRouter transport
+ * (`./openrouter`), which takes the same request and returns the same shape.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import type {
@@ -15,6 +17,7 @@ import type {
 } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import type { LedgerEntry, LedgerSink } from "@walkup/contracts";
 import { ANTHROPIC_CURL, ANTHROPIC_ENDPOINT, MODEL } from "./constants";
+import { createOpenRouterClient, OpenRouterError } from "./openrouter";
 import { estimateCostUsd, type SpendGuard } from "./spend";
 import type { CallUsage } from "./types";
 
@@ -28,6 +31,43 @@ export interface NarratorClient {
       ): PromiseLike<BetaMessage>;
     };
   };
+  /** Set by non-Anthropic transports so ledger entries name the real route, model and endpoint. */
+  readonly provider?: LlmProvider;
+  readonly model?: string;
+  readonly ledgerEndpoint?: string;
+  readonly ledgerCurl?: string;
+}
+
+export type LlmProvider = "openrouter" | "anthropic";
+
+/**
+ * Which transport the environment selects: OpenRouter when OPENROUTER_API_KEY is
+ * set, else Anthropic when ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN is set, else
+ * none. WALKUP_LLM_PROVIDER=anthropic prefers Anthropic when both keys are set.
+ */
+export function llmProvider(env: NodeJS.ProcessEnv = process.env): LlmProvider | null {
+  const or = Boolean(env["OPENROUTER_API_KEY"]?.trim());
+  const an = Boolean(env["ANTHROPIC_API_KEY"]?.trim() || env["ANTHROPIC_AUTH_TOKEN"]?.trim());
+  if (or && an && env["WALKUP_LLM_PROVIDER"]?.trim().toLowerCase() === "anthropic") return "anthropic";
+  if (or) return "openrouter";
+  return an ? "anthropic" : null;
+}
+
+/**
+ * The narrator's client for this environment (see llmProvider), or null when no
+ * key is set: callers then answer from the template or the rules.
+ */
+export function createNarratorClient(env: NodeJS.ProcessEnv = process.env): NarratorClient | null {
+  const provider = llmProvider(env);
+  if (provider === "openrouter") {
+    return createOpenRouterClient({
+      apiKey: (env["OPENROUTER_API_KEY"] as string).trim(),
+      ...(env["OPENROUTER_MODEL"]?.trim() ? { model: env["OPENROUTER_MODEL"].trim() } : {}),
+      appTitle: "Walkup",
+      ...(env["WALKUP_PUBLIC_URL"]?.trim() ? { appUrl: env["WALKUP_PUBLIC_URL"].trim() } : {}),
+    });
+  }
+  return provider === "anthropic" ? createAnthropicClient(env) : null;
 }
 
 /**
@@ -70,6 +110,7 @@ function describeError(err: unknown): { error: string; status: number | null } {
   if (err instanceof Anthropic.BadRequestError) return { error: `bad request: ${err.message}`, status: 400 };
   if (err instanceof Anthropic.AuthenticationError) return { error: "authentication failed", status: 401 };
   if (err instanceof Anthropic.RateLimitError) return { error: "rate limited", status: 429 };
+  if (err instanceof OpenRouterError) return { error: err.message, status: err.status };
   if (err instanceof Anthropic.APIError) {
     const status = typeof err.status === "number" ? err.status : null;
     return { error: `api error${status ? ` ${status}` : ""}: ${err.message}`, status };
@@ -77,7 +118,19 @@ function describeError(err: unknown): { error: string; status: number | null } {
   return { error: err instanceof Error ? err.message : String(err), status: null };
 }
 
-function ledgerParams(params: MessageCreateParamsNonStreaming): Record<string, string | number | boolean | string[] | null> {
+function ledgerParams(params: MessageCreateParamsNonStreaming, client: NarratorClient): Record<string, string | number | boolean | string[] | null> {
+  // OpenRouter drops the fallback beta (see ./openrouter); the ledger records what was sent.
+  if (client.provider === "openrouter") {
+    return {
+      model: client.model ?? params.model,
+      provider: "openrouter",
+      effort: params.output_config?.effort ?? null,
+      max_tokens: params.max_tokens,
+      format: params.output_config?.format ? "json_schema" : null,
+      tools: (params.tools ?? []).map((t) => ("name" in t ? String(t.name) : "tool")),
+      messages: params.messages.length,
+    };
+  }
   return {
     model: params.model,
     effort: params.output_config?.effort ?? null,
@@ -104,15 +157,15 @@ export async function callModel(ctx: CallContext, params: MessageCreateParamsNon
       ledgerRef = safeLedgerAdd(ctx.ledger, {
         kind: "anthropic",
         method: "POST",
-        endpoint: ANTHROPIC_ENDPOINT,
-        params: ledgerParams(params),
+        endpoint: ctx.client.ledgerEndpoint ?? ANTHROPIC_ENDPOINT,
+        params: ledgerParams(params, ctx.client),
         httpStatus: status,
         envelopeStatus: "error",
         latencyMs: Date.now() - t0,
         bytes: 0,
         cacheHit: false,
         resultCount: 0,
-        curl: ANTHROPIC_CURL,
+        curl: ctx.client.ledgerCurl ?? ANTHROPIC_CURL,
         startedAt,
         note: `${ctx.purpose}; ${error}`,
       });
@@ -137,15 +190,15 @@ export async function callModel(ctx: CallContext, params: MessageCreateParamsNon
     ledgerRef = safeLedgerAdd(ctx.ledger, {
       kind: "anthropic",
       method: "POST",
-      endpoint: ANTHROPIC_ENDPOINT,
-      params: ledgerParams(params),
+      endpoint: ctx.client.ledgerEndpoint ?? ANTHROPIC_ENDPOINT,
+      params: ledgerParams(params, ctx.client),
       httpStatus: 200,
       envelopeStatus: degraded ? "degraded" : "ok",
       latencyMs,
       bytes: safeLength(message),
       cacheHit: (message.usage.cache_read_input_tokens ?? 0) > 0,
       resultCount: message.content.filter((b) => b.type === "text" || b.type === "tool_use").length,
-      curl: ANTHROPIC_CURL,
+      curl: ctx.client.ledgerCurl ?? ANTHROPIC_CURL,
       startedAt,
       note:
         `${ctx.purpose}; stop_reason=${message.stop_reason ?? "null"}; est $${costUsd.toFixed(4)}` +

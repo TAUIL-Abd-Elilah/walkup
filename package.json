@@ -14,6 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "probe": "tsx scripts/probe.ts",
+    "llm:check": "tsx scripts/llm-check.ts",
     "dev": "npm run dev -w @walkup/web",
     "check:no-raw": "node scripts/check-no-raw.mjs",
     "eval:product": "tsx evals/product/run.ts",

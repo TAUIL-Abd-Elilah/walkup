@@ -33,3 +33,15 @@ export const ANTHROPIC_CURL =
   'curl https://api.anthropic.com/v1/messages -H "x-api-key: $ANTHROPIC_API_KEY" ' +
   '-H "anthropic-version: 2023-06-01" -H "anthropic-beta: server-side-fallback-2026-07-01" ' +
   '-H "content-type: application/json" -d @request.json';
+
+/**
+ * OpenRouter (used when OPENROUTER_API_KEY is set): the Chat Completions endpoint
+ * and the slug of the same Claude model. OPENROUTER_MODEL overrides the slug.
+ */
+export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+export const OPENROUTER_MODEL = "anthropic/claude-opus-5.5";
+export const OPENROUTER_ENDPOINT = "/api/v1/chat/completions";
+export const OPENROUTER_TIMEOUT_MS = 120_000;
+export const OPENROUTER_CURL =
+  'curl https://openrouter.ai/api/v1/chat/completions -H "Authorization: Bearer $OPENROUTER_API_KEY" ' +
+  '-H "content-type: application/json" -d @request.json';
