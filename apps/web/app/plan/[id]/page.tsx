@@ -42,12 +42,15 @@ function isPauseLine(line: string | null): boolean {
   return line !== null && /\bpick\b/i.test(line);
 }
 
-async function pairedFor(planId: string | undefined): Promise<{ planId: string; headliner: string; date: string } | null> {
+/**
+ * The other bill in the same room. A preset id is resolved the way its own page is (the stored live run when there
+ * is one), and a live sheet never names a sample bill as its pair.
+ */
+async function pairedFor(planId: string | undefined, live: boolean): Promise<{ planId: string; headliner: string; date: string } | null> {
   if (!planId) return null;
-  const fx = getPlan(planId);
-  if (fx) return { planId, headliner: headlinerName(fx.sheet.bill), date: fx.sheet.bill.date };
   const v = await loadPlan(planId, { view: "api" });
-  return v?.kind === "sheet" ? { planId, headliner: headlinerName(v.sheet.bill), date: v.sheet.bill.date } : null;
+  if (v?.kind !== "sheet" || (live && v.sheet.mode !== "live")) return null;
+  return { planId, headliner: headlinerName(v.sheet.bill), date: v.sheet.bill.date };
 }
 
 export default async function PlanPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -82,7 +85,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   const presetId = v.presetId ?? (v.source === "preset" ? id : undefined);
   const preset = presetId ? presetForPlan(presetId, v.sheet.mode, v.sheet.bill) : undefined;
   const presetText = preset ? presetLine(preset, v.sheet.operator.seatsLeft) : null;
-  const paired = await pairedFor(v.sheet.pairedPlanId ?? (v.source === "preset" ? getPlan(id)?.pairedWith : undefined));
+  const paired = await pairedFor(v.sheet.pairedPlanId ?? (v.source === "preset" ? getPlan(id)?.pairedWith : undefined), v.sheet.mode === "live");
   return (
     <PlanView
       payload={{ sheet: v.sheet, note: v.note, source: v.source, ...(presetId ? { presetId } : {}) }}
