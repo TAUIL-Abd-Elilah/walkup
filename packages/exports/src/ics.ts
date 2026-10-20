@@ -121,7 +121,7 @@ export function foldLine(line: string, limit = 75): string {
 
 function parseHm(hm: string | undefined, fallback: number): number {
   if (!hm) return fallback;
-  const m = /^(\d{1,2}):(\d{2})$/.exec(hm.trim());
+  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(hm.trim());
   if (!m) return fallback;
   const h = Number(m[1]);
   const mi = Number(m[2]);

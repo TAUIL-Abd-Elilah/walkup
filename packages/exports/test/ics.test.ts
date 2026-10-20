@@ -217,6 +217,8 @@ describe("toIcs", () => {
     const timed = events(toIcs(sheet, { showStartTime: "22:30", showMinutes: 120 })).at(-1)!;
     expect(timed).toContain("DTSTART:20261120T223000");
     expect(timed).toContain("DTEND:20261121T003000");
+    // Ticketmaster's localTime carries seconds.
+    expect(events(toIcs(sheet, { showStartTime: "22:30:00", showMinutes: 120 })).at(-1)!).toContain("DTSTART:20261120T223000");
     expect(events(toIcs(sheet, { includeShow: false }))).toHaveLength(5);
   });
 

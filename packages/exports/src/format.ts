@@ -84,7 +84,8 @@ function clock12(hh: number, mm: number): string {
  * anything else passes through unchanged.
  */
 export function formatHours(s: string): string {
-  return s.replace(/\b(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})\b/g, (_m, h1: string, m1: string, h2: string, m2: string) => `${clock12(Number(h1), Number(m1))} to ${clock12(Number(h2), Number(m2))}`);
+  // Live Qloo hours carry seconds ("17:00:00-00:00:00"); they are dropped.
+  return s.replace(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*[-–]\s*(\d{1,2}):(\d{2})(?::\d{2})?\b/g, (_m, h1: string, m1: string, h2: string, m2: string) => `${clock12(Number(h1), Number(m1))} to ${clock12(Number(h2), Number(m2))}`);
 }
 
 /**

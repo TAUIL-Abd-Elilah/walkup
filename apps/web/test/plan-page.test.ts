@@ -140,6 +140,12 @@ function renderView(sheet: StreetSheet, extra: Partial<Parameters<typeof PlanVie
 describe("plan page helpers", () => {
   const sheet = extended("g1-a");
 
+  it("reads opening hours with or without seconds", () => {
+    expect(utils.formatHours("16:00-02:00")).toBe("4 pm to 2 am");
+    expect(utils.formatHours("06:00:00-11:00:00")).toBe("6 am to 11 am");
+    expect(utils.formatHours("17:00:00-00:00:00")).toBe("5 pm to midnight");
+  });
+
   it("links the discovery callout to a row or tile on this sheet, and to nothing that is not there", () => {
     const d = sheet.discovery as SheetDiscovery;
     expect(model.discoveryTarget(sheet, d)?.href).toBe(`#${model.partnerAnchor(d.entityId!)}`);

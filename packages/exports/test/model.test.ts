@@ -380,6 +380,9 @@ describe("footer", () => {
     expect(receiptGroup(["Q1", "Q3", "Q5", "Q7", "Q9"])).toBe("Q1, Q3, Q5 +2");
     expect(formatHours("16:00-02:00")).toBe("4 pm to 2 am");
     expect(formatHours("07:30-12:00, 17:00-00:00")).toBe("7:30 am to noon, 5 pm to midnight");
+    // Live Qloo hours carry seconds.
+    expect(formatHours("17:00:00-00:00:00")).toBe("5 pm to midnight");
+    expect(formatHours("Thu 06:00:00-11:00:00")).toBe("Thu 6 am to 11 am");
   });
 
   it("attributes every data source", () => {
