@@ -336,3 +336,61 @@ describe("check notes", () => {
     expect(utils.guardNoteText("tileWhy[4]: number 1.7 is not in this run")).toBe("Claude's line for area 5 was left out: it had a number (1.7) that isn't from this run.");
   });
 });
+
+describe("with Qloo and without", () => {
+  /** A live copy of a sheet whose first partner area stores its popularity-only names; `also` of them are picks. */
+  function withNames(also: number): StreetSheet {
+    const s = withPopularity(fixture("g1-a"));
+    s.mode = "live";
+    const area = s.popularityCheck!.perArea[0]!;
+    const picks = s.cards.partners.results.filter((p) => p.tileGeohash === area.tileGeohash);
+    area.popularTop = Array.from({ length: area.partners }, (_, i) =>
+      i < also ? { entityId: picks[i]!.entity.entityId, name: picks[i]!.entity.name, rank: i + 1, onSheet: true } : { entityId: `pop-${i}`, name: `Popular Place ${i + 1}`, rank: i + 1, onSheet: false },
+    );
+    area.notInPopularTop = area.partners - also;
+    return s;
+  }
+
+  it("states the measured fact as the headline", () => {
+    expect(utils.withWithoutHeadline("Laurel, MD", 8, 0)).toBe("None of the 8 most popular places in Laurel, MD made Walkup's list");
+    expect(utils.withWithoutHeadline("Downtown Nashville, TN", 8, 1)).toBe("Only 1 of the 8 most popular places in Downtown Nashville, TN made Walkup's list");
+    expect(utils.withWithoutHeadline("H Street NE, DC", 7, 5)).toBe("5 of the 7 most popular places in H Street NE, DC made Walkup's list");
+    expect(utils.withWithoutHeadline("near the room", 8, 2)).toBe("Only 2 of the 8 most popular places near the room made Walkup's list");
+    expect(utils.withWithoutHeadline("X", 3, 3)).toBe("All 3 of the most popular places in X are also on Walkup's list");
+    expect(utils.withWithoutHeadline("X", 1, 0)).toBe("The most popular place in X didn't make Walkup's list");
+  });
+
+  it("reads both lists from the sheet: names and ranks, the overlap counted from onSheet", () => {
+    const s = withNames(1);
+    const w = utils.withWithout(s)!;
+    const area = s.popularityCheck!.perArea[0]!;
+    expect(w.k).toBe(area.partners);
+    expect(w.overlap).toBe(1);
+    expect(w.popular.map((p) => p.rank)).toEqual(Array.from({ length: area.partners }, (_, i) => i + 1));
+    expect(w.picks.map((p) => p.billRank)).toEqual([...w.picks.map((p) => p.billRank)].sort((a, b) => a - b));
+    expect(w.popularRef).toBe(area.ledgerRef);
+    expect(w.pickRefs).not.toContain(area.ledgerRef);
+    expect(w.headline).toBe(utils.withWithoutHeadline(w.area, w.k, 1));
+    expect(utils.pickRanksLine({ billRank: 3, houseRank: 25 })).toBe("3rd for this crowd · 25th for the room's usual crowd");
+    expect(utils.pickRanksLine({ billRank: 2, houseRank: null })).toBe("2nd for this crowd · not ranked for the room's usual crowd");
+  });
+
+  it("is absent without stored names or without the check", () => {
+    const s = withPopularity(fixture("g1-a"));
+    expect(utils.withWithout(s)).toBeNull();
+    const none = withNames(0);
+    delete none.popularityCheck;
+    expect(utils.withWithout(none)).toBeNull();
+  });
+
+  it("shows on a live sheet's partner card with plain labels, and not on a sample", () => {
+    const html = renderView(withNames(0));
+    expect(html).toContain('data-testid="with-without"');
+    expect(html).toContain("Most popular here, any crowd");
+    expect(html).toContain("Picked for this show&#x27;s fans");
+    expect(visibleText(html)).toMatch(/None of the \d+ most popular places in .+ made Walkup.s list/);
+    const sample = withNames(0);
+    sample.mode = "fixture";
+    expect(renderView(sample)).not.toContain('data-testid="with-without"');
+  });
+});

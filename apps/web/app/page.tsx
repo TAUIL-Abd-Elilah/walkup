@@ -2,11 +2,12 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import type { StreetSheet } from "@walkup/contracts";
 import { HeroSplit, type HeroSide } from "@/components/HeroSplit";
+import { WithWithout } from "@/components/WithWithout";
 import { ShowSearch } from "@/components/ShowSearch";
-import { actsLine, formatShowDate, headlinerName } from "@/lib/format";
+import { actsLine, formatShowDate, headlinerName, joinAnd } from "@/lib/format";
 import { genreLabel } from "@/lib/labels";
 import { runtimeMode } from "@/lib/mode";
-import { PRESET_PLAN_IDS } from "@/lib/plans";
+import { ALL_PRESET_IDS } from "@/lib/plans";
 import { clientIp } from "@/lib/server/http";
 import { freshRuns } from "@/lib/server/limits";
 import { freshRunsBody, loadPlan, presetPausedInRecording, presetSheet } from "@/lib/server/service";
@@ -17,13 +18,14 @@ import {
   baselineName,
   compareBills,
   comparisonSentence,
+  areaName,
   missedPick,
   missedPickLine,
-  ordinal,
-  popularityAreas,
+  popularityLine,
   recordedSheetsSection,
   topTiles,
-  type PopularityArea,
+  withWithout,
+  type WithWithoutArea,
 } from "@/lib/sheet-utils";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +33,9 @@ export const dynamic = "force-dynamic";
 /** The worked example opens on this preset and the bill it is paired with. */
 const HERO_PLAN_ID = "g1-a";
 const HERO_PAIR_FALLBACK = "g1-b";
+/** The second example: another room, the same rule. */
+const SECOND_PLAN_ID = "g4-a";
+const SECOND_PAIR_FALLBACK = "g4-b";
 
 async function sheetFor(id: string): Promise<StreetSheet | null> {
   const v = await loadPlan(id, { view: "api" });
@@ -58,102 +63,78 @@ function side(s: StreetSheet, fallbackLabel: string, revisions: readonly PlanRev
   };
 }
 
-/**
- * One area side by side: Walkup's picks there with their rank for this crowd and for the room's usual crowd, against
- * Qloo's popularity-only search of the same area (no bill as the signal). Shown for an area where none of the picks
- * is in the popularity list's top, so every row can say "No".
- */
-function PopularityUpClose({ area, planId }: { area: PopularityArea; planId: string }) {
-  const intro = (
-    <p className="mt-1 text-sm text-muted">
-      Qloo ran the same place search for this area twice: once with this bill as the signal, once with no signal, which returns places in
-      popularity order. The popularity-only top {area.k} has none of Walkup&apos;s {area.picks.length} picks here.{" "}
-      <Link href={`/plan/${planId}#receipt-${area.popularRef}`} className="link">
-        Popularity-only search ({area.popularRef})
-      </Link>
-    </p>
+/** The receipts behind one area's two lists, as footnote links into the sheet's receipts. */
+function AreaRefs({ data, planId }: { data: WithWithoutArea; planId: string }) {
+  const ids = [data.popularRef, ...data.pickRefs];
+  return (
+    <sup className="fn">
+      {ids.map((r, i) => (
+        <span key={r}>
+          {i > 0 ? ", " : ""}
+          <Link href={`/plan/${planId}#receipt-${r}`} aria-label={`Receipt ${r}`}>
+            {r}
+          </Link>
+        </span>
+      ))}
+    </sup>
   );
-  // With the names stored on the sheet (`popularTop`): the two lists side by side, row by row.
-  if (area.popular) {
-    const popular = area.popular;
-    const n = Math.max(popular.length, area.picks.length);
+}
+
+/** The second room, compact: each bill's top areas in words, its partners and the popularity count, with links. */
+function SecondExample({ a, b, revisions }: { a: StreetSheet; b: StreetSheet; revisions: Record<string, readonly PlanRevisionLink[]> }) {
+  const cmp = compareBills(a, b);
+  const names = { a: headlinerName(a.bill), b: headlinerName(b.bill), venue: a.bill.venue.name };
+  const bill = (s: StreetSheet, letter: "A" | "B") => {
+    const headliner = headlinerName(s.bill);
+    const support = s.bill.acts.map((x) => x.name).filter((n) => n !== headliner);
+    const top = topTiles(s);
+    const pc = s.popularityCheck;
+    const near = pc?.perArea.length === 1 && pc.perArea[0]?.tileGeohash === null;
+    const n = s.cards.partners.results.length;
     return (
-      <div className="mt-8 max-w-[760px]" data-testid="popularity-up-close">
-        <h3 className="text-base">Popularity alone against Walkup&apos;s picks, in {area.area}</h3>
-        {intro}
-        <table className="table mt-2">
-          <caption className="sr-only">
-            The {area.k} most popular places in {area.area} by popularity alone, beside Walkup&apos;s picks there with their rank for this crowd
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col" className="num w-8">
-                #
-              </th>
-              <th scope="col">Popularity alone</th>
-              <th scope="col">Walkup&apos;s pick</th>
-              <th scope="col" className="num hidden sm:table-cell">
-                Rank for the usual crowd
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: n }, (_, i) => {
-              const pop = popular[i];
-              const pick = area.picks[i];
-              return (
-                <tr key={i}>
-                  <td className="num text-muted">{i + 1}</td>
-                  <td>{pop ? pop.name : ""}</td>
-                  <td>
-                    {pick ? (
-                      <>
-                        <span className="font-semibold">{pick.name}</span>
-                        <span className="block text-sm text-muted">{ordinal(pick.billRank)} for this crowd</span>
-                      </>
-                    ) : null}
-                  </td>
-                  <td className="num hidden sm:table-cell">{pick ? (pick.houseRank === null ? "not ranked" : ordinal(pick.houseRank)) : ""}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div key={s.planId} className="min-w-0" data-testid={`second-${letter}`}>
+        <h3 className="text-base">{headliner}</h3>
+        {support.length > 0 ? <p className="text-sm text-muted">with {joinAnd(support)}</p> : null}
+        <p className="text-sm text-muted">{[formatShowDate(s.bill.date), genreLabel(s.bill.classification, `Bill ${letter}`)].join(" · ")}</p>
+        <p className="mt-2">
+          Stands out most in {joinAnd(top.slice(0, 3).map((t) => t.name ?? areaName(t)))}.
+          {near ? " The two halves of the bill disagree on where its crowd is, so the partners are places near the room, marked as a starting list." : ""}
+        </p>
+        {pc && n > 0 ? <p className="mt-1">{popularityLine(pc)}</p> : null}
+        <p className="mt-2">
+          <Link href={`/plan/${s.planId}`} className="link">
+            Open {headliner}&apos;s sheet
+          </Link>
+          <span className="text-muted">
+            {" "}
+            · {n} suggested {n === 1 ? "partner" : "partners"}
+          </span>
+        </p>
+        {(revisions[s.planId] ?? []).map((r) => (
+          <p key={r.planId} className="mt-1 text-sm">
+            <span className="text-muted">Revised: </span>
+            <Link href={`/plan/${r.planId}`} className="link">
+              {r.instruction} &rarr;
+            </Link>
+          </p>
+        ))}
       </div>
     );
-  }
+  };
   return (
-    <div className="mt-8 max-w-[760px]" data-testid="popularity-up-close">
-      <h3 className="text-base">Popularity alone against Walkup&apos;s picks, in {area.area}</h3>
-      {intro}
-      <table className="table mt-2">
-        <caption className="sr-only">Walkup&apos;s picks in {area.area} with their ranks, and whether the popularity-only list has them</caption>
-        <thead>
-          <tr>
-            <th scope="col">Walkup&apos;s pick</th>
-            <th scope="col" className="num">
-              Rank for this crowd
-            </th>
-            <th scope="col" className="num">
-              Rank for the usual crowd
-            </th>
-            <th scope="col" className="num">
-              In the popularity top {area.k}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {area.picks.map((p) => (
-            <tr key={p.entityId}>
-              <td>{p.name}</td>
-              <td className="num">{ordinal(p.billRank)}</td>
-              <td className="num">{p.houseRank === null ? "not ranked" : ordinal(p.houseRank)}</td>
-              <td className="num">No</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <section className="section" aria-labelledby="second-title" data-testid="second-example">
+      <h2 id="second-title">
+        A second room: {a.bill.venue.name}, {a.bill.venue.city}
+      </h2>
+      <p className="mt-2 max-w-[760px]">
+        <span className="text-muted">Two real bills picked by the same rule at an independent room in another city. </span>
+        <span data-testid="second-comparison">{comparisonSentence(cmp, names)}</span>
+      </p>
+      <div className="mt-5 grid max-w-[1000px] gap-x-10 gap-y-8 md:grid-cols-2">
+        {bill(a, "A")}
+        {bill(b, "B")}
+      </div>
+    </section>
   );
 }
 
@@ -181,7 +162,7 @@ interface SheetLink {
 
 async function sheetLinks(fixture: boolean): Promise<SheetLink[]> {
   const out = await Promise.all(
-    PRESET_PLAN_IDS.map(async (planId): Promise<SheetLink | null> => {
+    ALL_PRESET_IDS.map(async (planId): Promise<SheetLink | null> => {
       const sheet = await sheetFor(planId);
       if (!sheet) return null;
       const fx = fixture ? await presetSheet(planId) : null;
@@ -238,14 +219,18 @@ export default async function Home() {
   ]);
   const heroA = a ? side(a, "Bill A", revA) : null;
   const heroB = b ? side(b, "Bill B", revB) : null;
-  // The up-close area: the first hero area where none of Walkup's picks is in the popularity-only top (live sheets only).
-  const upClose = ((): { area: PopularityArea; planId: string } | null => {
-    for (const s of [a, b]) {
-      if (!s || s.mode !== "live") continue;
-      const area = popularityAreas(s).find((x) => x.notInPopularTop >= x.k && x.picks.length === x.k);
-      if (area) return { area, planId: s.planId };
-    }
-    return null;
+  // With Qloo and without: one area per live hero sheet, the popularity-only list beside Walkup's picks.
+  const withOut = [a, b]
+    .map((s) => (s && s.mode === "live" ? { sheet: s, data: withWithout(s) } : null))
+    .filter((x): x is { sheet: StreetSheet; data: WithWithoutArea } => x !== null && x.data !== null);
+  // The second room (live recordings only; it has no sample sheets).
+  const second = await (async () => {
+    const s1 = await sheetFor(SECOND_PLAN_ID);
+    if (!s1 || s1.mode !== "live") return null;
+    const s2 = await sheetFor(s1.pairedPlanId ?? SECOND_PAIR_FALLBACK);
+    if (!s2 || s2.mode !== "live") return null;
+    const [r1, r2] = await Promise.all([revisionsOf(s1.planId, "live"), revisionsOf(s2.planId, "live")]);
+    return { a: s1, b: s2, revisions: { [s1.planId]: r1, [s2.planId]: r2 } };
   })();
   const extent =
     heroA && heroB ? unionBbox([...heroA.top, ...heroB.top].map((t) => decodeBbox(t.geohash)), [heroA.venue, heroB.venue]) : null;
@@ -295,18 +280,41 @@ export default async function Home() {
               source={sample ? "Data: made-up sample data in Qloo's format." : mode.kind === "recorded" ? "Data: Qloo, recorded on live runs." : "Data: Qloo."}
             />
           </div>
-          {upClose ? <PopularityUpClose area={upClose.area} planId={upClose.planId} /> : null}
+          {withOut.length > 0 ? (
+            <div className="mt-10" data-testid="hero-with-without">
+              <h3>With Qloo and without</h3>
+              <p className="mt-1 max-w-[760px]">
+                One area from each sheet, searched twice in Qloo. With no signal, Qloo lists the area&apos;s places by popularity. With the
+                show&apos;s acts as the signal, it ranks them for these fans, and Walkup marks down what the room&apos;s usual crowd likes just as
+                much.
+              </p>
+              <div className="mt-4 grid gap-x-10 gap-y-10 md:grid-cols-2">
+                {withOut.map(({ sheet, data }) => (
+                  <WithWithout
+                    key={sheet.planId}
+                    data={data}
+                    as="h4"
+                    lead={headlinerName(sheet.bill)}
+                    explain={false}
+                    refs={<AreaRefs data={data} planId={sheet.planId} />}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
           <details className="plain-details mt-6 max-w-[760px] text-sm">
             <summary>How we counted</summary>
             <p className="mt-1 text-muted">
               Each sheet numbers up to 5 areas where its crowd is at least 1.3 times the room&apos;s usual crowd, highest first, with no two in the
               same ZIP or within 3 km. An area counts as shared when the same square is numbered on both sheets. A partner counts as shared when the
               same place name is on both lists. A popularity list is Qloo&apos;s same place search with no bill as the signal, cut to as many places
-              as the area has partners.
+              as the area has partners. Each with-and-without table shows the sheet&apos;s area where the most picks are missing from that list.
             </p>
           </details>
         </section>
       ) : null}
+
+      {second ? <SecondExample a={second.a} b={second.b} revisions={second.revisions} /> : null}
 
       {fixture ? (
         // Without keys there is nothing to search, so the sample sheets take the search's place: no greyed-out box.

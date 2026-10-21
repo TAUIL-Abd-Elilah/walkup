@@ -96,6 +96,20 @@ const LIVE_BILLS = [
   { name: "FLO", date: "Wed Feb 17 2027", partners: 17, topArea: "U Street / Shaw", lift: "about 2.8x", notPopular: 15 },
 ] as const;
 
+/** The second room, The Basement East, Nashville, recorded on Oct 21 2026 by the same rule. */
+const SECOND_ROOM_BILLS = [
+  { name: "Rayland Baxter", date: "Fri Feb 5 2027", partners: 24, topArea: "East Nashville", lift: "about 2.8x", notPopular: 19 },
+  { name: "Little Stranger", date: "Sun Feb 21 2027", partners: 8, topArea: "Downtown Nashville", lift: "about 2.8x", notPopular: 6 },
+] as const;
+
+/** One area per live sheet, popularity alone against Walkup's picks (the sheets' popularTop and partner ranks). */
+const WITH_WITHOUT = [
+  { bill: "Rhiannon Giddens", area: "H Street NE, DC", fact: "2 of the 7 most popular places made the list" },
+  { bill: "FLO", area: "Laurel, MD", fact: "none of the 8 most popular places made the list" },
+  { bill: "Rayland Baxter", area: "Downtown Nashville", fact: "1 of the 8 most popular places made the list" },
+  { bill: "Little Stranger", area: "near the room", fact: "2 of the 8 most popular places made the list" },
+] as const;
+
 /** The foot-traffic check, run on Oct 20 2026 with The Truth's (Nashville) real Ticketmaster roster. Plain names for the measures. */
 const FOOT_TRAFFIC = [
   { measure: "Rank agreement between lift and raw heat, per bill (1 means the same order)", value: "0.20 and 0.01", gate: "below 0.8" },
@@ -212,6 +226,72 @@ export default function EvalPage() {
         <ShowsLine
           shows="most partners are places a popularity list of the same areas would not name."
           not="ticket sales. It compares two lists, not sales, and not whether the partners are better."
+        />
+
+        <h3 className="mt-6">With Qloo and without, by name</h3>
+        <p className="mt-2">
+          Each live sheet shows one area&apos;s two lists side by side: the places most popular there for any crowd, and Walkup&apos;s picks there for
+          this show&apos;s fans. The area is the one where the most picks are missing from the popularity list.
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Bill</th>
+              <th scope="col">Area</th>
+              <th scope="col">Of the area&apos;s most popular places</th>
+            </tr>
+          </thead>
+          <tbody>
+            {WITH_WITHOUT.map((r) => (
+              <tr key={r.bill}>
+                <td>{r.bill}</td>
+                <td>{r.area}</td>
+                <td>{r.fact}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h3 className="mt-6">A second room: The Basement East, Nashville</h3>
+        <p className="mt-2">
+          The same rule and window at an independent room in another city (capacity 475, co-owned by Mike Grimes and Dave Brown). The first folk bill in
+          the window, Bo Staloch on Feb 3, was skipped because Qloo has no exact match for the name, so Rayland Baxter&apos;s folk-rock show on Feb 5 is
+          bill A. Little Stranger with Shwayze and Damn Skippy, hip-hop on Feb 21, is the most distant genre. The two sheets share 1 of their top 4
+          areas (Downtown Nashville) and 2 of their partners. Little Stranger&apos;s signal is thin: only 77 areas came back and the two halves of the
+          bill disagreed on where the crowd is, so its partners are places near the room, marked as a starting list.
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Bill</th>
+              <th scope="col">Stands out most in</th>
+              <th scope="col" className="num">
+                Lift
+              </th>
+              <th scope="col" className="num">
+                Not in the popularity list
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {SECOND_ROOM_BILLS.map((b) => (
+              <tr key={b.name}>
+                <td>
+                  {b.name}
+                  <span className="block text-sm text-muted">{b.date}</span>
+                </td>
+                <td>{b.topArea}</td>
+                <td className="num">{b.lift}</td>
+                <td className="num">
+                  {b.notPopular} of {b.partners}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <ShowsLine
+          shows="the same rule runs in a second city, and a thin signal is said plainly instead of filled in."
+          not="that the result holds in every room, or that either list sells tickets."
         />
 
         <h3 className="mt-6">A change note</h3>

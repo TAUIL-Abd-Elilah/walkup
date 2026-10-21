@@ -27,6 +27,19 @@ export interface PresetFixture extends SheetFixture {
 export const PRESET_PLAN_IDS = ["g1-a", "g1-b", "g2", "g3"] as const;
 export type PresetPlanId = (typeof PRESET_PLAN_IDS)[number];
 
+/**
+ * Presets with a live show and no bundled sample sheet (the fixture world has no copy of their room): served from
+ * a stored live run, or not at all.
+ */
+export const LIVE_ONLY_PRESET_IDS = ["g4-a", "g4-b"] as const;
+
+/** Every preset id, bundled or live-only, in the order the landing lists them. */
+export const ALL_PRESET_IDS: readonly string[] = ["g1-a", "g1-b", ...LIVE_ONLY_PRESET_IDS, "g2", "g3"];
+
+export function isLiveOnlyPresetId(id: string): boolean {
+  return (LIVE_ONLY_PRESET_IDS as readonly string[]).includes(id);
+}
+
 const HAND: Record<PresetPlanId, unknown> = { "g1-a": g1aHand, "g1-b": g1bHand, g2: g2Hand, g3: g3Hand };
 const ENGINE: Record<PresetPlanId, unknown> = { "g1-a": g1aEngine, "g1-b": g1bEngine, g2: g2Engine, g3: g3Engine };
 

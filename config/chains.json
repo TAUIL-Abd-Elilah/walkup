@@ -39,6 +39,7 @@
     {"name":"sweetFrog","aliases":["sweetFrog Premium Frozen Yogurt"],"kind":"bakery_dessert"},
     {"name":"Ben & Jerry's","kind":"bakery_dessert"},
     {"name":"Einstein Bros. Bagels","aliases":["Einstein Bros Bagels","Einstein Bagels"],"kind":"bakery_dessert"},
+    {"name":"Jeni's Splendid Ice Creams","aliases":["Jeni's"],"kind":"bakery_dessert"},
     {"name":"McDonald's","kind":"fast_food"},
     {"name":"Burger King","kind":"fast_food"},
     {"name":"Wendy's","kind":"fast_food"},
@@ -208,9 +209,14 @@
     {"name":"Sardi's Pollo a la Brasa","aliases":["Sardi's Pollo A La Brasa","Sardis Pollo a la Brasa"],"kind":"casual_dining"},
     {"name":"Punch Bowl Social","kind":"casual_dining"},
     {"name":"Pinstripes","kind":"casual_dining","exact":true},
+    {"name":"City Winery","kind":"casual_dining"},
+    {"name":"Pins Mechanical Co.","aliases":["Pins Mechanical"],"kind":"casual_dining"},
+    {"name":"Sixty Vines","kind":"casual_dining"},
     {"name":"Bowlero","aliases":["Bowlmor","AMF Bowling","AMF"],"kind":"sports_bar"},
     {"name":"Main Event","kind":"sports_bar","exact":true},
     {"name":"Round1","aliases":["Round1 Bowling & Amusement","Round 1"],"kind":"sports_bar"},
+    {"name":"Coyote Ugly Saloon","aliases":["Coyote Ugly"],"kind":"sports_bar","adult":true},
+    {"name":"Up-Down","aliases":["Up-Down Arcade Bar"],"kind":"sports_bar"},
     {"name":"Total Wine & More","aliases":["Total Wine"],"kind":"retail"},
     {"name":"Whole Foods Market","aliases":["Whole Foods"],"kind":"retail"},
     {"name":"Trader Joe's","kind":"retail"},
@@ -223,6 +229,7 @@
     {"name":"Aldi","aliases":["ALDI"],"kind":"retail","exact":true},
     {"name":"Costco","aliases":["Costco Wholesale"],"kind":"retail"},
     {"name":"CVS","aliases":["CVS Pharmacy"],"kind":"retail","exact":true},
-    {"name":"Walgreens","kind":"retail"}
+    {"name":"Walgreens","kind":"retail"},
+    {"name":"Boot Barn","kind":"retail"}
   ]
 }

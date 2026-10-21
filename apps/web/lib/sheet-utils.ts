@@ -703,3 +703,100 @@ export function missedPickLine(p: RankedPick & { k: number }): string {
   const house = p.houseRank === null ? "not ranked for the room's usual crowd" : `${ordinal(p.houseRank)} for the room's usual crowd`;
   return `${p.name} in ${p.area}: ${ordinal(p.billRank)} for this crowd, ${house}, and not among the area's ${p.k} most popular places.`;
 }
+
+// ---------------------------------------------------------------------------
+// With Qloo and without: one area's popularity-only list beside Walkup's picks there
+// ---------------------------------------------------------------------------
+
+/** One area of a sheet, both lists by name: what popularity alone gives and what Walkup picked for this crowd. */
+export interface WithWithoutArea {
+  /** The area's tile; null for the near-venue list. */
+  geohash: string | null;
+  /** "Laurel, MD", or "near the room" for the near-venue list. */
+  area: string;
+  /** How many places each list holds (the area's partners; the popularity list is cut to the same length). */
+  k: number;
+  /** Places on both lists. */
+  overlap: number;
+  /** The popularity-only list, best first (Qloo's no-signal place search, after the same eligibility rules). */
+  popular: PopularPlace[];
+  /** Walkup's picks in the area, by rank for this crowd. */
+  picks: RankedPick[];
+  /** Ledger id of the popularity-only search. */
+  popularRef: string;
+  /** Ledger ids of the partner searches behind the picks (this crowd, the room's usual crowd). */
+  pickRefs: string[];
+  /** The measured fact, as a heading: "None of the 8 most popular places in Laurel, MD made Walkup's list". */
+  headline: string;
+}
+
+/** The headline for one area: how many of its k most popular places are also Walkup picks, counted on the sheet. */
+export function withWithoutHeadline(area: string, k: number, overlap: number): string {
+  const where = area === "near the room" ? "near the room" : `in ${area}`;
+  if (k === 1) return overlap === 0 ? `The most popular place ${where} didn't make Walkup's list` : `The most popular place ${where} is also on Walkup's list`;
+  if (overlap === 0) return `None of the ${k} most popular places ${where} made Walkup's list`;
+  if (overlap === k) return `All ${k} of the most popular places ${where} are also on Walkup's list`;
+  return `${overlap * 2 <= k ? "Only " : ""}${overlap} of the ${k} most popular places ${where} made Walkup's list`;
+}
+
+/**
+ * One area per sheet for the "with Qloo and without" table: of the sheet's partner areas whose popularity-only list
+ * is stored by name (`popularTop`), the one where the most picks are not among its most popular places (then the
+ * larger share, then the sheet's order). The near-venue list counts only when no numbered area has one. Null when
+ * the sheet has no popularity check, or no names were stored.
+ */
+export function withWithout(sheet: StreetSheet): WithWithoutArea | null {
+  const pc = sheet.popularityCheck;
+  if (!pc) return null;
+  const tiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
+  const rows: WithWithoutArea[] = [];
+  for (const a of pc.perArea) {
+    if (a.partners <= 0 || !a.popularTop || a.popularTop.length === 0 || a.popularTop.some((x) => x.name.trim() === "")) continue;
+    const parts = sheet.cards.partners.results.filter((p) => (p.tileGeohash ?? null) === a.tileGeohash);
+    const picks = parts
+      .map((p) => rankedPick(p, a.ledgerRef, tiles))
+      .filter((x): x is RankedPick => x !== null)
+      .sort((x, y) => x.billRank - y.billRank);
+    if (picks.length === 0) continue;
+    const tile = a.tileGeohash ? tiles.get(a.tileGeohash) : undefined;
+    const area = !a.tileGeohash
+      ? "near the room"
+      : tile?.name
+        ? areaName(tile)
+        : a.tileName
+          ? areaName({ name: a.tileName, ...(tile?.zctas ? { zctas: tile.zctas } : {}) })
+          : "this area";
+    const popular = [...a.popularTop].sort((x, y) => x.rank - y.rank);
+    const overlap = popular.filter((x) => x.onSheet).length;
+    const pickRefs = [...new Set(parts.flatMap((p) => p.explain?.ledgerRefs ?? p.chips.map((c) => c.ledgerRef)))].filter((r) => r && r !== a.ledgerRef);
+    rows.push({
+      geohash: a.tileGeohash,
+      area,
+      k: a.partners,
+      overlap,
+      popular,
+      picks,
+      popularRef: a.ledgerRef,
+      pickRefs,
+      headline: withWithoutHeadline(area, a.partners, overlap),
+    });
+  }
+  const numbered = rows.filter((r) => r.geohash !== null);
+  const pool = numbered.length > 0 ? numbered : rows;
+  let best: WithWithoutArea | null = null;
+  for (const r of pool) {
+    const missed = r.k - r.overlap;
+    if (!best) {
+      best = r;
+      continue;
+    }
+    const bMissed = best.k - best.overlap;
+    if (missed > bMissed || (missed === bMissed && missed / r.k > bMissed / best.k)) best = r;
+  }
+  return best;
+}
+
+/** "3rd for this crowd · 25th for the room's usual crowd" (or "not in the usual crowd's list"). */
+export function pickRanksLine(p: Pick<RankedPick, "billRank" | "houseRank">): string {
+  return `${ordinal(p.billRank)} for this crowd · ${p.houseRank === null ? "not ranked for the room's usual crowd" : `${ordinal(p.houseRank)} for the room's usual crowd`}`;
+}

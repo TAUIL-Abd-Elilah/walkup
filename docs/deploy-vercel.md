@@ -39,10 +39,10 @@ variables (Production and Preview), none of them secret:
    (cd apps/web && WALKUP_MODE=live WALKUP_RECORD=1 WALKUP_DATA_DIR="$R" WALKUP_FIXTURES_DIR="$R/fixtures" \
      WALKUP_FRESH_RUNS_PER_IP=10 npx next dev -p 3219)
    # in another shell
-   for p in g1-a g1-b; do curl -sS -X POST localhost:3219/api/plan -H 'content-type: application/json' -d "{\"presetId\":\"$p\"}" | head -c 300; echo; done
+   for p in g1-a g1-b g4-a g4-b; do curl -sS -X POST localhost:3219/api/plan -H 'content-type: application/json' -d "{\"presetId\":\"$p\"}" | head -c 300; echo; done
    curl -sS -X POST localhost:3219/api/plan/<g1-b planId>/revise -H 'content-type: application/json' \
      -d '{"instruction":"All ages, no bars","wait":"complete"}' | head -c 300
-   curl -s localhost:3219/healthz      # "recorded": {"presets": {"g1-a": {...}, "g1-b": {...}}}
+   curl -s localhost:3219/healthz      # "recorded": {"presets": {"g1-a": {...}, "g1-b": {...}, "g4-a": {...}, "g4-b": {...}}}
    ```
 
    A fresh data directory means a cold Qloo cache: about 30 Qloo calls for the first bill, fewer for the second,
@@ -58,7 +58,7 @@ variables (Production and Preview), none of them secret:
 4. Deploy from the repository root: `npx vercel@latest deploy --prod`. Vercel builds on Linux, so better-sqlite3 and
    the PDF renderer get their Linux files.
 5. Check: `curl -s https://walkup-eight.vercel.app/healthz` says `"mode":"recorded"`, `"planStore":"memory"` and a
-   `planId` for g1-a and g1-b; open both preset pages, a receipt, the PDF and a CSV.
+   `planId` for g1-a, g1-b, g4-a and g4-b; open the preset pages, a receipt, the PDF and a CSV.
 
 `.github/workflows/uptime.yml` checks `/healthz` every 15 minutes.
 

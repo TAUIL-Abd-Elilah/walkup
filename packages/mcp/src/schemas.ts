@@ -10,7 +10,7 @@ import { z } from "zod";
 export const PlanIdSchema = z
   .string()
   .regex(/^[A-Za-z0-9_-]{1,64}$/, "Plan ids match ^[A-Za-z0-9_-]{1,64}$.")
-  .describe("A plan id returned by plan_show or rank_partners, or a preset id (g1-a, g1-b, g2, g3).");
+  .describe("A plan id returned by plan_show or rank_partners, or a preset id (g1-a, g1-b, g2, g3, g4-a, g4-b).");
 
 const EventSchema = z
   .string()
@@ -78,7 +78,7 @@ export const PlanRefInput = z.strictObject({ planId: PlanIdSchema });
 export type PlanRefArgs = z.infer<typeof PlanRefInput>;
 
 export const RevisePlanInput = z.strictObject({
-  planId: PlanIdSchema.describe("The finished plan to change: a plan id from plan_show or revise_plan, or a preset id (g1-a, g1-b, g2, g3)."),
+  planId: PlanIdSchema.describe("The finished plan to change: a plan id from plan_show or revise_plan, or a preset id (g1-a, g1-b, g2, g3, g4-a, g4-b)."),
   instruction: z
     .string()
     .trim()

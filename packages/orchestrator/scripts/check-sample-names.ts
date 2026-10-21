@@ -13,7 +13,7 @@
  */
 import type { StreetSheet } from "@walkup/contracts";
 import { parseGeneratedPlaceId, placeName, placePhone, type MetroKey } from "@walkup/qloo-world";
-import { createFixtureDeps, parentRequest, planShow, PRESET_IDS, revisePlan, type PlanResult } from "../src/index";
+import { createFixtureDeps, parentRequest, planShow, PRESET_IDS, PRESETS, revisePlan, type PlanResult } from "../src/index";
 
 const METRO: Record<string, MetroKey> = { "g1-a": "nashville", "g1-b": "nashville", "g1-a-rev": "nashville", g2: "hampton_roads", g3: "tacoma" };
 
@@ -105,7 +105,8 @@ function search(prefix: string, n: number, rows: Record<string, Row[]>, check: t
 
 async function main(): Promise<void> {
   const sheets: Record<string, StreetSheet> = {};
-  for (const id of PRESET_IDS) sheets[id] = await preset(id);
+  // A live-only preset plans another preset's sample bills (fixtureSameAs): nothing of its own to check.
+  for (const id of PRESET_IDS) if (!PRESETS[id].fixtureSameAs) sheets[id] = await preset(id);
   sheets["g1-a-rev"] = await revision(sheets["g1-a"]!);
   const rows = Object.fromEntries(Object.entries(sheets).map(([id, s]) => [id, rowsOf(s)]));
   const now = Object.entries(rows).flatMap(([id, r]) => [...nameProblems(id, r, undefined), ...phoneProblems(id, r, undefined)]);

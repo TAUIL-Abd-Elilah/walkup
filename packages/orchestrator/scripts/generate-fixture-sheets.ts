@@ -64,6 +64,8 @@ async function main(): Promise<void> {
   mkdirSync(out, { recursive: true });
   for (const id of PRESET_IDS) {
     const preset = PRESETS[id];
+    // A live-only preset plans another preset's sample bills (fixtureSameAs); the app bundles no sheet for it.
+    if (preset.fixtureSameAs) continue;
     const { result, picked } = await runOne(preset);
     if (result.status !== "complete" || !result.sheet) throw new Error(`${id}: ${result.status} ${result.error ?? ""}`);
     const sheet = result.sheet;

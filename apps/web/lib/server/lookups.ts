@@ -4,7 +4,7 @@
  */
 import { FIXTURE_FRESH_RUNS_REASON, RECORDED_REASON } from "../api";
 import { qlooUntil, runtimeMode } from "../mode";
-import { PRESET_PLAN_IDS } from "../plans";
+import { ALL_PRESET_IDS } from "../plans";
 import { depsFor, stores } from "./engine";
 import { keyPresence } from "./env";
 import { lastCalls, OPENROUTER_PROBE_URL, probes, PROBE_URLS, refreshProbes, type Service } from "./health";
@@ -76,7 +76,7 @@ export async function proxySearch(q: string | null, type: string | null, ctx: Re
 /** For /healthz: the recorded run each preset shows (or would show) in recorded state; null for none. */
 async function recordedPresets(): Promise<Record<string, { planId: string; createdAt: string } | null>> {
   const rows = await Promise.all(
-    PRESET_PLAN_IDS.map(async (id) => {
+    ALL_PRESET_IDS.map(async (id) => {
       const s = await recordedPresetRun(id).catch(() => null);
       return [id, s ? { planId: s.planId, createdAt: s.createdAt } : null] as const;
     }),

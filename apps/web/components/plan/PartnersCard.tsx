@@ -3,7 +3,8 @@ import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { shortUrl, telHref } from "../../lib/format";
 import { categoryLabel } from "../../lib/labels";
-import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles } from "../../lib/sheet-utils";
+import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
+import { WithWithout } from "../WithWithout";
 import { LESS_SURE_NOTE, partnerAreaLabel, partnerLessSure } from "@walkup/exports/format";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
@@ -122,6 +123,8 @@ export function PartnersCard({
 }) {
   const env = sheet.cards.partners;
   const popularity = sheet.popularityCheck;
+  // Live sheets only: a sample's places and ranks are made up, so they make no case either way.
+  const withOut = useMemo(() => (sheet.mode === "live" ? withWithout(sheet) : null), [sheet]);
   const day = streetDayShort(sheet.operator.streetTeamDays);
   const top = useMemo(() => topTiles(sheet), [sheet]);
   // The areas the partner pools came from, numbered and named as on the map.
@@ -340,6 +343,10 @@ export function PartnersCard({
           {popularityLine(popularity)}
           <Refs ids={popularity.ledgerRefs} />
         </p>
+      ) : null}
+      {/* One area up close: the popularity-only list beside the picks, by name (live sheets with the names stored). */}
+      {withOut && env.results.length > 0 ? (
+        <WithWithout data={withOut} className="mt-5" refs={<Refs ids={[withOut.popularRef, ...withOut.pickRefs]} />} />
       ) : null}
       <p className="mt-4 max-w-[760px]">
         {notes.join(" ")} Call before you drop posters.

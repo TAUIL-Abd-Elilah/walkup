@@ -8,7 +8,7 @@
  *   loadPlan(id, opts)            pages, GET /api/sheet/<id>, exports, SSE
  *   planSnapshot(id)              GET /api/plan/<id>
  *
- * Modes: in fixture mode the four presets run through the orchestrator on the
+ * Modes: in fixture mode the bundled presets run through the orchestrator on the
  * synthetic fixture world (free, unlimited); free-form runs are refused with
  * 503. In live mode fresh runs are capped per IP and per day; a preset with a
  * stored run is served from storage. In recorded mode (live runs are
@@ -20,7 +20,7 @@ import { withoutControl, type Bill, type Envelope, type LedgerEntry, type Operat
 import { planShow, presetById, presetFor, presetShowOf, resolveMode, type PlanDeps, type StoredPlan } from "@walkup/orchestrator";
 import { errorEnvelope, FIXTURE_FRESH_RUNS_REASON, PLAN_ID_RE, pausedEnvelope, RECORDED_REASON, sheetEnvelope } from "../api";
 import { runtimeMode } from "../mode";
-import { getPlan, isPresetId, PRESET_PLAN_IDS, type PresetFixture } from "../plans";
+import { ALL_PRESET_IDS, getPlan, isLiveOnlyPresetId, isPresetId, type PresetFixture } from "../plans";
 import { withSessionActions } from "./actions";
 import { depsFor, pinnedFixtureDeps, publishLiveQuota, sessionChoices, stores } from "./engine";
 import type { RequestContext } from "./http";
@@ -250,11 +250,13 @@ export async function loadPlan(id: string, opts: LoadOptions): Promise<LoadedPla
     return { ...v, sheet: withSessionActions(withoutControl(v.sheet), opts.sessionId ?? null) };
   };
 
-  if (isPresetId(id)) {
+  if (isPresetId(id) || isLiveOnlyPresetId(id)) {
     // Live: the stored run live presets are served from. Recorded: the latest usable live recording.
     const stored = mode === "live" ? await storedPresetRun(id) : mode === "recorded" ? await recordedPresetRun(id) : null;
     const v = stored ? sheetFromStored(stored, "store") : null;
     if (v) return withActions(v);
+    // A live-only preset has no bundled sample to fall back on.
+    if (!isPresetId(id)) return null;
     const fxPromise = presetSheet(id);
     if (!fxPromise) return null;
     const fx = await fxPromise;
@@ -444,7 +446,7 @@ function declaredOnly(env: unknown): unknown {
 
 /** POST /api/plan (and /api/rank-partners with `partners`). */
 export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankPartners?: boolean; operator?: boolean } = {}): Promise<ServiceResponse> {
-  const parsed = parsePlanBody(raw, PRESET_PLAN_IDS);
+  const parsed = parsePlanBody(raw, ALL_PRESET_IDS);
   if (!parsed.ok) return { status: 400, body: { reason: parsed.reason } };
   const body = parsed.value;
   if (opts.rankPartners && !body.partners) return { status: 400, body: { reason: "partners: list the partner names to rank (1 to 20)." } };
@@ -457,6 +459,9 @@ export async function startPlan(raw: unknown, ctx: RequestContext, opts: { rankP
   }
 
   if (!presetId && mode.kind === "fixture") return { status: 503, body: { mode: "fixture", reason: FIXTURE_FRESH_RUNS_REASON } };
+  if (presetId && isLiveOnlyPresetId(presetId) && mode.kind === "fixture") {
+    return { status: 503, body: { mode: "fixture", reason: `${presetId} plans a real show only, and this copy of Walkup runs without keys.` } };
+  }
   if (mode.kind === "fixture") {
     const limited = fixtureRunAllowed(ctx);
     if (limited) return limited;

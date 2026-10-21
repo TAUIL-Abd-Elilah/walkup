@@ -1,5 +1,5 @@
 /**
- * The three prewarmed presets as the plan pages show them: the line at the top
+ * The prewarmed presets as the plan pages show them: the line at the top
  * of the plan, the show name, and whether the show is real. Plan ids point at
  * the synthetic fixtures today and at cached live runs once keys exist. Every
  * fixture bill is invented. A live sheet of a preset's live show (set on key
@@ -38,6 +38,14 @@ export const PRESETS: Preset[] = [
     line: "One act's name matches more than one catalog entry, so Walkup asks you to pick before it plans.",
   },
   {
+    // A live example only: no sample sheet is bundled for it (the fixture world has no copy of the room).
+    id: "basement-east",
+    chip: "The Basement East, Nashville",
+    planId: "g4-a",
+    realShow: true,
+    line: "Same room, two crowds: two real bills at The Basement East, planned side by side.",
+  },
+  {
     id: "tacoma",
     chip: "Super Funny, Tacoma",
     planId: "g3",
@@ -54,7 +62,8 @@ export const PRESETS: Preset[] = [
  * gets no preset line or show facts: it reads like any other live run.
  */
 export function presetForPlan(planId: string, mode: "live" | "fixture" = "fixture", bill?: { tmEventId?: string }): Preset | undefined {
-  const p = PRESETS.find((x) => x.planId === planId) ?? (planId.startsWith("g1-") ? PRESETS[0] : undefined);
+  const pairOf = planId.match(/^(g[14])-b$/)?.[1];
+  const p = PRESETS.find((x) => x.planId === planId) ?? (pairOf ? PRESETS.find((x) => x.planId === `${pairOf}-a`) : undefined);
   if (!p || mode === "fixture") return p;
   const preset = presetById(planId);
   const show = preset ? presetShowOf(preset, "live", bill) : null;

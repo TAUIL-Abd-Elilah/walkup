@@ -8,7 +8,7 @@ Server-side only: it runs `@walkup/orchestrator`, which loads `better-sqlite3`.
 
 | Tool | Input (strict: unknown keys are rejected) | `results` |
 |---|---|---|
-| `plan_show` | exactly one of `event` (a Ticketmaster event link, or `"Artist @ Venue, Date"`), `presetId` (`g1-a`, `g1-b`, `g2`, `g3`) or `planId` (resume a paused plan); optional `operator` what-ifs (`seatsLeft`, `capacity`, `mediaBudgetUsd`, `radiusKm`, `streetTeamDays`) and `picks` (`[{input, entityId}]`) | the Street Sheet, ledger included |
+| `plan_show` | exactly one of `event` (a Ticketmaster event link, or `"Artist @ Venue, Date"`), `presetId` (`g1-a`, `g1-b`, `g2`, `g3`, `g4-a`, `g4-b`) or `planId` (resume a paused plan); optional `operator` what-ifs (`seatsLeft`, `capacity`, `mediaBudgetUsd`, `radiusKm`, `streetTeamDays`) and `picks` (`[{input, entityId}]`) | the Street Sheet, ledger included |
 | `rank_partners` | exactly one of `planId`, `event` or `presetId`, plus `partnerNames` (1 to 20 names); optional `operator`, `picks` | the user's own list in call order (`DeclaredPartnerScore[]`; `rank: null` means not in Qloo's catalog, kept in your order) |
 | `bill_vs_house` | `planId` (a plan or preset id) | lift tiles, the baseline used (`house`, `tag` when a genre tag is pinned, or `none` when there is no lift map), what is distinctive to each side, age and gender skew, and the three card statuses |
 | `get_sheet` | `planId` | the Street Sheet, or the pending picks when the plan is waiting |
@@ -38,7 +38,7 @@ Picks sent up front follow the same rule. With a preset (what-ifs, or `rank_part
 
 A preset with what-ifs, or `rank_partners` on a preset, runs the preset's event, date, what-ifs and seeds as a new plan under its own id. It is never stored as the preset itself, so one caller's partner names or seat counts never become the sheet a preset shows to everyone, and the quota guard's "serve the stored preset" fallback never answers such a run with a sheet that ignores the changes. If the guard does serve a stored sheet for a fresh run, the tool says the guard is on and gives the fresh run back.
 
-A live server runs a preset's live show: the real Ticketmaster bill in its `live` block (`presetFor` in `@walkup/orchestrator`; g1-a and g1-b have one, g2 and g3 do not). For a preset without one, preset what-ifs and `rank_partners` on it answer 404 "This preset has no live show yet." before any Ticketmaster or Qloo call and take no fresh run; a run of the preset itself stops with the same reason (a host's own preset loader still answers first). A stored run of the preset is served only while it is a run of the event the preset's show names now.
+A live server runs a preset's live show: the real Ticketmaster bill in its `live` block (`presetFor` in `@walkup/orchestrator`; g1-a, g1-b, g4-a and g4-b have one, g2 and g3 do not; g4-a and g4-b have no sample show of their own). For a preset without one, preset what-ifs and `rank_partners` on it answer 404 "This preset has no live show yet." before any Ticketmaster or Qloo call and take no fresh run; a run of the preset itself stops with the same reason (a host's own preset loader still answers first). A stored run of the preset is served only while it is a run of the event the preset's show names now.
 
 ### Revising a sheet
 

@@ -41,7 +41,18 @@
         { "name": "East Nashville", "lat": 36.1866, "lon": -86.7454, "radiusKm": 2.0 },
         { "name": "Midtown", "lat": 36.151, "lon": -86.798, "radiusKm": 0.9 },
         { "name": "12 South", "lat": 36.124, "lon": -86.79, "radiusKm": 0.9 },
-        { "name": "Germantown", "lat": 36.1795, "lon": -86.7905, "radiusKm": 0.8 }
+        { "name": "Germantown", "lat": 36.1795, "lon": -86.7905, "radiusKm": 0.8 },
+        { "name": "Hillsboro Village", "lat": 36.1338, "lon": -86.8006, "radiusKm": 0.7 },
+        { "name": "Wedgewood-Houston", "lat": 36.1384, "lon": -86.7687, "radiusKm": 0.9 },
+        { "name": "Sylvan Park", "lat": 36.146, "lon": -86.845, "radiusKm": 1.0 },
+        { "name": "The Nations", "lat": 36.164, "lon": -86.842, "radiusKm": 0.9 },
+        { "name": "Berry Hill", "lat": 36.1172, "lon": -86.7697, "radiusKm": 0.6 },
+        { "name": "Melrose", "lat": 36.1215, "lon": -86.7745, "radiusKm": 0.9 },
+        { "name": "Donelson", "lat": 36.1626, "lon": -86.67, "radiusKm": 4.5 },
+        { "name": "Nolensville Pike", "lat": 36.09, "lon": -86.728, "radiusKm": 2.0 },
+        { "name": "Green Hills", "lat": 36.1063, "lon": -86.8163, "radiusKm": 1.2 },
+        { "name": "Inglewood", "lat": 36.2142, "lon": -86.7303, "radiusKm": 1.5 },
+        { "name": "North Nashville", "lat": 36.172, "lon": -86.82, "radiusKm": 1.5 }
       ]
     },
     "hampton_roads": {

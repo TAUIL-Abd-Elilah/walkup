@@ -267,6 +267,16 @@ describe("plans", () => {
     expect(await loadPlan("../etc", { view: "api" })).toBeNull();
   });
 
+  it("has no sample sheet for a live-only preset, and runs none in fixture mode", async () => {
+    // g4-a and g4-b plan real bills at The Basement East only; the fixture world has no copy of that room.
+    expect(await loadPlan("g4-a", { view: "api" })).toBeNull();
+    expect(await loadPlan("g4-b", { view: "page" })).toBeNull();
+    const r = await startPlan({ presetId: "g4-a" }, ctx({ ip: "203.0.113.44" }));
+    expect(r.status).toBe(503);
+    expect((r.body as { reason: string }).reason).toMatch(/real show only/);
+    expect(parsePlanBody({ presetId: "g4-b" }, ["g1-a", "g4-b"]).ok).toBe(true);
+  });
+
   it("runs a preset end to end on the fixture world (sync), cards in spec order, with the house chip", async () => {
     const res = await startPlan({ presetId: "g1-b" }, ctx());
     expect(res.status).toBe(200);
@@ -751,6 +761,9 @@ describe("recorded mode (live runs paused; the live-mode harness records the run
       "g1-b": { planId: recordedIds["g1-b"], createdAt: expect.any(String) },
       g2: null,
       g3: null,
+      // The live-only presets: nothing recorded for them in this harness.
+      "g4-a": null,
+      "g4-b": null,
     });
     expect(b.qloo).toEqual({ keyRejected: null, until: null });
   });

@@ -97,8 +97,19 @@ describe("plan store (SQLite)", () => {
 });
 
 describe("presets", () => {
-  it("defines the four goldens in one place", () => {
-    expect(PRESET_IDS).toEqual(["g1-a", "g1-b", "g2", "g3"]);
+  it("defines the goldens in one place", () => {
+    expect(PRESET_IDS).toEqual(["g1-a", "g1-b", "g2", "g3", "g4-a", "g4-b"]);
+    // The second live room: real Ticketmaster events at The Basement East, Nashville, paired; no sample of its own.
+    expect(PRESETS["g4-a"].live?.tmEventId).toBe("rZ7HnEZ1AfGx4f");
+    expect(PRESETS["g4-b"].live?.tmEventId).toBe("rZ7HnEZ1AfusAf");
+    expect(PRESETS["g4-a"].live?.venue).toEqual({ name: "The Basement East", city: "Nashville", state: "TN" });
+    expect(PRESETS["g4-a"].live?.tmVenueId).toBe("KovZ917ACl7");
+    expect(PRESETS["g4-a"].live?.operator.capacity).toBe(475);
+    expect(PRESETS["g4-a"].pairedWith).toBe("g4-b");
+    expect(PRESETS["g4-b"].pairedWith).toBe("g4-a");
+    expect(PRESETS["g4-a"].fixtureSameAs).toBe("g1-a");
+    expect(PRESETS["g4-b"].fixtureSameAs).toBe("g1-b");
+    expect(PRESETS["g4-a"].live?.selection.result).toMatch(/Bo Staloch/);
     expect(PRESETS["g1-a"].operator.seatsLeft).toBeNull();
     expect(PRESETS["g1-a"].operator.capacity).toBe(4400);
     expect(PRESETS["g1-a"].operator.mediaBudgetUsd).toBe(6000);

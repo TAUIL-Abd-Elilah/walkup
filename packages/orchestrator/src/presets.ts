@@ -1,12 +1,16 @@
 /**
- * The four prewarmed presets, in one place: venue, the bill the selection rule
+ * The prewarmed presets, in one place: venue, the bill the selection rule
  * picked, the operator's what-if inputs and any seed plan.
  *
  * Each preset has a fixture show and room for a live one. The top-level
  * fields are the fixture show: event ids point at the fixture world and every
  * bill there is invented. `live` is a real Ticketmaster bill picked by
  * HERO_RULE (one independent room, HERO_WINDOW): g1-a and g1-b carry the two
- * hero bills at The Anthem, Washington DC; g2 and g3 have none.
+ * hero bills at The Anthem, Washington DC, and g4-a and g4-b the two bills the
+ * same rule picks at The Basement East, Nashville; g2 and g3 have none. The
+ * fixture world has no copy of The Basement East, so g4-a and g4-b plan The
+ * Truth's invented bills in fixture mode (`fixtureSameAs`) and the app bundles
+ * no sample sheet for them.
  * presetFor(preset, mode) is the one reader of either show: a live run of a
  * preset with no live show stops with NO_LIVE_SHOW before any call. Presets carry no seats-left count; capacity and budget are
  * operator what-ifs, never sales data.
@@ -55,6 +59,11 @@ export interface Preset {
   line: string;
   /** The real bill a live run plans; null when the preset has none (see LivePreset). */
   live: LivePreset | null;
+  /**
+   * Set when the fixture show is another preset's (the fixture world has no copy of this room): the fixture
+   * sheet generators skip this preset and the app bundles no sample sheet for it. It is a live example only.
+   */
+  fixtureSameAs?: PresetId;
 }
 
 /** What a preset plans in one mode: its fixture show or its live show. */
@@ -117,6 +126,29 @@ const HERO_OPERATOR: OperatorInputs = {
   seatsLeft: null,
   capacity: 6000,
   mediaBudgetUsd: 6000,
+  streetTeamDays: ["thursday", "saturday"],
+  radiusKm: 40,
+  declaredPartners: [],
+};
+
+/**
+ * The second live room: The Basement East, Nashville (independent: co-owned by Mike Grimes and Dave Brown).
+ * The same rule, over the same window, run with npm run tm:room on 2026-10-21:
+ *   npm run tm:room -- --venue-id=KovZ917ACl7 --as-of=2026-10-21 --unresolved=rZ7HnEZ1AfGI-f
+ * The first folk bill in the window, Bo Staloch (Wed Feb 3 2027), is skipped: a Qloo search for the name on
+ * 2026-10-21 had no exact match (Bo Burnham, Bo Diddley and others came back). Rayland Baxter resolves by his
+ * Spotify id and Little Stranger by theirs.
+ */
+const NASHVILLE_VENUE = { name: "The Basement East", city: "Nashville", state: "TN" } as const;
+const NASHVILLE_VENUE_ID = "KovZ917ACl7";
+const NASHVILLE_AS_OF = "2026-10-21";
+const NASHVILLE_LINE = "Same room, two crowds: two real bills at The Basement East, planned side by side.";
+
+/** What-ifs for the Nashville room: the capacity is the room's published 475; the budget is an example. */
+const NASHVILLE_OPERATOR: OperatorInputs = {
+  seatsLeft: null,
+  capacity: 475,
+  mediaBudgetUsd: 1500,
   streetTeamDays: ["thursday", "saturday"],
   radiusKm: 40,
   declaredPartners: [],
@@ -206,7 +238,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     categories: ["restaurant", "bar", "barber_shop", "record_store", "beauty_salon"],
     realShow: false,
     line: "One act's name matches more than one catalog entry, so Walkup asks you to pick before it plans.",
-    // No live show: only g1-a and g1-b carry the hero bills.
+    // No live show: only g1-a, g1-b, g4-a and g4-b carry real bills.
     live: null,
   },
   g3: {
@@ -226,8 +258,61 @@ export const PRESETS: Record<PresetId, Preset> = {
     },
     realShow: false,
     line: "A small club with thin signal: each fallback says why it was taken.",
-    // No live show: only g1-a and g1-b carry the hero bills.
+    // No live show: only g1-a, g1-b, g4-a and g4-b carry real bills.
     live: null,
+  },
+  "g4-a": {
+    id: "g4-a",
+    title: "The Truth, Nashville: bill A",
+    venue: { name: truth.name, city: truth.city, state: truth.state, tmVenueId: truth.id },
+    tmEventId: WORLD_EVENT_IDS.g1a,
+    asOf: "2026-10-30",
+    selection: { rule: G1_RULE, result: "Bill A" },
+    operator: G1_OPERATOR,
+    pairedWith: "g4-b",
+    realShow: false,
+    line: "Same room, two crowds: two bills at The Truth, planned side by side.",
+    fixtureSameAs: "g1-a",
+    live: {
+      tmEventId: "rZ7HnEZ1AfGx4f",
+      tmVenueId: NASHVILLE_VENUE_ID,
+      asOf: NASHVILLE_AS_OF,
+      title: "The Basement East, Nashville: bill A",
+      venue: NASHVILLE_VENUE,
+      selection: {
+        rule: HERO_RULE,
+        result:
+          "Bill A: Rayland Baxter, The True Violet Tour, Fri Feb 5 2027 (Folk Rock), the first Americana, country or folk bill in the window whose headliner Qloo matches exactly (Bo Staloch, Wed Feb 3, has no exact match).",
+      },
+      operator: NASHVILLE_OPERATOR,
+      line: NASHVILLE_LINE,
+    },
+  },
+  "g4-b": {
+    id: "g4-b",
+    title: "The Truth, Nashville: bill B",
+    venue: { name: truth.name, city: truth.city, state: truth.state, tmVenueId: truth.id },
+    tmEventId: WORLD_EVENT_IDS.g1b,
+    asOf: "2026-10-30",
+    selection: { rule: G1_RULE, result: "Bill B" },
+    operator: G1_OPERATOR,
+    pairedWith: "g4-a",
+    realShow: false,
+    line: "Same room, two crowds: two bills at The Truth, planned side by side.",
+    fixtureSameAs: "g1-b",
+    live: {
+      tmEventId: "rZ7HnEZ1AfusAf",
+      tmVenueId: NASHVILLE_VENUE_ID,
+      asOf: NASHVILLE_AS_OF,
+      title: "The Basement East, Nashville: bill B",
+      venue: NASHVILLE_VENUE,
+      selection: {
+        rule: HERO_RULE,
+        result: "Bill B: Little Stranger with Shwayze and Damn Skippy, Sun Feb 21 2027 (Hip-Hop/Rap), the genre most distant from bill A.",
+      },
+      operator: NASHVILLE_OPERATOR,
+      line: NASHVILLE_LINE,
+    },
   },
 };
 

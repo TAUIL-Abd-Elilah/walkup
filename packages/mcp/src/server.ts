@@ -17,7 +17,7 @@ export const SERVER_VERSION = "0.1.0";
 export const SERVER_INSTRUCTIONS = [
   "Walkup plans local promotion for one live show that is already booked and still has seats to sell.",
   "It compares this bill's crowd with the venue's usual crowd using Qloo taste data and returns a Street Sheet: lift tiles (where this crowd over-indexes), real local partner places, pre/post-show spots, podcasts, one sponsor and copy hooks, each with a numbered receipt such as [Q9].",
-  "Start with plan_show (a Ticketmaster event link, \"Artist @ Venue, Date\", or a preset: g1-a, g1-b, g2, g3). If it returns needs_input, show the candidates to the user and call plan_show again with the planId and the user's picks; never pick for them.",
+  "Start with plan_show (a Ticketmaster event link, \"Artist @ Venue, Date\", or a preset: g1-a, g1-b, g2, g3, g4-a, g4-b). If it returns needs_input, show the candidates to the user and call plan_show again with the planId and the user's picks; never pick for them.",
   "Use rank_partners for the user's own partner list, bill_vs_house for the crowd comparison alone, get_sheet to re-read a plan.",
   "Use revise_plan to change a finished sheet with the user's own words (all ages, leave out a type of place, skip an area, street-team days, search radius). It returns a new plan id and the list of changes; if it returns a question, ask the user and call it again.",
   "Cite places and numbers exactly as returned, with their receipts. Partners are suggested, not affiliated. Always pass on the limits. If mode is fixture, say the data is synthetic, not live.",
@@ -59,7 +59,7 @@ export function createWalkupMcpServer(services: McpServices, caller: Caller): Mc
       title: "Plan a show's street team",
       description:
         "Build a Street Sheet for one booked show: where this bill's crowd over-indexes versus the room's usual crowd, real local partner places ranked in the areas where that crowd stands out, pre/post spots, podcasts, a sponsor and copy hooks, each with receipts. " +
-        "Give exactly one of: event (a Ticketmaster event link or \"Artist @ Venue, Date\"), presetId (g1-a, g1-b, g2, g3), or planId (resume a plan that returned needs_input, with picks). " +
+        "Give exactly one of: event (a Ticketmaster event link or \"Artist @ Venue, Date\"), presetId (g1-a, g1-b, g2, g3, g4-a, g4-b), or planId (resume a plan that returned needs_input, with picks). " +
         "Optional operator what-ifs (seats left, capacity, radius, street-team days). A fresh run takes about 20 seconds live and counts against a per-caller daily cap; presets do not. " +
         "Returns the envelope: status, summary, planId, sheetUrl, mode, results (the Street Sheet with its ledger), resolution, provenance, limits.",
       inputSchema: PlanShowInput,
@@ -103,7 +103,7 @@ export function createWalkupMcpServer(services: McpServices, caller: Caller): Mc
     {
       title: "Get a Street Sheet",
       description:
-        "Re-read an existing plan by id (or a preset id: g1-a, g1-b, g2, g3). Returns the same envelope as plan_show: the Street Sheet with its ledger, or the pending picks when the plan is waiting for input. Reads the stored plan (a preset not yet stored is run once).",
+        "Re-read an existing plan by id (or a preset id: g1-a, g1-b, g2, g3, g4-a, g4-b). Returns the same envelope as plan_show: the Street Sheet with its ledger, or the pending picks when the plan is waiting for input. Reads the stored plan (a preset not yet stored is run once).",
       inputSchema: PlanRefInput,
       outputSchema: EnvelopeOutput,
       annotations: { title: "Get a Street Sheet", ...READ },

@@ -60,7 +60,7 @@ export interface SeedPlan {
   reason: string;
 }
 
-export type PresetId = "g1-a" | "g1-b" | "g2" | "g3";
+export type PresetId = "g1-a" | "g1-b" | "g2" | "g3" | "g4-a" | "g4-b";
 
 /**
  * One plan request: exactly one of tmEventId, presetId or bill. Operator
