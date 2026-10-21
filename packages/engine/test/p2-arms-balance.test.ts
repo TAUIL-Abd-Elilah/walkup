@@ -59,12 +59,12 @@ describe("arms", () => {
     expect(c.kendallTauShared).toBe(-1);
   });
   it("name normalisation and similarity", () => {
-    expect(normalizePlaceName("The Basement East")).toBe("basement east");
+    expect(normalizePlaceName("The Salt Shed")).toBe("salt shed");
     expect(normalizePlaceName("Grimey's New & Preloved Music")).toBe("grimeys new and preloved music");
     expect(nameSimilarity("Grimey's New & Preloved Music", "Grimeys New and Preloved Music")).toBe(1);
     expect(nameSimilarity("Caf\u00e9 Roze", "Cafe Roze")).toBe(1);
     expect(nameSimilarity("Roze Pony Cafe", "Cafe Roze Pony")).toBe(1);
-    expect(nameSimilarity("The Basement", "The Basement East")).toBeLessThan(0.85);
+    expect(nameSimilarity("The Salt Shed", "The Salt Shed Fairgrounds")).toBeLessThan(0.85);
     expect(nameSimilarity("", "")).toBe(0);
   });
   it("matchPlaces: similarity, 150 m radius, one-to-one", () => {

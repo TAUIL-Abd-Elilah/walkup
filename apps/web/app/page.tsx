@@ -4,7 +4,7 @@ import type { StreetSheet } from "@walkup/contracts";
 import { HeroSplit, type HeroSide } from "@/components/HeroSplit";
 import { WithWithout } from "@/components/WithWithout";
 import { ShowSearch } from "@/components/ShowSearch";
-import { actsLine, formatShowDate, headlinerName, joinAnd } from "@/lib/format";
+import { actsLine, formatShowDate, headlinerName, joinAnd, possessive } from "@/lib/format";
 import { genreLabel } from "@/lib/labels";
 import { runtimeMode } from "@/lib/mode";
 import { ALL_PRESET_IDS } from "@/lib/plans";
@@ -103,7 +103,7 @@ function SecondExample({ a, b, revisions }: { a: StreetSheet; b: StreetSheet; re
         {pc && n > 0 ? <p className="mt-1">{popularityLine(pc)}</p> : null}
         <p className="mt-2">
           <Link href={`/plan/${s.planId}`} className="link">
-            Open {headliner}&apos;s sheet
+            Open {possessive(headliner)} sheet
           </Link>
           <span className="text-muted">
             {" "}

@@ -26,6 +26,7 @@ import {
   defaultTagsFile,
   PRESETS,
   PRESET_IDS,
+  presetVenueName,
   tagDiff,
   type StoredPlan,
 } from "../src/index";
@@ -99,17 +100,20 @@ describe("plan store (SQLite)", () => {
 describe("presets", () => {
   it("defines the goldens in one place", () => {
     expect(PRESET_IDS).toEqual(["g1-a", "g1-b", "g2", "g3", "g4-a", "g4-b"]);
-    // The second live room: real Ticketmaster events at The Basement East, Nashville, paired; no sample of its own.
-    expect(PRESETS["g4-a"].live?.tmEventId).toBe("rZ7HnEZ1AfGx4f");
-    expect(PRESETS["g4-b"].live?.tmEventId).toBe("rZ7HnEZ1AfusAf");
-    expect(PRESETS["g4-a"].live?.venue).toEqual({ name: "The Basement East", city: "Nashville", state: "TN" });
-    expect(PRESETS["g4-a"].live?.tmVenueId).toBe("KovZ917ACl7");
-    expect(PRESETS["g4-a"].live?.operator.capacity).toBe(475);
+    // The second live room: real Ticketmaster events at The Salt Shed, Chicago, paired; no sample of its own.
+    expect(PRESETS["g4-a"].live?.tmEventId).toBe("vvG18Z_CM8zcsl");
+    expect(PRESETS["g4-b"].live?.tmEventId).toBe("vv1kvZvPodGA5phKX");
+    expect(PRESETS["g4-a"].live?.venue).toEqual({ name: "The Salt Shed", city: "Chicago", state: "IL" });
+    expect(PRESETS["g4-a"].live?.tmVenueId).toBe("KovZ917AI5F");
+    expect(PRESETS["g4-a"].live?.operator.capacity).toBe(3600);
     expect(PRESETS["g4-a"].pairedWith).toBe("g4-b");
     expect(PRESETS["g4-b"].pairedWith).toBe("g4-a");
     expect(PRESETS["g4-a"].fixtureSameAs).toBe("g1-a");
     expect(PRESETS["g4-b"].fixtureSameAs).toBe("g1-b");
-    expect(PRESETS["g4-a"].live?.selection.result).toMatch(/Bo Staloch/);
+    expect(PRESETS["g4-a"].live?.selection.result).toMatch(/two-night pass/);
+    // Ticketmaster names the room "The Salt Shed Indoors (Shed)"; every run there keeps the preset's name.
+    expect(presetVenueName("live", "KovZ917AI5F")).toBe("The Salt Shed");
+    expect(presetVenueName("live", "no-such-venue")).toBeNull();
     expect(PRESETS["g1-a"].operator.seatsLeft).toBeNull();
     expect(PRESETS["g1-a"].operator.capacity).toBe(4400);
     expect(PRESETS["g1-a"].operator.mediaBudgetUsd).toBe(6000);

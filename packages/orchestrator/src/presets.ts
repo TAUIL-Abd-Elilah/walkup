@@ -7,10 +7,10 @@
  * bill there is invented. `live` is a real Ticketmaster bill picked by
  * HERO_RULE (one independent room, HERO_WINDOW): g1-a and g1-b carry the two
  * hero bills at The Anthem, Washington DC, and g4-a and g4-b the two bills the
- * same rule picks at The Basement East, Nashville; g2 and g3 have none. The
- * fixture world has no copy of The Basement East, so g4-a and g4-b plan The
- * Truth's invented bills in fixture mode (`fixtureSameAs`) and the app bundles
- * no sample sheet for them.
+ * same rule picks at The Salt Shed, Chicago; g2 and g3 have none. The fixture
+ * world has no copy of The Salt Shed, so g4-a and g4-b plan The Truth's
+ * invented bills in fixture mode (`fixtureSameAs`) and the app bundles no
+ * sample sheet for them.
  * presetFor(preset, mode) is the one reader of either show: a live run of a
  * preset with no live show stops with NO_LIVE_SHOW before any call. Presets carry no seats-left count; capacity and budget are
  * operator what-ifs, never sales data.
@@ -86,7 +86,7 @@ export const HERO_WINDOW: Readonly<{ from: string; to: string }> = { from: "2026
 
 /** The docs/spec.md G1 rule for the live hero bills: explainG1Rule(events, HERO_WINDOW) applies it. */
 export const HERO_RULE =
-  "One independent room, Dec 20 2026 to Feb 28 2027. Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar in that window. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy). A bill whose headliner Qloo cannot match exactly is skipped, because both headliners must resolve exactly.";
+  "One independent room, Dec 20 2026 to Feb 28 2027. Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar in that window. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy). A bill whose headliner Qloo cannot match exactly is skipped, because both headliners must resolve exactly, and so is a ticket package for shows already on the calendar (a two-night pass).";
 
 const G1_RULE =
   "Bill A: the first Americana, country or folk headliner on the room's Ticketmaster calendar between Nov 20 and Dec 20 2026. Bill B: the bill in the same window whose genre is most distant from A (hip-hop/R&B, Latin, indie-pop or comedy).";
@@ -132,23 +132,26 @@ const HERO_OPERATOR: OperatorInputs = {
 };
 
 /**
- * The second live room: The Basement East, Nashville (independent: co-owned by Mike Grimes and Dave Brown).
+ * The second live room: The Salt Shed, Chicago (the indoor Shed, 3,600). It is owned and run by 16" On Center, the
+ * Chicago group behind the Empty Bottle and Thalia Hall, and is a member of the Chicago Independent Venue League;
+ * Ticketmaster lists 36 of its next 44 shows (Oct 21 2026) as promoted by the venue, both picks among them.
  * The same rule, over the same window, run with npm run tm:room on 2026-10-21:
- *   npm run tm:room -- --venue-id=KovZ917ACl7 --as-of=2026-10-21 --unresolved=rZ7HnEZ1AfGI-f
- * The first folk bill in the window, Bo Staloch (Wed Feb 3 2027), is skipped: a Qloo search for the name on
- * 2026-10-21 had no exact match (Bo Burnham, Bo Diddley and others came back). Rayland Baxter resolves by his
- * Spotify id and Little Stranger by theirs.
+ *   npm run tm:room -- --venue-id=KovZ917AI5F --as-of=2026-10-21 --package=vvG18Z_CM8Huwe
+ * The first listing in the window is a two-night pass for Greensky Bluegrass's Dec 30 and 31 shows, skipped as a
+ * ticket package; bill A is the Dec 30 show itself. Greensky Bluegrass resolves by its Spotify id. The Roots'
+ * Spotify id on Ticketmaster is not in Qloo, so they resolve by an exact name search with one match; both pass the
+ * signal check.
  */
-const NASHVILLE_VENUE = { name: "The Basement East", city: "Nashville", state: "TN" } as const;
-const NASHVILLE_VENUE_ID = "KovZ917ACl7";
-const NASHVILLE_AS_OF = "2026-10-21";
-const NASHVILLE_LINE = "Same room, two crowds: two real bills at The Basement East, planned side by side.";
+const CHICAGO_VENUE = { name: "The Salt Shed", city: "Chicago", state: "IL" } as const;
+const CHICAGO_VENUE_ID = "KovZ917AI5F";
+const CHICAGO_AS_OF = "2026-10-21";
+const CHICAGO_LINE = "Same room, two crowds: two real bills at The Salt Shed, planned side by side.";
 
-/** What-ifs for the Nashville room: the capacity is the room's published 475; the budget is an example. */
-const NASHVILLE_OPERATOR: OperatorInputs = {
+/** What-ifs for the Chicago room: the capacity is the indoor Shed's published 3,600; the budget is an example. */
+const CHICAGO_OPERATOR: OperatorInputs = {
   seatsLeft: null,
-  capacity: 475,
-  mediaBudgetUsd: 1500,
+  capacity: 3600,
+  mediaBudgetUsd: 5000,
   streetTeamDays: ["thursday", "saturday"],
   radiusKm: 40,
   declaredPartners: [],
@@ -274,18 +277,18 @@ export const PRESETS: Record<PresetId, Preset> = {
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
     fixtureSameAs: "g1-a",
     live: {
-      tmEventId: "rZ7HnEZ1AfGx4f",
-      tmVenueId: NASHVILLE_VENUE_ID,
-      asOf: NASHVILLE_AS_OF,
-      title: "The Basement East, Nashville: bill A",
-      venue: NASHVILLE_VENUE,
+      tmEventId: "vvG18Z_CM8zcsl",
+      tmVenueId: CHICAGO_VENUE_ID,
+      asOf: CHICAGO_AS_OF,
+      title: "The Salt Shed, Chicago: bill A",
+      venue: CHICAGO_VENUE,
       selection: {
         rule: HERO_RULE,
         result:
-          "Bill A: Rayland Baxter, The True Violet Tour, Fri Feb 5 2027 (Folk Rock), the first Americana, country or folk bill in the window whose headliner Qloo matches exactly (Bo Staloch, Wed Feb 3, has no exact match).",
+          "Bill A: Greensky Bluegrass, Wed Dec 30 2026 (Bluegrass), the first Americana, country or folk bill in the window (the two-night pass listed the same day is a ticket package, not a show).",
       },
-      operator: NASHVILLE_OPERATOR,
-      line: NASHVILLE_LINE,
+      operator: CHICAGO_OPERATOR,
+      line: CHICAGO_LINE,
     },
   },
   "g4-b": {
@@ -301,17 +304,17 @@ export const PRESETS: Record<PresetId, Preset> = {
     line: "Same room, two crowds: two bills at The Truth, planned side by side.",
     fixtureSameAs: "g1-b",
     live: {
-      tmEventId: "rZ7HnEZ1AfusAf",
-      tmVenueId: NASHVILLE_VENUE_ID,
-      asOf: NASHVILLE_AS_OF,
-      title: "The Basement East, Nashville: bill B",
-      venue: NASHVILLE_VENUE,
+      tmEventId: "vv1kvZvPodGA5phKX",
+      tmVenueId: CHICAGO_VENUE_ID,
+      asOf: CHICAGO_AS_OF,
+      title: "The Salt Shed, Chicago: bill B",
+      venue: CHICAGO_VENUE,
       selection: {
         rule: HERO_RULE,
-        result: "Bill B: Little Stranger with Shwayze and Damn Skippy, Sun Feb 21 2027 (Hip-Hop/Rap), the genre most distant from bill A.",
+        result: "Bill B: The Roots, Fri Jan 15 2027 (Hip-Hop/Rap), the genre most distant from bill A.",
       },
-      operator: NASHVILLE_OPERATOR,
-      line: NASHVILLE_LINE,
+      operator: CHICAGO_OPERATOR,
+      line: CHICAGO_LINE,
     },
   },
 };
@@ -346,6 +349,18 @@ export function presetFor(preset: Preset, mode: "live" | "fixture"): PresetShow 
     line: live.line,
     realShow: true,
   };
+}
+
+/**
+ * The name a preset gives the Ticketmaster venue `tmVenueId` in `mode`, or null when no preset plans a show there.
+ * Ticketmaster's own venue name can be a box-office label ("The Salt Shed Indoors (Shed)").
+ */
+export function presetVenueName(mode: "live" | "fixture", tmVenueId: string): string | null {
+  for (const preset of Object.values(PRESETS)) {
+    const show = presetFor(preset, mode);
+    if (show && show.venue.tmVenueId === tmVenueId && show.venue.name.trim() !== "") return show.venue.name;
+  }
+  return null;
 }
 
 /**
@@ -498,9 +513,9 @@ export function explainG1Rule(events: readonly TmEvent[], window: { from: string
   // The rule's own order: events still on, by local date (the sort applyG1Rule has always used).
   const ranked = inside.filter((e) => !isCanceled(e) && !skippedWhy(e)).sort((a, b) => (localDateOf(a) < localDateOf(b) ? -1 : 1));
   const a = ranked.find((e) => genreClass(e) === "roots") ?? null;
-  // Roots bills before A that the rule skipped as unresolved, named in A's reason.
+  // Roots bills on or before A's date that the rule skipped, named in A's reason.
   const passedOver = inside
-    .filter((e) => !isCanceled(e) && skippedWhy(e) && genreClass(e) === "roots" && (!a || localDateOf(e) < localDateOf(a)))
+    .filter((e) => !isCanceled(e) && skippedWhy(e) && genreClass(e) === "roots" && (!a || localDateOf(e) <= localDateOf(a)))
     .map((e) => ` Skipped ${billWords(candidateOf(e))}: ${skippedWhy(e)}.`)
     .join("");
   if (!a) {

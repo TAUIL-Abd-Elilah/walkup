@@ -109,7 +109,7 @@ describe("checkReviseCall", () => {
     expect(describeReviseCall({ tool: "exclude_partner_categories", input: { categories: [...bars, "cafe"] } }, s)).toBe("Left out bars and other drinking places and cafes");
     expect(describeReviseCall({ tool: "set_street_team_days", input: { days: ["saturday"] } }, s)).toBe("Street team works Saturday only");
     expect(describeReviseCall({ tool: "exclude_areas", input: { areas: ["dn6m9q"] } }, s)).toBe("Skipped North Example (dn6m9q)");
-    expect(describeReviseCall({ tool: "set_all_ages", input: { allAges: false } }, s)).toBe("Cleared the all-ages mark; Ticketmaster still lists the show as 21+");
+    expect(describeReviseCall({ tool: "set_all_ages", input: { allAges: false } }, s)).toBe("Cleared the all-ages mark; Ticketmaster still lists the show as age-restricted");
   });
 });
 

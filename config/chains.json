@@ -225,6 +225,8 @@
     {"name":"Harris Teeter","kind":"retail"},
     {"name":"Wegmans","aliases":["Wegmans Food Markets"],"kind":"retail"},
     {"name":"Kroger","kind":"retail","exact":true},
+    {"name":"Mariano's","aliases":["Mariano's Fresh Market"],"kind":"retail"},
+    {"name":"Jewel-Osco","aliases":["Jewel Osco"],"kind":"retail"},
     {"name":"Publix","aliases":["Publix Super Market"],"kind":"retail"},
     {"name":"Aldi","aliases":["ALDI"],"kind":"retail","exact":true},
     {"name":"Costco","aliases":["Costco Wholesale"],"kind":"retail"},

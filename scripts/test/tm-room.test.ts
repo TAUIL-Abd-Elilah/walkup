@@ -18,6 +18,7 @@ import {
   addDays,
   findVenue,
   normalizeName,
+  PACKAGE_REASON,
   readRoster,
   readWindow,
   renderReport,
@@ -290,6 +291,17 @@ describe("window and rule", () => {
     const json = JSON.stringify(reportJson(r));
     expect(json).not.toContain("_embedded");
     for (const out of [text, json]) expect(out).not.toContain(KEY);
+  });
+
+  it("skips a listing passed with --package and names it in bill A's reason", async () => {
+    const { tm } = discovery();
+    const r = await roomReport(tm, { venue: rowOf(ROOM), venueId: "SYN-VEN-ROOM", venueQuery: "test", asOf: "2026-11-01", window: HERO_WINDOW, packages: ["syn-w2"] });
+    const w2 = r.explanation.candidates.find((c) => c.id === "syn-w2");
+    expect(w2?.eligible).toBe(false);
+    expect(w2?.skipped).toBe(PACKAGE_REASON);
+    expect(r.explanation.billA.id).not.toBe("syn-w2");
+    expect(parseArgs(["--venue-id=x", "--package=a1,b2"], "2026-10-21").packages).toEqual(["a1", "b2"]);
+    expect(() => parseArgs(["--venue-id=x", "--package=a b"], "2026-10-21")).toThrow(/--package/);
   });
 
   it("with --venue-id, reads the venue from the room's own events", async () => {

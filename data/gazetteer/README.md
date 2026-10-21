@@ -19,6 +19,7 @@ lift tile without calling any API at run time. `@walkup/gazetteer`
 | `nashville` | 35.8752, -87.1377, 36.4502, -86.4255 | ~64 x 64 km around downtown: Davidson County plus Brentwood, Franklin, Smyrna, La Vergne, Mt. Juliet, Hendersonville, Goodlettsville |
 | `hampton_roads` | 36.54, -76.62, 37.23, -75.86 | Hampton, Newport News, Norfolk, Portsmouth, Virginia Beach and Chesapeake in full (~77 x 68 km) |
 | `dc` | 38.5208, -77.4878, 39.2394, -76.5646 | ~80 x 80 km around The Anthem (the live hero room): the District, Arlington, Alexandria, Fairfax, Reston, Bethesda, Rockville, Silver Spring, College Park, Laurel, Bowie |
+| `chicago` | 41.547, -88.1418, 42.2656, -87.1762 | ~80 x 80 km around The Salt Shed (the second live room): the city, Evanston, Oak Park, Schaumburg, Naperville, Orland Park, the North Shore to Highland Park, and Hammond and Gary in Indiana |
 | `tacoma` | 46.99, -122.78, 47.62, -122.12 | ~70 km north-south from Spanaway/Graham to downtown Seattle, Gig Harbor to Auburn/Bonney Lake |
 
 The boxes live in `METROS` in `build.py`. A lift radius of 40 km from a venue can reach past
@@ -80,6 +81,7 @@ diffs stay readable.
 | `nashville` | 255 (29 housing dropped) | 30 | 51 | 1,041,198 | all ok |
 | `hampton_roads` | 808 (38 housing dropped) | 13 | 76 | 1,159,226 | all ok |
 | `tacoma` | 549 (96 housing dropped) | 106 | 119 | 2,038,347 | all ok |
+| `chicago` (built 2026-10-21) | 625 (1 housing dropped) | 181 | 238 | 5,208,560 | all ok |
 
 What did not work first time, and what was done:
 

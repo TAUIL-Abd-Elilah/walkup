@@ -268,7 +268,7 @@ describe("plans", () => {
   });
 
   it("has no sample sheet for a live-only preset, and runs none in fixture mode", async () => {
-    // g4-a and g4-b plan real bills at The Basement East only; the fixture world has no copy of that room.
+    // g4-a and g4-b plan real bills at The Salt Shed only; the fixture world has no copy of that room.
     expect(await loadPlan("g4-a", { view: "api" })).toBeNull();
     expect(await loadPlan("g4-b", { view: "page" })).toBeNull();
     const r = await startPlan({ presetId: "g4-a" }, ctx({ ip: "203.0.113.44" }));

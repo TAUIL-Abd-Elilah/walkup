@@ -130,6 +130,14 @@ METROS: dict[str, dict[str, Any]] = {
         # inside: Fairfax, Reston, Rockville, Laurel, Bowie and Upper Marlboro at the edges.
         "bbox": km_box(38.8801, -77.0262, 40.0, 40.0),
     },
+    "chicago": {
+        "label": "Chicago, IL: the city, the inner suburbs and northwest Indiana",
+        "center": {"lat": 41.9063, "lon": -87.659},
+        "cities": ["Chicago", "Evanston", "Oak Park"],
+        # ~80 km x 80 km around The Salt Shed (the second live room), so a 40 km lift radius stays
+        # inside: Glenview, Schaumburg, Naperville, Orland Park and Hammond at the edges.
+        "bbox": km_box(41.9063, -87.659, 40.0, 40.0),
+    },
     "tacoma": {
         "label": "Tacoma, WA: Tacoma, Pierce County core and south Seattle",
         "center": {"lat": 47.2529, "lon": -122.4443},

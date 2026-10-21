@@ -64,6 +64,11 @@ export function formatDayMonth(iso: string): string {
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
+/** "Greensky Bluegrass's", "FLO's"; a plural band name takes the apostrophe alone ("The Roots'"). */
+export function possessive(name: string): string {
+  return /^the\s.+s$/i.test(name.trim()) ? `${name}'` : `${name}'s`;
+}
+
 /** "the PDF", "the PDF and the call list", "a, b and c". */
 export function joinAnd(items: readonly string[]): string {
   if (items.length <= 1) return items[0] ?? "";

@@ -33,7 +33,7 @@ import { callBudget } from "./budget";
 import { emit, failure, node, type RunContext } from "./context";
 import { createRunLedger } from "./ledger";
 import { deniedReceipt } from "./policy";
-import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, type Preset, type PresetShow } from "./presets";
+import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, presetVenueName, type Preset, type PresetShow } from "./presets";
 import { splitBudget, type BudgetShare } from "./steps/budget";
 import { honestWording, partnerLinesWithinTags, runCopy, tidyAreaPhrases } from "./steps/copy";
 import { runDeclared } from "./steps/declared";
@@ -226,7 +226,11 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     }
   }
   if (!bill) return errorResult("No bill to plan.");
-  const operator = withoutContacts(mergeOperator(defaultOperator(bill), show?.operator, request.operator));
+  // A preset's room keeps the name people use, in every run there (a revision too): Ticketmaster lists The Salt
+  // Shed as "The Salt Shed Indoors (Shed)".
+  const roomName = bill.venue.tmVenueId ? presetVenueName(mode, bill.venue.tmVenueId) : null;
+  if (roomName && bill.venue.name !== roomName) bill = { ...bill, venue: { ...bill.venue, name: roomName } };
+  const operator =withoutContacts(mergeOperator(defaultOperator(bill), show?.operator, request.operator));
   const asOf = request.asOf ?? show?.asOf ?? isoDate(now());
 
   const ctx: RunContext = {

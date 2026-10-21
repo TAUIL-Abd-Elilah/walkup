@@ -39,11 +39,11 @@ export const PRESETS: Preset[] = [
   },
   {
     // A live example only: no sample sheet is bundled for it (the fixture world has no copy of the room).
-    id: "basement-east",
-    chip: "The Basement East, Nashville",
+    id: "salt-shed",
+    chip: "The Salt Shed, Chicago",
     planId: "g4-a",
     realShow: true,
-    line: "Same room, two crowds: two real bills at The Basement East, planned side by side.",
+    line: "Same room, two crowds: two real bills at The Salt Shed, planned side by side.",
   },
   {
     id: "tacoma",

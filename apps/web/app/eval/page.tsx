@@ -96,18 +96,18 @@ const LIVE_BILLS = [
   { name: "FLO", date: "Wed Feb 17 2027", partners: 17, topArea: "U Street / Shaw", lift: "about 2.8x", notPopular: 15 },
 ] as const;
 
-/** The second room, The Basement East, Nashville, recorded on Oct 21 2026 by the same rule. */
+/** The second room, The Salt Shed, Chicago, recorded on Oct 21 2026 by the same rule. */
 const SECOND_ROOM_BILLS = [
-  { name: "Rayland Baxter", date: "Fri Feb 5 2027", partners: 24, topArea: "East Nashville", lift: "about 2.8x", notPopular: 19 },
-  { name: "Little Stranger", date: "Sun Feb 21 2027", partners: 8, topArea: "Downtown Nashville", lift: "about 2.8x", notPopular: 6 },
+  { name: "Greensky Bluegrass", date: "Wed Dec 30 2026", partners: 19, topArea: "Schaumburg, IL", lift: "about 2.6x", notPopular: 12 },
+  { name: "The Roots", date: "Fri Jan 15 2027", partners: 22, topArea: "Bronzeville, IL", lift: "about 2.4x", notPopular: 17 },
 ] as const;
 
 /** One area per live sheet, popularity alone against Walkup's picks (the sheets' popularTop and partner ranks). */
 const WITH_WITHOUT = [
   { bill: "Rhiannon Giddens", area: "H Street NE, DC", fact: "2 of the 7 most popular places made the list" },
   { bill: "FLO", area: "Laurel, MD", fact: "none of the 8 most popular places made the list" },
-  { bill: "Rayland Baxter", area: "Downtown Nashville", fact: "1 of the 8 most popular places made the list" },
-  { bill: "Little Stranger", area: "near the room", fact: "2 of the 8 most popular places made the list" },
+  { bill: "Greensky Bluegrass", area: "Oak Park, IL", fact: "2 of the 8 most popular places made the list" },
+  { bill: "The Roots", area: "South Shore, IL", fact: "1 of the 8 most popular places made the list" },
 ] as const;
 
 /** The foot-traffic check, run on Oct 20 2026 with The Truth's (Nashville) real Ticketmaster roster. Plain names for the measures. */
@@ -252,13 +252,14 @@ export default function EvalPage() {
           </tbody>
         </table>
 
-        <h3 className="mt-6">A second room: The Basement East, Nashville</h3>
+        <h3 className="mt-6">A second room: The Salt Shed, Chicago</h3>
         <p className="mt-2">
-          The same rule and window at an independent room in another city (capacity 475, co-owned by Mike Grimes and Dave Brown). The first folk bill in
-          the window, Bo Staloch on Feb 3, was skipped because Qloo has no exact match for the name, so Rayland Baxter&apos;s folk-rock show on Feb 5 is
-          bill A. Little Stranger with Shwayze and Damn Skippy, hip-hop on Feb 21, is the most distant genre. The two sheets share 1 of their top 4
-          areas (Downtown Nashville) and 2 of their partners. Little Stranger&apos;s signal is thin: only 77 areas came back and the two halves of the
-          bill disagreed on where the crowd is, so its partners are places near the room, marked as a starting list.
+          The same rule and window at an independent room in another city: the indoor Shed (3,600), owned and run by 16&quot; On Center, the Chicago group
+          behind the Empty Bottle and Thalia Hall, and a member of the Chicago Independent Venue League. The first listing in the window is a two-night
+          pass for Greensky Bluegrass, a ticket package rather than a show, so bill A is their Dec 30 show. The Roots on Jan 15, hip-hop, is the most
+          distant genre. The two sheets share none of their top 5 areas and none of their partners (19 and 22): Greensky Bluegrass&apos;s crowd stands out
+          in the suburbs (Schaumburg, Highwood, Oak Park), The Roots&apos; on the South Side (Bronzeville, South Shore) and in Midlothian. Neither signal is
+          thin. 29 of the 41 partners are not in the popularity list for their area.
         </p>
         <table className="table mt-2">
           <thead>

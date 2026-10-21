@@ -362,7 +362,7 @@ export function describeReviseCall(call: ReviseCall, summary: ReviseSummary): st
       return call.input.allAges
         ? "Marked the show all ages, so no bar partners or drink-led spots"
         : summary.show.agePolicy === "21+"
-          ? "Cleared the all-ages mark; Ticketmaster still lists the show as 21+"
+          ? "Cleared the all-ages mark; Ticketmaster still lists the show as age-restricted"
           : "Cleared the all-ages mark";
     case "exclude_partner_categories":
       return `Left out ${categoriesInWords(call.input.categories, summary)}`;

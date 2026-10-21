@@ -461,7 +461,7 @@ export function isDrinkLed(e: Pick<QlooEntity, "tags" | "name">): boolean {
 
 /** Place-type keys of a cart, kiosk, stand or truck: somewhere to buy food, not a room a crowd can sit in. */
 const STAND_KEYS: ReadonlySet<string> = new Set(["food_truck", "food_cart", "food_stand", "food_kiosk", "kiosk", "hot_dog_stand", "street_food", "concession_stand", "market_stall"]);
-const STAND_NAME_RE = /\b(cart|carts|kiosk|food truck|truck|stand|stall)\b/i;
+const STAND_NAME_RE = /\b(carts?|kiosks?|food trucks?|trucks?|stands?|stalls?)\b/i;
 
 /** True for a food cart, kiosk, stand or truck (by place-type tag or by name: "Sami's Hot Dog Cart"). */
 export function isFoodStand(e: Pick<QlooEntity, "tags" | "name">): boolean {
@@ -469,11 +469,19 @@ export function isFoodStand(e: Pick<QlooEntity, "tags" | "name">): boolean {
   return STAND_NAME_RE.test((e.name ?? "").normalize("NFKC"));
 }
 
-/** True when Qloo marks the place closed (`is_closed: true`, also accepts "true" and `isClosed`). */
+/** An address line that says the place has closed ("FOOD TRUCK ONLY RESTAURANT CLOSED 951 W Wise Rd", Oct 21 2026). */
+const CLOSED_ADDRESS_RE = /\b(?:(?:permanently|restaurant|store|now)\s+closed|closed\s+permanently)\b/i;
+
+/**
+ * True when Qloo marks the place closed (`is_closed: true`, also accepts "true" and `isClosed`), or when its
+ * address says it has closed.
+ */
 export function isClosedEntity(e: QlooEntity): boolean {
   const p = e.properties ?? {};
   const v = p.is_closed ?? p.isClosed;
-  return v === true || v === "true" || v === 1;
+  if (v === true || v === "true" || v === 1) return true;
+  const address = p.address;
+  return typeof address === "string" && CLOSED_ADDRESS_RE.test(address);
 }
 
 export function propString(e: QlooEntity, ...keys: string[]): string | null {

@@ -122,7 +122,7 @@ export default function SystemCardPage() {
           <p>
             It is a planning tool. It does not sell tickets, set prices or rank shows, and it shows no sales data for any show. Seats left and capacity are
             what-ifs the operator enters, marked as what-ifs. The sample presets use invented bills; the live sheets use two real Ticketmaster bills at
-            The Anthem, Washington DC, and two at The Basement East, Nashville. No preset carries a seats-left count.
+            The Anthem, Washington DC, and two at The Salt Shed, Chicago. No preset carries a seats-left count.
           </p>
         </Section>
 
@@ -160,7 +160,7 @@ export default function SystemCardPage() {
             Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 16 to 32 calls per
             fresh run on the sample data: the sample bill A at The Truth, Nashville, makes 32 from cold, including the signal check, the 4 map-check heatmaps, 3 usual-crowd
             partner searches and 3 popularity searches; the Super Funny, Tacoma sample, with no lift map, makes 16. The live runs recorded on Oct 21 2026 made
-            about 30 each from cold (29 and 21 at The Basement East, the second reusing cached answers). The hackathon key&apos;s monthly limit read 50,000 calls. Every call is a GET with plain entity ids.
+            about 30 each from cold (29 and 21 at The Salt Shed, the second reusing cached answers). The hackathon key&apos;s monthly limit read 50,000 calls. Every call is a GET with plain entity ids.
           </p>
           <p className="hint">
             Every request shape below was checked against the live Qloo host on Oct 15 2026, the day the key arrived; what it did is listed after this
@@ -285,10 +285,10 @@ export default function SystemCardPage() {
             place search without the bill as the signal); that compares two lists, not ticket sales. The change note &ldquo;All ages, no bars&rdquo; was
             read by Claude as two tool calls on FLO&apos;s sheet, removed 5 partners and made no new Qloo call. A separate check on Oct 20, that lift is not just foot traffic,
             passed for two bills at The Truth, Nashville, with that room&apos;s real roster. One room and two bills show the pipeline runs on live data, not that a sheet
-            sells tickets. The same rule at a second independent room, The Basement East in Nashville, picked Rayland Baxter and Little Stranger (Bo
-            Staloch, the first folk bill, was skipped: Qloo has no exact match for the name). Those two sheets share 1 of their top 4 areas and 2 of their
-            partners; 25 of their 32 partners are not in the popularity list for their area. Little Stranger&apos;s signal is thin, so the sheet lists
-            places near the room and says so.{" "}
+            sells tickets. The same rule at a second independent room, The Salt Shed in Chicago (owned and run by 16&quot; On Center, a member of the
+            Chicago Independent Venue League), picked Greensky Bluegrass and The Roots (a two-night pass listed first was skipped as a ticket package, not a
+            show). Those two sheets share none of their top 5 areas and none of their partners; 29 of their 41 partners are not in the popularity list for
+            their area. Neither signal is thin.{" "}
             <Link href="/eval#live" className="link">
               The numbers
             </Link>

@@ -1,6 +1,6 @@
 import type { GuardReport, LedgerEntry, LiftTile, Partner, PopularityCheck, PopularPlace, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
 import { areaState, partnerAreaLabel } from "@walkup/exports/format";
-import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd } from "./format";
+import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd, possessive } from "./format";
 import { TOP_LIFT } from "./lift";
 import { CATEGORY_LABEL, LEDGER_SOURCE_SHORT, tagFallbackName } from "./labels";
 
@@ -396,8 +396,8 @@ export function comparisonSentence(c: BillComparison, names: { a: string; b: str
   // The second phrase drops the baseline when it is the same one ("about 2.5 times").
   const liftB = ba === bb ? liftPhrase(c.b.lift, bb).replace(/ (the room's usual crowd|the genre baseline|[\w-]+ fans in general)$/, "") : liftPhrase(c.b.lift, bb);
   return (
-    `${shared}: ${names.a}'s crowd stands out most in ${c.a.name}, ${formatKm(c.a.km)} ${c.a.direction} of ${names.venue}, ${liftA}, ` +
-    `and ${names.b}'s in ${c.b.name}, ${formatKm(c.b.km)} ${c.b.direction}, ${liftB}.`
+    `${shared}: ${possessive(names.a)} crowd stands out most in ${c.a.name}, ${formatKm(c.a.km)} ${c.a.direction} of ${names.venue}, ${liftA}, ` +
+    `and ${possessive(names.b)} in ${c.b.name}, ${formatKm(c.b.km)} ${c.b.direction}, ${liftB}.`
   );
 }
 

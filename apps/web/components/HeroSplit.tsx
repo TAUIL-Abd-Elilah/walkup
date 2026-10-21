@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fragment, useState } from "react";
 import type { LiftTile } from "@walkup/contracts";
 import type { Bbox } from "../lib/geohash";
+import { possessive } from "../lib/format";
 import { LiftLegend } from "./LiftLegend";
 import { LiftMap, MapCaption } from "./LiftMap";
 import { TileList } from "./TileList";
@@ -92,7 +93,7 @@ function Side({ side, letter, extent }: { side: HeroSide; letter: "A" | "B"; ext
         <TileList id={listId} tiles={side.top} selected={selected} onSelect={toggle} compact />
         <p className="mt-3">
           <Link href={`/plan/${side.planId}`} className="link">
-            Open {side.headliner}&apos;s sheet
+            Open {possessive(side.headliner)} sheet
           </Link>
           <span className="text-muted"> · {side.partners} suggested partners</span>
         </p>

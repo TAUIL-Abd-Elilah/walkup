@@ -48,6 +48,7 @@ export {
   presetById,
   presetFor,
   presetShowOf,
+  presetVenueName,
   NO_LIVE_SHOW,
   HERO_RULE,
   HERO_WINDOW,

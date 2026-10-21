@@ -40,6 +40,12 @@ describe("category helpers", () => {
     expect(isClosedEntity(place("c", { isClosed: false }))).toBe(false);
     expect(isClosedEntity(place("d"))).toBe(false);
   });
+  it("an address that says the place has closed counts as closed (Toasty Cheese, Schaumburg, Oct 21 2026)", () => {
+    expect(isClosedEntity(place("e", { properties: { address: "FOOD TRUCK ONLY RESTAURANT CLOSED 951 W Wise Rd Schaumburg, IL 60193" } }))).toBe(true);
+    expect(isClosedEntity(place("f", { properties: { address: "12 Main St (permanently closed)" } }))).toBe(true);
+    expect(isClosedEntity(place("g", { properties: { address: "901 W Wise Rd Schaumburg, IL 60193" } }))).toBe(false);
+    expect(isClosedEntity(place("h", { properties: { address: "1 Closed Loop Rd" } }))).toBe(false);
+  });
 });
 
 describe("scorePartners: scoring", () => {

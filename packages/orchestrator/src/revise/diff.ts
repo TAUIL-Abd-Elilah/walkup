@@ -80,10 +80,10 @@ export function excludedInWords(keys: readonly string[], summary?: Parameters<ty
 /** The "All ages" row: what changed, said against what the original sheet already did. */
 function allAgesDetail(parent: StreetSheet, child: StreetSheet): string {
   const legal = child.bill.legalAgeEnforced;
-  if (child.operator.allAges !== true) return `Off (was on)${legal === true ? ": Ticketmaster still lists the show as 21+" : ""}`;
+  if (child.operator.allAges !== true) return `Off (was on)${legal === true ? ": Ticketmaster still lists the show as age-restricted" : ""}`;
   // The original sheet already read the show as all ages from Ticketmaster: only the bar rule is new.
   if (parent.bill.legalAgeEnforced === false) return "Already all ages on Ticketmaster; bar partners and drink-led spots are now left out";
-  if (legal === true) return "On (was off), so no bar partners or drink-led spots; Ticketmaster still lists the show as 21+";
+  if (legal === true) return "On (was off), so no bar partners or drink-led spots; Ticketmaster still lists the show as age-restricted";
   if (legal === null) return "On: bar partners and drink-led spots are now left out (Ticketmaster lists no age limit)";
   return "On (was off), so no bar partners or drink-led spots";
 }

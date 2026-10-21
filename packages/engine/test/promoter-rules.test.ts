@@ -77,6 +77,7 @@ describe("drinking places by name or bar-type tags", () => {
   it("food carts, kiosks and stands", () => {
     expect(isFoodStand(place("Sami's Hot Dog Cart"))).toBe(true);
     expect(isFoodStand(place("Taco Kiosk"))).toBe(true);
+    expect(isFoodStand(place("Toasty Cheese Food Trucks"))).toBe(true);
     expect(isFoodStand(place("Rolling Smoke", { tags: [tag("urn:tag:category:place:food_truck")] }))).toBe(true);
     expect(isFoodStand(place("Grandstand Grill"))).toBe(false);
     expect(isFoodStand(place("Cartwright's Kitchen"))).toBe(false);

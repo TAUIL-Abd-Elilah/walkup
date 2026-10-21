@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import type { StreetSheet } from "@walkup/contracts";
-import { headlinerName } from "../lib/format";
+import { headlinerName, possessive } from "../lib/format";
 import { LIFT_LEGEND, TOP_LIFT, liftAlpha, liftBand, liftColor } from "../lib/lift";
 import { liftInWords } from "@walkup/engine";
 import { dataSourcesLine } from "../lib/labels";
@@ -114,6 +114,13 @@ describe("comparisonSentence wording", () => {
       "The two bills share none of their top 5 areas and none of their 24 suggested partners: Act A's crowd stands out most in Elm Park, " +
         "6.2 km north of The Room, about 1.5 times the room's usual crowd, and Act B's in Oak Hill, 19 km east, about 2.5 times.",
     );
+  });
+
+  it("gives a plural band name the apostrophe alone", () => {
+    const s = comparisonSentence({ ...base, a: area, b: { ...area, name: "Oak Hill" } }, { ...names, b: "The Roots" });
+    expect(s).toContain("and The Roots' in Oak Hill");
+    expect(possessive("Greensky Bluegrass")).toBe("Greensky Bluegrass's");
+    expect(possessive("FLO")).toBe("FLO's");
   });
 });
 

@@ -248,15 +248,23 @@ export interface ReportInput {
   window: Window;
   /** Event ids whose headliner Qloo cannot match exactly; the rule skips them. */
   unresolved?: readonly string[];
+  /** Event ids that are ticket packages for shows already listed (a two-night pass); the rule skips them. */
+  packages?: readonly string[];
 }
 
 /** The reason the rule prints for a bill passed with --unresolved. */
 export const UNRESOLVED_REASON = "its headliner has no exact match in Qloo";
 
+/** The reason the rule prints for a listing passed with --package. */
+export const PACKAGE_REASON = "a ticket package for shows already on the calendar, not a show of its own";
+
 export async function roomReport(tm: TmClient, input: ReportInput): Promise<RoomReport> {
   const roster = await readRoster(tm, input.venueId, input.asOf);
   const read = await readWindow(tm, input.venueId, input.window);
-  const unresolved = Object.fromEntries((input.unresolved ?? []).map((id) => [id, UNRESOLVED_REASON]));
+  const unresolved = Object.fromEntries([
+    ...(input.packages ?? []).map((id) => [id, PACKAGE_REASON] as const),
+    ...(input.unresolved ?? []).map((id) => [id, UNRESOLVED_REASON] as const),
+  ]);
   const explanation = explainG1Rule(read.events, input.window, { unresolved });
   const warnings: string[] = [];
   const venue = input.venue ?? venueFromEvents(input.venueId, [...roster.events, ...read.events]);

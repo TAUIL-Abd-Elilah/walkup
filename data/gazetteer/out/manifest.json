@@ -1,6 +1,23 @@
 {
-  "generatedAt": "2026-10-20T15:42:23Z",
+  "generatedAt": "2026-10-21T17:47:38Z",
   "metros": {
+    "chicago": {
+      "file": "chicago.json",
+      "generatedAt": "2026-10-21T17:47:38Z",
+      "counts": {
+        "neighbourhoods": 625,
+        "places": 181,
+        "zctas": 238
+      },
+      "adults21Total": 5208560,
+      "sources": {
+        "places": "ok",
+        "zctaPoints": "ok",
+        "osm": "ok",
+        "acs": "ok"
+      },
+      "errors": []
+    },
     "dc": {
       "file": "dc.json",
       "generatedAt": "2026-10-20T15:42:23Z",
