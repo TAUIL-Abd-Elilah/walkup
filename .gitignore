@@ -17,3 +17,7 @@ evals/out/private/
 __pycache__/
 *.pyc
 .claude/
+# Recorded sheets exported for a Vercel deployment (scripts/export-plans.mjs): shipped with a deploy, never committed
+deploy/vercel/*.json
+# Vercel CLI link and the token file it writes
+.vercel

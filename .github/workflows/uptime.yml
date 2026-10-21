@@ -1,13 +1,13 @@
 name: uptime
 
-# Every 5 minutes: GET the hosted /healthz (and the static mirror's) and fail unless it answers {"ok":true,...}.
+# Every 15 minutes: GET the hosted /healthz and fail unless it answers {"ok":true,...}.
 # A failed run shows in the Actions tab and GitHub emails the repository owner.
 # /healthz never calls Qloo or any other upstream API, so this costs no API quota.
 # GitHub may start a scheduled run a few minutes late, and pauses schedules after
 # 60 days without activity in the repository.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -24,24 +24,13 @@ jobs:
     steps:
       - name: GET /healthz (3 tries, 20 s apart)
         env:
-          URL: https://walkup-agent.fly.dev/healthz
+          URL: https://walkup-eight.vercel.app/healthz
         run: |
           for i in 1 2 3; do
             if body=$(curl -fsS --max-time 15 "$URL") && printf '%s' "$body" | grep -q '"ok":true'; then
               printf '%s\n' "$body" | head -c 800; echo
               exit 0
             fi
-            echo "try $i failed"
-            sleep 20
-          done
-          echo "::error::$URL did not answer ok after 3 tries"
-          exit 1
-      - name: GET the static mirror's /healthz (3 tries, 20 s apart)
-        env:
-          URL: https://walkup-mirror.fly.dev/healthz
-        run: |
-          for i in 1 2 3; do
-            if curl -fsS --max-time 15 "$URL" | grep -q '^ok'; then echo ok; exit 0; fi
             echo "try $i failed"
             sleep 20
           done

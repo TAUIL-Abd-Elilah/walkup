@@ -11,7 +11,8 @@
  *
  * Singletons live on globalThis so every route bundle shares one engine.
  */
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 import {
   createDepsFromEnv,
   createFixtureDeps,
@@ -21,10 +22,11 @@ import {
   type FixtureDeps,
   type PlanDeps,
   type PlanStore,
+  type StoredPlan,
 } from "@walkup/orchestrator";
 import { createSqliteStores } from "@walkup/orchestrator/sqlite";
 import { createWorld, type World } from "@walkup/qloo-world";
-import { dataDir, ensureGazetteerDir } from "./env";
+import { dataDir, ensureGazetteerDir, findUp } from "./env";
 
 export interface Stores {
   plans: PlanStore;
@@ -54,7 +56,31 @@ function state(): EngineState {
   return s;
 }
 
+/**
+ * WALKUP_PLAN_SEED: a JSON export of stored plans (scripts/export-plans.mjs) loaded into an in-memory store.
+ * For hosts with no lasting writable disk (Vercel serves recorded mode this way): the recorded sheets ship with
+ * the deployment, every instance reads the same copy, and nothing new is stored for long. A relative path is
+ * looked up from the working directory upwards. Unset: SQLite at <WALKUP_DATA_DIR>/plans.sqlite.
+ */
+function seededStores(raw: string): Stores {
+  const file = isAbsolute(raw) ? raw : findUp(raw);
+  if (!file) throw new Error(`WALKUP_PLAN_SEED file not found: ${raw}`);
+  const plans = JSON.parse(readFileSync(/*turbopackIgnore: true*/ file, "utf8")) as StoredPlan[];
+  if (!Array.isArray(plans)) throw new Error(`WALKUP_PLAN_SEED is not a list of plans: ${raw}`);
+  const store = createMemoryPlanStore();
+  for (const p of plans) void store.put(p);
+  return { plans: store, choices: createMemoryChoiceStore(), kind: "memory" };
+}
+
 function openStores(): Stores {
+  const seed = (process.env.WALKUP_PLAN_SEED ?? "").trim();
+  if (seed) {
+    try {
+      return seededStores(seed);
+    } catch (err) {
+      console.error(`walkup: ${err instanceof Error ? err.message : String(err)}; starting with an empty plan store.`);
+    }
+  }
   const choice = (process.env.WALKUP_PLAN_STORE ?? "").trim().toLowerCase();
   if (choice !== "memory") {
     try {

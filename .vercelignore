@@ -1,0 +1,44 @@
+# What `vercel deploy` must never upload (docs/deploy-vercel.md). The CLI uploads local files, including git-ignored
+# ones, so every secret, raw API body and private table is listed here. The one git-ignored file a deploy does ship
+# is deploy/vercel/plans.json: the recorded sheets that recorded mode serves.
+
+# Secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+
+# Raw Qloo response bodies, probe output, private tables, caches and local stores
+fixtures/raw
+**/fixtures/raw
+probe_out
+**/probe_out
+data/private
+evals/out/private
+.cache
+**/.cache
+*.sqlite
+*.sqlite-*
+**/*.sqlite
+**/*.sqlite-*
+
+# Static mirror pages (copies of sheets; the mirror is its own host)
+deploy/mirror/site
+
+# Installed and built output (Vercel installs and builds itself)
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+coverage
+**/*.tsbuildinfo
+**/__pycache__
+**/*.pyc
+
+# Local tooling
+.git
+.claude
+.vercel

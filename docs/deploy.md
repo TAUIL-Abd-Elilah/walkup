@@ -1,5 +1,9 @@
 # Deploying Walkup on Fly.io
 
+**Where it is hosted now.** Since Oct 21 2026 the hosted site is https://walkup-eight.vercel.app, on Vercel's free plan in
+recorded mode ([deploy-vercel.md](deploy-vercel.md)); the Fly apps below (`walkup-agent`, `walkup-mirror`) are down since
+the Fly trial ended. This file stays the runbook for a live host on Fly.
+
 One Fly.io app, one always-on machine in `iad` (US East), one volume at `/data`. The owner runs every command below
 from the repository root with their own Fly account. Nothing here creates an account, and nothing is deployed until
 `fly deploy` is run.
@@ -149,7 +153,7 @@ Changing a secret (`fly secrets set` or `fly secrets unset` without `--stage`) r
   `[[restart]] policy = "always"` restarts it after a crash. Keep exactly one machine
   (`fly scale count 1 -a walkup-agent`): a second one would need its own volume and would split the cache and quota
   files.
-- **GitHub Actions, every 5 minutes.** `.github/workflows/uptime.yml` GETs `/healthz` (3 tries, 20 s apart) and fails
+- **GitHub Actions, every 15 minutes.** `.github/workflows/uptime.yml` GETs the hosted `/healthz` (now the Vercel site; 3 tries, 20 s apart) and fails
   unless it answers `"ok":true`; a failed run shows in the Actions tab and GitHub emails the owner. GitHub can start
   a scheduled run a few minutes late and pauses schedules after 60 days without repository activity. Run it by hand
   from the Actions tab (`workflow_dispatch`).
@@ -344,11 +348,11 @@ fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup-agent
 
 ## Static mirror
 
-https://walkup-mirror.fly.dev is a static copy of the hero sheets for when the main app is down: the home page,
+Down since the Fly trial ended (Oct 2026), and no longer checked by the uptime workflow. https://walkup-mirror.fly.dev was a static copy of the hero sheets for when the main app is down: the home page,
 both Anthem sheets and the "All ages, no bars" revision (each with its print view and every download), the system
 card and the eval. It is a second Fly app in another region (`ord`; the main app is in `iad`), plain nginx, no
 Node, no keys, no database. Every page says at the top that it is a static copy and when it was saved; the street
-map, receipt dialogs, sending and new plans are off there. The uptime workflow checks it too.
+map, receipt dialogs, sending and new plans are off there.
 
 To refresh it after the hero runs change (the files in `deploy/mirror/site/` are git-ignored: they hold the sheets'
 data):

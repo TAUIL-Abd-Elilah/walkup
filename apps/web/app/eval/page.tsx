@@ -122,15 +122,15 @@ export default function EvalPage() {
       <div className="max-w-[760px]">
       <h1>Evaluation</h1>
       <p className="mt-3">
-        What has been checked so far, and what has not. The first section comes from live runs recorded on the hosted site on Oct 20 2026. The
+        What has been checked so far, and what has not. The first section comes from live runs recorded on Oct 20 2026 and recorded again on Oct 21 with the same numbers. The
         product eval after it ran on sample data: a stand-in for Qloo and Ticketmaster with made-up places and numbers.
       </p>
 
       <section id="live" className="section mt-8 scroll-mt-24" aria-labelledby="live-title">
         <h2 id="live-title">Live runs (Oct 20 2026)</h2>
         <p className="mt-3">
-          Two real Ticketmaster bills at The Anthem, Washington DC, an independent room (I.M.P.), run on live Qloo and Ticketmaster calls and recorded on
-          the hosted site, walkup-agent.fly.dev. A fixed rule picked them: the first Americana, country or folk bill from Dec 20 2026 to Feb 28 2027, and
+          Two real Ticketmaster bills at The Anthem, Washington DC, an independent room (I.M.P.), run on live Qloo and Ticketmaster calls and recorded for
+          the hosted site, walkup-eight.vercel.app. A fixed rule picked them: the first Americana, country or folk bill from Dec 20 2026 to Feb 28 2027, and
           the bill whose genre is most distant from it. A fresh run makes about 30 Qloo calls. The hosted home page opens on these two sheets.
         </p>
 
@@ -210,7 +210,7 @@ export default function EvalPage() {
 
         <h3 className="mt-6">A change note</h3>
         <p className="mt-2">
-          &ldquo;All ages, no bars&rdquo; on FLO&apos;s sheet. Claude (anthropic/claude-opus-5.5 through OpenRouter) read it as two tool calls,
+          &ldquo;All ages, no bars&rdquo; on FLO&apos;s sheet. Claude (anthropic/claude-opus-5.5 through OpenRouter on Oct 20, anthropic/claude-haiku-5.5 on Oct 21) read it as two tool calls,
           set_all_ages and exclude_partner_categories, and the plan ran again with those settings.
         </p>
         <table className="table mt-2">

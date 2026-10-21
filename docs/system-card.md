@@ -154,7 +154,7 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 | Claude (OpenRouter or Anthropic) | Daily spend counter capped at $5/day, at Anthropic list rates; narration cached per plan; template narration above the cap |
 | Revisions | 12 per network per hour on a live server (30 in sample mode); unchanged Qloo requests come from the cache, so only requests whose inputs changed are sent |
 | Resend | Free tier (100/day); test inbox by default |
-| Hosting | One small always-on instance (configured in `fly.toml`; not deployed yet) |
+| Hosting | Vercel (Hobby), serving the recorded sheets in recorded mode ([docs/deploy-vercel.md](deploy-vercel.md)); a Fly.io setup for live mode is in `fly.toml` ([docs/deploy.md](deploy.md)) |
 
 ## Contact
 

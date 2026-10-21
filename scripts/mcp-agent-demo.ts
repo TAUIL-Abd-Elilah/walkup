@@ -73,7 +73,7 @@ async function main(): Promise<number> {
     console.error("OPENROUTER_API_KEY is not set.");
     return 2;
   }
-  const base = (process.env["WALKUP_URL"]?.trim() || "https://walkup-agent.fly.dev").replace(/\/+$/, "");
+  const base = (process.env["WALKUP_URL"]?.trim() || "https://walkup-eight.vercel.app").replace(/\/+$/, "");
   const client = new Client({ name: "walkup-agent-demo", version: "1.0.0" });
   await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
   const { tools } = await client.listTools();

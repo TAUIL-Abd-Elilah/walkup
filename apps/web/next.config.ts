@@ -62,6 +62,23 @@ const nextConfig: NextConfig = {
       "../../.git/**",
     ],
   },
+  // On Vercel (docs/deploy-vercel.md) nothing is copied next to the server the way the Docker image does, so the
+  // runtime data the server reads from computed paths is traced in: the gazetteer, the tag pins, the synthetic
+  // sheets, the recorded-sheet export that WALKUP_PLAN_SEED names (git-ignored, shipped with the deploy only) and
+  // better-sqlite3's Linux binary (loaded by a computed path, so the tracer misses it).
+  ...(process.env.VERCEL
+    ? {
+        outputFileTracingIncludes: {
+          "*": [
+            "../../data/gazetteer/out/**",
+            "../../config/*.json",
+            "../../fixtures/synthetic/**",
+            "../../deploy/vercel/plans.json",
+            "../../node_modules/better-sqlite3/prebuilds/linux-x64.node",
+          ],
+        },
+      }
+    : {}),
   reactStrictMode: true,
   poweredByHeader: false,
   // Do not write an AGENTS.md into the app directory during `next dev`.
