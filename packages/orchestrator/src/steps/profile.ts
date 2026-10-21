@@ -5,7 +5,7 @@
  * for radio format, alcohol rules or community inference.
  */
 import type { CompareResult, CompareTag, DemographicsBlock, StreetSheetCards } from "@walkup/contracts";
-import { isDeniedTag } from "@walkup/engine";
+import { dedupeTags, displayTagName, isTasteTag, tagNameKey } from "@walkup/engine";
 import type { RankedTag } from "@walkup/qloo";
 import { envelope, failure, node, plural, seedIds, type HouseSet, type RunContext, type Seed } from "../context";
 import { genreBaselinePhrase } from "./heat";
@@ -58,9 +58,13 @@ export async function runDemographics(ctx: RunContext, seeds: Seed[], house: Hou
   }
 }
 
+/**
+ * Every tag is recorded for the denied-tag receipt; only taste tags are kept (no policy-denied tags, places,
+ * nationalities, age bands, payment brands, occupations or words that fit any act: `isTasteTag`), named for display.
+ */
 function filterDenied(tags: CompareTag[], seen: RunContext["seenTags"]): CompareTag[] {
   for (const t of tags) seen.push({ id: t.id, name: t.name, ...(t.type ? { type: t.type } : {}) });
-  return tags.filter((t) => !isDeniedTag(t));
+  return tags.filter((t) => isTasteTag(t)).map((t) => ({ ...t, name: displayTagName(t.name) }));
 }
 
 /** Generic results (nothing distinctive): the tag-diff fallback runs. */
@@ -84,14 +88,21 @@ export function tagDiff(bill: RankedTag[], house: RankedTag[], gap = 5): Compare
   return { shared, a, b, fromTagDiff: true };
 }
 
-/** Removes tags that appear in `shared` (or in both lean lists) from the two lean lists, so no tag is listed twice. */
+/**
+ * No tag listed twice: each list without repeats (by id, and by name: Qloo returns "Guitar" under two namespaces and
+ * the same tag once per seed), a tag in both lean lists moved to `shared`, and anything in `shared` taken out of the
+ * two lean lists.
+ */
 export function dedupeShared(c: CompareResult): CompareResult {
-  const inA = new Set(c.a.map((t) => t.id));
-  const inB = new Set(c.b.map((t) => t.id));
-  const both = new Set([...inA].filter((id) => inB.has(id)));
-  const sharedIds = new Set([...c.shared.map((t) => t.id), ...both]);
-  const shared = [...c.shared, ...c.a.filter((t) => both.has(t.id) && !c.shared.some((x) => x.id === t.id))];
-  return { ...c, shared, a: c.a.filter((t) => !sharedIds.has(t.id)), b: c.b.filter((t) => !sharedIds.has(t.id)) };
+  const key = (t: CompareTag) => tagNameKey(t.name);
+  const a0 = dedupeTags(c.a);
+  const b0 = dedupeTags(c.b);
+  const inB = new Set(b0.flatMap((t) => [t.id, `name:${key(t)}`]));
+  const both = a0.filter((t) => inB.has(t.id) || inB.has(`name:${key(t)}`));
+  const shared = dedupeTags([...c.shared, ...both]);
+  const taken = new Set(shared.flatMap((t) => [t.id, `name:${key(t)}`]));
+  const free = (t: CompareTag) => !taken.has(t.id) && !taken.has(`name:${key(t)}`);
+  return { ...c, shared, a: a0.filter(free), b: b0.filter(free) };
 }
 
 /** "3 tags rank higher for this bill, 7 for the room's usual crowd, and 8 rank high for both." */

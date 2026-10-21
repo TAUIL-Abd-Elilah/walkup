@@ -139,7 +139,7 @@ export function droppedFrom(meta: { droppedSignals?: string[] } | undefined, sen
 /** Card line for a list built while Qloo ignored part or all of the bill's signal. */
 export function droppedReason(check: DroppedCheck, call: string): string | null {
   if (check.share === "all") return `Qloo has no taste data for this bill's acts (${call}), so this list would only show general popularity.`;
-  if (check.share === "some") return `Qloo ignored ${plural(check.dropped.length, "of this bill's seeds", "of this bill's seeds")} (${call}), so this list rests on the others.`;
+  if (check.share === "some") return `Qloo has no taste data for ${plural(check.dropped.length, "of the names behind this bill", "of the names behind this bill")} (${call}), so this list rests on the others.`;
   return null;
 }
 

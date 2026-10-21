@@ -1,6 +1,6 @@
 # Claude API notes (verified Oct 13 2026 against the bundled claude-api skill)
 
-SDK: `@anthropic-ai/sdk` (installed in packages/narrator). Model: `claude-opus-5-5`.
+SDK: `@anthropic-ai/sdk` (installed in packages/narrator). Model on this route: `claude-opus-5-5`. The default route is OpenRouter with `anthropic/claude-haiku-5.5` whenever `OPENROUTER_API_KEY` is set ([below](#openrouter-route-oct-20-2026)); the Anthropic route is used when only `ANTHROPIC_API_KEY` is set, or with `WALKUP_LLM_PROVIDER=anthropic`.
 
 ## Hard facts for claude-opus-5-5
 - Thinking is always on. Do NOT send `thinking: {type: "disabled"}` or `budget_tokens` (both 400). Omit `thinking` or send `{ type: "adaptive" }`.

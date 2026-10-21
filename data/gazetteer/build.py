@@ -804,6 +804,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--offline", action="store_true", help="use only the download cache")
     args = ap.parse_args(argv)
     manifest = build(args.metro or list(METROS), args.refresh, args.offline)
+    # The ZIP table (zip_places.csv, areas.json -> packages/gazetteer/src/zip-data.ts) follows the new ACS counts;
+    # it fails when a new ZCTA has no row in zip_places.csv.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("gazetteer_zips", HERE / "zips.py")
+    if spec and spec.loader:
+        zips = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(zips)
+        if zips.build() != 0:
+            log("the ZIP table needs rows for new ZCTAs: see data/gazetteer/zip_places.csv")
+            return 1
     failed = [m for m, v in manifest["metros"].items() if v.get("errors")]
     if failed:
         # Outputs are still written (each records its failed sources), but the exit code

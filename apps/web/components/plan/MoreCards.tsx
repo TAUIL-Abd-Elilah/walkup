@@ -5,7 +5,8 @@ import type { AgeBucket, CompareTag, DemographicsBlock, QlooEntity, StreetSheet 
 import { formatDistance, formatInt, formatPct, formatSigned } from "../../lib/format";
 import { CATEGORY_LABEL, STATUS_WORD, categoryLabel, subtypeLabel } from "../../lib/labels";
 import { ageLabel, baselineName, sourceLine, tagIndex, tagName } from "../../lib/sheet-utils";
-import { DECLARED_UNRANKED, spotsShareNote } from "@walkup/exports/format";
+import { spotIsFanFacing } from "@walkup/exports/audience";
+import { DECLARED_UNRANKED, sheetSpots, spotSharesDiffer, spotsShareNote } from "@walkup/exports/format";
 import { TrustTable } from "./LiftCard";
 import { PlanCard } from "./PlanCard";
 import { chipText } from "./model";
@@ -66,9 +67,18 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
   const [fanFacing, setFanFacing] = useState(false);
   const [caps, setCaps] = useState<Record<string, number>>(() => Object.fromEntries(env.results.map((s) => [s.entity.entityId, s.assumedCapacity])));
   const attendance = sheet.operator.capacity;
-  const rows = env.results.filter((s) => !fanFacing || s.fanFacingAllowed);
+  // The shared spot list (`sheetSpots`, the same as the PDF, the print view and the CSVs): no carts, kiosks, stands
+  // or food trucks, nearest to the venue first.
+  const spots = sheetSpots(env.results);
+  // The same fan-facing rule as the PDF and the CSVs: the show's age policy and the operator's all-ages setting.
+  const rows = spots.filter((s) => !fanFacing || spotIsFanFacing(s, sheet));
   const age = ageLabel(sheet.bill.legalAgeEnforced);
-  const hidden = env.results.length - rows.length;
+  const hidden = spots.length - rows.length;
+  // Every spot with the same share says nothing per row (and neither do the guests it implies): the Share and Guests
+  // columns are left out and the share goes in the note under the table instead, as on the PDF.
+  const showShare = spotSharesDiffer(spots.map((s) => s.expectedShare));
+  const uniformShare = !showShare && spots.length > 0 ? spots[0]!.expectedShare : null;
+  const showGuests = attendance !== null && showShare;
 
   return (
     <PlanCard id="prepost" title="Before and after the show" envelope={env}>
@@ -87,10 +97,12 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
             <th scope="col" className="num hidden sm:table-cell">
               Distance
             </th>
-            <th scope="col" className="num">
-              Share
-            </th>
-            {attendance !== null ? (
+            {showShare ? (
+              <th scope="col" className="num">
+                Share
+              </th>
+            ) : null}
+            {showGuests ? (
               <th scope="col" className="num hidden sm:table-cell">
                 Guests
               </th>
@@ -111,7 +123,7 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
                 <td>
                   <span className="font-semibold">{s.entity.name}</span>
                   <span className="mt-0.5 block text-sm text-muted">
-                    {[placeType(s.entity, s.category), s.chain ? "national chain" : null, !s.fanFacingAllowed ? "not shown to fans" : null].filter(Boolean).join(" · ")}
+                    {[placeType(s.entity, s.category), s.chain ? "national chain" : null, !spotIsFanFacing(s, sheet) ? "not shown to fans" : null].filter(Boolean).join(" · ")}
                     {formatDistance(s.entity.distanceM) ? <span className="sm:hidden"> · {formatDistance(s.entity.distanceM)} away</span> : null}
                   </span>
                   {s.chips.length > 0 ? (
@@ -121,8 +133,8 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
                   ) : null}
                 </td>
                 <td className="num hidden whitespace-nowrap sm:table-cell">{formatDistance(s.entity.distanceM)}</td>
-                <td className="num">{formatPct(s.expectedShare, 1)}</td>
-                {expected !== null ? (
+                {showShare ? <td className="num">{formatPct(s.expectedShare, 1)}</td> : null}
+                {showGuests && expected !== null ? (
                   <td className="num hidden sm:table-cell">
                     {formatInt(Math.min(expected, cap))}
                     {capped ? <span className="block text-sm text-muted">capped</span> : null}
@@ -152,10 +164,14 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
         </tbody>
       </table>
       <p className="hint mt-3">
-        {spotsShareNote(env.results.map((s) => s.assumedCapacity))}{" "}
-        {attendance !== null
-          ? `Guests is the assumed ${formatInt(attendance)} times the share, capped at the capacity; change a capacity to see it move.`
-          : "Capacity isn't entered, so there is no Guests column."}
+        {uniformShare !== null
+          ? `Each spot gets the same share of the crowd, ${formatPct(uniformShare, 1)}.${attendance !== null ? ` That is about ${formatInt(Math.round(attendance * uniformShare))} of ${formatInt(attendance)} people:` : " It is"} a rule of thumb, not a forecast.`
+          : <>
+              {spotsShareNote(spots.map((s) => s.assumedCapacity))}{" "}
+              {attendance !== null
+                ? `Guests is the assumed ${formatInt(attendance)} times the share, capped at the capacity; change a capacity to see it move.`
+                : "Capacity isn't entered, so there is no Guests column."}
+            </>}
       </p>
     </PlanCard>
   );
@@ -272,6 +288,14 @@ function avgAge(blocks: DemographicsBlock[], b: AgeBucket): number | null {
   return vals.reduce((a, c) => a + c, 0) / vals.length;
 }
 
+/** A tag name in sentence case, as the rest of the sheet writes them: "VERSATILE" and "work-life balance" read alike. */
+function tagLabel(name: string): string {
+  const n = name.trim();
+  const shouted = n.length > 3 && /[A-Z]{3}/.test(n) && n === n.toUpperCase();
+  const s = shouted ? n.toLowerCase() : n;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function TagColumn({ title, tags }: { title: string; tags: CompareTag[] }) {
   return (
     <div className="min-w-0">
@@ -282,7 +306,7 @@ function TagColumn({ title, tags }: { title: string; tags: CompareTag[] }) {
         <ul className="mt-2 border-t border-rule">
           {tags.map((t) => (
             <li key={t.id} className="flex justify-between gap-3 border-b border-rule py-1.5">
-              <span>{t.name}</span>
+              <span>{tagLabel(t.name)}</span>
               {typeof t.score === "number" ? <span className="tabular text-muted">{t.score.toFixed(2)}</span> : null}
             </li>
           ))}

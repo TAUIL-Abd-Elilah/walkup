@@ -415,6 +415,19 @@ export function hoursOnDay(hours: unknown, day: Weekday, opts: HoursOptions = {}
 }
 
 /**
+ * The day's hours as something a street team can plan on: the text of an "open" day when it names a clock time
+ * ("11:00-23:00", "11 AM-2 AM", "Open 24 hours"), else null. An open day with no times ("Open", a bare `true`) or
+ * with one end missing ("17:00-?") reads as unknown hours, so the sheet says "call first" instead of "open".
+ */
+export function clockHours(h: HoursOnDay): string | null {
+  if (h.status !== "open" || typeof h.text !== "string") return null;
+  const t = h.text.trim();
+  if (t === "Open 24 hours") return t;
+  if (!/\d/.test(t) || t.includes("?")) return null;
+  return t;
+}
+
+/**
  * Whether a day's hours ("11:00-15:00", "17:00:00-02:00:00", "7:30-11, 17-22") reach the evening, 5 pm to
  * midnight, when people go out before or after a show. Null when the text can't be read as clock ranges.
  */

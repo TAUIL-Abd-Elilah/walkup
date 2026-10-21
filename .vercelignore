@@ -23,6 +23,10 @@ evals/out/private
 **/*.sqlite
 **/*.sqlite-*
 
+# Local copies of the recorded plans (backups, pre-refresh copies): only plans.json ships
+deploy/vercel/*.json
+!deploy/vercel/plans.json
+
 # Static mirror pages (copies of sheets; the mirror is its own host)
 deploy/mirror/site
 

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { LiftTile } from "@walkup/contracts";
 import type { Bbox } from "../lib/geohash";
 import { LiftLegend } from "./LiftLegend";
@@ -23,6 +23,10 @@ export interface HeroSide {
   partners: number;
   /** A sample (fixture) sheet: said in the side's header. */
   sample?: boolean;
+  /** One real pick a popularity list would miss, in one line, with the receipts behind it. */
+  missed?: { line: string; refs: string[] } | null;
+  /** Stored revisions of this sheet ("All ages, no bars"), linked under the header. */
+  revisions?: { planId: string; instruction: string }[];
 }
 
 /** "A", "A and B", "A, B and C". */
@@ -44,6 +48,31 @@ function Side({ side, letter, extent }: { side: HeroSide; letter: "A" | "B"; ext
         </h3>
         {side.support.length > 0 ? <p className="mt-0.5 text-sm text-muted">with {andList(side.support)}</p> : null}
         <p className="text-sm text-muted">{[`${side.place}, ${side.date}`, side.label, side.sample ? "sample" : null].filter(Boolean).join(" · ")}</p>
+        {side.missed ? (
+          <p className="mt-1.5 text-sm" data-testid={`hero-${letter}-missed`}>
+            {side.missed.line}
+            {side.missed.refs.length > 0 ? (
+              <sup className="fn">
+                {side.missed.refs.map((r, i) => (
+                  <Fragment key={r}>
+                    {i > 0 ? ", " : ""}
+                    <Link href={`/plan/${side.planId}#receipt-${r}`} aria-label={`Receipt ${r}`}>
+                      {r}
+                    </Link>
+                  </Fragment>
+                ))}
+              </sup>
+            ) : null}
+          </p>
+        ) : null}
+        {(side.revisions ?? []).map((r) => (
+          <p key={r.planId} className="mt-1 text-sm">
+            <span className="text-muted">Revised: </span>
+            <Link href={`/plan/${r.planId}`} className="link">
+              {r.instruction} &rarr;
+            </Link>
+          </p>
+        ))}
       </header>
       <LiftMap
         tiles={side.tiles}
@@ -53,7 +82,7 @@ function Side({ side, letter, extent }: { side: HeroSide; letter: "A" | "B"; ext
         onSelect={toggle}
         idBase={`hero-${letter}`}
         title={`${side.headliner}: areas around ${side.venue.name} by lift`}
-        frameClass="aspect-[4/3]"
+        frameClass="aspect-[4/3] md:aspect-[16/9]"
         extent={extent}
         caption={false}
         listId={listId}

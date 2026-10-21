@@ -31,7 +31,12 @@ export function createRunLedger(base: LedgerSink, opts: { fixture: boolean }): R
     add(entry: Omit<LedgerEntry, "id">): string {
       const parts = [`node ${current.node}`];
       if (opts.fixture && entry.kind !== "anthropic" && entry.kind !== "action") parts.push("fixture world: synthetic response");
-      if (entry.note) parts.push(entry.note);
+      if (entry.note) {
+        // A client note that repeats the node's name ("Q1 signal check" + "signal check: ...") keeps only its detail.
+        const bare = current.node.replace(/^[A-Z]\d+\s+/, "").toLowerCase();
+        const note = entry.note.toLowerCase().startsWith(`${bare}:`) ? entry.note.slice(bare.length + 1).trim() : entry.note;
+        if (note) parts.push(note);
+      }
       const id = base.add({ ...entry, note: parts.join("; ") });
       byId.set(id, { ...current });
       return id;

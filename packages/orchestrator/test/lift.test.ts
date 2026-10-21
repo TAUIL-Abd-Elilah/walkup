@@ -9,7 +9,7 @@ import { DEFAULT_BAR_CATEGORIES } from "@walkup/engine";
 import { createWorld, WORLD_TAG_PINS, WORLD_VENUES, type World } from "@walkup/qloo-world";
 import { planShow } from "../src/index";
 import { isExcludedArea, SPLIT_HALF_NODE } from "../src/steps/heat";
-import { HOUSE_TWIN_CHIP, HOUSE_TWIN_NODE, houseTwinChipLabel } from "../src/steps/partners";
+import { HOUSE_TWIN_NODE, houseTwinChipLabel, isHouseTwinChip } from "../src/steps/partners";
 import { deps, runPreset, sheetOf } from "./helpers";
 
 function failing(world: World, fail: (u: URL) => boolean): World {
@@ -76,17 +76,21 @@ describe("partner house twin", () => {
     for (const p of s.cards.partners.results) {
       expect(p.houseRank).toBeUndefined();
       expect(p.ubiquityPenalty).toBeUndefined();
-      expect(p.chips.some((c) => c.label.startsWith(HOUSE_TWIN_CHIP))).toBe(false);
+      expect(p.chips.some((c) => isHouseTwinChip(c.label))).toBe(false);
     }
     expect(s.cards.partners.reason).toMatch(/The usual-crowd search failed for area 1 \(Qloo returned HTTP 500\)/);
     expect(s.cards.partners.limits.some((l) => /^The usual-crowd rank/.test(l))).toBe(false);
     expect(s.ledger.filter((e) => (e.note ?? "").includes(`node ${HOUSE_TWIN_NODE}`)).every((e) => e.httpStatus === 500)).toBe(true);
   });
 
-  it("labels the chip with the rank difference, or says the place is not in the house list", () => {
-    expect(houseTwinChipLabel(9, 4, 50)).toBe("tonight vs house +5 ranks");
-    expect(houseTwinChipLabel(2, 4, 50)).toBe("tonight vs house -2 ranks");
-    expect(houseTwinChipLabel(null, 4, 50)).toBe("tonight vs house: not in the house top 50");
+  it("labels the chip with the rank difference in plain words, never \"house\"", () => {
+    expect(houseTwinChipLabel(9, 4, 50)).toBe("ranks 5 places higher here than for the room's usual crowd");
+    expect(houseTwinChipLabel(2, 4, 50)).toBe("ranks 2 places lower here than for the room's usual crowd");
+    expect(houseTwinChipLabel(null, 4, 50)).toBe("not in the room's usual crowd's top 50");
+    for (const l of [houseTwinChipLabel(9, 4, 50), houseTwinChipLabel(null, 4, 0)]) {
+      expect(l).not.toMatch(/house/);
+      expect(isHouseTwinChip(l)).toBe(true);
+    }
   });
 });
 

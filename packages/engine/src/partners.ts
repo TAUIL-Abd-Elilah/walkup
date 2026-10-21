@@ -18,32 +18,47 @@
  * keeps its score; one at least as high for the house loses half of it.
  *
  * Selection is a single greedy pass over every eligible candidate in score
- * order (ties: distance ascending, then Qloo rank, then entity id), subject to:
+ * order (ties: distance ascending, then Qloo rank, then entity id), skipping
+ * a second entry for the same business (`isSameBusiness`), subject to:
  * at most `maxPerCategoryPerTile` (2) per category per tile, at most
  * `maxPerTile` (8) per tile and at most `maxTotal` (25) overall. Afterwards each
  * tile whose picks are all bars gets its best eligible non-bar, added if there is
  * room, otherwise swapped for the tile's lowest-scored bar. Fewer than
  * `minTotal` (15) picks sets `belowMinimum` so the caller can widen the radius.
  *
- * National chains (only when `chains` is given: a hand-kept list, see
- * chains.ts): a candidate whose name is on the list sorts after every
- * non-chain candidate, ahead of score, in the greedy pass and in the listed
- * order. Its score is unchanged and the caps still apply, so a chain is kept
- * only for a slot no local place can fill. The report counts the chains the
- * rule moved: those on the list the same pass makes without the rule that are
- * now off the list, or listed after a local place of their area that scores
- * lower; `chainsOffList` names the ones now off the list.
+ * National chains (only when `chains` is given: the hand-kept list, see
+ * chains.ts, plus Qloo's description, a store-locator website and the same
+ * name or website at 3+ places across every pool: `chainSignals`): a chain
+ * sorts after every non-chain candidate, ahead of score, in the greedy pass
+ * and in the listed order. Its score is unchanged and the caps still apply,
+ * so a chain is kept only for a slot no local place can fill, and at most
+ * `maxChains` (2) are kept. The report counts the chains kept, those left off
+ * (and how many only the cap left off), and the chains the rule moved: those
+ * the same pass makes without the rule that are now off the list, or listed
+ * after a local place of their area that scores lower; `chainsOffList` names
+ * every eligible chain not on the list.
  *
- * Eligibility: an entity id, not excluded (the venue), not in an excluded
- * category, not `is_closed`, and not explicitly closed on the street-team
- * weekday according to `properties.hours` (unknown hours are kept; Qloo's
- * `filter.hours` already applied).
+ * Eligibility: an entity id, not excluded (the venue), not a non-venue (a
+ * mall, plaza, station, park: `isNonVenue`), not a food cart, kiosk or stand
+ * (`isFoodStand`), not adult-themed (`isAdultThemed`), not in an excluded
+ * category (and, when bars are excluded, not a place whose name or bar-type
+ * tags say it is a drinking place: `isDrinkLed`), not `is_closed`, and not
+ * explicitly closed on the street-team weekday according to
+ * `properties.hours` (Qloo's `filter.hours` already applied). A place kept
+ * with no readable clock hours that day (none listed, "Open" with no times,
+ * one end missing) gets `hoursOnDay: null`, so the sheet says "call first"
+ * rather than showing it as open.
+ *
+ * Website: only one that plainly belongs to the place (`cleanWebsite`): its own
+ * domain, or a social or listing page; an agency's or developer's server is
+ * dropped.
  */
 import type { Chip, LiftTile, Partner, QlooEntity, Weekday } from "@walkup/contracts";
-import { DEFAULT_BAR_CATEGORIES, distanceOf, isBarCategory, isClosedEntity, propString, resolveCategory, type CategoryOptions } from "./category";
-import { chainIndex as toChainIndex, normalizeChainName, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
-import { hoursOnDay, type HoursOptions } from "./hours";
+import { barsExcluded, DEFAULT_BAR_CATEGORIES, distanceOf, isBarCategory, isClosedEntity, isDrinkLed, isFoodStand, isNonVenue, propString, resolveCategory, type CategoryOptions } from "./category";
+import { chainSignals, isAdultThemed, isSameBusiness, MAX_CHAINS_PER_LIST, normalizeChainName, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
+import { clockHours, hoursOnDay, type HoursOptions } from "./hours";
 import { clamp, cmpNum, cmpStr, isFiniteNumber } from "./num";
+import { cleanWebsite } from "./website";
 
 /** The pool's house-signal twin: the same request with the room's usual crowd as the signal. */
 export interface PoolHouseTwin {
@@ -115,6 +130,10 @@ export interface PartnerScoringOptions extends CategoryOptions {
   order?: "tile" | "score";
   /** Hand-kept chain list: chains sort after every local place (see the module comment). Absent or null: no chain rule. */
   chains?: ChainList | ChainIndex | readonly ChainEntry[] | null;
+  /** Most chains kept on the list (with `chains`). Default `MAX_CHAINS_PER_LIST` (2). */
+  maxChains?: number;
+  /** Other places the run saw (pre/post spots), for the "same name at 3+ places" chain signal. */
+  chainContext?: readonly QlooEntity[];
 }
 
 export const PARTNER_DEFAULTS = {
@@ -132,11 +151,17 @@ export interface PartnerScoringReport {
   droppedExcluded: number;
   /** Left out because the category is excluded (operator input or the all-ages rule). */
   droppedCategory: number;
+  /** Not a business: a mall, plaza, station, parking garage, park (`isNonVenue`). */
+  droppedNotVenue: number;
+  /** A food cart, kiosk, stand or truck (`isFoodStand`). */
+  droppedStand: number;
+  /** Adult-themed places (`isAdultThemed`), never a street-team stop. */
+  droppedAdult: number;
   droppedClosed: number;
   droppedHoursClosed: number;
   /** Eligible picks kept with unknown hours on the weekday. */
   hoursUnknown: number;
-  /** Second and later appearances of an already selected entity. */
+  /** Second and later appearances of an already selected entity, or of the same business under another entry. */
   duplicates: number;
   /** Eligible candidates left out by the caps. */
   notSelected: number;
@@ -148,10 +173,16 @@ export interface PartnerScoringReport {
   chains: number;
   /** Chains on the list the same pass makes without the chain rule that the rule moved (off the list, or below a lower-scored local of their area). */
   chainsMovedDown: number;
-  /** Names of the moved chains that are no longer on the list (a local place took the slot). */
+  /** Names of the eligible chains not on the list (a local place took the slot, or the cap), best first. */
   chainsOffList: string[];
-  /** Picks on the chain list. */
+  /** Picks that are chains. */
   chainsKept: number;
+  /** Eligible chains not on the list. */
+  chainsLeftOut: number;
+  /** Of those, the ones only `maxChains` kept off. */
+  chainsCapped: number;
+  /** The chain cap applied (0 without the chain rule). */
+  maxChains: number;
   selected: number;
   belowMinimum: boolean;
   /** Picks per tile; the near-venue pool is keyed "near-venue". */
@@ -174,7 +205,7 @@ interface Candidate {
   isBar: boolean;
   hoursText: string | null;
   hoursKnown: boolean;
-  /** On the chain list (always false without one). */
+  /** A national chain (always false without a chain list). */
   chain: boolean;
 }
 
@@ -195,7 +226,7 @@ function compareByScore(a: Candidate, b: Candidate): number {
   );
 }
 
-type DropReason = "invalid" | "excluded" | "closed" | "hoursClosed" | "category";
+type DropReason = "invalid" | "excluded" | "closed" | "hoursClosed" | "category" | "notVenue" | "stand" | "adult";
 
 const DROP_FIELD = {
   invalid: "droppedInvalid",
@@ -203,11 +234,17 @@ const DROP_FIELD = {
   closed: "droppedClosed",
   hoursClosed: "droppedHoursClosed",
   category: "droppedCategory",
+  notVenue: "droppedNotVenue",
+  stand: "droppedStand",
+  adult: "droppedAdult",
 } as const satisfies Record<DropReason, keyof PartnerScoringReport>;
 
 type Eligibility = { ok: false; drop: DropReason } | { ok: true; id: string; hoursText: string | null; hoursKnown: boolean; category: string };
 
-/** The eligibility rules of the module comment, in order: id, excluded id, closed, closed on the weekday, excluded category. */
+/**
+ * The eligibility rules of the module comment, in order: id, excluded id or name, not a venue, adult-themed, closed,
+ * closed on the weekday, excluded category.
+ */
 function eligibility(entity: QlooEntity, opts: PartnerScoringOptions, excluded: ReadonlySet<string>, excludedCats: ReadonlySet<string>): Eligibility {
   const id = entity && typeof entity.entityId === "string" ? entity.entityId.trim() : "";
   if (!id) return { ok: false, drop: "invalid" };
@@ -216,17 +253,22 @@ function eligibility(entity: QlooEntity, opts: PartnerScoringOptions, excluded: 
     const n = normalizeChainName(entity.name);
     if (n && opts.excludeNames.some((x) => normalizeChainName(x) === n)) return { ok: false, drop: "excluded" };
   }
+  if (isNonVenue(entity)) return { ok: false, drop: "notVenue" };
+  if (isFoodStand(entity)) return { ok: false, drop: "stand" };
+  if (isAdultThemed(entity, opts.chains ?? null)) return { ok: false, drop: "adult" };
   if (isClosedEntity(entity)) return { ok: false, drop: "closed" };
   let hoursText: string | null = null;
   let hoursKnown = true;
   if (opts.weekday) {
     const h = hoursOnDay(entity.properties?.hours, opts.weekday, opts.hours ?? {});
     if (h.status === "closed") return { ok: false, drop: "hoursClosed" };
-    hoursText = h.text;
-    hoursKnown = h.status === "open";
+    hoursText = clockHours(h);
+    hoursKnown = hoursText !== null;
   }
   const category = resolveCategory(entity, opts);
   if (excludedCats.has(category)) return { ok: false, drop: "category" };
+  // "No bars" also means a place whose name or bar-type tags say drinks, whatever its display category.
+  if (barsExcluded(excludedCats, opts.barCategories ?? DEFAULT_BAR_CATEGORIES) && isDrinkLed(entity)) return { ok: false, drop: "category" };
   return { ok: true, id, hoursText, hoursKnown, category };
 }
 
@@ -257,6 +299,8 @@ interface Caps {
   maxPerCat: number;
   maxPerTile: number;
   maxTotal: number;
+  /** Most chains on the list; Infinity without the chain rule. */
+  maxChains: number;
 }
 
 interface Selection {
@@ -264,6 +308,8 @@ interface Selection {
   duplicates: number;
   nonBarAdded: number;
   nonBarSwaps: number;
+  /** Chains the cap alone kept off (ids). */
+  capped: Set<string>;
 }
 
 /**
@@ -271,45 +317,56 @@ interface Selection {
  * then at least one non-bar per tile when one is available.
  */
 function select(eligible: readonly Candidate[], caps: Caps, cmp: (a: Candidate, b: Candidate) => number): Selection {
-  const out: Selection = { picked: [], duplicates: 0, nonBarAdded: 0, nonBarSwaps: 0 };
+  const out: Selection = { picked: [], duplicates: 0, nonBarAdded: 0, nonBarSwaps: 0, capped: new Set() };
   const picked = out.picked;
   const pickedIds = new Set<string>();
   const perTile = new Map<string, number>();
   const perTileCat = new Map<string, number>();
   const catKey = (c: Candidate) => `${c.tileKey}\u0000${c.category}`;
+  let chains = 0;
 
   for (const c of eligible) {
-    if (pickedIds.has(c.id)) {
+    if (pickedIds.has(c.id) || picked.some((p) => isSameBusiness(p.entity, c.entity))) {
       out.duplicates++;
       continue;
     }
     if (picked.length >= caps.maxTotal || (perTile.get(c.tileKey) ?? 0) >= caps.maxPerTile || (perTileCat.get(catKey(c)) ?? 0) >= caps.maxPerCat) {
       continue;
     }
+    if (c.chain && chains >= caps.maxChains) {
+      out.capped.add(c.id);
+      continue;
+    }
     picked.push(c);
     pickedIds.add(c.id);
+    if (c.chain) chains++;
     perTile.set(c.tileKey, (perTile.get(c.tileKey) ?? 0) + 1);
     perTileCat.set(catKey(c), (perTileCat.get(catKey(c)) ?? 0) + 1);
   }
 
-  // At least one non-bar per tile when one is available.
+  // At least one non-bar per tile when one is available (a chain only while the chain cap allows).
   const tileKeys = [...new Set(picked.map((c) => c.tileKey))].sort(cmpStr);
   for (const key of tileKeys) {
     const inTile = picked.filter((c) => c.tileKey === key);
     if (inTile.length === 0 || inTile.some((c) => !c.isBar)) continue;
-    const best = eligible.find((c) => c.tileKey === key && !c.isBar && !pickedIds.has(c.id));
+    const add = inTile.length < caps.maxPerTile && picked.length < caps.maxTotal;
+    const worst = [...inTile].sort(cmp).at(-1) as Candidate;
+    const room = (c: Candidate) => !c.chain || chains < caps.maxChains || (!add && worst.chain);
+    const best = eligible.find((c) => c.tileKey === key && !c.isBar && !pickedIds.has(c.id) && room(c) && !picked.some((p) => p !== worst && isSameBusiness(p.entity, c.entity)));
     if (!best) continue;
-    if (inTile.length < caps.maxPerTile && picked.length < caps.maxTotal) {
+    if (add) {
       picked.push(best);
       out.nonBarAdded++;
     } else {
-      const worst = [...inTile].sort(cmp).at(-1) as Candidate;
       picked.splice(picked.indexOf(worst), 1, best);
       pickedIds.delete(worst.id);
+      if (worst.chain) chains--;
       out.nonBarSwaps++;
     }
+    if (best.chain) chains++;
     pickedIds.add(best.id);
   }
+  for (const c of picked) out.capped.delete(c.id);
   return out;
 }
 
@@ -326,7 +383,12 @@ export function scorePartnersWithReport(
   const chipLabel = opts.chipLabel ?? PARTNER_DEFAULTS.chipLabel;
   const excluded = new Set(opts.excludeEntityIds ?? []);
   const excludedCats = new Set(opts.excludeCategories ?? []);
-  const chainIndex = opts.chains ? toChainIndex(opts.chains) : null;
+  const chainRule = !!opts.chains;
+  const maxChains = chainRule ? intOpt(opts.maxChains, MAX_CHAINS_PER_LIST) : Number.POSITIVE_INFINITY;
+  // Chain signals over every place the run saw: the list, Qloo's description, the website, the same name at 3+ places.
+  const chainOf: ReadonlyMap<string, unknown> = chainRule
+    ? chainSignals([...pools.flatMap((p) => p.entities), ...(opts.chainContext ?? [])], opts.chains ?? null)
+    : new Map();
 
   const tileByGh = new Map<string, LiftTile>();
   for (const t of tiles) if (!tileByGh.has(t.geohash)) tileByGh.set(t.geohash, t);
@@ -344,6 +406,9 @@ export function scorePartnersWithReport(
     droppedCategory: 0,
     droppedClosed: 0,
     droppedHoursClosed: 0,
+    droppedNotVenue: 0,
+    droppedStand: 0,
+    droppedAdult: 0,
     hoursUnknown: 0,
     duplicates: 0,
     notSelected: 0,
@@ -354,6 +419,9 @@ export function scorePartnersWithReport(
     chainsMovedDown: 0,
     chainsOffList: [],
     chainsKept: 0,
+    chainsLeftOut: 0,
+    chainsCapped: 0,
+    maxChains: chainRule ? maxChains : 0,
     selected: 0,
     belowMinimum: false,
     perTile: {},
@@ -388,7 +456,7 @@ export function scorePartnersWithReport(
         isBar: isBarCategory(category, barCats),
         hoursText,
         hoursKnown,
-        chain: chainIndex ? chainIndex.match(entity.name) !== null : false,
+        chain: chainOf.has(id),
       };
       if (pool.house) {
         const houseRank = pool.house.ranks.get(id) ?? null;
@@ -401,7 +469,7 @@ export function scorePartnersWithReport(
     });
   }
 
-  const caps: Caps = { maxPerCat, maxPerTile, maxTotal };
+  const caps: Caps = { maxPerCat, maxPerTile, maxTotal, maxChains };
   eligible.sort(compareCandidates);
   const chosen = select(eligible, caps, compareCandidates);
   const picked = chosen.picked;
@@ -409,16 +477,26 @@ export function scorePartnersWithReport(
   report.nonBarAdded = chosen.nonBarAdded;
   report.nonBarSwaps = chosen.nonBarSwaps;
 
-  // What the chain rule changed: the same pass in score order alone.
+  // What the chain rule changed: the same pass in score order alone, with no chain cap.
   const chainIds = new Set(eligible.filter((c) => c.chain).map((c) => c.id));
   if (chainIds.size > 0) {
     report.chains = chainIds.size;
-    const plain = select([...eligible].sort(compareByScore), caps, compareByScore).picked.sort(compareByScore);
+    const plain = select([...eligible].sort(compareByScore), { ...caps, maxChains: Number.POSITIVE_INFINITY }, compareByScore).picked.sort(compareByScore);
     const keptIds = new Set(picked.map((c) => c.id));
     // Moved: off the list now, or listed after a local place of its area that scores lower.
     const moved = plain.filter((c) => c.chain && (!keptIds.has(c.id) || picked.some((d) => !d.chain && d.tileKey === c.tileKey && compareByScore(c, d) < 0)));
     report.chainsMovedDown = moved.length;
-    report.chainsOffList = moved.filter((c) => !keptIds.has(c.id)).map((c) => c.entity.name);
+    // Every eligible chain not on the list, best first, each once.
+    const off: Candidate[] = [];
+    const offIds = new Set<string>();
+    for (const c of [...eligible].sort(compareByScore)) {
+      if (!c.chain || keptIds.has(c.id) || offIds.has(c.id)) continue;
+      offIds.add(c.id);
+      off.push(c);
+    }
+    report.chainsOffList = off.map((c) => c.entity.name);
+    report.chainsLeftOut = off.length;
+    report.chainsCapped = off.filter((c) => chosen.capped.has(c.id)).length;
   }
 
   const order = opts.order ?? "tile";
@@ -437,7 +515,7 @@ export function scorePartnersWithReport(
       qlooRank: c.qlooRank,
       address: propString(c.entity, "address", "formatted_address"),
       phone: propString(c.entity, "phone", "phone_number", "formatted_phone_number"),
-      website: propString(c.entity, "website", "url"),
+      website: cleanWebsite(propString(c.entity, "website", "url"), c.entity.name),
       chips,
     };
     if (tile?.name) p.tileName = tile.name;

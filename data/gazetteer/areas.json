@@ -1,0 +1,67 @@
+{
+  "about": "Curated area names for data/gazetteer/zips.py (see README). neighbourhoodCities: ZIP cities big enough that a neighbourhood name, not the city, tells a street team where to go. known: well-known neighbourhoods and districts people use for nightlife and shopping, each a centre point and a radius in km; a lift area within a radius takes the nearest such name. Points are approximate centres of the commercial strip or district.",
+  "metros": {
+    "dc": {
+      "neighbourhoodCities": ["Washington"],
+      "known": [
+        { "name": "H Street NE", "lat": 38.9002, "lon": -76.988, "radiusKm": 2.5 },
+        { "name": "U Street / Shaw", "lat": 38.917, "lon": -77.026, "radiusKm": 1.5 },
+        { "name": "Adams Morgan", "lat": 38.9215, "lon": -77.0422, "radiusKm": 1.0 },
+        { "name": "Dupont Circle", "lat": 38.9096, "lon": -77.0434, "radiusKm": 1.0 },
+        { "name": "Columbia Heights", "lat": 38.9283, "lon": -77.0326, "radiusKm": 1.2 },
+        { "name": "Georgetown", "lat": 38.9076, "lon": -77.0723, "radiusKm": 1.2 },
+        { "name": "Capitol Hill", "lat": 38.8875, "lon": -76.996, "radiusKm": 1.5 },
+        { "name": "Navy Yard", "lat": 38.8762, "lon": -77.003, "radiusKm": 1.0 },
+        { "name": "The Wharf", "lat": 38.8787, "lon": -77.023, "radiusKm": 1.0 },
+        { "name": "NoMa", "lat": 38.9066, "lon": -77.0035, "radiusKm": 0.8 },
+        { "name": "Chinatown / Penn Quarter", "lat": 38.899, "lon": -77.0215, "radiusKm": 0.9 },
+        { "name": "Foggy Bottom", "lat": 38.9002, "lon": -77.05, "radiusKm": 0.8 },
+        { "name": "Brookland", "lat": 38.9334, "lon": -76.994, "radiusKm": 1.2 },
+        { "name": "Anacostia", "lat": 38.8627, "lon": -76.9853, "radiusKm": 1.5 },
+        { "name": "Downtown Silver Spring", "lat": 38.9966, "lon": -77.0261, "radiusKm": 1.2 },
+        { "name": "Downtown Bethesda", "lat": 38.9847, "lon": -77.0947, "radiusKm": 1.0 },
+        { "name": "Old Town Alexandria", "lat": 38.8048, "lon": -77.0469, "radiusKm": 1.2 },
+        { "name": "Del Ray", "lat": 38.8255, "lon": -77.058, "radiusKm": 0.9 },
+        { "name": "Hybla Valley", "lat": 38.7478, "lon": -77.0828, "radiusKm": 2.0 },
+        { "name": "Clarendon", "lat": 38.8868, "lon": -77.0953, "radiusKm": 0.9 },
+        { "name": "Ballston", "lat": 38.882, "lon": -77.111, "radiusKm": 0.9 },
+        { "name": "Rosslyn", "lat": 38.896, "lon": -77.071, "radiusKm": 0.8 },
+        { "name": "Crystal City", "lat": 38.8573, "lon": -77.051, "radiusKm": 1.0 },
+        { "name": "Shirlington", "lat": 38.842, "lon": -77.087, "radiusKm": 0.8 },
+        { "name": "Tysons", "lat": 38.9187, "lon": -77.2311, "radiusKm": 2.0 },
+        { "name": "Reston Town Center", "lat": 38.9587, "lon": -77.3587, "radiusKm": 1.0 },
+        { "name": "National Harbor", "lat": 38.7826, "lon": -77.0167, "radiusKm": 1.2 }
+      ]
+    },
+    "nashville": {
+      "neighbourhoodCities": ["Nashville"],
+      "known": [
+        { "name": "Downtown Nashville", "lat": 36.1615, "lon": -86.7785, "radiusKm": 1.0 },
+        { "name": "The Gulch", "lat": 36.1517, "lon": -86.7845, "radiusKm": 0.7 },
+        { "name": "East Nashville", "lat": 36.1866, "lon": -86.7454, "radiusKm": 2.0 },
+        { "name": "Midtown", "lat": 36.151, "lon": -86.798, "radiusKm": 0.9 },
+        { "name": "12 South", "lat": 36.124, "lon": -86.79, "radiusKm": 0.9 },
+        { "name": "Germantown", "lat": 36.1795, "lon": -86.7905, "radiusKm": 0.8 }
+      ]
+    },
+    "hampton_roads": {
+      "neighbourhoodCities": [],
+      "known": [
+        { "name": "Ghent", "lat": 36.866, "lon": -76.298, "radiusKm": 1.2 },
+        { "name": "Downtown Norfolk", "lat": 36.8468, "lon": -76.2852, "radiusKm": 1.0 },
+        { "name": "Virginia Beach Oceanfront", "lat": 36.85, "lon": -75.977, "radiusKm": 1.5 },
+        { "name": "Downtown Hampton", "lat": 37.024, "lon": -76.343, "radiusKm": 1.0 },
+        { "name": "Phoebus", "lat": 37.02, "lon": -76.318, "radiusKm": 0.8 }
+      ]
+    },
+    "tacoma": {
+      "neighbourhoodCities": ["Tacoma", "Seattle"],
+      "known": [
+        { "name": "Downtown Tacoma", "lat": 47.2529, "lon": -122.4443, "radiusKm": 1.2 },
+        { "name": "Sixth Avenue", "lat": 47.2552, "lon": -122.4805, "radiusKm": 1.0 },
+        { "name": "Proctor District", "lat": 47.2719, "lon": -122.4977, "radiusKm": 0.8 },
+        { "name": "Stadium District", "lat": 47.2667, "lon": -122.4498, "radiusKm": 0.7 }
+      ]
+    }
+  }
+}

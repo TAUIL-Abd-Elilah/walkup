@@ -35,7 +35,7 @@ import { createRunLedger } from "./ledger";
 import { deniedReceipt } from "./policy";
 import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, type Preset, type PresetShow } from "./presets";
 import { splitBudget, type BudgetShare } from "./steps/budget";
-import { honestWording, runCopy } from "./steps/copy";
+import { honestWording, partnerLinesWithinTags, runCopy, tidyAreaPhrases } from "./steps/copy";
 import { runDeclared } from "./steps/declared";
 import { discoverFor } from "./steps/discovery";
 import { explainPartners } from "./steps/explain";
@@ -310,7 +310,9 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const declared = await safe(() => runDeclared(ctx, seeds), (err) => failure(err, [], "Your list, in call order"));
   emit(ctx, "declared", declared);
   trace.add(quiet(() => declaredTrace(ctx, declared), null));
-  const prePost = await safe(() => runPrePost(ctx, seeds, resolved.house, resolved.venueEntityId), (err) => failure(err, [], "Before and after the show"));
+  // The partner pools ride along so a name seen at 3+ places reads as a chain on the pre/post list too.
+  const seenPlaces = partners.pools.flatMap((p) => p.entities);
+  const prePost = await safe(() => runPrePost(ctx, seeds, resolved.house, resolved.venueEntityId, seenPlaces), (err) => failure(err, [], "Before and after the show"));
   emit(ctx, "prePost", prePost);
   trace.add(quiet(() => prePostTrace(ctx, prePost), null));
   const media = await safe(() => runMedia(ctx, seeds), (err) => failure(err, [], "Podcasts and a sponsor"));
@@ -324,7 +326,10 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const rawPartnerTags: QlooTag[] = [];
   for (const pool of partners.pools) for (const e of pool.entities) rawPartnerTags.push(...e.tags);
   for (const t of rawPartnerTags) ctx.seenTags.push({ id: t.id, name: t.name });
-  const hypothetical = operator.seatsLeft !== null || operator.capacity !== null;
+  // Seats and capacity typed as what-ifs: the narration calls them what-ifs. The sheet itself is marked hypothetical
+  // only on sample data: a live sheet is a real show, whatever capacity the operator assumed.
+  const whatIfs = operator.seatsLeft !== null || operator.capacity !== null;
+  const hypothetical = mode === "fixture" && whatIfs;
   const copy = await runCopy(ctx, {
     seeds,
     tiles: heat.spread.slice(0, 5),
@@ -334,6 +339,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     media: media.results,
     compare: compare.status === "ok" || compare.status === "degraded" ? compare.results : null,
     budget: budgetSplit,
+    // Only a sample sheet's counts are what-ifs: a live sheet's capacity and budget are the operator's own inputs,
+    // and the narration never calls them what-ifs.
     hypothetical,
   });
   emit(ctx, "copyHooks", copy.card);
@@ -348,7 +355,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   if (ctx.personTagsStripped) reasons.push("Person-entity tags stripped before storage.");
 
   const limits: string[] = [...LIMITS_EVERY_SHEET];
-  if (hypothetical) limits.push("Planning tool; no sales data for this show is known or shown.");
+  if (whatIfs) limits.push("Planning tool; no sales data for this show is known or shown.");
   if (ctx.thinSignal || heat.thin || heat.widened || partners.partners.length < 15) limits.push("Thin signal: treat as a starting list.");
   if (mode === "fixture") limits.push(...FIXTURE_LIMITS);
   limits.push(...ctx.limits);
@@ -356,11 +363,19 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const entries = ledger.entries();
   const ledgerIds = new Set(entries.map((e) => e.id));
   // Citation check: every cited entity traces to a ledger entry of this run.
-  const narration = honestWording(copy.narration, {
+  const worded = honestWording(copy.narration, {
     tagBaseline: cards.liftMap.results.diagnostics.baseline === "tag",
     genre,
     localSponsor: media.results.some((m) => m.kind === "sponsor" && m.scope === "local"),
   });
+  const areaNames = cards.liftMap.results.tiles.map((t) => t.name ?? "").filter(Boolean);
+  const tidy = (t: string) => tidyAreaPhrases(t, areaNames);
+  const narration = {
+    ...worded,
+    summary: tidy(worded.summary),
+    tileWhy: worded.tileWhy.map((t) => ({ ...t, text: tidy(t.text) })),
+    partnerLines: worded.partnerLines.map((l) => ({ ...l, text: tidy(l.text) })),
+  };
   const citedIds = new Set([
     ...partners.partners.map((p) => p.entity.entityId),
     ...prePost.results.map((s) => s.entity.entityId),
@@ -373,6 +388,11 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     return ok;
   });
   if (citationDrops > 0) reasons.push(`${citationDrops} partner line(s) dropped: cited entity not traced to this run's ledger.`);
+  // A partner line names only the tags listed under that partner's shared tags.
+  const withinTags = partnerLinesWithinTags(partnerLines, partners.partners);
+  if (withinTags.changed + withinTags.dropped > 0) {
+    reasons.push(`${withinTags.changed + withinTags.dropped} partner line(s) trimmed: a tag the place doesn't list as shared was cut.`);
+  }
 
   const sheet: StreetSheet = {
     planId,
@@ -382,7 +402,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     bill: ctx.bill,
     operator,
     cards,
-    narration: { ...narration, partnerLines },
+    narration: { ...narration, partnerLines: withinTags.lines },
     ledger: entries,
     guard: {
       dropped: copy.guardDropped + citationDrops,

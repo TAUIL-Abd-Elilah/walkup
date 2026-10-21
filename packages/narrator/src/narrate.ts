@@ -26,13 +26,15 @@ import {
   MODEL,
   NARRATION_EFFORT,
 } from "./constants";
-import { prepareRun, renderFactsMessage, type PreparedRun } from "./facts";
+import { audienceWordIn, isAudienceTag } from "./audience";
+import { headlinerName, prepareRun, renderFactsMessage, type PreparedRun } from "./facts";
 import { jsonOutputFormat } from "./json-schema";
-import { policyProblem, unlistedNumber } from "./policy";
+import { blankProtected, policyProblem, unlistedNumber } from "./policy";
 import { NARRATOR_SYSTEM_PROMPT } from "./prompts";
 import { buildNarrationSchema, toDraft, type NarrationDraft } from "./schema";
 import { templateNarrate, templateSummary } from "./template";
 import type { CallUsage, LlmOptions, NarrateInput, NarrationResult, TemplateReason } from "./types";
+import { HOOK_CLAIM_RE, vetGeneratedLines } from "./vet";
 
 export type NarrateOptions = LlmOptions;
 
@@ -69,7 +71,9 @@ export interface GuardedNarration {
  * Deterministic validator over a parsed draft: ids must be from this run, every
  * number must be a run number, policy words are rejected (alcohol words too
  * unless the ticketing age policy says 21+), copy hooks must use allowlisted
- * tags by name and no act names. Failing lines are dropped and counted.
+ * tags by name, no audience tag or audience word, and name the act (the
+ * headliner is put in front of a line that names no act). Failing lines are
+ * dropped and counted.
  */
 /**
  * Writes the run's ISO show date and "<n> USD" the way the sheet does ("Wednesday, Feb 17", "$6,000"), for a
@@ -81,24 +85,92 @@ export function readableForPromoter(text: string, show: { date?: unknown; dateTe
     // "on Wednesday, 2027-02-17" would repeat the weekday: drop a weekday written just before the date.
     out = out.replace(new RegExp(`(?:\\b[A-Z][a-z]+day,?\\s+)?${show.date.replace(/-/g, "\\-")}`, "g"), show.dateText);
   }
-  return out.replace(/\b(\d{1,3}(?:,\d{3})+|\d+)\s*USD\b/g, (_m, n: string) => `$${Number(n.replace(/,/g, "")).toLocaleString("en-US")}`);
+  // A tag name with a stray space after its hyphen ("alt- country") is written whole ("alt-country"); a suspended
+  // hyphen ("pre- and post-show") stays.
+  out = out.replace(/\b([A-Za-z]+)-\s+(?!(?:and|or|to|nor)\b)([a-z])/g, "$1-$2");
+  // "a intimate room" -> "an intimate room" (a tag name dropped in after "a"); "a one-off", "a unique" stay.
+  out = out.replace(/\b([Aa]) (?=[aeiou])(?!(?:one|once|uni|use|usu|ure|uti|eu)[a-z]*\b)/gi, (_m, a: string) => `${a}n `);
+  return out.replace(/\b(\d{1,3}(?:,\d{3})+|\d+)(?:\s*USD\b|[- ]dollars?\b)/g, (_m, n: string) => `$${Number(n.replace(/,/g, "")).toLocaleString("en-US")}`);
+}
+
+/** Proper adjectives a tag name keeps capitalised ("American history", "Irish pub"). */
+const PROPER_WORD_RE = /^(?:American|African|Afro|Latin|Latino|Latina|Caribbean|Irish|Italian|Mexican|Asian|British|English|French|Spanish|Cajun|Creole|Appalachian|Celtic|Black|Southern|Ethiopian|Jamaican|Korean|Japanese|Chinese|Indian|Thai|Vietnamese|Cuban)$/;
+
+/**
+ * Tag names written mid-sentence in sentence case, as the sheet writes them: "an Intimate night of Alt-country" ->
+ * "an intimate night of alt-country", "American History" -> "American history". A word at the start of a sentence,
+ * a proper adjective and a word with two capitals ("R&B", "DJ") keep their case.
+ */
+export function tagNamesInSentenceCase(text: string, names: readonly string[], protect: readonly string[] = []): string {
+  let out = text;
+  // Spans of names that keep their case (acts, the venue, places, areas), found once in the original text.
+  const kept: [number, number][] = [];
+  for (const p of protect.map((x) => x.trim()).filter((x) => x.length >= 3)) {
+    let i = text.toLowerCase().indexOf(p.toLowerCase());
+    while (i >= 0) {
+      kept.push([i, i + p.length]);
+      i = text.toLowerCase().indexOf(p.toLowerCase(), i + 1);
+    }
+  }
+  // "Alt- Country" (as Qloo spells one tag) is matched as the text writes it after readableForPromoter: "alt-country".
+  const uniq = [...new Set(names.map((n) => n.trim().replace(/-\s+/g, "-")).filter((n) => n.length >= 3))].sort((x, y) => y.length - x.length);
+  for (const name of uniq) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(?<![A-Za-z0-9])${escaped}(?![A-Za-z0-9])`, "gi");
+    out = out.replace(re, (hit: string, at: number) => {
+      if (kept.some(([a, b]) => at < b && at + hit.length > a)) return hit;
+      const before = out.slice(0, at);
+      const sentenceStart = /(?:^|[.!?]\s+)$/.test(before);
+      return hit
+        .split(/(\s+|-)/)
+        .map((w, i) => {
+          if (i === 0 && sentenceStart) return w;
+          const cap = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+          if (PROPER_WORD_RE.test(cap)) return cap;
+          if (!/[A-Z]/.test(w) || (w.match(/[A-Z]/g)?.length ?? 0) >= 2) return w;
+          return w.toLowerCase();
+        })
+        .join("");
+    });
+  }
+  return out;
 }
 
 export function guardNarration(rawDraft: NarrationDraft, prepared: PreparedRun): GuardedNarration {
   const show = (prepared.facts["show"] ?? {}) as { date?: unknown; dateText?: unknown };
+  const factPartners = (prepared.facts["partners"] ?? []) as { entityId: string; sharedTags?: string[] }[];
+  const tagWords = [...prepared.allowlist.map((t) => t.name), ...factPartners.flatMap((p) => p.sharedTags ?? [])];
   const fix = (t: string) => readableForPromoter(t, show);
+  // Names keep their case: the acts, the venue and city, places and areas (not the tag names themselves).
+  const f = prepared.facts as {
+    show?: { acts?: { name: string }[]; venue?: { name?: string; city?: string } };
+    tiles?: { name?: string | null }[];
+    partners?: { name?: string }[];
+    prePost?: { name?: string }[];
+    media?: { name?: string }[];
+  };
+  const names = [
+    ...(f.show?.acts ?? []).map((a) => a.name),
+    f.show?.venue?.name ?? "",
+    f.show?.venue?.city ?? "",
+    ...[...(f.tiles ?? []), ...(f.partners ?? []), ...(f.prePost ?? []), ...(f.media ?? [])].map((x) => x.name ?? ""),
+  ];
+  const fixTags = (t: string) => tagNamesInSentenceCase(fix(t), tagWords, names);
   const draft: NarrationDraft = {
     ...rawDraft,
     summary: fix(rawDraft.summary),
     tileWhy: rawDraft.tileWhy.map((t) => ({ ...t, text: fix(t.text) })),
-    partnerLines: rawDraft.partnerLines.map((l) => ({ ...l, text: fix(l.text) })),
-    copyHooks: rawDraft.copyHooks.map((h) => ({ ...h, text: fix(h.text) })),
+    partnerLines: rawDraft.partnerLines.map((l) => ({ ...l, text: fixTags(l.text) })),
+    copyHooks: rawDraft.copyHooks.map((h) => ({ ...h, text: fixTags(h.text) })),
   };
   const reasons: string[] = [];
   const geos = new Set(prepared.ids.geohashes);
   const ents = new Set(prepared.ids.entityIds);
   const tagById = new Map(prepared.allowlist.map((t) => [t.id, t]));
   const prot = prepared.protectedStrings;
+  const showFacts = show as { acts?: { name: string; role: string }[]; venue?: { name?: string; city?: string } };
+  const headliner = headlinerName({ acts: showFacts.acts ?? prepared.actNames.map((name) => ({ name, role: "headliner" })) });
+  const venueNames = [showFacts.venue?.name ?? "", showFacts.venue?.city ?? ""].filter(Boolean);
 
   const problemOf = (text: string): string | null => {
     const p = policyProblem(text, prot, { alcoholAllowed: prepared.alcoholAllowed });
@@ -128,6 +200,8 @@ export function guardNarration(rawDraft: NarrationDraft, prepared: PreparedRun):
   draft.partnerLines.forEach((l, i) => {
     const where = `partnerLines[${i}]`;
     if (!ents.has(l.entityId)) return void reasons.push(`${where}: entityId not in this run`);
+    // A line per partner only: spots, podcasts and the sponsor have no partner line.
+    if (factPartners.length > 0 && !factPartners.some((p) => p.entityId === l.entityId)) return void reasons.push(`${where}: not a partner`);
     if (partnerLines.some((x) => x.entityId === l.entityId)) return void reasons.push(`${where}: duplicate entity`);
     const p = problemOf(l.text);
     if (p) return void reasons.push(`${where}: ${p}`);
@@ -146,12 +220,17 @@ export function guardNarration(rawDraft: NarrationDraft, prepared: PreparedRun):
     if (!tags.some((t) => t && (lower.includes(t.name.toLowerCase()) || lower.includes(t.name.toLowerCase().replace(/\s+fans$/, ""))))) {
       return void reasons.push(`${where}: text does not use a cited tag name`);
     }
-    if (prepared.actNames.some((a) => a && lower.includes(a.toLowerCase()))) {
-      return void reasons.push(`${where}: act name in copy`);
-    }
+    if (tags.some((t) => t && isAudienceTag(t))) return void reasons.push(`${where}: audience tag in copy`);
     const p = problemOf(h.text);
     if (p) return void reasons.push(`${where}: ${p}`);
-    copyHooks.push({ text: h.text.trim(), tagIds });
+    if (audienceWordIn(blankProtected(h.text, [...prepared.actNames, ...venueNames])) !== null) {
+      return void reasons.push(`${where}: audience word in copy`);
+    }
+    const claim = HOOK_CLAIM_RE.exec(blankProtected(h.text, [...prepared.actNames, ...venueNames]));
+    if (claim) return void reasons.push(`${where}: claim the sheet can't back ("${claim[0].toLowerCase()}")`);
+    const text = h.text.trim();
+    const namesAct = prepared.actNames.some((a) => a && lower.includes(a.toLowerCase()));
+    copyHooks.push({ text: namesAct || !headliner ? text : `${headliner}: ${text}`, tagIds });
   });
 
   return { summary, tileWhy, partnerLines, copyHooks, dropped: reasons.length, reasons };
@@ -204,15 +283,23 @@ export async function narrate(input: NarrateInput, opts: NarrateOptions = {}): P
   if (wire === null) return fallback(input, prepared, "parse_failed", usage, refs);
 
   const guarded = guardNarration(toDraft(wire), prepared);
+  // Claims the map and the sheet's numbers do not back (directions, forecasts, superlatives, partner tags):
+  // the template's line for that slot replaces the model's.
+  const vetted = vetGeneratedLines(input, prepared, guarded);
   return {
-    summary: guarded.summary ?? templateSummary(input, prepared),
-    tileWhy: guarded.tileWhy,
-    partnerLines: guarded.partnerLines,
+    summary: vetted.summary ?? templateSummary(input, prepared),
+    tileWhy: vetted.tileWhy,
+    partnerLines: vetted.partnerLines,
     copyHooks: guarded.copyHooks,
     templated: false,
     templateReason: null,
     usage,
-    guard: { dropped: guarded.dropped, reasons: guarded.reasons, deniedTagCount: prepared.deniedTagCount },
+    guard: {
+      // A replaced line is not a dropped claim (the slot keeps a checked line): said in the reasons, not counted.
+      dropped: guarded.dropped,
+      reasons: [...guarded.reasons, ...vetted.replaced.map((r) => `replaced by the template: ${r}`)],
+      deniedTagCount: prepared.deniedTagCount,
+    },
     ledgerRefs: refs,
   };
 }

@@ -12,7 +12,7 @@ Each criterion below is meant to be checkable: by a test, by CI, or by a person 
 
 ## Goldens
 
-All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are operator what-ifs with a `HYPOTHETICAL COUNT` watermark; no sales data about any real show is known or shown.
+All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are operator what-ifs, marked as what-ifs on the page and with a "What-if counts" watermark on the PDF; no sales data about any real show is known or shown.
 
 - **G1. The Truth, Nashville: "Same room. Two crowds."** Two bills at the same room in the same window, chosen by a fixed rule (the first Americana, country or folk headliner on the room's Ticketmaster calendar, and the bill whose genre is most distant from it). Both headliners resolve exactly. The house baseline is the room's next 60 Ticketmaster events. If the room is not yet a Qloo place, the run uses the Ticketmaster `POINT(lon lat)`. Expected: named lift tiles, 20 partners across the top 3 tiles, 6-8 pre/post spots, podcasts, one sponsor, three copy hooks and the swap to the second bill. The first screen never shows `needs_input`. The live hero applies this rule at one independent room over Dec 20 2026 to Feb 28 2027 (`HERO_RULE`, `HERO_WINDOW` in `packages/orchestrator/src/presets.ts`); a bill whose headliner Qloo cannot match exactly is skipped, since both headliners must resolve exactly. Run on Oct 20 2026 at The Anthem, Washington DC (`npm run tm:room -- --venue-id=KovZ917A3Y7 --as-of=2026-10-20`), it picks Rhiannon Giddens (Sun Feb 28 2027) and FLO (Wed Feb 17 2027). They are the `live` blocks of g1-a and g1-b; g2 and g3 have no live show. The fixture presets keep their invented bills at The Truth on the fixture world, picked by the same rule over Nov 20 to Dec 20 2026.
 - **G2. Hampton Coliseum, an invented multi-act comedy bill (Sat Dec 19 2026).** Every act and title is made up. Demonstrates exact resolution, `needs_input` on a one-word act name, a thin act handled as `partial` with a film/TV proxy seed shown in the receipts, operator-declared community partners ranked as places with unresolved ones "declared, not scored", and denied tags counted on the receipt.
@@ -23,7 +23,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 ### A. First visit (desktop and phone, no login, no email)
 
 1. The landing page renders from cache (G1) and is never empty.
-2. The mode is said in words, never in a pill: live ("Live data" with the Qloo calls left this month); fixture, with a strip on every page saying the sheets use made-up places and numbers; or recorded, with a strip saying since when Qloo has been unavailable, that new plans are off, and that sheets recorded from live runs show the date of the run and are not refreshed. A recorded sheet says "Recorded <date>" where a live one says "Planned <date>".
+2. The mode is said in words, never in a pill: live ("Live data" with the Qloo calls left this month); fixture, with a strip on every page saying the sheets use made-up places and numbers; or recorded, with a strip saying the sheets were recorded from live Qloo and Ticketmaster runs and that live runs are paused; sheets recorded from live runs show the date of the run and are not refreshed. A recorded sheet says "Recorded <date>" where a live one says "Planned <date>".
 3. Three preset chips (the goldens) and a search box for any Ticketmaster show.
 4. Opening a sheet shows the cards in order, each with a status badge (`ok`, `empty`, `needs_input`, `partial`, `degraded`, `error`) and a reason when not `ok`: resolution, lift map with top 5 named tiles, partners, pre/post, media and sponsor, copy hooks.
 5. Removed on Oct 20 2026: the "Without Qloo" toggle and its Google Places list. Qloo is the core; the list added a key, a quota and a 30-day storage limit for little decision value ([what we tried](what-we-tried.md)).
@@ -86,9 +86,9 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 3. Community channels appear only when the operator declares them.
 4. Alcohol and age rules come from Ticketmaster `ageRestrictions`; on all-ages shows the fan-facing pre/post list has restaurants and cafes only and the sponsor excludes alcohol, tobacco and gambling.
 5. No email to anyone the operator did not type. Partners are "suggested, not affiliated".
-6. Every count on a real show is watermarked `HYPOTHETICAL COUNT`; copy never says "soft" or "tracking"; there is no public ranking of shows.
+6. Every count on a real show is marked as a what-if ("What-if counts" on the PDF); copy never says "soft" or "tracking"; there is no public ranking of shows.
 7. No jokes, artist voice or likeness in generated copy. Candidate and campaign events are refused.
-8. Every sheet prints the five "What this does not establish" lines (`LIMITS_EVERY_SHEET`).
+8. Every sheet prints the four "What this does not establish" lines (`LIMITS_EVERY_SHEET`).
 
 ### I. Exports
 
@@ -97,20 +97,20 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 ### J. Fixture and recorded modes
 
 1. **Fixture: sample data.** Without a Qloo or a Ticketmaster key, or with `WALKUP_MODE=fixture`, the presets run on a synthetic stand-in for Qloo and Ticketmaster and no API is called. Every page, sheet, file and email says it is sample data (made-up places and numbers), and free-form runs answer 503 with an explanation. `npm ci && npm run dev` works with an empty `.env`.
-2. **Recorded: live runs, Qloo unavailable.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date; their envelope says `mode: "recorded"`. Sample sheets stay sample, and when no live run was recorded the landing page calls its sheets sample sheets. New plans, searches, picks, revisions and every MCP tool but `get_sheet` answer with `mode: "recorded"` and one plain reason (503 on the REST routes); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
+2. **Recorded: live runs paused.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date; their envelope says `mode: "recorded"`. Sample sheets stay sample, and when no live run was recorded the landing page calls its sheets sample sheets. New plans, searches, picks, revisions and every MCP tool but `get_sheet` answer with `mode: "recorded"` and one plain reason (503 on the REST routes); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
 3. A rejected key with no live sheet stored falls back to fixture mode. Recorded data is never shown as sample data, and sample data never as recorded.
 
 ### K. Agents
 
 1. `skills/walkup/` is a valid Agent Skill: `name` equals the directory name, `description` is at most 1,024 characters, `metadata.openclaw` declares its env and binaries, the body has "What this sends", "NEVER do", common errors and a coverage map. No remote code, no key handling.
-2. An MCP endpoint (`POST /mcp`, Streamable HTTP) exposes `plan_show`, `rank_partners`, `bill_vs_house` and `get_sheet`, each returning the same envelope as the web app (`status`, `summary`, `results`, `provenance`, `limits`), with the same per-IP caps.
+2. An MCP endpoint (`POST /mcp`, Streamable HTTP) exposes `plan_show`, `rank_partners`, `bill_vs_house`, `get_sheet` and `revise_plan`, each returning the same envelope as the web app (`status`, `summary`, `results`, `provenance`, `limits`), with the same per-IP caps.
 
 ### L. Evals
 
-1. P1-P5 analysis plans are hashed and committed under `docs/preregistration/` before any run.
+1. The P1 analysis plan is hashed and committed under `docs/preregistration/` before any run (P1 was not run).
 2. Coverage is reported before results; nulls are published.
 3. The 20-case product eval runs in CI with an ID validator.
 
 ### M. Cost caps
 
-Qloo month guard at 1,500; 3 fresh runs per IP and 15 per day; Anthropic $5/day; Resend free tier with the test inbox by default.
+Qloo month guard at 1,500 remaining (the hackathon key's monthly limit read 50,000); 3 fresh runs per IP and 15 per day; Claude (OpenRouter or Anthropic) $5/day; Resend free tier with the test inbox by default.

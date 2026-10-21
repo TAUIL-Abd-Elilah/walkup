@@ -8,8 +8,8 @@
 export { toPdf, renderStreetSheetPdf, streetSheetDocument, streetSheetElement, countPdfPages, PAGE_SIZES } from "./pdf";
 export type { PdfOptions, PdfPageSize, PdfRenderResult, DocumentOptions } from "./pdf";
 
-export { buildSheetModel, sheetModelText } from "./sheet-model";
-export type { Audience, SheetModel, SheetModelOptions, TileItem, PartnerRow, DeclaredRow, SpotRow, MediaRow, BudgetRow, DiscoveryLine } from "./sheet-model";
+export { buildSheetModel, sheetModelText, PAGE_SECTIONS, AREA_BLURB_CHARS } from "./sheet-model";
+export type { Audience, SheetModel, SheetModelOptions, SheetSection, TileItem, PartnerRow, DeclaredRow, SpotRow, MediaRow, BudgetRow, DiscoveryLine } from "./sheet-model";
 
 export { layoutTileMap, placeLabels, liftBand, liftAlpha, liftFill, niceKm, LIFT_INK, MAP_COLORS, LABEL_RADIUS, MIN_VISIBLE_CELL } from "./map";
 export type { MapRect, TileMapLayout, TileMapOptions, LiftBand } from "./map";
@@ -18,6 +18,9 @@ export {
   toIcs,
   planStreetTeamVisits,
   streetTeamDates,
+  streetTeamPasses,
+  partnerVisits,
+  FIRST_PASS_WEEKS_OUT,
   escapeIcsText,
   foldLine,
   icsLocal,
@@ -27,7 +30,7 @@ export {
   ICS_EOL,
   ICS_PRODID,
 } from "./ics";
-export type { IcsOptions, StreetTeamVisit } from "./ics";
+export type { IcsOptions, StreetTeamVisit, StreetTeamPass, PartnerVisit } from "./ics";
 
 export { toCsv, csvCell, looksLikeFormula, CSV_BOM, CSV_EOL } from "./csv";
 export type { CsvCell, CsvOptions } from "./csv";
@@ -43,16 +46,17 @@ export {
   offerCodesCsv,
   offerCodeRows,
   tileWeights,
+  areaBudget,
   apportion,
-  geohashHalfDiagonalMi,
+  geohashHalfDiagonalKm,
   PARTNERS_CSV_COLUMNS,
   ZIPS_CSV_COLUMNS,
   PINS_CSV_COLUMNS,
   OFFER_CODES_CSV_COLUMNS,
   OFFER_CODE_STATUS,
-  METERS_PER_MILE,
+  MIN_PIN_RADIUS_KM,
 } from "./tables";
-export type { PartnersCsvOptions, ZipRow, PinRow, PinOptions, OfferCodeRow, OfferCodeOptions } from "./tables";
+export type { PartnersCsvOptions, ZipRow, ZipOptions, PinRow, PinOptions, OfferCodeRow, OfferCodeOptions } from "./tables";
 
 export { toSheetJson, sheetJsonDocument, sanitizeSheet, SHEET_JSON_FORMAT, SHEET_JSON_VERSION } from "./json";
 export type { SheetJsonOptions, SheetJsonDocument } from "./json";
@@ -98,5 +102,22 @@ export {
   AREA_MERGE_KM,
   sheetAgeLabel,
   isAllAgesForCopy,
+  areaLabel,
+  areaState,
+  addressState,
+  partnerAreaLabel,
+  hoursWeekday,
+  formatPhone,
+  sortedReceipts,
+  countsAreWhatIf,
+  formatKm,
+  isCartOrStand,
+  sheetSpots,
+  spotSharesDiffer,
+  sentencesUpTo,
 } from "./format";
+export { isFanFacing, spotIsFanFacing, partnerIsFanFacing, fanFacingSpots } from "./audience";
+export type { FanFacingPlace } from "./audience";
+export { parseOpenRanges, partnerHoursOn } from "./hours";
+export type { DayHours } from "./hours";
 export type { TileSelectOptions } from "./format";

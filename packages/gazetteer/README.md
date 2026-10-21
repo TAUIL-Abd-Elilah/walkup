@@ -4,7 +4,7 @@ Names lift tiles and counts the adults around them, from local files only. It re
 per-metro JSON built by `data/gazetteer/build.py` (OpenStreetMap neighbourhoods, Census places,
 Census ZCTAs with ACS 5-year estimates) and answers point lookups. No network at run time.
 
-Metros shipped today: `nashville`, `hampton_roads`, `tacoma`. See `data/gazetteer/README.md`
+Metros shipped today: `nashville`, `hampton_roads`, `tacoma`, `dc`. See `data/gazetteer/README.md`
 for boxes, sources, ACS variables and the last build.
 
 ## API
@@ -12,7 +12,7 @@ for boxes, sources, ACS variables and the last build.
 ```ts
 import {
   loadMetro, nameForPoint, zctasNear, nearestZcta, adultsNear, adultsNearDetail,
-  metroForPoint, annotateTile, haversineKm,
+  metroForPoint, annotateTile, stateForPoint, stateFromZip, haversineKm,
 } from "@walkup/gazetteer";
 ```
 
@@ -25,7 +25,12 @@ import {
 | `adultsNear(lat, lon, radiusKm, opts?)` | Sum of ACS adults 21+ over ZCTAs whose internal point is in range. Searches every metro unless `opts.metro` is set; ZCTAs without ACS are left out. `null` when nothing known is in range (outside every metro box with no ZCTA point in range, or ACS missing for all of them); `0` for a covered point with no ZCTA point in range (pass `ensureNearest: true` to count the nearest ZCTA instead; this only applies inside a metro box, so a point outside every box stays `null`). |
 | `adultsNearDetail(...)` | Same, plus the ZCTAs counted, those missing ACS, and the metro. |
 | `metroForPoint(lat, lon, opts?)` | The metro whose box holds the point (nearest centre when boxes overlap), or `null`. |
-| `annotateTile(tile, opts?)` | A copy of a `LiftTile` with `name`, `zctas` and `adultPopulation` filled (3 km radius, nearest ZCTA when none is in range). A tile outside the metro's box (passed in `opts.metro` or found by `metroForPoint`) is left unnamed with `adultPopulation: null`. |
+| `annotateTile(tile, opts?)` | A copy of a `LiftTile` with `name` (the name people use, `areaNameForPoint`; the OSM/Census name rides along as `gazetteerName` when it differs), `zctas` and `adultPopulation` filled: residential ZIPs only (`isResidentialZip`), at most `MAX_AREA_ZIPS` (4) within 3 km, nearest first, else the nearest residential ZCTA. A tile outside the metro's box (passed in `opts.metro` or found by `metroForPoint`) is left unnamed with `adultPopulation: null`. `naming: "gazetteer"` keeps the old OSM/Census name. |
+| `areaNameForPoint(lat, lon, metro, opts?)` | The name a promoter uses: a well-known district from `data/gazetteer/areas.json` whose radius holds the point ("H Street NE", "U Street / Shaw"), else the place name of the residential ZIP the point is in ("Laurel", "Bowie", "Bethesda", "Alexandria"; `data/gazetteer/zip_places.csv`), except in a city named by neighbourhood (Washington, Nashville, Seattle, Tacoma), where the OSM neighbourhood within 2.5 km is kept; else `nameForPoint`. |
+| `zipForPoint(lat, lon, metro)` | The residential ZCTA a point is in (smallest land-area circle holding it, else the nearest edge). |
+| `zipPlace(zip)`, `isResidentialZip(zip, adults21?)`, `knownAreaNear(lat, lon, metro?)`, `isNeighbourhoodCity(metro, city)` | Pure lookups over the generated table `src/zip-data.ts` (also `@walkup/gazetteer/zips`, which loads no files). `isResidentialZip` is false for unique (one organisation), military and campus ZIPs and for ZCTAs with fewer than 250 adults 21+; an unknown ZIP counts as residential. |
+| `stateForPoint(lat, lon, metro, opts?)` | The USPS state code ("MD") at a point: the ZCTA whose land-area circle holds it (smallest first, else nearest edge) gives it by ZIP prefix, else the area-aware Census place by GEOID. `null` when neither is known. |
+| `stateFromZip(zip)`, `stateFromGeoid(geoid)`, `stateFromZctas(list)` | Pure lookups (USPS 3-digit ZIP prefixes, Census state FIPS); also `@walkup/gazetteer/states`, which loads no files, so the exports and the web can label areas "Silver Spring, MD". |
 | `haversineKm(lat1, lon1, lat2, lon2)` | Great-circle distance, km. |
 
 `metro` arguments accept a name (`"tacoma"`) or an already loaded `MetroGazetteer`.

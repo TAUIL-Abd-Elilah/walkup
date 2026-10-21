@@ -12,7 +12,7 @@ import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
 import { findAlcoholTerm, findDeniedTerm, isDeniedTag } from "@walkup/engine";
 import { BUDGET_TARGET, CARD_ORDER, createMemoryChoiceStore, createMemoryPlanStore, type CallBudget, type CardKey, type PlanResult } from "../src/index";
 import { MIN_BILL_PCT, SPLIT_HALF_NODE } from "../src/steps/heat";
-import { HOUSE_TWIN_CHIP, HOUSE_TWIN_NODE, PARTNER_TILES, POPULARITY_TWIN_NODE } from "../src/steps/partners";
+import { HOUSE_TWIN_NODE, isHouseTwinChip, PARTNER_TILES, POPULARITY_TWIN_NODE } from "../src/steps/partners";
 import { allEntities, citedRefs, deps, runPreset, sheetOf } from "./helpers";
 
 /** Trust-check calls in a budget: split-half heatmaps (bill halves, house halves), partner house twins and popularity twins. */
@@ -221,7 +221,7 @@ describe("G1: same room, two crowds", () => {
         expect(p.houseRank === null || (typeof p.houseRank === "number" && p.houseRank >= 1), p.entity.name).toBe(true);
         expect(p.ubiquityPenalty).toBeGreaterThanOrEqual(0);
         expect(p.ubiquityPenalty).toBeLessThanOrEqual(0.5);
-        const chip = p.chips.find((c) => c.label.startsWith(HOUSE_TWIN_CHIP));
+        const chip = p.chips.find((c) => isHouseTwinChip(c.label));
         expect(chip, p.entity.name).toBeDefined();
         expect(ids.get(chip!.ledgerRef)?.note).toContain(`node ${HOUSE_TWIN_NODE}`);
       }

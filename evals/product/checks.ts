@@ -235,7 +235,7 @@ const FALLBACK_NODES: { re: RegExp; card: CardKey; reason: RegExp; extra: boolea
   { re: /^Q9 .*\(3,500 m\)$/, card: "partners", reason: /3\.5 km/, extra: true },
   { re: /^Q9 .*\(more categories\)$/, card: "partners", reason: /more types of place/, extra: true },
   { re: /^Q9 .*\(rebalanced\)$/, card: "partners", reason: /rebalanced/, extra: true },
-  { re: /^Q10 .*\(2,500 m\)$/, card: "prePost", reason: /2,500 m/, extra: true },
+  { re: /^Q10 .*\(2,500 m\)$/, card: "prePost", reason: /2\.5 km|2,500 m/, extra: true },
   { re: /^Q8 fallback/, card: "whatsDifferent", reason: /compares (the two crowds' top tags|two tag lists)/, extra: true },
   // A replacement for Q5 (same call count), shown as the tag baseline.
   { re: /^Q5 house heat \(tag baseline\)$/, card: "liftMap", reason: /compares this bill with/, extra: false },

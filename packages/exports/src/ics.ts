@@ -1,11 +1,22 @@
 /**
- * street-team.ics: an RFC 5545 calendar of tile visits by day, plus the show.
+ * street-team.ics: an RFC 5545 calendar of street-team stops by day, plus the show.
  *
+ * - Two passes: a first pass about four weeks out and a final pass in the show
+ *   week (never before the plan was made). Each street-team day covers one part
+ *   of town: the areas are cut into runs along a nearest-neighbour route from
+ *   the venue, an area's partners share a day, and the day's stops follow a
+ *   nearest-neighbour walk.
+ * - One event per partner stop, timed inside that partner's open hours on that
+ *   day (read from the place's own week of hours, for that weekday). A partner
+ *   whose hours that day aren't listed gets a stop marked "call first". A
+ *   partner closed on every street-team day is not scheduled; its area's first
+ *   event says so. A numbered area with no partner to visit gets a flyer drop.
  * - Lines end in CRLF and are folded at 75 octets (continuation lines start
  *   with one space; UTF-8 sequences are never split).
  * - TEXT values escape backslash, semicolon, comma and newlines.
- * - UIDs are derived from the plan id, the date and the tile geohash, so a
- *   re-export of the same plan updates events instead of duplicating them.
+ * - UIDs are derived from the plan id, the date, the tile geohash and the
+ *   partner id, so a re-export of the same plan updates events instead of
+ *   duplicating them.
  * - DTSTAMP is the plan's createdAt (UTC), so the same sheet gives the same file.
  * - Times are floating local times (no TZID): "10:00" means 10:00 wherever the
  *   street team is, which is the venue's own wall clock. Pass `timeZone` with a
@@ -13,22 +24,30 @@
  */
 import type { LiftTile, Partner, StreetSheet, Weekday } from "@walkup/contracts";
 import { WEEKDAYS } from "@walkup/contracts";
+import { haversineM } from "@walkup/engine";
 import {
   actsLine,
   addDaysYmd,
+  areaLabel,
   categoryLabel,
   formatHours,
+  formatPhone,
   FIXTURE_NOTICE,
+  hoursWeekday,
   SAMPLE_PREFIX,
   isYmd,
+  partnerAreaLabel,
   receiptGroup,
+  streetDaysText,
   SUGGESTED_NOT_AFFILIATED,
-  tileLabel,
   topTiles,
   weekdayOfYmd,
+  weekdayShort,
   ymdOf,
   type TileSelectOptions,
 } from "./format";
+import { areaZips } from "./area-zips";
+import { partnerHoursOn, type DayHours } from "./hours";
 
 export const ICS_EOL = "\r\n";
 export const ICS_PRODID = "-//Walkup//Street Sheet export//EN";
@@ -36,13 +55,20 @@ export const ICS_PRODID = "-//Walkup//Street Sheet export//EN";
 export interface IcsOptions extends TileSelectOptions {
   /** Street-team weekdays. Default: the sheet's `operator.streetTeamDays`. */
   streetTeamDays?: readonly Weekday[];
-  /** How many weeks before the show to schedule (1-8). Default 1: the last occurrence of each day before the show. */
-  weeks?: number;
-  /** First visit of the day, "HH:MM" local. Default "10:00". */
+  /**
+   * Weeks before the show for the first pass (2-8): 4 (the default) puts it on the street-team days 22 to 28 days
+   * out. 0 or 1: the show week only.
+   */
+  firstPassWeeksOut?: number;
+  /** Minutes per partner stop on the final pass, when there was a first pass. Default 10. */
+  finalPassMinutes?: number;
+  /** First stop of the day, "HH:MM" local. Default "10:00". A partner open only before then is still visited while open. */
   startTime?: string;
-  /** Minutes per tile visit. Default 90. */
+  /** Minutes for an area flyer drop (a numbered area with no partner to visit). Default 90. */
   visitMinutes?: number;
-  /** Minutes between visits (travel). Default 30. */
+  /** Minutes per partner stop. Default 20 (cut short when the partner closes sooner). */
+  stopMinutes?: number;
+  /** Least minutes between stops; longer hops take 2 minutes per km. Default 15. */
   gapMinutes?: number;
   /**
    * IANA zone for the venue. Default: `sheet.bill.venue.timeZone` (from
@@ -65,14 +91,28 @@ export interface IcsOptions extends TileSelectOptions {
 export interface StreetTeamVisit {
   date: string; // YYYY-MM-DD
   weekday: Weekday;
-  /** "HH:MM" local. */
+  /** "first": the sweep about four weeks out; "final": the show week. */
+  pass: StreetTeamPass;
+  /** "HH:MM" local. Inside the partner's open hours whenever they are listed for that day. */
   start: string;
   end: string;
-  /** Null for the single "near the venue" visit used when the sheet has no top tiles. */
+  /** The stop's area tile, when it is on the sheet. Null for a partner near the venue (no top tiles at all). */
   tile: LiftTile | null;
-  /** 1-based rank of the tile among the top tiles. */
+  /** 1-based rank of the tile among the top tiles; null outside them. */
   tileRank: number | null;
+  /** The partner this stop is for; null for an area flyer drop. */
+  partner: Partner | null;
+  /** [partner] for a stop, [] for a flyer drop. */
   partners: Partner[];
+  /** The partner's hours that day as listed; null when not listed (and on a flyer drop). */
+  hours: string | null;
+  /** True when the partner's hours that day are not listed: call before going. */
+  callFirst: boolean;
+  /**
+   * Partners of this area left off the calendar because they are listed closed on every street-team day of the
+   * pass. Set on the area's earliest event of that pass (its flyer drop, or its first stop); [] elsewhere.
+   */
+  closedAllDays: Partner[];
 }
 
 // ---------------------------------------------------------------------------
@@ -212,8 +252,19 @@ export function vtimezoneLines(tzid: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// The plan: which tiles on which day
+// The plan: which stops on which day
 // ---------------------------------------------------------------------------
+
+/** The street-team days in one week before the show: week 0 is the 7 days right before it, week 1 the 7 before those. */
+function weekDates(showDate: string, wanted: readonly Weekday[], w: number): { date: string; weekday: Weekday }[] {
+  const out: { date: string; weekday: Weekday }[] = [];
+  for (let k = 1; k <= 7; k++) {
+    const date = addDaysYmd(showDate, -(k + 7 * w));
+    const weekday = weekdayOfYmd(date);
+    if (wanted.includes(weekday)) out.push({ date, weekday });
+  }
+  return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+}
 
 /**
  * Street-team dates: for each requested weekday, its last occurrence in the 7
@@ -230,96 +281,427 @@ export function streetTeamDates(
   const wanted = WEEKDAYS.filter((d) => days.includes(d));
   const out: { date: string; weekday: Weekday; week: number }[] = [];
   for (let w = 0; w < weeks; w++) {
-    for (let k = 1; k <= 7; k++) {
-      const date = addDaysYmd(showDate, -(k + 7 * w));
-      const weekday = weekdayOfYmd(date);
-      if (!wanted.includes(weekday)) continue;
-      if (opts.notBefore && isYmd(opts.notBefore) && date < opts.notBefore) continue;
-      out.push({ date, weekday, week: w });
+    for (const d of weekDates(showDate, wanted, w)) {
+      if (opts.notBefore && isYmd(opts.notBefore) && d.date < opts.notBefore) continue;
+      out.push({ ...d, week: w });
     }
   }
   return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
 
+export type StreetTeamPass = "first" | "final";
+
+/** Default weeks before the show for the first pass: the street-team days 22 to 28 days out. */
+export const FIRST_PASS_WEEKS_OUT = 4;
+
 /**
- * Tile visits by day. Within each week the top tiles are dealt round-robin
- * over that week's street-team days in lift order (tile 1 on the first day,
- * tile 2 on the second, ...), then each day's visits run back to back from
- * `startTime`. With no top tiles, each day gets one visit to the partners near
- * the venue (when there are any).
+ * The street-team passes: a first pass about four weeks out (the street-team days 22 to 28 days before the show)
+ * and a final pass in the show week (the 7 days before it). A first-pass week that starts before `notBefore` (the
+ * plan's creation date) moves one week closer at a time, down to 8-14 days out; when no whole week fits, there is
+ * only the final pass, without its dates before `notBefore`. `firstPassWeeksOut` 0 or 1 gives the final pass only.
+ */
+export function streetTeamPasses(
+  showDate: string,
+  days: readonly Weekday[],
+  opts: { notBefore?: string; firstPassWeeksOut?: number } = {},
+): { date: string; weekday: Weekday; pass: StreetTeamPass }[] {
+  if (!isYmd(showDate)) return [];
+  const wanted = WEEKDAYS.filter((d) => days.includes(d));
+  if (wanted.length === 0) return [];
+  const notBefore = opts.notBefore && isYmd(opts.notBefore) ? opts.notBefore : null;
+  const ok = (date: string) => notBefore === null || date >= notBefore;
+  const out: { date: string; weekday: Weekday; pass: StreetTeamPass }[] = [];
+  const weeksOut = Math.min(8, Math.max(0, Math.floor(opts.firstPassWeeksOut ?? FIRST_PASS_WEEKS_OUT)));
+  for (let w = weeksOut - 1; w >= 1; w--) {
+    const week = weekDates(showDate, wanted, w);
+    if (week.length > 0 && week.every((d) => ok(d.date))) {
+      out.push(...week.map((d) => ({ ...d, pass: "first" as const })));
+      break;
+    }
+  }
+  out.push(...weekDates(showDate, wanted, 0).filter((d) => ok(d.date)).map((d) => ({ ...d, pass: "final" as const })));
+  return out;
+}
+
+interface Point {
+  lat: number;
+  lon: number;
+}
+
+/** A group of stops kept on one day: a numbered area with its partners, or partners outside them sharing a tile. */
+interface Group {
+  slot: number;
+  tile: LiftTile | null;
+  rank: number | null;
+  partners: Partner[];
+  /** A numbered area: it gets one flyer drop when no partner there is visited. */
+  area: boolean;
+  pos: Point | null;
+}
+
+interface Item {
+  slot: number;
+  order: number;
+  tile: LiftTile | null;
+  rank: number | null;
+  partner: Partner | null;
+  hours: DayHours | null;
+  /** Allowed [start, end) minute ranges for the stop. */
+  windows: [number, number][];
+  minutes: number;
+  closedAllDays: Partner[];
+  pos: Point | null;
+}
+
+const LAST_MINUTE = 23 * 60 + 59;
+/** How long the street team waits for a nearer stop rather than taking the one that can start soonest. */
+const STAY_MINUTES = 45;
+/** Minutes of travel per km between stops (about 30 km/h across town), rounded up to 5 minutes. */
+const TRAVEL_MIN_PER_KM = 2;
+
+function point(lat: unknown, lon: unknown): Point | null {
+  if (typeof lat !== "number" || typeof lon !== "number" || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (Math.abs(lat) > 90 || Math.abs(lon) > 180 || (lat === 0 && lon === 0)) return null;
+  return { lat, lon };
+}
+
+function kmApart(a: Point | null, b: Point | null): number | null {
+  if (!a || !b) return null;
+  return haversineM(a, b) / 1000;
+}
+
+/** The partner's own map point, else its tile's centre. */
+function partnerPoint(p: Partner, tiles: ReadonlyMap<string, LiftTile>): Point | null {
+  const own = point(p.entity.location?.lat, p.entity.location?.lon);
+  if (own) return own;
+  const t = p.tileGeohash ? tiles.get(p.tileGeohash) : undefined;
+  return t ? point(t.lat, t.lon) : null;
+}
+
+/** Nearest-neighbour order from `start`; items without a point keep their order at the end. */
+function nearestOrder<T>(items: readonly T[], pointOf: (t: T) => Point | null, start: Point | null): T[] {
+  const left = items.map((it, i) => ({ it, i, p: pointOf(it) }));
+  const placed = left.filter((x) => x.p !== null);
+  const rest = left.filter((x) => x.p === null);
+  const out: T[] = [];
+  let at = start ?? placed[0]?.p ?? null;
+  while (placed.length > 0) {
+    let best = 0;
+    let bestKm = Number.POSITIVE_INFINITY;
+    placed.forEach((x, k) => {
+      const d = kmApart(at, x.p) ?? 0;
+      if (d < bestKm - 1e-9 || (Math.abs(d - bestKm) <= 1e-9 && x.i < placed[best]!.i)) {
+        best = k;
+        bestKm = d;
+      }
+    });
+    const [next] = placed.splice(best, 1);
+    out.push(next!.it);
+    at = next!.p;
+  }
+  return [...out, ...rest.map((x) => x.it)];
+}
+
+/**
+ * The groups of stops: each numbered area (in area order) with its partners, then the partners outside the numbered
+ * areas grouped by their own tile (a partner without a tile is a group of its own).
+ */
+function stopGroups(sheet: StreetSheet, tiles: readonly LiftTile[], allTiles: ReadonlyMap<string, LiftTile>): Group[] {
+  const partners = sheet.cards.partners.results;
+  const groups: Group[] = tiles.map((t, i) => ({
+    slot: i,
+    tile: t,
+    rank: i + 1,
+    partners: partners.filter((p) => p.tileGeohash === t.geohash),
+    area: true,
+    pos: point(t.lat, t.lon),
+  }));
+  const top = new Set(tiles.map((t) => t.geohash));
+  const byKey = new Map<string, Partner[]>();
+  for (const p of partners) {
+    if (p.tileGeohash && top.has(p.tileGeohash)) continue;
+    const key = p.tileGeohash ? `t:${p.tileGeohash}` : `p:${p.entity.entityId}`;
+    byKey.set(key, [...(byKey.get(key) ?? []), p]);
+  }
+  for (const [key, ps] of byKey) {
+    const tile = key.startsWith("t:") ? (allTiles.get(key.slice(2)) ?? null) : null;
+    const pts = ps.map((p) => partnerPoint(p, allTiles)).filter((x): x is Point => x !== null);
+    const mean = pts.length > 0 ? { lat: pts.reduce((a, b) => a + b.lat, 0) / pts.length, lon: pts.reduce((a, b) => a + b.lon, 0) / pts.length } : null;
+    groups.push({ slot: groups.length, tile, rank: null, partners: ps, area: false, pos: (tile ? point(tile.lat, tile.lon) : null) ?? mean });
+  }
+  return groups;
+}
+
+/**
+ * Cuts the groups (in route order) into `n` runs, run k for day k: where the route jumps furthest (so a day covers
+ * one part of town), keeping each day between half and one and a half times its fair share of stops (a single
+ * group larger than that is a run of its own). Ties: the more even split. Falls back to even runs when no cut fits.
+ */
+function splitRoute(route: readonly Group[], n: number): Map<number, number> {
+  const weight = (g: Group) => Math.max(1, g.partners.length);
+  const w = route.map(weight);
+  const total = w.reduce((a, b) => a + b, 0);
+  const ideal = total / Math.max(1, n);
+  const out = new Map<number, number>();
+  // Even runs: each group goes to the day its middle stop falls in.
+  let before = 0;
+  route.forEach((g, i) => {
+    out.set(g.slot, Math.min(n - 1, Math.floor(((before + w[i]! / 2) * n) / Math.max(1, total))));
+    before += w[i]!;
+  });
+  if (n <= 1 || route.length <= n) return route.length <= n ? new Map(route.map((g, i) => [g.slot, i])) : out;
+  const gaps = route.slice(1).map((g, i) => kmApart(route[i]!.pos, g.pos) ?? 0);
+  const fits = (from: number, to: number) => {
+    const sum = w.slice(from, to).reduce((a, b) => a + b, 0);
+    return to - from === 1 || (sum >= ideal * 0.5 && sum <= ideal * 1.5);
+  };
+  let best: { cuts: number[]; gap: number; spread: number } | null = null;
+  let budget = 20_000;
+  const search = (from: number, left: number, cuts: number[]) => {
+    if (budget-- <= 0) return;
+    if (left === 0) {
+      if (!fits(from, route.length)) return;
+      const bounds = [0, ...cuts, route.length];
+      const gap = cuts.reduce((a, c) => a + gaps[c - 1]!, 0);
+      const spread = bounds.slice(1).reduce((a, b, k) => a + Math.abs(w.slice(bounds[k]!, b).reduce((x, y) => x + y, 0) - ideal), 0);
+      if (!best || gap > best.gap + 1e-9 || (Math.abs(gap - best.gap) <= 1e-9 && spread < best.spread)) best = { cuts: [...cuts], gap, spread };
+      return;
+    }
+    for (let c = from + 1; c <= route.length - left; c++) if (fits(from, c)) search(c, left - 1, [...cuts, c]);
+  };
+  search(0, n - 1, []);
+  const found = best as { cuts: number[] } | null;
+  if (!found || budget <= 0) return out;
+  let day = 0;
+  route.forEach((g, i) => {
+    while (day < found.cuts.length && i >= found.cuts[day]!) day += 1;
+    out.set(g.slot, day);
+  });
+  return out;
+}
+
+/** Earliest start at or after `cursor` where the item fits whole inside one of its windows, or null. */
+function earliestFit(it: Item, cursor: number): number | null {
+  for (const [a, b] of it.windows) {
+    const t = Math.max(a, cursor);
+    if (t + it.minutes <= b) return t;
+  }
+  return null;
+}
+
+function hoursKnown(h: DayHours | null | undefined): boolean {
+  return !!h && h.status === "open" && h.ranges.length > 0;
+}
+
+function travelMinutes(from: Point | null, to: Point | null, gapMin: number): number {
+  const km = kmApart(from, to);
+  if (km === null) return gapMin;
+  return Math.max(gapMin, Math.ceil((km * TRAVEL_MIN_PER_KM) / 5) * 5);
+}
+
+/**
+ * One day's stops in order. The day starts at the venue at `start` (earlier when a stop is open only before then).
+ * Each step takes, among the stops that can start within 45 minutes of the soonest one (travel included), a stop in
+ * the same area when there is one, else the nearest: a nearest-neighbour walk that keeps an area together and never
+ * puts a stop outside its listed hours. A stop that can't fit after the others is still put inside its own hours
+ * (it may then overlap another stop). Nothing runs past 23:59.
+ */
+function scheduleDay(items: readonly Item[], start: number, gapMin: number, venue: Point | null): { it: Item; t: number; end: number }[] {
+  const left = [...items];
+  const placed: { it: Item; t: number; end: number }[] = [];
+  const early = left.filter((it) => earliestFit(it, start) === null && earliestFit(it, 0) !== null).map((it) => earliestFit(it, 0)!);
+  let cursor = Math.min(start, ...early);
+  let at = venue;
+  let lastSlot = -1;
+  let first = true;
+  const deadline = (it: Item) => Math.max(...it.windows.map((win) => win[1]));
+  while (left.length > 0) {
+    const fits = left
+      .map((it) => ({ it, t: earliestFit(it, cursor + (first ? 0 : travelMinutes(at, it.pos, gapMin))), km: kmApart(at, it.pos) ?? Number.POSITIVE_INFINITY }))
+      .filter((x): x is { it: Item; t: number; km: number } => x.t !== null);
+    if (fits.length === 0) {
+      // No room after the others: still inside the item's own hours, as close to the cursor as they allow.
+      for (const it of left) {
+        const [a, b] = it.windows.reduce((best, win) => (win[1] - win[0] > best[1] - best[0] ? win : best), it.windows[0]!);
+        const len = Math.max(1, Math.min(it.minutes, b - a));
+        const t = Math.max(a, Math.min(cursor, b - len));
+        placed.push({ it, t, end: Math.min(b, t + len) });
+      }
+      break;
+    }
+    const soonest = Math.min(...fits.map((f) => f.t));
+    const near = fits.filter((f) => f.t <= soonest + STAY_MINUTES);
+    const same = near.filter((f) => f.it.slot === lastSlot);
+    const pool = (same.length > 0 ? same : near).sort(
+      (x, y) => x.km - y.km || x.t - y.t || deadline(x.it) - deadline(y.it) || x.it.slot - y.it.slot || x.it.order - y.it.order,
+    );
+    // Never take a stop that leaves another one no time inside its hours: that one goes first.
+    const strands = (f: { it: Item; t: number }): boolean => {
+      const end = f.t + f.it.minutes;
+      return fits.some((o) => o.it !== f.it && earliestFit(o.it, end + travelMinutes(f.it.pos ?? at, o.it.pos, gapMin)) === null);
+    };
+    const pick =
+      pool.find((f) => !strands(f)) ??
+      [...fits].sort((x, y) => deadline(x.it) - deadline(y.it) || x.t - y.t || x.km - y.km || x.it.slot - y.it.slot || x.it.order - y.it.order)[0]!;
+    const end = Math.min(LAST_MINUTE, pick.t + pick.it.minutes);
+    placed.push({ it: pick.it, t: pick.t, end });
+    left.splice(left.indexOf(pick.it), 1);
+    cursor = end;
+    at = pick.it.pos ?? at;
+    lastSlot = pick.it.slot;
+    first = false;
+  }
+  return placed;
+}
+
+/**
+ * Street-team stops by day, in two passes: a first pass about four weeks out (every partner and a flyer drop in
+ * each numbered area with no partner to visit) and a final pass in the show week (the same stops again, shorter:
+ * restock flyers, check the poster). See `streetTeamPasses` for the dates.
+ *
+ * Days: the groups (each numbered area with its partners; partners outside them grouped by their own tile) are put
+ * in nearest-neighbour order from the venue and cut into runs of about the same number of stops, one run per
+ * street-team day of the pass, so each day covers one part of town and an area's partners share a day. An area
+ * moves to another street-team day when more of its partners are open then.
+ *
+ * Partners: each is visited on its area's day when it is open then, else on another street-team day of that pass
+ * when it is open, else on the first of those days its hours aren't listed ("call first"). A partner listed closed
+ * on every street-team day is not visited; its area's earliest event of the pass says so. A numbered area with no
+ * partner visited gets one flyer drop on its day.
+ *
+ * Times: see `scheduleDay`. Hours are read for the day of the stop from the place's own week of hours
+ * (`properties.hours`), so a Saturday stop is timed and labelled with Saturday's hours.
  */
 export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}): StreetTeamVisit[] {
   const days = opts.streetTeamDays ?? sheet.operator.streetTeamDays ?? [];
   const created = new Date(sheet.createdAt);
   const notBefore = opts.notBefore ?? (Number.isNaN(created.getTime()) ? undefined : ymdOf(created));
-  const dates = streetTeamDates(sheet.bill.date, days, { weeks: opts.weeks, notBefore: notBefore || undefined });
+  const dates = streetTeamPasses(sheet.bill.date, days, { notBefore: notBefore || undefined, firstPassWeeksOut: opts.firstPassWeeksOut });
   if (dates.length === 0) return [];
 
   const tiles = topTiles(sheet, opts);
-  const partners = sheet.cards.partners.results;
-  type Slot = { tile: LiftTile | null; rank: number | null; partners: Partner[] };
-  const slots: Slot[] =
-    tiles.length > 0
-      ? tiles.map((t, i) => ({ tile: t, rank: i + 1, partners: partners.filter((p) => p.tileGeohash === t.geohash) }))
-      : partners.length > 0
-        ? [{ tile: null, rank: null, partners: [...partners] }]
-        : [];
-  if (slots.length === 0) return [];
+  const allTiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
+  const groups = stopGroups(sheet, tiles, allTiles);
+  if (groups.length === 0) return [];
+  const venue = point(sheet.bill.venue.lat, sheet.bill.venue.lon);
+  const route = nearestOrder(groups, (g) => g.pos, venue);
 
-  const byDate = new Map<string, Slot[]>();
-  const weeks = [...new Set(dates.map((d) => d.week))];
-  for (const w of weeks) {
-    const weekDates = dates.filter((d) => d.week === w);
-    if (slots.length === 1 && slots[0]?.tile === null) {
-      for (const d of weekDates) byDate.set(d.date, [slots[0]]);
+  const listedDay = hoursWeekday(sheet);
+  const start = Math.min(LAST_MINUTE - 15, parseHm(opts.startTime, 10 * 60));
+  const flyerMin = Math.max(15, Math.floor(opts.visitMinutes ?? 90));
+  const stopMin = Math.max(5, Math.floor(opts.stopMinutes ?? 20));
+  const twoPasses = dates.some((d) => d.pass === "first");
+  const finalMin = twoPasses ? Math.max(5, Math.floor(opts.finalPassMinutes ?? 10)) : stopMin;
+  const gapMin = Math.max(0, Math.floor(opts.gapMinutes ?? 15));
+  const wide: [number, number][] = [[start, LAST_MINUTE]];
+
+  type Placed = StreetTeamVisit & { slot: number };
+  const visits: Placed[] = [];
+  for (const pass of ["first", "final"] as const) {
+    const passDates = dates.filter((d) => d.pass === pass);
+    const n = passDates.length;
+    if (n === 0) continue;
+    const minutes = pass === "final" ? finalMin : stopMin;
+    const runs = splitRoute(route, n);
+    const byDate = new Map<string, Item[]>();
+    const add = (date: string, it: Item) => byDate.set(date, [...(byDate.get(date) ?? []), it]);
+    for (const g of route) {
+      const hours = g.partners.map((p) => passDates.map((d) => partnerHoursOn(p, d.weekday, listedDay)));
+      // The run's day, unless more of the area's partners are open on another street-team day.
+      const openOn = (k: number) => hours.filter((h) => hoursKnown(h[k])).length;
+      let home = runs.get(g.slot) ?? 0;
+      for (let k = 0; k < n; k++) if (openOn(k) > openOn(home)) home = k;
+      const order = Array.from({ length: n }, (_, k) => k).sort((a, b) => Math.abs(a - home) - Math.abs(b - home) || a - b);
+      const visited: Item[] = [];
+      const closed: Partner[] = [];
+      g.partners.forEach((p, pi) => {
+        const hs = hours[pi]!;
+        const pick = order.find((k) => hoursKnown(hs[k])) ?? order.find((k) => hs[k]!.status !== "closed");
+        if (pick === undefined) {
+          closed.push(p);
+          return;
+        }
+        const h = hs[pick]!;
+        const windows = hoursKnown(h) ? h.ranges.map(([a, b]) => [a, Math.min(b, LAST_MINUTE)] as [number, number]).filter(([a, b]) => b > a) : [];
+        const it: Item = {
+          slot: g.slot,
+          order: pi,
+          tile: p.tileGeohash ? (allTiles.get(p.tileGeohash) ?? null) : null,
+          rank: g.rank,
+          partner: p,
+          hours: h,
+          windows: windows.length > 0 ? windows : wide,
+          minutes,
+          closedAllDays: [],
+          pos: partnerPoint(p, allTiles) ?? g.pos,
+        };
+        visited.push(it);
+        add(passDates[pick]!.date, it);
+      });
+      if (g.area && visited.length === 0) {
+        add(passDates[home]!.date, { slot: g.slot, order: -1, tile: g.tile, rank: g.rank, partner: null, hours: null, windows: wide, minutes: flyerMin, closedAllDays: closed, pos: g.pos });
+      } else if (closed.length > 0) {
+        for (const it of visited) it.closedAllDays = closed; // kept on the earliest one only, below
+      }
+    }
+    for (const d of passDates) {
+      for (const { it, t, end } of scheduleDay(byDate.get(d.date) ?? [], start, gapMin, venue)) {
+        visits.push({
+          date: d.date,
+          weekday: d.weekday,
+          pass,
+          start: hm(t),
+          end: hm(Math.min(LAST_MINUTE, Math.max(t + 1, end))),
+          tile: it.tile,
+          tileRank: it.rank,
+          partner: it.partner,
+          partners: it.partner ? [it.partner] : [],
+          hours: hoursKnown(it.hours) || it.hours?.status === "open" ? (it.hours?.text ?? null) : null,
+          callFirst: it.partner !== null && !hoursKnown(it.hours),
+          closedAllDays: it.closedAllDays,
+          slot: it.slot,
+        });
+      }
+    }
+  }
+  visits.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.start < b.start ? -1 : a.start > b.start ? 1 : a.slot - b.slot));
+  // The closed-partner note is said once per area and pass: on its earliest event.
+  const seen = new Set<string>();
+  for (const v of visits) {
+    const key = `${v.pass}-${v.slot}`;
+    if (seen.has(key)) v.closedAllDays = [];
+    seen.add(key);
+  }
+  return visits.map(({ slot: _slot, ...v }) => v);
+}
+
+/** Where and when one partner is visited: the weekdays and dates of its stops, and its hours on the first of them. */
+export interface PartnerVisit {
+  weekdays: Weekday[];
+  dates: string[];
+  /** The partner's hours on its first visit day, as listed; null when not listed. */
+  hours: string | null;
+  callFirst: boolean;
+}
+
+/**
+ * Each partner's street-team stops (keyed by entity id), from the same plan as street-team.ics, so the call list and
+ * the sheet name the same day as the calendar. A partner closed on every street-team day has no entry.
+ */
+export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<string, PartnerVisit> {
+  const out = new Map<string, PartnerVisit>();
+  for (const v of planStreetTeamVisits(sheet, opts)) {
+    if (!v.partner) continue;
+    const id = v.partner.entity.entityId;
+    const cur = out.get(id);
+    if (!cur) {
+      out.set(id, { weekdays: [v.weekday], dates: [v.date], hours: v.hours, callFirst: v.callFirst });
       continue;
     }
-    slots.forEach((s, i) => {
-      const d = weekDates[i % weekDates.length];
-      if (!d) return;
-      byDate.set(d.date, [...(byDate.get(d.date) ?? []), s]);
-    });
+    if (!cur.weekdays.includes(v.weekday)) cur.weekdays.push(v.weekday);
+    if (!cur.dates.includes(v.date)) cur.dates.push(v.date);
   }
-
-  const start = parseHm(opts.startTime, 10 * 60);
-  const visitMin = Math.max(15, Math.floor(opts.visitMinutes ?? 90));
-  const gapMin = Math.max(0, Math.floor(opts.gapMinutes ?? 30));
-  const lastMinute = 23 * 60 + 59;
-  const minSlot = 10;
-  const visits: StreetTeamVisit[] = [];
-  for (const d of dates) {
-    const daySlots = byDate.get(d.date) ?? [];
-    if (daySlots.length === 0) continue;
-    const n = daySlots.length;
-    let dayStart = start;
-    let slot = visitMin + gapMin;
-    let visit = visitMin;
-    if (dayStart + n * slot - gapMin > lastMinute) {
-      // Too many visits for what is left of the day: shrink them evenly so the
-      // day still ends before midnight. If that leaves under `minSlot` minutes
-      // per visit, start the day earlier instead, so every visit starts and ends
-      // on its own date (never "24:00") and ends after it starts.
-      slot = Math.floor((lastMinute - dayStart) / n);
-      if (slot < minSlot) {
-        slot = Math.max(1, Math.min(minSlot, Math.floor(lastMinute / n)));
-        dayStart = Math.max(0, lastMinute - n * slot);
-      }
-      visit = Math.max(1, slot - Math.min(gapMin, Math.floor(slot / 4)));
-    }
-    daySlots.forEach((s, i) => {
-      const from = dayStart + i * slot;
-      visits.push({
-        date: d.date,
-        weekday: d.weekday,
-        start: hm(from),
-        end: hm(Math.min(lastMinute, from + visit)),
-        tile: s.tile,
-        tileRank: s.rank,
-        partners: s.partners,
-      });
-    });
-  }
-  return visits;
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -330,8 +712,8 @@ function textProp(name: string, value: string): string {
   return `${name}:${escapeIcsText(value)}`;
 }
 
-function geoProp(lat: number, lon: number): string | null {
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+function geoProp(lat: number | undefined, lon: number | undefined): string | null {
+  if (typeof lat !== "number" || typeof lon !== "number" || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
   return `GEO:${lat.toFixed(6)};${lon.toFixed(6)}`;
 }
 
@@ -349,30 +731,58 @@ function placeLine(sheet: StreetSheet): string {
   return [v.city, v.state].filter((x) => x && x.trim() !== "").join(", ");
 }
 
-function visitDescription(sheet: StreetSheet, v: StreetTeamVisit, tileCount: number): string {
+/** "ZIP 20002, 20019": the area's residential 5-digit ZIPs (the same rule as the sheet and zips.csv), or "". */
+function zipText(t: LiftTile): string {
+  const zips = areaZips(t.zctas);
+  return zips.length > 0 ? `ZIP ${zips.join(", ")}` : "";
+}
+
+/** The area a stop is in, in words: "area 1, Langston, DC", "Kenilworth, DC", or "near The Anthem". */
+function stopArea(sheet: StreetSheet, v: StreetTeamVisit, tiles: ReadonlyMap<string, LiftTile>): string {
+  if (v.tile && v.tileRank !== null) return `area ${v.tileRank}, ${areaLabel(v.tile)}`;
+  const label = v.partner ? partnerAreaLabel(v.partner, tiles) : v.tile ? areaLabel(v.tile) : "";
+  return label !== "" ? label : `near ${sheet.bill.venue.name}`;
+}
+
+/** "First pass, 4 weeks out: ..." or "Final pass, show week: ...", said only when the calendar has both passes. */
+function passLine(sheet: StreetSheet, v: StreetTeamVisit): string {
+  const weeks = Math.max(1, Math.round((Date.parse(`${sheet.bill.date}T12:00:00Z`) - Date.parse(`${v.date}T12:00:00Z`)) / (7 * 86_400_000)));
+  const when = v.pass === "first" ? `First pass, ${weeks} ${weeks === 1 ? "week" : "weeks"} out` : "Final pass, show week";
+  if (!v.partner) return `${when}.`;
+  return v.pass === "first" ? `${when}: leave flyers and ask to put a poster up.` : `${when}: restock flyers and check the poster is still up.`;
+}
+
+function visitDescription(sheet: StreetSheet, v: StreetTeamVisit, tileCount: number, tiles: ReadonlyMap<string, LiftTile>, streetDays: readonly Weekday[], twoPasses: boolean): string {
   const lines: string[] = [];
   if (sheet.mode === "fixture") lines.push(FIXTURE_NOTICE);
-  if (v.tile) {
-    const zips = (v.tile.zctas ?? []).join(", ");
-    lines.push(`Area ${v.tileRank ?? "?"} of ${tileCount}: ${tileLabel(v.tile)}${zips ? `, ZIP ${zips}` : ""}. ${liftWords(v.tile.lift)}.`);
+  if (twoPasses) lines.push(passLine(sheet, v));
+  if (v.tile && v.tileRank !== null) {
+    const zips = zipText(v.tile);
+    lines.push(`Area ${v.tileRank} of ${tileCount}: ${areaLabel(v.tile)}${zips ? `, ${zips}` : ""}. ${liftWords(v.tile.lift)}.`);
     lines.push("Where this bill's fans stand out from the room's usual crowd, not where buyers live.");
+  } else if (v.partner && v.tile) {
+    lines.push(`${stopArea(sheet, v, tiles)}: outside the ${tileCount} numbered areas.`);
   } else {
     lines.push(`Partners near ${sheet.bill.venue.name}.`);
   }
-  if (v.partners.length > 0) {
-    lines.push("", SUGGESTED_NOT_AFFILIATED, "Partners to visit:");
-    v.partners.forEach((p, i) => {
-      const bits = [
-        `${i + 1}. ${p.entity.name}${p.category ? ` (${categoryLabel(p.category)})` : ""}`,
-        p.address ?? "",
-        p.hoursOnDay ? formatHours(p.hoursOnDay) : "",
-        p.phone ?? "",
-      ].filter((b) => b !== "");
-      const refs = receiptGroup(p.chips.map((c) => c.ledgerRef));
-      lines.push(`${bits.join(" - ")}${refs ? ` (${refs})` : ""}`);
-    });
+  const p = v.partner;
+  if (p) {
+    const day = weekdayShort(v.weekday);
+    lines.push("", `${p.entity.name}${p.category ? ` (${categoryLabel(p.category)})` : ""}`);
+    if (p.address?.trim()) lines.push(p.address.trim());
+    if (p.phone?.trim()) lines.push(formatPhone(p.phone));
+    lines.push(
+      !v.callFirst ? `Open ${day} ${formatHours(v.hours ?? "")}.` : v.hours ? `Hours for ${day} as listed: ${v.hours}. Call first.` : `Hours for ${day} not listed: call first.`,
+    );
+    if (p.explain?.activation?.trim()) lines.push(p.explain.activation.trim());
+    lines.push(SUGGESTED_NOT_AFFILIATED);
+    const refs = receiptGroup(p.chips.map((c) => c.ledgerRef));
+    if (refs) lines.push(`Receipts: ${refs}.`);
   } else {
-    lines.push("", "No partners listed for this area: flyer drop only.");
+    lines.push("", v.closedAllDays.length > 0 ? `Every partner listed here is closed on ${streetDaysText(streetDays)}: flyer drop only.` : "No partners listed for this area: flyer drop only.");
+  }
+  if (v.closedAllDays.length > 0) {
+    lines.push("", `Not scheduled, closed on ${streetDaysText(streetDays)}: ${v.closedAllDays.map((c) => c.entity.name).join(", ")}. Call to ask about dropping flyers another day.`);
   }
   lines.push("", `Plan ${sheet.planId}. The requests behind each line are in sheet.json.`);
   return lines.join("\n");
@@ -403,12 +813,16 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
   if (tzid) lines.push(`X-WR-TIMEZONE:${tzid}`, ...vtimezoneLines(tzid));
 
   const visits = planStreetTeamVisits(sheet, opts);
+  const twoPasses = visits.some((v) => v.pass === "first") && visits.some((v) => v.pass === "final");
+  const tiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
+  const streetDays = WEEKDAYS.filter((d) => (opts.streetTeamDays ?? sheet.operator.streetTeamDays ?? []).includes(d));
   for (const v of visits) {
-    const key = v.tile ? uidSafe(v.tile.geohash) : "venue";
-    const title = v.tile
-      ? `${fixture}Street team: area ${v.tileRank}, ${tileLabel(v.tile)}`
-      : `${fixture}Street team: partners near ${sheet.bill.venue.name}`;
-    const loc = v.tile ? [tileLabel(v.tile), where].filter((x) => x !== "").join(", ") : [sheet.bill.venue.name, where].filter((x) => x !== "").join(", ");
+    const area = stopArea(sheet, v, tiles);
+    const p = v.partner;
+    const key = [v.tile ? uidSafe(v.tile.geohash) : "venue", p ? uidSafe(p.entity.entityId) : "flyers"].join("-");
+    const head = `${fixture}Street team${twoPasses ? `, ${v.pass} pass` : ""}`;
+    const title = p ? `${head}: ${p.entity.name} (${area})${v.callFirst ? ", call first" : ""}` : `${head}: ${area}, flyer drop`;
+    const loc = p ? [p.entity.name, p.address?.trim() || area].filter((x) => x !== "").join(", ") : v.tile ? areaLabel(v.tile) : [sheet.bill.venue.name, where].filter((x) => x !== "").join(", ");
     lines.push(
       "BEGIN:VEVENT",
       `UID:hl-${plan}-${v.date.replace(/-/g, "")}-${key}@${domain}`,
@@ -418,15 +832,9 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
       textProp("SUMMARY", title),
       textProp("LOCATION", loc),
     );
-    const geo = v.tile ? geoProp(v.tile.lat, v.tile.lon) : geoProp(sheet.bill.venue.lat, sheet.bill.venue.lon);
+    const geo = geoProp(p?.entity.location?.lat, p?.entity.location?.lon) ?? (v.tile ? geoProp(v.tile.lat, v.tile.lon) : null) ?? geoProp(sheet.bill.venue.lat, sheet.bill.venue.lon);
     if (geo) lines.push(geo);
-    lines.push(
-      textProp("DESCRIPTION", visitDescription(sheet, v, tileCount)),
-      "CATEGORIES:Street team",
-      "STATUS:TENTATIVE",
-      "TRANSP:OPAQUE",
-      "END:VEVENT",
-    );
+    lines.push(textProp("DESCRIPTION", visitDescription(sheet, v, tileCount, tiles, streetDays, twoPasses)), "CATEGORIES:Street team", "STATUS:TENTATIVE", "TRANSP:OPAQUE", "END:VEVENT");
   }
 
   const includeShow = (opts.includeShow ?? true) || visits.length === 0;

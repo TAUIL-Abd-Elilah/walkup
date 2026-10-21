@@ -66,7 +66,9 @@ export function blankProtected(text: string, protectedStrings: ReadonlyArray<str
   let out = text;
   const sorted = [...new Set(protectedStrings.filter((s) => s.trim().length > 1))].sort((a, b) => b.length - a.length);
   for (const s of sorted) {
-    out = out.replace(new RegExp(escapeRegExp(s), "gi"), " ");
+    // A short string (a state code such as "TN" or "VA") is blanked as a whole word only, never inside "partner".
+    const body = escapeRegExp(s);
+    out = out.replace(new RegExp(s.trim().length <= 3 ? `(?<![A-Za-z0-9])${body}(?![A-Za-z0-9])` : body, "gi"), " ");
   }
   return out;
 }

@@ -218,7 +218,7 @@ describe("response translation", () => {
 describe("through the narrator", () => {
   it("narration: schema-bound request, parsed answer, ledger names OpenRouter", async () => {
     const draft = {
-      summary: "This bill's fans over-index most in North Example, at 1.84x the house crowd.",
+      summary: "This bill's fans over-index most in North Example, at 1.84 times the room's usual crowd.",
       tileWhy: [],
       partnerLines: [],
       copyHooks: [],

@@ -125,7 +125,7 @@ export function buildReviseTools(summary: ReviseSummary): BetaTool[] {
       name: "exclude_partner_categories",
       description:
         "Leave these place types out of the partner list and the pre/post spots. Keys are the sheet's place types; " +
-        'for "no bars" pass every bar key (bar, pub, sports_bar, night_club ...) on the list.',
+        'for "no bars" pass every bar key (bar, pub, sports_bar, lounge, night_club ...) on the list; lounges and clubs count as bars.',
       strict: true,
       input_schema: {
         type: "object",
@@ -331,15 +331,16 @@ function joinAnd(items: readonly string[]): string {
 }
 
 /**
- * Place types in words. When every bar key the sheet knows is in the list,
+ * Place types in words, each said once: two keys with the same words ("night_club" and "nightclub", or one key
+ * twice in another case) never read "night clubs, night clubs". When every bar key the sheet knows is in the list,
  * they read as one group ("bars and other drinking places").
  */
 export function categoriesInWords(keys: readonly string[], summary?: Pick<ReviseSummary, "categories">): string {
-  const set = [...new Set(keys)];
-  const bars = summary ? barKeys(summary) : [];
+  const set = [...new Set(keys.map((k) => k.trim().toLowerCase()).filter((k) => k !== ""))];
+  const bars = summary ? [...new Set(barKeys(summary).map((k) => k.toLowerCase()))] : [];
   const allBars = bars.length > 1 && bars.every((k) => set.includes(k));
   const rest = allBars ? set.filter((k) => !bars.includes(k)) : set;
-  const words = rest.map((k) => categoryWord(k));
+  const words = [...new Set(rest.map((k) => categoryWord(k)))];
   if (allBars) words.unshift("bars and other drinking places");
   return joinAnd(words);
 }

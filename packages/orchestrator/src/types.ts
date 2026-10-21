@@ -110,6 +110,8 @@ export const DEFAULT_PROBES: ProbeFlags = {
 
 export interface AnnotatedTile {
   name?: string;
+  /** The OSM or Census name behind `name` when it differs ("Langston" behind "H Street NE"). */
+  gazetteerName?: string;
   zctas?: string[];
   adultPopulation?: number | null;
 }

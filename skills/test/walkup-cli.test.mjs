@@ -96,9 +96,10 @@ function handle(req, res, body) {
     const input = JSON.parse(body);
     if (input.event.includes("Busy")) return send(res, 429, { status: "error", reason: "3 fresh runs per IP per day" });
     if (input.event.includes("Recorded")) return send(res, 503, { status: "error", mode: "fixture", reason: "fresh runs are disabled" });
-    if (input.event.includes("Unavailable")) {
-      return send(res, 503, { mode: "recorded", reason: "Qloo is no longer available, so new plans, searches and revisions are off. Recorded sheets and their downloads still open." });
+    if (input.event.includes("Paused")) {
+      return send(res, 503, { mode: "recorded", reason: "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a live run produced." });
     }
+    if (input.event.includes("Quiet")) return send(res, 503, { mode: "recorded" });
     if (input.event.includes("Ambiguous") && !input.picks) {
       return send(res, 200, {
         status: "needs_input",
@@ -286,11 +287,18 @@ test("fixture mode exits 6", async () => {
   assert.match(r.stderr, /fixture mode/);
 });
 
-test("recorded mode (Qloo no longer available) exits 6 with the server's reason", async () => {
-  const r = await run(["plan", "Unavailable @ Test Hall, Nov 28 2026"]);
+test("recorded mode (live runs paused for judging) exits 6 with the server's reason", async () => {
+  const r = await run(["plan", "Paused @ Test Hall, Nov 28 2026"]);
   assert.equal(r.code, 6);
-  assert.match(r.stderr, /^walkup: Recorded sheets only: Qloo is no longer available, so new plans, searches and revisions are off\. Recorded sheets and their downloads still open\. Read one with: walkup sheet <plan-id>/);
-  assert.doesNotMatch(r.stderr, /fixture|\.\./);
+  assert.match(r.stderr, /^walkup: Recorded sheets only: Recorded from live Qloo and Ticketmaster runs on Oct 21 2026\. Live runs are paused for judging; these sheets are what a live run produced\. Read one with: walkup sheet <plan-id>/);
+  assert.doesNotMatch(r.stderr, /fixture|\.\.|no longer|unavailable/i);
+});
+
+test("recorded mode without a reason says live runs are paused, never that Qloo is gone", async () => {
+  const r = await run(["plan", "Quiet @ Test Hall, Nov 28 2026"]);
+  assert.equal(r.code, 6);
+  assert.match(r.stderr, /^walkup: Recorded sheets only: live runs are paused for judging; this server serves sheets recorded from live Qloo and Ticketmaster runs\. Read one with: walkup sheet <plan-id>/);
+  assert.doesNotMatch(r.stderr, /no longer|unavailable|are off/i);
 });
 
 test("rank-partners prints call order and the declared-not-scored list", async () => {
@@ -363,7 +371,8 @@ test("sheet prints the envelope summary; --json prints it unchanged", async () =
 test("sheet says a sheet from a server in recorded mode is a recording, with its date", async () => {
   const r = await run(["sheet", "plan_rec456"]);
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.stdout, /^RECORDED: a live run recorded on 2026-10-30\. Qloo is no longer available to the server, so it is not refreshed\.\n/);
+  assert.match(r.stdout, /^RECORDED: recorded from live Qloo and Ticketmaster runs on Oct 30 2026\. Live runs are paused for judging; this sheet is what the live run produced\.\n/);
+  assert.doesNotMatch(r.stdout, /no longer|unavailable/i);
   assert.doesNotMatch(r.stdout, /FIXTURE/);
 });
 

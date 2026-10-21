@@ -22,10 +22,14 @@ function places(prefix: string, n: number, cats: string[] = CATS, extra: Partial
 }
 
 describe("category helpers", () => {
-  it("resolves categories via resolver, pinned map, then tag id", () => {
+  it("resolves categories via resolver, place-type tags, pinned map, then tag id", () => {
     const e = place("x", { tags: [tag("urn:tag:category:place:Record_Store"), tag("urn:tag:genre:place:x")] });
     expect(resolveCategory(e)).toBe("record_store");
-    expect(resolveCategory(e, { categoryTags: { vinyl: ["urn:tag:genre:place:x"] } })).toBe("vinyl");
+    // A known place-type tag wins over the pinned map; the map decides for tags the reading doesn't know.
+    expect(resolveCategory(e, { categoryTags: { vinyl: ["urn:tag:genre:place:x"] } })).toBe("record_store");
+    const unknown = place("u", { tags: [tag("urn:tag:category:place:listening_room"), tag("urn:tag:genre:place:x")] });
+    expect(resolveCategory(unknown, { categoryTags: { vinyl: ["urn:tag:genre:place:x"] } })).toBe("vinyl");
+    expect(resolveCategory(unknown)).toBe("listening_room");
     expect(resolveCategory(e, { categoryOf: () => "custom" })).toBe("custom");
     expect(resolveCategory(e, { categoryOf: () => "  " })).toBe("record_store");
     expect(resolveCategory(place("y", { tags: [] }))).toBe("other");
@@ -148,7 +152,7 @@ describe("scorePartners: diversity constraints", () => {
     expect(custom).toHaveLength(10);
   });
   it("adds a non-bar when a tile would otherwise be all bars", () => {
-    const barCats = ["bar", "pub", "sports_bar", "irish_pub"];
+    const barCats = ["bar", "pub", "sports_bar", "wine_bar"];
     const bars = places("B", 8, barCats); // 4 bar categories x 2 = 8 bars fill the tile
     const cafe = place("Cafe", { id: "CAFE", category: "cafe" });
     const { partners, report } = scorePartnersWithReport([pool("aaaaaa", [...bars, cafe])], [tile("aaaaaa", 2)], { minTotal: 0 });

@@ -4,7 +4,8 @@
  * guard accepts. Everything the model may cite is derived here, once.
  */
 import type { CompareTag } from "@walkup/contracts";
-import { cleanAllowlist, isAlcoholTag, literalNumbersIn, type AllowedNumbers } from "./policy";
+import { isAudienceTag } from "./audience";
+import { cleanAllowlist, isAlcoholTag, isDeniedTag, literalNumbersIn, type AllowedNumbers } from "./policy";
 import type { NarrateInput } from "./types";
 
 export interface AllowTag {
@@ -79,6 +80,12 @@ function tagsFromCompare(tags: ReadonlyArray<CompareTag> | undefined, allowed: M
   return out;
 }
 
+/** The act fan copy names: the first headliner, else the first act. Empty when the bill has no act. */
+export function headlinerName(bill: { acts?: ReadonlyArray<{ name: string; role: string }> }): string {
+  const acts = bill.acts ?? [];
+  return (acts.find((a) => a.role === "headliner") ?? acts[0])?.name.trim() ?? "";
+}
+
 /** "thursday" -> "Thursday": the model copies the value as written. */
 function dayName(day: string): string {
   return day ? day[0]!.toUpperCase() + day.slice(1) : day;
@@ -89,8 +96,10 @@ export function prepareRun(input: NarrateInput): PreparedRun {
   // Alcohol rules come from the ticketing age policy only; unknown counts as not 21+.
   const alcoholAllowed = bill.legalAgeEnforced === true;
   const cleaned = cleanAllowlist(input.allowlistTags.map((t) => ({ id: t.id, name: t.name })));
-  const allowlist = alcoholAllowed ? cleaned.allowed : cleaned.allowed.filter((t) => !isAlcoholTag(t));
-  const deniedCount = cleaned.deniedCount + (cleaned.allowed.length - allowlist.length);
+  const drinkable = alcoholAllowed ? cleaned.allowed : cleaned.allowed.filter((t) => !isAlcoholTag(t));
+  const deniedCount = cleaned.deniedCount + (cleaned.allowed.length - drinkable.length);
+  // Audience and identity tags describe people, never the show: they are not offered to copy at all.
+  const allowlist = drinkable.filter((t) => !isAudienceTag(t));
   const allowedById = new Map(allowlist.map((t) => [t.id, t]));
   const distinctiveTags = tagsFromCompare(input.compareTags?.a, allowedById).slice(0, 8);
   const sharedTags = tagsFromCompare(input.compareTags?.shared, allowedById).slice(0, 5);
@@ -119,6 +128,14 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     hoursDay: p.hoursOnDay ? dayName(input.streetTeamDay ?? input.bill.weekday) : null,
     address: p.address ?? null,
     distanceM: p.entity.distanceM != null ? Math.round(p.entity.distanceM) : null,
+    // The tags the partner panel shows as "Tags it shares": the only tags a partner line may name.
+    sharedTags: [
+      ...new Set(
+        (p.explain?.tags ?? [])
+          .filter((t) => t.name?.trim() && !isDeniedTag(t) && !isAudienceTag(t) && (alcoholAllowed || !isAlcoholTag(t)))
+          .map((t) => t.name.trim()),
+      ),
+    ],
   }));
 
   const prePost = input.prePost.map((s) => ({
@@ -185,7 +202,7 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     bill.venue.state ?? "",
     bill.date,
     ...tiles.flatMap((t) => [t.name ?? "", ...t.zctas]),
-    ...partners.flatMap((p) => [p.name, p.address ?? "", p.hoursOnDay ?? "", p.tileName ?? ""]),
+    ...partners.flatMap((p) => [p.name, p.address ?? "", p.hoursOnDay ?? "", p.tileName ?? "", ...p.sharedTags]),
     ...prePost.map((s) => s.name),
     ...media.map((m) => m.name),
     ...allowlist.map((t) => t.name),
@@ -205,7 +222,7 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     bill.venue.name,
     bill.venue.city,
     ...tiles.flatMap((t) => [t.geohash, t.name ?? ""]),
-    ...partners.flatMap((p) => [p.entityId, p.name, p.address ?? "", p.hoursOnDay ?? "", p.tileName ?? ""]),
+    ...partners.flatMap((p) => [p.entityId, p.name, p.address ?? "", p.hoursOnDay ?? "", p.tileName ?? "", ...p.sharedTags]),
     ...prePost.flatMap((s) => [s.entityId, s.name]),
     ...media.flatMap((m) => [m.entityId, m.name]),
     ...allowlist.flatMap((t) => [t.id, t.name]),

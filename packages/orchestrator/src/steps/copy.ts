@@ -3,7 +3,9 @@
  *
  * - Allowlist: Q14 tag profile (namespace-scoped, diversified) through the
  *   denylist; fewer than 3 survivors means hooks come from partner tags only.
- *   Partner ambience/good_for tags join the allowlist. On shows that are not
+ *   Partner ambience/good_for tags join the allowlist. Only taste tags get in
+ *   (`isTasteTag`: no age bands, payment brands, amenities, places or words
+ *   like "Clean" or "Large group"), each name once. On shows that are not
  *   21+ (Ticketmaster), alcohol tags are held back before anything is written.
  * - Narration: @walkup/narrator (the deterministic template without a
  *   model). Operator-facing lines (summary, tile "why", partner lines) pass the
@@ -12,7 +14,7 @@
  *   the all-ages alcohol rule, against only the citable numbers of this run.
  */
 import type { CopyHook, CompareResult, LiftTile, MediaPick, Partner, PrePostSpot, QlooTag, StreetSheet, StreetSheetCards } from "@walkup/contracts";
-import { buildCopyAllowlist, collectFactNumbers, findAlcoholTerm, isDeniedTag, validateNarration, type NarrationFacts } from "@walkup/engine";
+import { buildCopyAllowlist, collectFactNumbers, dedupeTags, findAlcoholTerm, isDeniedTag, isTasteTag, validateNarration, type NarrationFacts } from "@walkup/engine";
 import { isAlcoholTag, narrate, type NarrationResult } from "@walkup/narrator";
 import type { RankedTag } from "@walkup/qloo";
 import { envelope, node, plural, seedIds, type RunContext, type Seed } from "../context";
@@ -81,6 +83,36 @@ export interface CopyInputs {
 type Narration = NonNullable<StreetSheet["narration"]>;
 
 /**
+ * "House" is Walkup's internal word for the room's usual crowd; the sheet never prints it. Words only.
+ */
+export function usualCrowdWording(text: string): string {
+  return text
+    .replace(/\bthe house crowd\b/g, "the room's usual crowd")
+    .replace(/\b(?:the |its )?house share\b/g, "the room's usual crowd's share")
+    .replace(/\bshare of the house\b/g, "share of the room's usual crowd")
+    .replace(/\b(versus|than|from|for|with|of|to|above|below) the house\b(?! (twin|list))/g, "$1 the room's usual crowd")
+    .replace(/\bhouse percentile\b/g, "usual-crowd percentile");
+}
+
+/**
+ * Tidies a line after an area name was put in it: "in Laurel in Laurel" reads "in Laurel", and "on U Street in
+ * U Street / Shaw" reads "on U Street / Shaw" (the street is already in the area's name).
+ */
+export function tidyAreaPhrases(text: string, areaNames: readonly string[]): string {
+  let out = text;
+  for (const name of [...new Set(areaNames)].filter(Boolean).sort((a, b) => b.length - a.length)) {
+    const n = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(`\\bin ${n} in ${n}(?![A-Za-z])`, "g"), `in ${name}`);
+    out = out.replace(new RegExp(`\\b(in|on) ([A-Z][\\w'’ .-]{1,40}?) in ${n}(?![A-Za-z])`, "g"), (m, prep: string, place: string) => {
+      const a = place.trim().toLowerCase();
+      const b = name.toLowerCase();
+      return b.includes(a) || a.includes(b) ? `${prep === "on" && b.startsWith(a) ? "on" : "in"} ${name}` : m;
+    });
+  }
+  return out;
+}
+
+/**
  * The narrator's template (and its model prompt) compares against "the house
  * crowd" and calls the sponsor "local". The sheet must say what actually ran:
  * on a genre tag baseline there is no house crowd behind the numbers, and a
@@ -97,7 +129,7 @@ export function honestWording(n: Narration, o: { tagBaseline: boolean; localSpon
         .replace(/\bthe house crowd\b/g, g)
         .replace(/\bhouse percentile\b/g, "baseline percentile")
         .replace(/\bversus the house\b(?! crowd)/g, `versus ${g}`);
-    }
+    } else out = usualCrowdWording(out);
     if (!o.localSponsor) out = out.replace(/\b(\d+) local sponsor(s?)\b/g, "$1 sponsor brand$2");
     return out;
   };
@@ -107,6 +139,49 @@ export function honestWording(n: Narration, o: { tagBaseline: boolean; localSpon
     tileWhy: n.tileWhy.map((t) => ({ ...t, text: fix(t.text) })),
     partnerLines: n.partnerLines.map((l) => ({ ...l, text: fix(l.text) })),
   };
+}
+
+/** "tag" or "tags" in a clause: the clause claims a tag the place shares. */
+const TAG_CLAIM_RE = /\btags?\b/i;
+
+/**
+ * A partner line may name only the tags listed under that partner's shared tags (`explain.tags`). A clause that
+ * claims a tag ("sharing the bill's country tag") without naming one of them is cut; a line whose first clause does
+ * is dropped. Returns the lines kept and how many were changed or dropped.
+ */
+export function partnerLinesWithinTags(
+  lines: readonly { entityId: string; text: string }[],
+  partners: readonly Pick<Partner, "entity" | "explain">[],
+): { lines: { entityId: string; text: string }[]; changed: number; dropped: number } {
+  const tagsOf = new Map(partners.map((p) => [p.entity.entityId, (p.explain?.tags ?? []).map((t) => t.name.trim().toLowerCase()).filter(Boolean)]));
+  let changed = 0;
+  let dropped = 0;
+  const out: { entityId: string; text: string }[] = [];
+  for (const l of lines) {
+    const allowed = tagsOf.get(l.entityId) ?? [];
+    const supported = (clause: string) => !TAG_CLAIM_RE.test(clause) || allowed.some((t) => clause.toLowerCase().includes(t));
+    const sentences = l.text.match(/[^.!?]+[.!?]*/g) ?? [l.text];
+    const kept: string[] = [];
+    let firstBad = false;
+    for (const sentence of sentences) {
+      const body = sentence.trim().replace(/[.!?]+$/, "");
+      if (body === "") continue;
+      const clauses = body.split(/,\s+|;\s+|\s+-\s+/);
+      if (!supported(clauses[0] ?? "")) {
+        if (kept.length === 0) firstBad = true;
+        continue;
+      }
+      kept.push(`${clauses.filter((c, i) => i === 0 || supported(c)).join(", ").trim()}.`);
+    }
+    if (firstBad || kept.length === 0) {
+      dropped++;
+      continue;
+    }
+    const text = kept.join(" ").replace(/\s+/g, " ").trim();
+    if (text !== l.text.trim()) changed++;
+    out.push({ ...l, text });
+  }
+  return { lines: out, changed, dropped };
 }
 
 export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyResult> {
@@ -125,9 +200,11 @@ export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyRes
   }
   for (const t of q14) ctx.seenTags.push({ id: t.id, name: t.name, ...(t.type ? { type: t.type } : {}) });
 
-  const billAllow = buildCopyAllowlist(q14);
+  // The denylist runs on every candidate (its sensitive names feed the guard); only taste tags are then usable.
+  const taste = <T extends QlooTag>(a: ReturnType<typeof buildCopyAllowlist<T>>) => ({ ...a, tags: dedupeTags(a.tags.filter((t) => isTasteTag(t))) });
+  const billAllow = taste(buildCopyAllowlist(q14));
   const partnerCopyTags = inp.rawPartnerTags.filter((t) => PARTNER_COPY_NAMESPACES.some((ns) => t.id.startsWith(ns)));
-  const partnerAllow = buildCopyAllowlist(partnerCopyTags);
+  const partnerAllow = taste(buildCopyAllowlist(partnerCopyTags));
   // Ticketmaster's 21+ is the only way in; the operator's all-ages setting can only take it away.
   const adult = ctx.bill.legalAgeEnforced === true && ctx.operator.allAges !== true;
   const keep = (t: QlooTag) => adult || alcoholFree(t);
@@ -143,10 +220,13 @@ export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyRes
   const allow: QlooTag[] = fromPartnersOnly ? partnerTags : [...billTags, ...partnerTags.filter((t) => !billTags.some((b) => b.id === t.id))];
   if (fromPartnersOnly) reasons.push(`only ${billTags.length} of the bill's ${billTags.length === 1 ? "tags was" : "tags were"} approved, so the lines use the partners' tags`);
 
+  // The operator's numbers, labelled as what they are: what-ifs on a sample sheet only, the operator's own inputs on
+  // a live one (the narration must not call a live sheet's numbers what-ifs).
+  const kind = inp.hypothetical ? "what-if" : "operator input";
   const whatIf: { label: string; value: number }[] = [];
-  if (ctx.operator.seatsLeft !== null) whatIf.push({ label: "seats left (what-if)", value: ctx.operator.seatsLeft });
-  if (ctx.operator.capacity !== null) whatIf.push({ label: "capacity (what-if)", value: ctx.operator.capacity });
-  if (ctx.operator.mediaBudgetUsd !== null) whatIf.push({ label: "media budget left, USD (what-if)", value: ctx.operator.mediaBudgetUsd });
+  if (ctx.operator.seatsLeft !== null) whatIf.push({ label: `seats left (${kind})`, value: ctx.operator.seatsLeft });
+  if (ctx.operator.capacity !== null) whatIf.push({ label: `capacity (${kind})`, value: ctx.operator.capacity });
+  if (ctx.operator.mediaBudgetUsd !== null) whatIf.push({ label: `media budget left, USD (${kind})`, value: ctx.operator.mediaBudgetUsd });
   const shares = inp.budget.map((b) => ({ label: `budget share for ${b.geohash} (heuristic)`, value: Math.round(b.share * 1000) / 1000 }));
 
   node(ctx, "narration", "narration");

@@ -40,6 +40,7 @@ export {
   secretsFromEnv,
   SECRET_ENV_VARS,
   PLAN_ID_RE,
+  recordedDay,
 } from "./envelope";
 export type { ToolEnvelope, PlanMode, Secret, PauseLike, PendingPick } from "./envelope";
 export { PlanShowInput, RankPartnersInput, PlanRefInput, RevisePlanInput, EnvelopeOutput, OperatorSchema, PickSchema, PlanIdSchema } from "./schemas";

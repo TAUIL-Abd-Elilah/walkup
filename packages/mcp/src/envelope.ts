@@ -8,10 +8,20 @@ import { LIMITS_EVERY_SHEET, withoutControl, type Candidate, type EnvelopeStatus
 import { FIXTURE_LIMITS } from "@walkup/orchestrator";
 
 /**
- * "recorded": the server serves recorded sheets only (Qloo is no longer available). Its refusals carry it, and
- * so does the envelope of a live sheet it serves (the sheet itself keeps mode "live").
+ * "recorded": the server serves sheets recorded from live Qloo and Ticketmaster runs, and live runs are paused
+ * (for judging). Its refusals carry it, and so does the envelope of a live sheet it serves (the sheet itself keeps
+ * mode "live").
  */
 export type PlanMode = "live" | "fixture" | "recorded";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** A recorded sheet's day, "Oct 21 2026" style (UTC), from its createdAt; null when the timestamp does not parse. */
+export function recordedDay(createdAt: string | null | undefined): string | null {
+  const at = typeof createdAt === "string" ? new Date(createdAt) : null;
+  if (!at || !Number.isFinite(at.getTime())) return null;
+  return `${MONTHS[at.getUTCMonth()]} ${at.getUTCDate()} ${at.getUTCFullYear()}`;
+}
 
 export interface PendingPick {
   input: string;

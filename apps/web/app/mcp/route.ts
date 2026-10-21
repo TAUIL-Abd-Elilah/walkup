@@ -6,8 +6,8 @@
  * It runs on the web app's own engine, so both front doors behave alike: the
  * same orchestrator deps and plan store (plans made here open at /s/<planId>),
  * the same preset sheets, the same per-IP fresh-run allowance, the same
- * fixture-mode rule (presets only), the same recorded-mode rule (Qloo is no
- * longer available: only the reading tools answer), and the same quota and
+ * fixture-mode rule (presets only), the same recorded-mode rule (live runs
+ * are paused: only the reading tools answer), and the same quota and
  * rejected-key bookkeeping after live runs.
  *
  * Add it to Claude Code with: claude mcp add --transport http walkup <origin>/mcp

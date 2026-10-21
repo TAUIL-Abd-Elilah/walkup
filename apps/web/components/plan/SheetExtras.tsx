@@ -6,6 +6,7 @@
  */
 import type { RevisionChange, SheetDiscovery, SheetRevision, TraceStep } from "@walkup/contracts";
 import { STEP_STATUS_WORD } from "../../lib/labels";
+import { plainText } from "../../lib/sheet-utils";
 import { changeCountLine, groupChanges, readAsLine } from "./model";
 import { Refs } from "./receipts";
 
@@ -79,11 +80,11 @@ export function StepList({
                 <li key={s.id} className={`pl-1 ${s.status === "empty" ? "text-muted" : ""}`} data-status={s.status}>
                   <span className="font-semibold">{s.label}.</span>{" "}
                   {word ? <span className={`font-semibold ${s.status === "error" ? "text-accent" : ""}`}>{word}: </span> : null}
-                  {s.decision}
+                  {plainText(s.decision)}
                   {s.cause ? null : <Refs ids={s.ledgerRefs} />}
                   {s.cause ? (
                     <span className="mt-0.5 block text-sm text-muted">
-                      {s.cause}
+                      {plainText(s.cause)}
                       <Refs ids={s.ledgerRefs} />
                     </span>
                   ) : null}

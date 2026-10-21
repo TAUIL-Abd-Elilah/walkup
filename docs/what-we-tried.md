@@ -8,7 +8,7 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Found:** in 2023-25 Wikipedia tour pages with Boxscore rows (684 pages, 97 tours, ~5,800 rows), **81% of dates were at least 98% sold, only 2.3% were below 65%, and only 3 of 61 comedy-tour pages had any rows at all.**
 
-**Decision:** public grosses are reported mostly for shows that sold well, so they cannot tell a good fill plan from a bad one. We do not use them as an outcome, and we do not claim a sales effect. The field test (P5) is designed instead and resolves only when a pilot runs.
+**Decision:** public grosses are reported mostly for shows that sold well, so they cannot tell a good fill plan from a bad one. We do not use them as an outcome, and we do not claim a sales effect. Only a field test with a real promoter could measure one, and none has run.
 
 ## Ticketmaster "sold out" as a live outcome
 
@@ -16,11 +16,11 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Found:** `dates.status.code` takes only `onsale`, `offsale`, `canceled`, `postponed` and `rescheduled`. There is no sold-out value and no inventory field.
 
-**Decision:** no public scoreboard of real shows is possible from public data. A public board of slow-selling shows would also be bad for the artists on it, so we would not publish one anyway. Real shows appear only with public listing facts; any count is an operator what-if with a `HYPOTHETICAL COUNT` watermark, and no show is ever labelled "soft" or "tracking".
+**Decision:** no public scoreboard of real shows is possible from public data. A public board of slow-selling shows would also be bad for the artists on it, so we would not publish one anyway. Real shows appear only with public listing facts; any count is an operator what-if, marked as one ("What-if counts" on the PDF), and no show is ever labelled "soft" or "tracking".
 
 ## Minting promo codes
 
-**Tried:** generating per-partner promo codes for the field test.
+**Tried:** generating per-partner promo codes.
 
 **Found:** codes are created by the box office in the ticketing platform. A code that exists only in our app does nothing at checkout.
 
@@ -50,7 +50,7 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Considered:** `output.heatmap.boundary=city|neighborhood` on heatmap requests, to get named areas from Qloo.
 
-**Found:** published probe notes from other developers on the API host we use report HTTP 400 for both values, contrary to the documentation. Our first probe run re-checks it; the app's Qloo client refuses to send it.
+**Found:** published probe notes from other developers on the API host we use report HTTP 400 for both values, contrary to the documentation. We did not spend a call re-checking it; the app's Qloo client refuses to send it.
 
 **Decision:** tiles are named by our own gazetteer (Census places plus OpenStreetMap neighbourhoods and suburbs), and names come only from the run, never pre-written.
 
@@ -66,7 +66,7 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Found:** it needed its own key and a daily request cap, and Google's terms let us keep Places content for 30 days at most, so recorded sheets had to drop it. It showed where two lists differ, not which one sells tickets, so it did not change what a street team does.
 
-**Decision:** removed from the product on Oct 20 2026. Qloo is the core, and Walkup works without the list. Partner hours and the closed check already came from Qloo. Sheets stored before then open without their list. The Places client stays for the P1 research harness only.
+**Decision:** removed from the product on Oct 20 2026. Qloo is the core, and Walkup works without the list. Partner hours, addresses, phones and the closed check already came from Qloo. Sheets stored before then open without their list. Since then the project's Google billing has been closed, so Places is not available at all; the Places client stays in the repository for the P1 research harness only, and P1 cannot run its Google arm without it.
 
 ## Ticket-outlet recall (attempted, gated)
 
@@ -74,4 +74,4 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Rule:** if fewer than 30 (show, outlet) pairs can be found, we publish "attempted; public corpus too small (n = k)" here instead of a result.
 
-**Status:** pending.
+**Status:** not run. There is no result.

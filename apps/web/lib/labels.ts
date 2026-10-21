@@ -92,15 +92,40 @@ export const CATEGORY_LABEL: Record<string, string> = {
   bar: "Bar",
   restaurant: "Restaurant",
   cafe: "Cafe",
+  bakery: "Bakery",
   record_store: "Record store",
   book_store: "Bookstore",
+  bookstore: "Bookstore",
   barber_shop: "Barbershop",
+  barber: "Barber",
   beauty_salon: "Salon",
-  clothing_store: "Clothing",
+  salon: "Salon",
+  clothing_store: "Clothing store",
+  lounge: "Lounge",
+  pub: "Pub",
+  brewery: "Brewery",
+  wine_bar: "Wine bar",
+  cocktail_bar: "Cocktail bar",
+  sports_bar: "Sports bar",
+  dive_bar: "Dive bar",
+  night_club: "Night club",
+  nightclub: "Night club",
+  bowling_alley: "Bowling alley",
+  comedy_club: "Comedy club",
+  movie_theater: "Cinema",
+  escape_room: "Escape room",
+  pool_hall: "Pool hall",
+  mini_golf_course: "Mini golf",
+  amusement_center: "Amusement center",
+  video_arcade: "Arcade",
 };
 
+/** A category key's label: the table above, else the key's words in title case ("ice_rink" -> "Ice Rink"). */
 export function categoryLabel(key: string): string {
-  return CATEGORY_LABEL[key] ?? key.replace(/_/g, " ");
+  const known = CATEGORY_LABEL[key];
+  if (known) return known;
+  const words = key.replace(/[_-]+/g, " ").trim().toLowerCase();
+  return words ? words.replace(/\b[a-z]/g, (c) => c.toUpperCase()) : key;
 }
 
 export function subtypeLabel(subtype: string): string {
@@ -152,6 +177,7 @@ const NODE_WORDS: [RegExp, (m: RegExpExecArray) => string][] = [
   [/^Q3 house roster/, () => "The room's upcoming shows"],
   [/^Q3 house set/, () => "The room's headliners"],
   [/^Q2 venue/, () => "The venue"],
+  [/^Q\d+ signal check/, () => "Taste-data check for the acts"],
   [/^Q1 proxy seed: (.*)$/, (m) => `Stand-in title (${m[1]?.replace(/_/g, " ")})`],
   [/^Q1 acts? (search|by Spotify id)(.*)$/, () => "The acts"],
   [/^T intake$/, () => "The show listing"],
@@ -179,6 +205,14 @@ export function ledgerNoteText(note: string | undefined): string {
         return m ? f(m) : null;
       }).find((x) => x !== null);
       out.push(hit ?? label.replace(/^[A-Z]\d*\s+/, ""));
+      continue;
+    }
+    // The signal check's own description repeats its label; the not_found outcome is said in plain words.
+    if (/^signal check:/i.test(p)) continue;
+    const ignored = /^Qloo ignored (\d+) signal ids? .*\(not_found\)/.exec(p);
+    if (ignored) {
+      const n = Number(ignored[1]);
+      out.push(`Qloo has no taste data for ${n === 1 ? "1 of the ids" : `${n} of the ids`}, so it left ${n === 1 ? "it" : "them"} out`);
       continue;
     }
     if (/^cache hit/.test(p)) {
@@ -221,7 +255,7 @@ export function genreLabel(classification: string | undefined, fallback: string)
 export function dataSourcesLine(mode: "live" | "fixture" | "recorded"): string {
   if (mode === "fixture") return "Sample data shaped like Qloo and Ticketmaster responses; neither service is called.";
   if (mode === "recorded") {
-    return "Affinity data from Qloo, events and age rules from Ticketmaster, as recorded on live runs; neither service is called now.";
+    return "Affinity data from Qloo, events and age rules from Ticketmaster, recorded on live runs. Live runs are paused for judging.";
   }
   return "Affinity data from Qloo. Events and age rules from Ticketmaster.";
 }

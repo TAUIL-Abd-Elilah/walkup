@@ -54,29 +54,32 @@ describe("compareBills on the paired preset sheets", () => {
   });
 });
 
-describe("recorded mode copy (Qloo unavailable)", () => {
-  it("says on the landing page that new plans are off, and calls the sheets recordings only when they are", () => {
+describe("recorded mode copy (live runs paused)", () => {
+  it("says on the landing page that live runs are paused, and calls the sheets recordings only when they are", () => {
     expect(recordedSheetsSection([{ mode: "live" }, { mode: "live" }])).toEqual({
       heading: "Recorded sheets",
-      intro: "Qloo is no longer available, so new plans are off. These sheets were recorded from live runs on the dates shown.",
+      intro:
+        "Live runs are paused for judging. These sheets were recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced.",
     });
     const mixed = recordedSheetsSection([{ mode: "live" }, { mode: "fixture" }]);
     expect(mixed.heading).toBe("Recorded sheets");
     expect(mixed.intro).toBe(
-      "Qloo is no longer available, so new plans are off. The sheets not marked sample were recorded from live runs on the dates shown. A sheet marked sample uses made-up places and numbers.",
+      "Live runs are paused for judging. The sheets not marked sample were recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced. A sheet marked sample uses made-up places and numbers.",
     );
-    // Nothing was recorded before Qloo went away: every preset shows its sample sheet, and the section says so.
+    // Nothing was recorded on this server: every preset shows its sample sheet, and the section says so.
     const none = recordedSheetsSection([{ mode: "fixture" }, { mode: "fixture" }, { mode: "fixture" }, { mode: "fixture" }]);
     expect(none).toEqual({
       heading: "Sample sheets",
-      intro: "Qloo is no longer available, so new plans are off. No live run was recorded before it went away, so these are sample sheets with made-up places and numbers.",
+      intro: "Live runs are paused for judging. No live run was recorded on this server, so these are sample sheets with made-up places and numbers.",
     });
+    // Never framed as the product or Qloo being gone.
+    for (const s of [recordedSheetsSection([{ mode: "live" }]).intro, none.intro]) expect(s).not.toMatch(/no longer|unavailable|went away|are off/i);
     expect(none.intro).not.toMatch(/were recorded/);
   });
 
   it("credits the data in the footer without claiming sample data or a live call", () => {
     const recorded = dataSourcesLine("recorded");
-    expect(recorded).toBe("Affinity data from Qloo, events and age rules from Ticketmaster, as recorded on live runs; neither service is called now.");
+    expect(recorded).toBe("Affinity data from Qloo, events and age rules from Ticketmaster, recorded on live runs. Live runs are paused for judging.");
     // Google Places is no longer a source, so no credit names it.
     expect(recorded).not.toMatch(/\bsample\b|made-up/i);
     for (const m of ["live", "fixture", "recorded"] as const) expect(dataSourcesLine(m)).not.toMatch(/Google|Places/);

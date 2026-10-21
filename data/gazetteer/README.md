@@ -95,6 +95,19 @@ What did not work first time, and what was done:
 "Adults 21+ in file" sums every ZCTA in the file, including the 5 km margin, so it is larger
 than the population of the box itself.
 
+## Area names and residential ZIPs
+
+| File | What it is |
+|---|---|
+| `zip_places.csv` | One row per ZCTA in `out/`: the place name people use for the ZIP (the USPS city name; where USPS files a town under a big neighbour, the town, noted "USPS: ...") and its kind: `residential`, `unique` (one organisation: federal offices, a hospital, an airport), `military` or `campus`. Curated by hand. |
+| `areas.json` | Per metro: the ZIP cities named by neighbourhood (Washington, Nashville, Seattle, Tacoma) and well-known districts with a centre and a radius ("H Street NE", "U Street / Shaw", "Old Town Alexandria"). Curated by hand. |
+| `zips.py` | Writes `packages/gazetteer/src/zip-data.ts` from the two files and the ACS counts in `out/` (a ZCTA with fewer than 250 adults 21+ is not residential). `--check` fails when the module is stale or a ZCTA has no row. `build.py` runs it after a build. |
+| `test_zips.py` | Offline tests (`python -I data/gazetteer/test_zips.py -v`). |
+
+An area is named by the nearest well-known district within its radius, else by the place name of its residential
+ZIP; inside a city named by neighbourhood, the OSM neighbourhood within 2.5 km is kept. Non-residential ZIPs never
+count toward an area's ZIPs or adults, and an area counts at most its 4 nearest ZIPs.
+
 ## Rebuilding
 
 ```bash

@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BAR_CATEGORIES } from "@walkup/engine";
 import {
   buildReviseTools,
+  categoriesInWords,
   checkReviseCall,
   createMemorySpendStore,
   describeReviseCall,
@@ -58,6 +59,20 @@ describe("tool schemas", () => {
     const cats = tools.find((t) => t.name === "exclude_partner_categories")!.input_schema as { properties: { categories: { items: { enum: string[] } } } };
     expect(cats.properties.categories.items.enum).toContain("record_store");
     expect(cats.properties.categories.items.enum).toContain("night_club");
+  });
+});
+
+describe("categoriesInWords", () => {
+  it("says each place type once, whatever the keys", () => {
+    expect(categoriesInWords(["night_club", "nightclub"])).toBe("night clubs");
+    expect(categoriesInWords(["night_club", "nightclub", "lounge", "Lounge"])).toBe("night clubs and lounges");
+    expect(categoriesInWords(["cafe", "night_club", "cafe", "nightclub"])).toBe("cafes and night clubs");
+    expect(categoriesInWords(["cafe", "night_club", "nightclub"])).not.toMatch(/night clubs.*night clubs/);
+  });
+
+  it("still groups every bar key the sheet knows", () => {
+    const s = summary();
+    expect(categoriesInWords([...DEFAULT_BAR_CATEGORIES, "nightclub", "night_club"], s)).not.toMatch(/night clubs.*night clubs/);
   });
 });
 

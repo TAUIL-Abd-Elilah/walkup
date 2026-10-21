@@ -2,10 +2,13 @@
  * Deterministic narration built only from run facts. Runs when the LLM is off,
  * refused, over budget, failed to parse, or in tests. Same input, same output.
  */
-import type { CopyHook } from "@walkup/contracts";
-import { displayDate, prepareRun, round, type AllowTag, type PreparedRun } from "./facts";
+import type { CopyHook, LiftTile, Partner } from "@walkup/contracts";
+import { isAudienceTag } from "./audience";
+import { displayDate, headlinerName, prepareRun, round, type AllowTag, type PreparedRun } from "./facts";
 import { MAX_COPY_HOOKS } from "./constants";
 import type { NarrateInput, NarrationResult, TemplateReason } from "./types";
+
+export { headlinerName } from "./facts";
 
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? "";
@@ -60,6 +63,22 @@ function ordinal(n: number): string {
   const m100 = Math.abs(i) % 100;
   const m10 = Math.abs(i) % 10;
   return `${i}${m100 >= 11 && m100 <= 13 ? "th" : m10 === 1 ? "st" : m10 === 2 ? "nd" : m10 === 3 ? "rd" : "th"}`;
+}
+
+/**
+ * The template's line for one lift tile. The area's name is printed beside this line wherever it appears, so
+ * the line starts with the comparison.
+ */
+export function templateTileWhy(t: Pick<LiftTile, "lift" | "billPct" | "housePct">): string {
+  return `${capitalize(liftWords(t.lift))}. ${ordinal(pct(t.billPct))} percentile for this crowd, ${ordinal(pct(t.housePct))} for the room's usual crowd.`;
+}
+
+/** The template's line for one partner. qlooRank is the place's position in the search it came from (one per area, or near the venue). */
+export function templatePartnerLine(p: Pick<Partner, "category" | "qlooRank" | "tileName">): string {
+  const kind = capitalize(withArticle(categoryWord(p.category)));
+  return p.tileName
+    ? `${kind} in ${p.tileName}, ${ordinal(p.qlooRank)} on that area's list for this crowd.`
+    : `${kind} near the venue, ${ordinal(p.qlooRank)} on that list for this crowd.`;
 }
 
 function billNames(input: NarrateInput): string {
@@ -138,44 +157,33 @@ export function templateNarrate(
   const when = displayDate(bill.weekday, bill.date);
   const weekday = capitalize(bill.weekday);
 
-  // The area's name is printed beside this line wherever it appears, so the line starts with the comparison.
-  const tileWhy = input.tiles.map((t) => ({
-    geohash: t.geohash,
-    text: `${capitalize(liftWords(t.lift))}. ${ordinal(pct(t.billPct))} percentile for this crowd, ${ordinal(pct(t.housePct))} for the room's usual crowd.`,
-  }));
+  const tileWhy = input.tiles.map((t) => ({ geohash: t.geohash, text: templateTileWhy(t) }));
 
   const seen = new Set<string>();
   const partnerLines: NarrationResult["partnerLines"] = [];
   for (const p of input.partners) {
     if (seen.has(p.entity.entityId)) continue;
     seen.add(p.entity.entityId);
-    // qlooRank is the place's position in the search it came from (one per area, or near the venue).
-    const kind = capitalize(withArticle(categoryWord(p.category)));
-    const text = p.tileName
-      ? `${kind} in ${p.tileName}, ${ordinal(p.qlooRank)} on that area's list for this crowd.`
-      : `${kind} near the venue, ${ordinal(p.qlooRank)} on that list for this crowd.`;
-    partnerLines.push({ entityId: p.entity.entityId, text });
+    partnerLines.push({ entityId: p.entity.entityId, text: templatePartnerLine(p) });
   }
 
-  // Genre and audience tags only, one per word; fewer usable tags means fewer lines, never a filled slot.
+  // Genre tags only (never audience or identity tags), one per word; fewer usable tags means fewer lines,
+  // never a filled slot. Every line names the act.
   const slot: { tag: AllowTag; word: string }[] = [];
-  for (const t of hookTags(prepared).filter(isSlotTag)) {
+  for (const t of hookTags(prepared).filter((x) => isSlotTag(x) && !isAudienceTag(x))) {
     const word = tagInProse(t.name);
     if (word && !slot.some((x) => x.word === word)) slot.push({ tag: t, word });
   }
   const copyHooks: CopyHook[] = [];
   const venue = bill.venue.name;
-  const genres = slot.filter((x) => !x.tag.id.startsWith("urn:tag:audience:"));
-  const audience = slot.find((x) => x.tag.id.startsWith("urn:tag:audience:"));
-  const [g1, g2, g3] = genres;
-  if (g1 && g2) copyHooks.push({ text: `${capitalize(g1.word)} and ${g2.word} at ${venue}, ${when}.`, tagIds: [g1.tag.id, g2.tag.id] });
-  else if (g1) copyHooks.push({ text: `${capitalize(g1.word)} at ${venue}, ${when}.`, tagIds: [g1.tag.id] });
-  const crowd = audience ?? g3;
-  if (crowd) copyHooks.push({ text: `For the ${crowd.word} crowd: ${weekday} night at ${venue}.`, tagIds: [crowd.tag.id] });
-  const rest = genres.filter((x) => x !== g1 && x !== g2 && x !== crowd);
-  const [r1, r2] = rest;
-  if (r1 && r2) copyHooks.push({ text: `${capitalize(r1.word)} and ${r2.word}, live at ${venue}.`, tagIds: [r1.tag.id, r2.tag.id] });
-  else if (r1) copyHooks.push({ text: `${capitalize(r1.word)}, live at ${venue}.`, tagIds: [r1.tag.id] });
+  const act = headlinerName(bill);
+  const lead = act ? `${act}: ` : "";
+  const [g1, g2, g3, r1, r2] = slot;
+  if (g1 && g2) copyHooks.push({ text: `${lead}${capitalize(g1.word)} and ${g2.word} at ${venue}, ${when}.`, tagIds: [g1.tag.id, g2.tag.id] });
+  else if (g1) copyHooks.push({ text: `${lead}${capitalize(g1.word)} at ${venue}, ${when}.`, tagIds: [g1.tag.id] });
+  if (g3) copyHooks.push({ text: `${act ? `${act} for` : "For"} the ${g3.word} crowd: ${weekday} night at ${venue}.`, tagIds: [g3.tag.id] });
+  if (r1 && r2) copyHooks.push({ text: `${lead}${capitalize(r1.word)} and ${r2.word}, live at ${venue}.`, tagIds: [r1.tag.id, r2.tag.id] });
+  else if (r1) copyHooks.push({ text: `${lead}${capitalize(r1.word)}, live at ${venue}.`, tagIds: [r1.tag.id] });
 
   return {
     summary: templateSummary(input, prepared),

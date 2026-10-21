@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./sheet-model": "./src/sheet-model.ts",
-    "./format": "./src/format.ts"
+    "./format": "./src/format.ts",
+    "./audience": "./src/audience.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",

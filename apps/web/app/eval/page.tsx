@@ -3,7 +3,7 @@ import Link from "next/link";
 import { headlinerName } from "@/lib/format";
 import { getPlan } from "@/lib/plans";
 // The product eval writes this file (npx tsx evals/product/run.ts); nothing in the sample-data section is typed in by hand.
-// The live section is typed in from the runs recorded on the hosted site on Oct 20 2026 (no API call at render).
+// The live section is typed in from the runs recorded on the hosted site on Oct 21 2026 (no API call at render).
 import scoreFile from "../../../../evals/product/out/score.json";
 
 export const metadata: Metadata = {
@@ -90,16 +90,16 @@ function caseTitle(title: string): string {
     .replace(/spread top tiles/, "the numbered areas");
 }
 
-/** The two live hero bills at The Anthem, Washington DC, recorded on Oct 20 2026. */
+/** The two live hero bills at The Anthem, Washington DC, recorded on Oct 21 2026. */
 const LIVE_BILLS = [
-  { name: "Rhiannon Giddens", date: "Sun Feb 28 2027", partners: 11, topArea: "Langston (H Street NE)", lift: "about 2.2x", notPopular: 8 },
-  { name: "FLO", date: "Wed Feb 17 2027", partners: 15, topArea: "Le Droit Park", lift: "about 2.8x", notPopular: 12 },
+  { name: "Rhiannon Giddens", date: "Sun Feb 28 2027", partners: 16, topArea: "H Street NE", lift: "about 2.2x", notPopular: 10 },
+  { name: "FLO", date: "Wed Feb 17 2027", partners: 17, topArea: "U Street / Shaw", lift: "about 2.8x", notPopular: 15 },
 ] as const;
 
-/** The KG2 gate, re-run on Oct 20 2026 with The Truth's (Nashville) real Ticketmaster roster. */
-const KG2 = [
-  { measure: "Spearman(lift, raw heat)", value: "0.20 and 0.01", gate: "below 0.8" },
-  { measure: "Top-decile lift Jaccard between two bills", value: "0.47", gate: "below 0.5" },
+/** The foot-traffic check, run on Oct 20 2026 with The Truth's (Nashville) real Ticketmaster roster. Plain names for the measures. */
+const FOOT_TRAFFIC = [
+  { measure: "Rank agreement between lift and raw heat, per bill (1 means the same order)", value: "0.20 and 0.01", gate: "below 0.8" },
+  { measure: "Overlap between the two bills' top tenth of areas (1 means the same areas)", value: "0.47", gate: "below 0.5" },
 ] as const;
 
 function ShowsLine({ shows, not }: { shows: string; not: string }) {
@@ -122,16 +122,22 @@ export default function EvalPage() {
       <div className="max-w-[760px]">
       <h1>Evaluation</h1>
       <p className="mt-3">
-        What has been checked so far, and what has not. The first section comes from live runs recorded on Oct 20 2026 and recorded again on Oct 21 with the same numbers. The
-        product eval after it ran on sample data: a stand-in for Qloo and Ticketmaster with made-up places and numbers.
+        What has been checked so far, and what has not. The first section was recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs
+        are paused for judging; the sheets on this site are what a live run produced. The product eval after it ran on sample data: a stand-in for
+        Qloo and Ticketmaster with made-up places and numbers.
       </p>
 
       <section id="live" className="section mt-8 scroll-mt-24" aria-labelledby="live-title">
-        <h2 id="live-title">Live runs (Oct 20 2026)</h2>
+        <h2 id="live-title">Live runs (Oct 21 2026)</h2>
         <p className="mt-3">
           Two real Ticketmaster bills at The Anthem, Washington DC, an independent room (I.M.P.), run on live Qloo and Ticketmaster calls and recorded for
-          the hosted site, walkup-eight.vercel.app. A fixed rule picked them: the first Americana, country or folk bill from Dec 20 2026 to Feb 28 2027, and
-          the bill whose genre is most distant from it. A fresh run makes about 30 Qloo calls. The hosted home page opens on these two sheets.
+          the hosted site, walkup-eight.vercel.app. A fresh run makes about 30 Qloo calls. The hosted home page opens on these two sheets.
+        </p>
+        <p className="mt-2">
+          A fixed rule from the spec picked the two bills: in one independent room, the first Americana, country or folk bill in the window (here Dec 20
+          2026 to Feb 28 2027), and the bill in that window whose genre is most distant from it. On The Anthem&apos;s Ticketmaster calendar, Rhiannon
+          Giddens on Feb 28 was the only Americana, country or folk bill in that window, so the rule picked her show. FLO&apos;s R&amp;B show on Feb 17
+          was the most distant genre. No bill was skipped.
         </p>
 
         <h3 className="mt-6">Same room, two crowds</h3>
@@ -210,8 +216,8 @@ export default function EvalPage() {
 
         <h3 className="mt-6">A change note</h3>
         <p className="mt-2">
-          &ldquo;All ages, no bars&rdquo; on FLO&apos;s sheet. Claude (anthropic/claude-opus-5.5 through OpenRouter on Oct 20, anthropic/claude-haiku-5.5 on Oct 21) read it as two tool calls,
-          set_all_ages and exclude_partner_categories, and the plan ran again with those settings.
+          &ldquo;All ages, no bars&rdquo; on FLO&apos;s sheet. Claude (Haiku 5.5 through OpenRouter) read it as two tool calls, set_all_ages and
+          exclude_partner_categories, and the plan ran again with those settings. An earlier run on Oct 20, with Opus 5.5, made the same two calls.
         </p>
         <table className="table mt-2">
           <tbody>
@@ -225,7 +231,7 @@ export default function EvalPage() {
               <th scope="row" className="font-normal">
                 Partners removed
               </th>
-              <td className="num">8</td>
+              <td className="num">5</td>
             </tr>
             <tr>
               <th scope="row" className="font-normal">
@@ -250,9 +256,10 @@ export default function EvalPage() {
         </p>
         <ShowsLine shows="the sheet says when its map is thin." not="which areas a fuller map would pick." />
 
-        <h3 className="mt-6">Is lift just foot traffic? (KG2)</h3>
+        <h3 className="mt-6">Is lift just foot traffic?</h3>
         <p className="mt-2">
-          Re-run on Oct 20 with the real Ticketmaster roster of The Truth, Nashville, as the room&apos;s usual crowd. Passes.
+          A separate check, run on Oct 20 2026 at another room: The Truth, Nashville, with its real Ticketmaster roster as the room&apos;s usual crowd. If
+          lift ranked areas in the same order as raw heat (where people are), or two bills got the same top areas, the map would add nothing. Passes.
         </p>
         <table className="table mt-2">
           <thead>
@@ -262,12 +269,12 @@ export default function EvalPage() {
                 Value
               </th>
               <th scope="col" className="num">
-                Gate
+                Passes if
               </th>
             </tr>
           </thead>
           <tbody>
-            {KG2.map((k) => (
+            {FOOT_TRAFFIC.map((k) => (
               <tr key={k.measure}>
                 <td>{k.measure}</td>
                 <td className="num">{k.value}</td>
@@ -278,17 +285,20 @@ export default function EvalPage() {
         </table>
         <ShowsLine shows="lift is not just foot traffic for that pair of bills, at one room." not="that it holds in other rooms." />
 
-        <h3 className="mt-6">What the live host does without saying so</h3>
+        <h3 className="mt-6">API notes we handled</h3>
+        <p className="mt-2">Things the live Qloo responses do that the docs don&apos;t spell out, and what the code does with each.</p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
-          <li>Explainability shares can sum to less than 1 (0.936 seen). From replaying the recorded bodies on Oct 20.</li>
-          <li>A demographics call leaves out the block of a signal Qloo has no demographics for, with no warning. Oct 20.</li>
           <li>
-            An exact /search hit can be a not_found signal that Qloo drops silently (Jason Isbell against &ldquo;Jason Isbell and The 400 Unit&rdquo;).
-            Oct 15.
+            Explainability shares can sum to less than 1 (0.936 seen in the recorded responses). The sheet uses them only to name the act behind a
+            place, never as a percentage.
           </li>
-          <li>Heatmaps drop such ids without a warning. Oct 15.</li>
+          <li>A demographics call can leave out an act Qloo has no age data for. The age card is marked partial and names the act.</li>
+          <li>
+            An exact /search hit can be an entry Qloo has no taste data for (Jason Isbell, where &ldquo;Jason Isbell and The 400 Unit&rdquo; works), and
+            heatmaps drop such ids quietly. A signal check runs before planning, swaps in the next usable entry and says so. Found on Oct 15 2026.
+          </li>
         </ul>
-        <ShowsLine shows="response shapes the code has to expect." not="anything about the picks." />
+        <ShowsLine shows="response shapes the code expects and labels." not="anything about the picks." />
       </section>
 
       <section className="section" aria-labelledby="product-title">
@@ -323,7 +333,7 @@ export default function EvalPage() {
             );
           })}
           {score.clauses.some((c) => c.status === "ci") ? (
-            <li className="border-b border-rule py-2">A CI workflow is set up to re-run these cases; it hasn&apos;t run on a hosted runner yet.</li>
+            <li className="border-b border-rule py-2">CI re-runs these cases on every push, and on the main branch commits the score file.</li>
           ) : null}
         </ul>
 
@@ -342,18 +352,6 @@ export default function EvalPage() {
         <p className="hint mt-3">
           Run it yourself with <code className="font-sans font-semibold">npx tsx evals/product/run.ts</code>. The full report, check by check, is in{" "}
           <code className="font-sans font-semibold">evals/product/out/score.md</code>.
-        </p>
-      </section>
-
-      <section className="section" aria-labelledby="p1-title">
-        <h2 id="p1-title">The Fan-Bar Test: designed, not run</h2>
-        <p className="mt-3">
-          The question was whether a supporters&apos; club, used as a Qloo signal, ranks that club&apos;s official home bar in each US metro above a
-          popularity ranking of the same places, and above the same model searching Google Places.
-        </p>
-        <p className="mt-2">
-          The analysis plan was hashed before any data existed, and the collector and analysis code are in the repository with tests on synthetic data.
-          A full run would use more than a tenth of a month&apos;s Qloo calls, so we chose not to run it. There is no result.
         </p>
       </section>
 
@@ -388,6 +386,15 @@ export default function EvalPage() {
             system card
           </Link>
           .
+        </p>
+      </section>
+
+      <section className="section" aria-labelledby="fanbar-title">
+        <h2 id="fanbar-title">A test designed but not run</h2>
+        <p className="mt-3">
+          The Fan-Bar Test asks whether a supporters&apos; club, used as a Qloo signal, ranks that club&apos;s official home bar in each US metro above a
+          popularity ranking of the same places. Its analysis plan was sealed before any data existed, and the code is in the repository with tests on
+          synthetic data. A full run needs up to 1,331 Qloo calls and a Google Places arm, so it was not run and there is no result.
         </p>
       </section>
       </div>

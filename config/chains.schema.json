@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Walkup chain brands",
-  "description": "National and large regional US chain brands. Partner and pre/post lists put a place whose name matches one of these after the local places. Kept by hand.",
+  "description": "National and large regional US chain brands. Partner and pre/post lists put a place whose name matches one of these after the local places (at most 2 per list); a brand marked adult is never listed. Kept by hand.",
   "type": "object",
   "required": [
     "version",
@@ -73,6 +73,10 @@
         "exact": {
           "const": true,
           "description": "The name is a common word or a place name: it matches only as the whole name (a store number, or a part after \" - \", \"(\" or \",\", may follow), never as the start of a longer name"
+        },
+        "adult": {
+          "const": true,
+          "description": "An adult-themed brand (servers in revealing uniforms): never suggested as a street-team stop or a pre/post spot"
         }
       }
     }

@@ -2,7 +2,7 @@
 
 ## `chains.json`: national chains, by name
 
-A hand-kept list of national and large regional US chain brands that show up as Qloo places: coffee, bakeries and desserts, fast food, fast casual, pizza, casual dining, sports bars, retail, book stores, barbers and salons (205 brands, reviewed Oct 20 2026; bowling and amusement chains are filed with sports bars). Partner and pre/post lists put a place whose name is on it after the local places; nothing on the list is dropped, and a chain is kept when no local place can fill its slot. The rule and the matcher are in [`packages/engine`](../packages/engine/README.md#partners).
+A hand-kept list of national and large regional US chain brands that show up as Qloo places: coffee, bakeries and desserts, fast food, fast casual, pizza, casual dining, sports bars, retail, book stores, barbers and salons (208 brands, reviewed Oct 21 2026; bowling and amusement chains are filed with sports bars). It is one of four chain signals: Qloo's description of the place, a store-locator website and the same name or website at 3 or more places catch chains it misses. Partner and pre/post lists put chains after the local places and keep at most 2 per list, only for a slot no local place can fill. A brand marked `adult` (servers in revealing uniforms: Hooters, Twin Peaks, ...) is never listed. The rule and the matcher are in [`packages/engine`](../packages/engine/README.md#partners).
 
 Shape (JSON Schema: [`chains.schema.json`](chains.schema.json)): `version`, `about` (what the list is), `reviewedAt` (date of the last review), and `chains[]`, each with:
 
@@ -12,6 +12,7 @@ Shape (JSON Schema: [`chains.schema.json`](chains.schema.json)): `version`, `abo
 | `aliases` | Other names the brand's stores use ("Starbucks Coffee Company", "Dunkin' Donuts") |
 | `kind` | `coffee`, `bakery_dessert`, `fast_food`, `fast_casual`, `pizza`, `casual_dining`, `sports_bar`, `retail`, `book_store` or `beauty_barber`; for review only |
 | `exact` | `true` for a brand named with a common word or a town ("Target", "Gap", "Burlington"): it matches only as the whole name, never as the start of a longer one |
+| `adult` | `true` for an adult-themed brand: never suggested as a street-team stop or a pre/post spot |
 
 A name matches when its words equal a brand's words or start with them, after case, accents, apostrophes, periods and `&`/"and" are normalized ("Potbelly Sandwich Shop" is Potbelly; "Jerry's Seafood" is not Jerry's Subs & Pizza). Before adding a brand, check that no local business is likely to start its name with the brand's words; if one could, mark it `exact` or use a longer name. `node --test config/test/chains.test.mjs` checks the shape, that no name is claimed twice and that common one-word names are `exact`. The list is bundled with the code, so a change ships with the next build.
 

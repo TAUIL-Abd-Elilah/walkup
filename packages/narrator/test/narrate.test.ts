@@ -12,12 +12,12 @@ import { fakeMessage, makeInput, mockClient, textBlock } from "./helpers";
 
 const GOOD = {
   summary:
-    "This bill's fans over-index most in North Example, at 1.84x the house crowd. Start with the record store there.",
-  tileWhy: [{ geohash: "dn6m9q", text: "North Example: bill percentile 91 versus house 49." }],
+    "This bill's fans over-index most in North Example, at 1.84 times the room's usual crowd. Start with the record store there.",
+  tileWhy: [{ geohash: "dn6m9q", text: "North Example: percentile 91 for this bill versus 49 for the room's usual crowd." }],
   partnerLines: [{ entityId: "E-P1", text: "Record store in North Example, rank 1 for this bill." }],
   copyHooks: [
     {
-      text: "Test folk and vinyl nights at Sample Hall, Saturday.",
+      text: "Test Headliner: test folk and vinyl nights at Sample Hall, Saturday.",
       tagIds: ["urn:tag:genre:music:test_folk", "urn:tag:keyword:test_vinyl"],
     },
   ],
@@ -175,7 +175,7 @@ describe("narrate", () => {
     expect(res.usage?.model).toBe("claude-opus-5");
   });
 
-  it("guard drops lines with unlisted numbers, show-status words, act names in copy, and unused tags", async () => {
+  it("guard drops lines with unlisted numbers, show-status words and unused tags, and puts the act in every hook", async () => {
     const draft = {
       summary: "Expect 5000 people.",
       tileWhy: [
@@ -195,13 +195,14 @@ describe("narrate", () => {
     const { client } = mockClient([fakeMessage({ content: JSON.stringify(draft) })]);
     const res = await narrate(makeInput(), { client });
     expect(res.templated).toBe(false);
-    expect(res.guard.dropped).toBe(5);
+    expect(res.guard.dropped).toBe(4);
     expect(res.summary).toBe(templateNarrate(makeInput()).summary); // bad summary replaced
     expect(res.tileWhy.map((t) => t.geohash)).toEqual(["dn6m9q"]);
     expect(res.partnerLines.map((l) => l.entityId)).toEqual(["E-P1"]);
-    expect(res.copyHooks.map((h) => h.text)).toEqual(["Test folk at Sample Hall."]);
+    // Hooks now name the act: a line that already does is kept, the others get the headliner in front.
+    expect(res.copyHooks.map((h) => h.text)).toEqual(["Test Headliner fans: test twang night.", "Test Headliner: Test folk at Sample Hall."]);
     expect(res.guard.reasons.join("\n")).toMatch(/5000/);
     expect(res.guard.reasons.join("\n")).toMatch(/soft/);
-    expect(res.guard.reasons.join("\n")).toMatch(/act name/);
+    expect(res.guard.reasons.join("\n")).not.toMatch(/act name/);
   });
 });

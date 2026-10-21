@@ -9,9 +9,14 @@
  * data for, sent without signal.location. Seeds are checked in the resolve
  * step; if Qloo still ignores every seed here, the answer is ranked by place
  * alone and is not shown as this bill's list.
+ *
+ * Podcasts that ended or have no recent episodes (Qloo's release year, see
+ * @walkup/engine media.ts) are left out when enough recent ones came back;
+ * one kept to fill the list says "back catalogue". The sponsor shows by the
+ * short name people know it by ("REI", not "Recreational Equipment Inc").
  */
 import type { MediaPick, QlooEntity, StreetSheetCards } from "@walkup/contracts";
-import { findAlcoholTerm, findDeniedTerm, isDeniedTag } from "@walkup/engine";
+import { backCatalogueLabel, brandDisplayName, findAlcoholTerm, findDeniedTerm, isDeniedTag, pickPodcasts, podcastRecency } from "@walkup/engine";
 import { isAlcoholTag } from "@walkup/narrator";
 import { cite, clean, droppedFrom, envelope, node, plural, signal, venuePoint, type RunContext, type Seed } from "../context";
 
@@ -32,6 +37,12 @@ function adultOnlyBrand(e: QlooEntity): boolean {
   );
 }
 
+/** The plan's year (from its as-of date), for podcast recency. */
+function asOfYear(ctx: RunContext): number {
+  const y = Number(String(ctx.asOf).slice(0, 4));
+  return Number.isFinite(y) && y > 1900 ? y : new Date(ctx.now()).getUTCFullYear();
+}
+
 export async function runMedia(ctx: RunContext, seeds: Seed[]): Promise<MediaCard> {
   const picks: MediaPick[] = [];
   const provenance: string[] = [];
@@ -40,6 +51,8 @@ export async function runMedia(ctx: RunContext, seeds: Seed[]): Promise<MediaCar
   const sent = signal(ctx, seeds);
   let podcastOk = false;
   let sponsorOk = false;
+  let staleLeftOut = 0;
+  let backCatalogue = 0;
   /** Calls where Qloo ignored part ("some") or all of the bill's seeds as not_found. */
   const drops: ("some" | "all")[] = [];
 
@@ -49,21 +62,25 @@ export async function runMedia(ctx: RunContext, seeds: Seed[]): Promise<MediaCar
     provenance.push(r.ledgerRef);
     const drop = droppedFrom(r.meta, sent);
     if (drop.share !== "none") drops.push(drop.share);
-    const kept = drop.share === "all" ? [] : r.value.filter((e) => !deniedEntity(e)).slice(0, PODCASTS_SHOWN);
+    const allowed = drop.share === "all" ? [] : r.value.filter((e) => !deniedEntity(e));
+    const chosen = pickPodcasts(allowed, (e) => e, asOfYear(ctx), PODCASTS_SHOWN);
+    const kept = chosen.map((c) => c.item);
+    // Stale shows Qloo ranked above the last one shown: they would have been on the list.
+    const cut = kept.length >= PODCASTS_SHOWN ? Math.max(...kept.map((e) => allowed.indexOf(e))) : allowed.length;
+    staleLeftOut = allowed.filter((e, i) => i < cut && !kept.includes(e) && ["old", "ended"].includes(podcastRecency(e, asOfYear(ctx)).status)).length;
+    backCatalogue = chosen.filter((c) => c.backCatalogue).length;
     cite(ctx, kept, r.ledgerRef);
     const scope = ctx.probes.podcastLocationMoves ? "local" : "national";
-    for (const e of kept) {
-      picks.push({
-        entity: clean(ctx, e),
-        kind: "podcast",
-        scope,
-        chips: [{ label: scope === "local" ? "ranked for this bill near the venue" : "ranked for this bill; labelled national until the local probe shows movement", ledgerRef: r.ledgerRef }],
-      });
+    for (const c of chosen) {
+      const chips = [{ label: scope === "local" ? "ranked for this bill near the venue" : "ranked for this bill; labelled national until the local probe shows movement", ledgerRef: r.ledgerRef }];
+      if (c.backCatalogue) chips.push({ label: backCatalogueLabel(c.recency), ledgerRef: r.ledgerRef });
+      picks.push({ entity: clean(ctx, c.item), kind: "podcast", scope, chips });
     }
+
     podcastOk = kept.length > 0;
     if (drop.share === "all") reasons.push("Qloo has no taste data for this bill's acts (Q12), so the podcast list would only rank by place and is left out");
     else if (!podcastOk) reasons.push("the podcast call was empty");
-    else if (drop.share === "some") reasons.push(`Qloo ignored ${plural(drop.dropped.length, "of this bill's seeds", "of this bill's seeds")} (Q12), so the podcasts rest on the others`);
+    else if (drop.share === "some") reasons.push(`Qloo has no taste data for ${plural(drop.dropped.length, "of the names behind this bill", "of the names behind this bill")} (Q12), so the podcasts rest on the others`);
   } catch (err) {
     const ref = (err as { ledgerRef?: string }).ledgerRef;
     if (ref) provenance.push(ref);
@@ -87,8 +104,10 @@ export async function runMedia(ctx: RunContext, seeds: Seed[]): Promise<MediaCar
     } else if (brand) {
       cite(ctx, [brand], r.ledgerRef);
       const scope = ctx.probes.brandLocationMoves ? "local" : "national";
+      const shown = clean(ctx, brand);
+      const display = brandDisplayName(shown);
       picks.push({
-        entity: clean(ctx, brand),
+        entity: display === shown.name ? shown : { ...shown, name: display, properties: { ...shown.properties, legal_name: shown.name } },
         kind: "sponsor",
         scope,
         chips: [{ label: scope === "local" ? "brand affinity for this bill near the venue" : "brand affinity for this bill; labelled national until the local probe shows movement", ledgerRef: r.ledgerRef }],
@@ -108,6 +127,8 @@ export async function runMedia(ctx: RunContext, seeds: Seed[]): Promise<MediaCar
   const parts: string[] = [];
   parts.push(podcasts > 0 ? `${plural(podcasts, "podcast")}${sponsorOk ? " and 1 sponsor brand" : ""}.` : sponsorOk ? "1 sponsor brand." : "No podcasts or sponsor.");
   if (picks.length > 0 && !local) parts.push("Local ranking not checked yet, so all are national.");
+  if (staleLeftOut > 0) parts.push(`${plural(staleLeftOut, "show")} with no recent episodes left out.`);
+  if (backCatalogue > 0) parts.push(`${plural(backCatalogue, "show")} marked back catalogue: no recent episodes, but too few current shows came back.`);
   if (!adult && exclusions.length > 0) {
     parts.push(
       ctx.bill.legalAgeEnforced === true

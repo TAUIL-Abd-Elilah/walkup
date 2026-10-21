@@ -21,6 +21,7 @@ import type { LiftTile } from "@walkup/contracts";
 import { bboxRing, decodeBbox, unionBbox, type Bbox } from "../lib/geohash";
 import { LIFT_INK, liftAlpha } from "../lib/lift";
 import { MAP_PAD, MARKER, groupMarkers } from "../lib/markers";
+import { areaName } from "../lib/sheet-utils";
 import { MAP_FONT_BOLD, MAP_FONT_REGULAR, MAPLIBRE_WORKER_URL, OPENFREEMAP_STYLE, hasWebGL } from "../lib/webgl";
 
 export interface MapCanvasProps {
@@ -64,6 +65,11 @@ function venueSquare(): { width: number; height: number; data: Uint8Array } {
 
 type TileProps = { geohash: string; alpha: number; name: string };
 
+/** A tile's name with its own state ("Langston, DC"), the same label as the area list and the partner table. */
+function tileName(t: LiftTile): string {
+  return t.name ? areaName(t) : "";
+}
+
 function tileCollection(tiles: LiftTile[]): FeatureCollection<Polygon, TileProps> {
   return {
     type: "FeatureCollection",
@@ -71,7 +77,7 @@ function tileCollection(tiles: LiftTile[]): FeatureCollection<Polygon, TileProps
       .sort((a, b) => a.lift - b.lift)
       .map((t) => ({
         type: "Feature",
-        properties: { geohash: t.geohash, alpha: liftAlpha(t.lift), name: t.name ?? "" },
+        properties: { geohash: t.geohash, alpha: liftAlpha(t.lift), name: tileName(t) },
         geometry: { type: "Polygon", coordinates: [bboxRing(decodeBbox(t.geohash))] },
       })),
   };
@@ -84,7 +90,7 @@ function dotCollection(tiles: LiftTile[]): FeatureCollection<Point, TileProps> {
       .sort((a, b) => a.lift - b.lift)
       .map((t) => ({
         type: "Feature",
-        properties: { geohash: t.geohash, alpha: liftAlpha(t.lift), name: t.name ?? "" },
+        properties: { geohash: t.geohash, alpha: liftAlpha(t.lift), name: tileName(t) },
         geometry: { type: "Point", coordinates: [t.lon, t.lat] },
       })),
   };
@@ -167,6 +173,34 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
       });
       mapRef.current = map;
       map.touchZoomRotate.disableRotation();
+      // A frame too small for the padding when the map was made (a narrow or still-hidden column) leaves MapLibre at
+      // its whole-world view. Re-fit to the frame whenever the box changes size, until the reader moves the map.
+      if (ext) {
+        let moved = false;
+        const fit = () => {
+          if (moved || cancelled) return;
+          const box = containerRef.current?.getBoundingClientRect();
+          if (!box || box.width <= MAP_PAD.left + MAP_PAD.right || box.height <= MAP_PAD.top + MAP_PAD.bottom) return;
+          map.resize();
+          map.fitBounds(
+            [
+              [ext.minLon, ext.minLat],
+              [ext.maxLon, ext.maxLat],
+            ],
+            { padding: { ...MAP_PAD }, animate: false },
+          );
+        };
+        map.on("dragstart", () => (moved = true));
+        map.on("zoomstart", (e: { originalEvent?: unknown }) => {
+          if (e.originalEvent) moved = true;
+        });
+        map.on("load", fit);
+        if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+          const ro = new ResizeObserver(() => fit());
+          ro.observe(containerRef.current);
+          map.on("remove", () => ro.disconnect());
+        }
+      }
       map.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
       // Datawrapper's locator maps always carry a scale; so does the static drawing.
       map.addControl(new ml.ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
@@ -245,7 +279,9 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
           layout: { "text-field": ["get", "name"], "text-font": MAP_FONT_REGULAR, "text-size": 12, "text-offset": [0, 1.1], "text-anchor": "top" },
           paint: { "text-color": INK, "text-halo-color": WHITE, "text-halo-width": 1.5 },
         });
-        map.addSource("wk-rank", { type: "geojson", data: rankCollection(map, tiles, ranked) });
+        // The widest tile buffer, so a number whose point sits near a vector-tile edge is never cut off in one tile and
+        // left as a bare dot (the circle and the numeral are drawn per tile).
+        map.addSource("wk-rank", { type: "geojson", data: rankCollection(map, tiles, ranked), buffer: 512 });
         map.addLayer({
           id: "wk-rank",
           type: "circle",
@@ -263,7 +299,15 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
           id: "wk-rank-num",
           type: "symbol",
           source: "wk-rank",
-          layout: { "text-field": ["get", "label"], "text-font": MAP_FONT_BOLD, "text-size": MARKER.fontSize, "text-allow-overlap": true, "text-ignore-placement": true },
+          layout: {
+            "text-field": ["get", "label"],
+            "text-font": MAP_FONT_BOLD,
+            "text-size": MARKER.fontSize,
+            "text-allow-overlap": true,
+            "text-ignore-placement": true,
+            "text-padding": 0,
+            "symbol-avoid-edges": false,
+          },
           paint: { "text-color": MARKER.text, "text-translate": MARKER_OFFSET },
         });
         // Regroup the markers whenever the zoom changes what is too close to tell apart.

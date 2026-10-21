@@ -336,6 +336,19 @@ function isFixture(data) {
   return data?.mode === "fixture" || /fixture/i.test(reasonOf(data) ?? "");
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * A recorded sheet's day, "Oct 21 2026" style (UTC), or null.
+ * @param {unknown} createdAt
+ */
+function recordedDay(createdAt) {
+  if (typeof createdAt !== "string") return null;
+  const at = new Date(createdAt);
+  if (!Number.isFinite(at.getTime())) return null;
+  return `${MONTHS[at.getUTCMonth()]} ${at.getUTCDate()} ${at.getUTCFullYear()}`;
+}
+
 /** @param {string} text */
 function withoutStop(text) {
   return text.replace(/\.+$/, "");
@@ -352,7 +365,7 @@ function httpError(res, data, base) {
   }
   if (res.status === 503 && data?.mode === "recorded") {
     return new CliError(
-      `Recorded sheets only: ${withoutStop(reason ?? "Qloo is no longer available to this server, so new plans are off")}. Read one with: walkup sheet <plan-id>`,
+      `Recorded sheets only: ${withoutStop(reason ?? "live runs are paused for judging; this server serves sheets recorded from live Qloo and Ticketmaster runs")}. Read one with: walkup sheet <plan-id>`,
       EXIT.FIXTURE,
     );
   }
@@ -458,8 +471,8 @@ function report(data, opts, base, resumeEvent) {
   const lines = [];
   if ((data.mode ?? sheet?.mode) === "fixture") lines.push("FIXTURE: sample data (synthetic), not a live run.");
   else if (data.mode === "recorded" && sheet) {
-    const day = typeof sheet.createdAt === "string" ? ` on ${sheet.createdAt.slice(0, 10)}` : "";
-    lines.push(`RECORDED: a live run recorded${day}. Qloo is no longer available to the server, so it is not refreshed.`);
+    const day = recordedDay(sheet.createdAt);
+    lines.push(`RECORDED: recorded from live Qloo and Ticketmaster runs${day ? ` on ${day}` : ""}. Live runs are paused for judging; this sheet is what the live run produced.`);
   }
   if (sheet?.hypothetical) lines.push("HYPOTHETICAL COUNT: seats left and capacity are what-ifs.");
   lines.push(`Status: ${status}${data.planId ? ` · plan ${data.planId}` : ""}`);

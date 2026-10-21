@@ -9,6 +9,8 @@ import { getPlan } from "@/lib/plans";
 import { presetForPlan, presetLine } from "@/lib/presets";
 import { sheetTitle } from "@/lib/sheet-utils";
 import { SESSION_COOKIE } from "@/lib/server/http";
+import { revisionsOf } from "@/lib/server/recorded";
+import { vettedSheet } from "@/lib/vetted";
 import { loadPlan, presetSheet } from "@/lib/server/service";
 
 export const dynamic = "force-dynamic";
@@ -86,9 +88,13 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   const preset = presetId ? presetForPlan(presetId, v.sheet.mode, v.sheet.bill) : undefined;
   const presetText = preset ? presetLine(preset, v.sheet.operator.seatsLeft) : null;
   const paired = await pairedFor(v.sheet.pairedPlanId ?? (v.source === "preset" ? getPlan(id)?.pairedWith : undefined), v.sheet.mode === "live");
+  // Stored revisions of this very sheet ("All ages, no bars"), found by their parent id in the plan store.
+  const revisions = await revisionsOf(v.sheet.planId, v.sheet.mode === "live" ? "live" : undefined);
+  // The narration, copy lines and tag lists as checked at view time (the stored sheet stays as recorded).
+  const shown = vettedSheet(v.sheet);
   return (
     <PlanView
-      payload={{ sheet: v.sheet, note: v.note, source: v.source, ...(presetId ? { presetId } : {}) }}
+      payload={{ sheet: shown.sheet, note: v.note, source: v.source, ...(presetId ? { presetId } : {}) }}
       line={isPauseLine(presetText) ? null : presetText}
       realShow={preset?.realShow ?? false}
       {...(preset?.showName ? { showName: preset.showName } : {})}
@@ -98,6 +104,9 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
       canRerun={mode.kind === "fixture" && Boolean(presetId)}
       // A live sheet can't be re-run on a fixture server, and nothing is re-run in recorded mode; the route would refuse it.
       revisable={mode.kind !== "recorded" && !(v.sheet.mode === "live" && mode.kind !== "live")}
+      revisions={revisions.map((r) => ({ planId: r.planId, instruction: r.instruction }))}
+      today={new Date().toISOString()}
+      narrationReplaced={shown.replaced.length}
     />
   );
 }

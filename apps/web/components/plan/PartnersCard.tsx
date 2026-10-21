@@ -3,9 +3,8 @@ import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { shortUrl, telHref } from "../../lib/format";
 import { categoryLabel } from "../../lib/labels";
-import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, topTiles } from "../../lib/sheet-utils";
-import { LESS_SURE_NOTE, partnerLessSure } from "@walkup/exports/format";
-import { popularitySentence } from "@walkup/engine/popularity";
+import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles } from "../../lib/sheet-utils";
+import { LESS_SURE_NOTE, partnerAreaLabel, partnerLessSure } from "@walkup/exports/format";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
 import { Refs } from "./receipts";
@@ -21,7 +20,7 @@ const tagWord = (name: string) =>
 const typeWords = (p: Partner) => (p.chain ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category));
 
 /** The "Why this place" detail under a partner row (only when the sheet carries `partner.explain`). */
-export function PartnerWhy({ p, area }: { p: Partner; area?: string }) {
+export function PartnerWhy({ p, area }: { p: Partner; area?: string | undefined }) {
   const x = p.explain;
   if (!x) return null;
   const where = [area ?? x.areaName ?? p.tileName, typeof x.distanceKm === "number" && !/\d km \w+$/.test(area ?? x.areaName ?? "") ? `${x.distanceKm.toFixed(1)} km from the venue` : null]
@@ -133,7 +132,8 @@ export function PartnersCard({
       return {
         geohash: g,
         marker: i + 1,
-        name: i >= 0 ? areaName(top[i]) : (env.results.find((p) => p.tileGeohash === g)?.tileName ?? areaName(byHash.get(g))),
+        // Named with its own state, like the map and the area list ("Langston, DC").
+        name: i >= 0 ? areaName(top[i]) : partnerAreaLabel(env.results.find((p) => p.tileGeohash === g) ?? { tileGeohash: g }, byHash) || areaName(byHash.get(g)),
         count: env.results.filter((p) => p.tileGeohash === g).length,
       };
     })
@@ -149,7 +149,9 @@ export function PartnersCard({
     [sheet.revision],
   );
   // A less certain pick: a dagger after its name, explained once under the table (the same rule as on paper).
-  const thin = (p: Partner) => partnerLessSure(p);
+  // When every pick is less certain the dagger says nothing, so none is drawn and one line says it instead.
+  const allThin = env.results.length > 1 && env.results.every((p) => partnerLessSure(p));
+  const thin = (p: Partner) => !allThin && partnerLessSure(p);
   const anyThin = env.results.some(thin);
   // Numbered areas on the map that no partner search covered: say so, or it reads as a bug.
   const searchedNumbers = new Set(areas.map((a) => a.marker).filter((n) => n > 0));
@@ -178,7 +180,7 @@ export function PartnersCard({
         {a.name}
       </>
     ) : (
-      (p.tileName ?? "Near the venue")
+      partnerAreaLabel(p, byHash) || "Near the venue"
     );
 
   // Only the model's lines: the template's partner lines repeat the rank line above them.
@@ -316,7 +318,7 @@ export function PartnersCard({
                   {open ? (
                     <tr id={`${partnerAnchor(id)}-why`}>
                       <td colSpan={5} className="bg-subtle px-3">
-                        <PartnerWhy p={p} {...(area ? { area: area.name } : {})} />
+                        <PartnerWhy p={p} area={area ? area.name : partnerAreaLabel(p, byHash) || undefined} />
                       </td>
                     </tr>
                   ) : null}
@@ -327,10 +329,15 @@ export function PartnersCard({
         </table>
       )}
       {anyThin && rows.length > 0 ? <p className="mt-3 max-w-[760px] text-sm text-muted">{LESS_SURE_NOTE} &ldquo;Why this place&rdquo; gives the reason.</p> : null}
+      {allThin && rows.length > 0 ? (
+        <p className="mt-3 max-w-[760px] text-sm text-muted" data-testid="all-less-sure">
+          Every pick on this list is less certain: the signal for this bill is thin. Call before you go. &ldquo;Why this place&rdquo; gives the reason.
+        </p>
+      ) : null}
       {/* Qloo with the bill vs Qloo without a signal, same searches: absent when a twin failed or came back empty. */}
       {popularity && env.results.length > 0 ? (
         <p className="mt-3 max-w-[760px]" data-testid="popularity-check">
-          {popularitySentence(popularity)}
+          {popularityLine(popularity)}
           <Refs ids={popularity.ledgerRefs} />
         </p>
       ) : null}

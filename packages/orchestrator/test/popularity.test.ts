@@ -65,16 +65,22 @@ describe("popularity twin", () => {
     expect(a.cards.partners.limits).toContain(POPULARITY_LIMIT);
     const step = a.steps?.find((s) => s.id === "partners-popular");
     expect(step?.status).toBe("ok");
-    expect(step?.decision).toContain(`${c.notInPopularTop} of the ${c.partners} partners wouldn't make a list of the most popular places in their areas`);
+    expect(step?.decision).toBe(`Popularity alone would miss ${c.notInPopularTop} of the ${c.partners} partners: they aren't among the most popular places in their areas.`);
+    for (const r of c.perArea) {
+      expect(r.popularTop?.length).toBe(r.partners);
+      expect(r.popularTop?.every((x) => x.name !== "")).toBe(true);
+      const onSheet = new Set(a.cards.partners.results.map((p) => p.entity.entityId));
+      for (const x of r.popularTop ?? []) expect(x.onSheet).toBe(onSheet.has(x.entityId));
+    }
     expect(step?.ledgerRefs).toEqual(c.ledgerRefs);
-    expect(popularitySentence(c)).toBe(`${c.notInPopularTop} of the ${c.partners} partners would not make a list of the most popular places in their areas.`);
+    expect(popularitySentence(c)).toBe(`${c.notInPopularTop} of the ${c.partners} partners aren't among the most popular places in their areas: a list by popularity alone would miss them.`);
   });
 
   it("works for a near-venue list too (G3: no lift map)", () => {
     const c = g3.popularityCheck!;
     expect(c.perArea).toHaveLength(1);
     expect(c.perArea[0]!.tileGeohash).toBeNull();
-    expect(popularitySentence(c)).toMatch(/near the venue\.$/);
+    expect(popularitySentence(c)).toMatch(/near the venue(\.|: a list by popularity alone would miss)/);
   });
 
   it("comes from the cache on a re-run", async () => {

@@ -22,13 +22,19 @@ export {
   adultsNear,
   adultsNearDetail,
   annotateTile,
+  areaNameForPoint,
   bboxContains,
   metroForPoint,
   nameForPoint,
   nearestZcta,
+  stateForPoint,
   zctasNear,
+  zipForPoint,
 } from "./lookup";
-export type { AdultsDetail, AdultsOptions, AnnotateOptions } from "./lookup";
+export { MAX_AREA_ZIPS, MIN_RESIDENTIAL_ADULTS, isNeighbourhoodCity, isResidentialZip, knownAreaNear, zipPlace } from "./zips";
+export type { KnownAreaHit, ZipKind, ZipPlace } from "./zips";
+export { STATE_FIPS, stateFromGeoid, stateFromZctas, stateFromZip } from "./states";
+export type { AdultsDetail, AdultsOptions, AnnotateOptions, AreaName, AreaNameSource } from "./lookup";
 export type {
   Bbox,
   LoadOptions,

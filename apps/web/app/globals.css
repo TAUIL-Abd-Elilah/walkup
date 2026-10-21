@@ -396,6 +396,14 @@
   .plain-details > summary:hover {
     text-decoration-thickness: 2px;
   }
+  /* A folded sheet section (components/plan/fold.tsx): "Show" while closed, "Hide" while open. */
+  .fold > summary .fold-hide,
+  .fold[open] > summary .fold-show {
+    display: none;
+  }
+  .fold[open] > summary .fold-hide {
+    display: inline;
+  }
 
   /*
    * Paper sheet (/s/[id]): light in every theme. The colour tokens are set to

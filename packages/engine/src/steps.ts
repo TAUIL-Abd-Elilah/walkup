@@ -62,6 +62,11 @@ export function joinAnd(items: readonly string[]): string {
 }
 
 /** "1 place", "24 places", "1,200 places". */
+/** First letter upper case. */
+function capitalizeFirst(s: string): string {
+  return s ? `${s.charAt(0).toUpperCase()}${s.slice(1)}` : s;
+}
+
 export function countOf(n: number, one: string, many = `${one}s`): string {
   return `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 }
@@ -208,7 +213,7 @@ export function baselineStep(i: BaselineStepInput): TraceStep {
     i.ledgerRefs,
     i.comedy
       ? "Too few of the room's headliners matched Qloo, and comedy has no genre-wide crowd to stand in."
-      : "Too few of the room's headliners matched Qloo and no genre tag is pinned for this bill.",
+      : "Too few of the room's headliners matched Qloo, and there is no genre-wide crowd set up for this bill's genre.",
   );
 }
 
@@ -241,7 +246,7 @@ export function heatStep(i: HeatStepInput): TraceStep {
   if (i.failure) return traceStep("heat", "heat", "Lift map", i.failure, i.status, i.ledgerRefs);
   const extra = [
     i.excludedAreas > 0 ? `Left out ${countOf(i.excludedAreas, "area")} at your request` : null,
-    i.widened ? `The search widened to ${i.widened.toKm} km: fewer than ${i.widened.minCells} map cells came back inside ${i.widened.fromKm} km` : null,
+    i.widened ? `The search widened to ${i.widened.toKm} km: fewer than ${i.widened.minCells} map squares came back within ${i.widened.fromKm} km` : null,
     i.thinCells !== null && i.thinCells !== undefined ? `Only ${countOf(i.thinCells, "map cell")} came back, so the map is thin` : null,
   ];
   // The two tests an area must pass, in the words of the sheet's lift method line.
@@ -320,24 +325,45 @@ export interface PartnersStepInput {
   belowMinimum: boolean;
   minTotal: number;
   skippedCategories: number;
-  /** National chains (hand-kept list) the chain rule moved below local places, and the names of those now off the list. */
-  chainsMoved?: number;
+  /** The skipped kinds in words, plural ("record stores"). */
+  skippedCategoryNames?: string[];
+  /** National chains on the list, the names of the eligible chains left off, and how many of those only the cap left off. */
+  chainsKept?: number;
   chainsOffList?: readonly string[];
+  chainsCapped?: number;
+  /** The chain cap (most chains per list). */
+  chainsCap?: number;
+  /** Places dropped as not a business (a mall, plaza, station) and as adult-themed. */
+  droppedNotVenue?: number;
+  droppedAdult?: number;
   /** Set when the partner step failed: what happened, in one sentence. */
   failure?: string | null;
   ledgerRefs: string[];
 }
 
-/** The chain rule's trace line: how many chains moved below local places, and which ones fell off the list. */
-export function chainsCause(moved: number | undefined, offList: readonly string[] | undefined, local: string): string | null {
-  const n = moved ?? 0;
-  if (n <= 0) return null;
+/** At most this many chain names in a trace line; the rest are counted. */
+const CHAIN_NAMES_SHOWN = 4;
+
+/**
+ * The chain rule's trace line, matching the list: how many chains are listed (last, after the local places), and
+ * which eligible chains were left off, and whether the cap of `cap` per list did it.
+ */
+export function chainsCause(kept: number | undefined, offList: readonly string[] | undefined, local: string, cap?: number, capped?: number): string | null {
+  const k = kept ?? 0;
+  const off = offList ?? [];
+  if (k <= 0 && off.length === 0) return null;
   // Two stores of one brand read "Panera Bread (2)".
   const counts = new Map<string, number>();
-  for (const name of offList ?? []) counts.set(name, (counts.get(name) ?? 0) + 1);
-  const off = [...counts].map(([name, k]) => (k > 1 ? `${name} (${k})` : name));
-  const head = `Moved ${countOf(n, "national chain")} below the local ${local}`;
-  return off.length > 0 ? `${head}; ${joinAnd(off)} no longer ${(offList ?? []).length === 1 ? "makes" : "make"} the list` : head;
+  for (const name of off) counts.set(name, (counts.get(name) ?? 0) + 1);
+  const named = [...counts].map(([name, n]) => (n > 1 ? `${name} (${n})` : name));
+  const shown = named.length > CHAIN_NAMES_SHOWN ? [...named.slice(0, CHAIN_NAMES_SHOWN), `${named.length - CHAIN_NAMES_SHOWN} more`] : named;
+  const parts: string[] = [];
+  if (k > 0) parts.push(`Listed ${countOf(k, "national chain")} last, after the local ${local}: no local ${local === "spots" ? "spot" : "place"} filled ${k === 1 ? "its" : "their"} slot`);
+  if (off.length > 0) {
+    const why = (capped ?? 0) > 0 && cap !== undefined ? `, at most ${cap} per list` : "";
+    parts.push(`${k > 0 ? "left off" : "Left off"} ${countOf(off.length, "national chain")}${why}: ${joinAnd(shown)}`);
+  }
+  return parts.join("; ");
 }
 
 export function partnersStep(i: PartnersStepInput): TraceStep {
@@ -355,12 +381,22 @@ export function partnersStep(i: PartnersStepInput): TraceStep {
       : null,
     i.droppedClosed > 0 ? `Dropped ${countOf(i.droppedClosed, "place")} marked closed` : null,
     (i.droppedHoursClosed ?? 0) > 0 ? `Dropped ${countOf(i.droppedHoursClosed ?? 0, "place")} closed on ${day}` : null,
+    (i.droppedNotVenue ?? 0) > 0 ? `Left out ${countOf(i.droppedNotVenue ?? 0, "place")} that ${(i.droppedNotVenue ?? 0) === 1 ? "isn't a business" : "aren't businesses"} (a mall, plaza, station or park)` : null,
+    (i.droppedAdult ?? 0) > 0 ? `Left out ${countOf(i.droppedAdult ?? 0, "adult-themed place")}` : null,
     i.droppedCategory > 0 ? `Left out ${countOf(i.droppedCategory, "place")} by type (${i.categoryReason ?? "your exclusions"})` : null,
     i.areasUsed < i.areasWanted && i.areasUsed > 0 ? `Only ${countOf(i.areasUsed, "area")} stood out, so the rest of the list comes from near the venue` : null,
-    i.widenedRadius > 0 ? `${countOf(i.widenedRadius, "area search", "area searches")} came back short and widened to ${i.widenedRadiusM.toLocaleString("en-US")} m` : null,
-    i.widenedCategories > 0 ? `${countOf(i.widenedCategories, "search", "searches")} also took in more kinds of places` : null,
-    i.skippedCategories > 0 ? `${countOf(i.skippedCategories, "kind")} of place skipped: no pinned tag yet` : null,
-    chainsCause(i.chainsMoved, i.chainsOffList, "places"),
+    i.widenedRadius > 0
+      ? `${countOf(i.widenedRadius, "area")} had few places close in, so the search widened to ${kmFromM(i.widenedRadiusM)} km`
+      : null,
+    i.widenedCategories > 0 ? `${countOf(i.widenedCategories, "area")} also took in more kinds of places` : null,
+    i.skippedCategories > 0
+      ? i.skippedCategoryNames && i.skippedCategoryNames.length > 0
+        ? `${capitalizeFirst(joinAnd(i.skippedCategoryNames))} aren't searched yet: Qloo has no tag to find them by`
+        : i.skippedCategories === 1
+          ? "1 kind of place isn't searched yet: Qloo has no tag to find it by"
+          : `${i.skippedCategories} kinds of place aren't searched yet: Qloo has no tag to find them by`
+      : null,
+    chainsCause(i.chainsKept, i.chainsOffList, "places", i.chainsCap, i.chainsCapped),
     i.belowMinimum ? `That's short of the ${i.minTotal} the list aims for, so treat it as a starting list` : null,
   ]);
   return traceStep("partners", "partners", "Partners", decision, i.status, i.ledgerRefs, cause);
@@ -440,11 +476,11 @@ export function popularityStep(i: PopularityStepInput): TraceStep {
     return traceStep("partners-popular", "partners", "Popularity check", "Skipped the popularity check", "partial", i.ledgerRefs, joinSentences([why]));
   }
   const where = i.nearVenueOnly ? "near the venue" : i.areas === 1 ? (i.partners === 1 ? "in its area" : "in their area") : "in their areas";
-  const list = `a list of the most popular places ${where}`;
   let decision: string;
-  if (i.partners === 1) decision = `Checked against popularity alone: the one partner ${i.notInPopularTop === 1 ? "wouldn't make" : "would also make"} ${list}`;
-  else if (i.notInPopularTop === 0) decision = `Checked against popularity alone: all ${countOf(i.partners, "partner")} would also make ${list}`;
-  else decision = `Checked against popularity alone: ${i.notInPopularTop} of the ${countOf(i.partners, "partner")} wouldn't make ${list}`;
+  const most = `the most popular places ${where}`;
+  if (i.partners === 1) decision = i.notInPopularTop === 1 ? `Popularity alone would miss the one partner: it isn't among ${most}` : `The one partner is also among ${most}`;
+  else if (i.notInPopularTop === 0) decision = `All ${countOf(i.partners, "partner")} are also among ${most}`;
+  else decision = `Popularity alone would miss ${i.notInPopularTop} of the ${countOf(i.partners, "partner")}: they aren't among ${most}`;
   return traceStep("partners-popular", "partners", "Popularity check", decision, "ok", i.ledgerRefs, joinSentences([how, "It says nothing about ticket sales"]));
 }
 
@@ -474,9 +510,14 @@ export interface PrePostStepInput {
   legalAgeEnforced: boolean | null;
   /** Spots left out by type before picking (operator exclusions, or every bar on an all-ages show). */
   typeDrops?: { count: number; reason: string } | null;
-  /** National chains the chain rule moved below local spots, and the names of those now off the list. */
-  chainsMoved?: number;
+  /** National chains on the list, the names of the eligible chains left off, and how many of those only the cap left off. */
+  chainsKept?: number;
   chainsOffList?: readonly string[];
+  chainsCapped?: number;
+  chainsCap?: number;
+  /** Spots dropped as not a business (a mall, plaza, station) and as adult-themed. */
+  droppedNotVenue?: number;
+  droppedAdult?: number;
   failure?: string | null;
   ledgerRefs: string[];
 }
@@ -491,7 +532,9 @@ export function prePostStep(i: PrePostStepInput): TraceStep {
   const cause = joinSentences([
     i.widened && i.radiusM !== null ? `Fewer than ${i.widened.minSpots} came back inside ${kmFromM(i.widened.fromM)} km, so the search widened to ${kmFromM(i.radiusM)} km` : null,
     i.typeDrops && i.typeDrops.count > 0 ? `Left out ${countOf(i.typeDrops.count, "place")} by type (${i.typeDrops.reason})` : null,
-    chainsCause(i.chainsMoved, i.chainsOffList, "spots"),
+    (i.droppedNotVenue ?? 0) > 0 ? `Left out ${countOf(i.droppedNotVenue ?? 0, "place")} that ${(i.droppedNotVenue ?? 0) === 1 ? "isn't a business" : "aren't businesses"} (a mall, plaza, station or park)` : null,
+    (i.droppedAdult ?? 0) > 0 ? `Left out ${countOf(i.droppedAdult ?? 0, "adult-themed place")}` : null,
+    chainsCause(i.chainsKept, i.chainsOffList, "spots", i.chainsCap, i.chainsCapped),
     i.barsOperatorOnly > 0
       ? `Bars stay off fan copy: ${i.legalAgeEnforced === false ? "Ticketmaster lists the show as all ages" : "Ticketmaster doesn't list an age limit for the show"}`
       : null,

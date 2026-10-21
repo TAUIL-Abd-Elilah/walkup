@@ -2,10 +2,10 @@
  * Runtime mode for the site strip, the header note and the API. Read per
  * request (never at build time): the image is built without secrets.
  *
- * - recorded: Qloo is no longer available. WALKUP_MODE=recorded, the time in
+ * - recorded: live runs are paused. WALKUP_MODE=recorded, the time in
  *   WALKUP_QLOO_UNTIL has passed, or Qloo rejected the configured key while the
- *   plan store holds a live sheet. Stored live sheets are served as recordings;
- *   nothing new runs.
+ *   plan store holds a live sheet. Sheets recorded from live runs are served as
+ *   they were made; nothing new runs.
  * - live: QLOO_API_KEY and TICKETMASTER_API_KEY are set, WALKUP_MODE is not
  *   "fixture", and Qloo has not rejected the key.
  * - fixture: anything else, a rejected key with no live sheet stored included
@@ -18,7 +18,7 @@ import { envValue, walkupModeValue } from "@walkup/qloo";
 import { formatStamp } from "./format";
 import { lastQuota } from "./server/engine";
 import { qlooKeyRejection } from "./server/key-status";
-import { liveSheetStored } from "./server/recorded";
+import { liveSheetStored, recordedOnDay } from "./server/recorded";
 
 export interface RuntimeMode {
   kind: "fixture" | "live" | "recorded";
@@ -42,6 +42,8 @@ export interface ModeOptions {
   now?: number;
   /** Whether the plan store holds a live sheet, asked only after a rejection. Default: the server's store. */
   liveSheetStored?: (rejectedAt: string) => boolean;
+  /** The UTC day ("2026-10-21") the stored live sheets were recorded. Default: the newest in the server's store. */
+  recordedOn?: () => string | null;
 }
 
 export function keysPresent(env: Env = process.env): boolean {
@@ -61,16 +63,26 @@ export function qlooUntil(env: Env = process.env): number | null {
   return Number.isFinite(t) ? t : null;
 }
 
-function recordedMode(since: number | null): RuntimeMode {
-  // Said so it holds whether or not any live run was recorded: a preset without one shows a sample sheet, marked so.
-  const gone =
-    since !== null && Number.isFinite(since)
-      ? `Qloo has been unavailable since ${formatStamp(new Date(since).toISOString()).split(",")[0]}.`
-      : "Qloo is no longer available to this server.";
+/** "2026-10-21" -> "Oct 21 2026". */
+function dayWords(ymd: string): string {
+  return formatStamp(`${ymd}T12:00:00.000Z`).split(",")[0] ?? ymd;
+}
+
+/**
+ * The recorded-mode sentence: when the sheets were recorded, that live runs are paused, and that the sheets are what
+ * a live run produced. Said so it holds whether or not any live run was recorded (a preset without one shows a
+ * sample sheet, marked so).
+ */
+export function recordedDetail(day: string | null): string {
+  const when = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? ` on ${dayWords(day)}` : "";
+  return `Recorded from live Qloo and Ticketmaster runs${when}. Live runs are paused for judging; these sheets are what a live run produced.`;
+}
+
+function recordedMode(day: string | null): RuntimeMode {
   return {
     kind: "recorded",
-    label: "RECORDED · Qloo unavailable",
-    detail: `${gone} New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.`,
+    label: day ? `RECORDED · live runs of ${dayWords(day)}` : "RECORDED · live runs paused",
+    detail: recordedDetail(day),
     liveSearch: false,
   };
 }
@@ -84,7 +96,13 @@ export function runtimeMode(env: Env = process.env, opts: ModeOptions = {}): Run
     const passed = until !== null && (opts.now ?? Date.now()) >= until;
     const stored = opts.liveSheetStored ?? liveSheetStored;
     if (requested === "recorded" || passed || (rejected && stored(rejected.at))) {
-      return recordedMode(passed ? until : rejected ? Date.parse(rejected.at) : null);
+      let day: string | null = null;
+      try {
+        day = (opts.recordedOn ?? recordedOnDay)();
+      } catch {
+        day = null;
+      }
+      return recordedMode(day);
     }
   }
   const live = ENGINE_CONNECTED && present && requested !== "fixture" && !rejected;

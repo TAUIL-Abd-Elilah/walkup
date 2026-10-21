@@ -96,6 +96,10 @@ export default function SystemCardPage() {
         Walkup plans the street team for one booked show: the areas where this bill&apos;s crowd stands out from the room&apos;s usual crowd, and the local
         places that crowd already likes. This page says what it calls, what it stores, what it won&apos;t do and where it is known to fail.
       </p>
+      <p className="mt-2">
+        The hosted sheets were recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a
+        live run produced.
+      </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>
         <ol className="mt-2 list-decimal gap-x-8 pl-5 text-base sm:columns-2">
@@ -153,13 +157,14 @@ export default function SystemCardPage() {
 
         <Section id="endpoints" title="Qloo endpoints">
           <p>
-            Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 15 to 29 calls per
-            fresh run, counted from the sample run: G1-A makes 29 from cold, including the signal check, the 4 map-check heatmaps and 3 usual-crowd partner
-            searches; G3, with no lift map, makes 15. The two live hero runs on Oct 20 2026 made about 30 each. Every call is a GET with plain entity ids.
+            Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 16 to 32 calls per
+            fresh run on the sample data: the sample bill A at The Truth, Nashville, makes 32 from cold, including the signal check, the 4 map-check heatmaps, 3 usual-crowd
+            partner searches and 3 popularity searches; the Super Funny, Tacoma sample, with no lift map, makes 16. The two live hero runs recorded on Oct 21 2026 made
+            about 30 each. The hackathon key&apos;s monthly limit read 50,000 calls. Every call is a GET with plain entity ids.
           </p>
           <p className="hint">
-            Every request shape below was checked against the live Qloo host on Oct 15 2026; what it did is listed after this list. On Oct 20 2026 both
-            hero sheets were run live and recorded on the hosted site (see{" "}
+            Every request shape below was checked against the live Qloo host on Oct 15 2026, the day the key arrived; what it did is listed after this
+            list. Both hero sheets were run live and recorded on the hosted site on Oct 21 2026 (see{" "}
             <a href="#evals" className="link">
               Evals
             </a>
@@ -207,7 +212,14 @@ export default function SystemCardPage() {
         <Section id="data" title="Data sources and licences">
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <strong>Qloo</strong>: response bodies are never committed (git hook and CI check); private cache only.
+              <strong>Qloo</strong>: every taste decision, and the partner and spot details on the sheet (address, phone, website, hours, closed or open).
+              Response bodies are never committed (git hook and CI check); private cache only.
+            </li>
+            <li>
+              <strong>Claude</strong>, through OpenRouter or the Anthropic API: narration, free-text parsing and change notes. No personal data is sent.
+            </li>
+            <li>
+              <strong>Google</strong>: nothing. The product makes no Google request.
             </li>
             <li>
               <strong>Ticketmaster Discovery</strong>: bill, venue, date, age policy and the venue roster. Attribution and deep links, within rate limits.
@@ -265,12 +277,14 @@ export default function SystemCardPage() {
 
         <Section id="evals" title="Evals">
           <p>
-            <strong>Live, Oct 20 2026.</strong> Two real Ticketmaster bills at The Anthem, Washington DC (an independent room, I.M.P.), picked by a fixed
-            rule: Rhiannon Giddens and FLO. Both were run live and recorded on the hosted site, about 30 Qloo calls per fresh run. The two sheets share none
-            of their top 5 areas and none of their suggested partners. 20 of their 26 partners are not in the popularity list for their area (the same Qloo
+            <strong>Live, recorded Oct 21 2026.</strong> Two real Ticketmaster bills at The Anthem, Washington DC (an independent room, I.M.P.). A fixed
+            rule from the spec picked them: the first Americana, country or folk bill from Dec 20 2026 to Feb 28 2027, and the bill in that window whose
+            genre is most distant from it. Rhiannon Giddens on Feb 28 was the only Americana, country or folk bill in that window on The Anthem&apos;s
+            Ticketmaster calendar; FLO&apos;s R&amp;B show was the most distant. Both were run live, about 30 Qloo calls per fresh run. The two sheets share none
+            of their top 5 areas and none of their suggested partners. 25 of their 33 partners are not in the popularity list for their area (the same Qloo
             place search without the bill as the signal); that compares two lists, not ticket sales. The change note &ldquo;All ages, no bars&rdquo; was
-            read by Claude as two tool calls, removed 8 partners and made no new Qloo call. The check that lift is not just foot traffic passed for two
-            bills at The Truth, Nashville, with that room&apos;s real roster. One room and two bills show the pipeline runs on live data, not that a sheet
+            read by Claude as two tool calls on FLO&apos;s sheet, removed 5 partners and made no new Qloo call. A separate check on Oct 20, that lift is not just foot traffic,
+            passed for two bills at The Truth, Nashville, with that room&apos;s real roster. One room and two bills show the pipeline runs on live data, not that a sheet
             sells tickets.{" "}
             <Link href="/eval#live" className="link">
               The numbers
@@ -278,8 +292,8 @@ export default function SystemCardPage() {
             .
           </p>
           <p>
-            The product eval (20 cases) passes on the sample data. It checks that the pipeline behaves as described, not that Qloo&apos;s picks are better. The
-            preregistered Fan-Bar Test (P1) was designed and sealed but not run, so there is no P1 result. See{" "}
+            The product eval (20 cases) passes on the sample data. It checks that the pipeline behaves as described, not that Qloo&apos;s picks are better. A
+            second test, the Fan-Bar Test, was designed and its plan sealed, but it was not run, so it has no result. See{" "}
             <Link href="/eval" className="link">
               the eval page
             </Link>
@@ -309,8 +323,8 @@ export default function SystemCardPage() {
               Some suburban areas then carry national chains when no local place fits; they are listed after local places and labelled.
             </li>
             <li>
-              Live shapes the documentation doesn&apos;t mention (seen Oct 20 2026): explainability shares can sum to less than 1, and a demographics call
-              leaves out the block of a signal Qloo has no demographics for, with no warning.
+              API notes we handled: explainability shares can sum to less than 1, so the sheet uses them only to name the act behind a place; and a
+              demographics call can leave out an act Qloo has no age data for, so the age card is marked partial and names it.
             </li>
             <li>Empty or generic compare results: two tag lists compared by rank stand in, and the section says so.</li>
             <li>signal.location has not been shown to move podcast or brand rankings: those picks are labelled national.</li>
@@ -340,7 +354,13 @@ export default function SystemCardPage() {
         </Section>
 
         <Section id="contact" title="Contact">
-          <p>The repository isn&apos;t public yet, so there is no issue tracker to point to. A contact link goes here when it is published.</p>
+          <p>
+            Open an issue at{" "}
+            <a href="https://github.com/TAUIL-Abd-Elilah/walkup/issues" className="link">
+              github.com/TAUIL-Abd-Elilah/walkup
+            </a>
+            . For a security or data concern, open an issue titled &ldquo;security&rdquo; without details and we will reply with a private channel.
+          </p>
         </Section>
       </div>
       </div>

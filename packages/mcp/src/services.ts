@@ -54,8 +54,8 @@ export interface RunPolicy {
   /** The reason given when fixtureEventRuns is off. */
   fixtureRefusal: string;
   /**
-   * Set when the host serves recorded sheets only (Qloo is no longer available): every tool that would run
-   * answers 503 with this reason and mode "recorded". Default null.
+   * Set when the host serves sheets recorded from live runs and live runs are paused (for judging): every tool
+   * that would run answers 503 with this reason and mode "recorded". Default null.
    */
   recorded: string | null;
 }

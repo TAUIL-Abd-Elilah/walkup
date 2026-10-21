@@ -6,6 +6,8 @@
  */
 import type { StreetSheet } from "@walkup/contracts";
 import { toExportFiles, type ExportKind } from "@walkup/exports";
+import { presetForPlan } from "../presets";
+import { vettedSheet } from "../vetted";
 
 export const EXPORT_ROUTES: Readonly<Record<string, ExportKind>> = {
   pdf: "pdf",
@@ -42,12 +44,26 @@ export interface ExportOptions {
   pageSize?: "LETTER" | "A4";
   /** The server serves recorded sheets only: the PDF says "Recorded <date>" on a live sheet, as the plan page does. */
   recorded?: boolean;
+  /** The preset's show name ("Peninsula Comedy Night"), printed after the date as the print view does. */
+  showName?: string;
+}
+
+/** The show name the plan page and the print view use for this sheet: its preset's, when it has one. */
+export function exportShowName(planId: string, presetId: string | undefined, sheet: StreetSheet): string | undefined {
+  const name = presetForPlan(presetId ?? planId, sheet.mode, sheet.bill)?.showName?.trim();
+  return name ? name : undefined;
 }
 
 export async function exportResponse(sheet: StreetSheet, kind: ExportKind, opts: ExportOptions = {}): Promise<Response> {
-  const [file] = await toExportFiles(sheet, {
+  // The PDF shows the narration and copy lines as the page does; the data files stay as recorded.
+  const [file] = await toExportFiles(kind === "pdf" ? vettedSheet(sheet).sheet : sheet, {
     include: [kind],
-    pdf: { ...(opts.ledgerUrl ? { ledgerUrl: opts.ledgerUrl } : {}), ...(opts.pageSize ? { pageSize: opts.pageSize } : {}), ...(opts.recorded ? { recorded: true } : {}) },
+    pdf: {
+      ...(opts.ledgerUrl ? { ledgerUrl: opts.ledgerUrl } : {}),
+      ...(opts.pageSize ? { pageSize: opts.pageSize } : {}),
+      ...(opts.recorded ? { recorded: true } : {}),
+      ...(opts.showName ? { showName: opts.showName } : {}),
+    },
   });
   if (!file) throw new Error(`export ${kind} produced no file`);
   const disposition = `${opts.inline && kind === "pdf" ? "inline" : "attachment"}; filename="${file.filename}"`;

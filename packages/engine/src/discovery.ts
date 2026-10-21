@@ -4,7 +4,15 @@
  * the room's own crowd as the baseline, and the area rule needs a map that
  * passed its checks.
  *
- * 1. Area rule. Rank the squares on the lift card twice: by lift (against
+ * 1. "Start with this place" (partner rule), first. Walk the numbered areas in
+ *    order (area 1 first). In each, take the partners in this crowd's rank
+ *    order (Qloo's rank for this bill, best first), skip national chains, and
+ *    pick the first that the room's usual crowd ranks at least 5 places lower
+ *    in the same search, or not at all (when that search came back with
+ *    places). The first area with such a place gives the pick. A promoter reads
+ *    it as: the best place for this crowd in the best area, and one your usual
+ *    crowd would not have pointed you to.
+ * 2. Area rule, when no partner qualifies. Rank the squares on the lift card twice: by lift (against
  *    the room's usual crowd) and by this crowd's own heat (bill percentile,
  *    "fans alone"). Only the numbered areas (the 1-5 list the map, the area
  *    list and the partner table share) can be picked, so the sheet never
@@ -12,17 +20,12 @@
  *    area (lift >= minLift and bill percentile >= the bill floor) whose
  *    fans-alone rank is at least 5 places lower than its lift rank: counting
  *    fans, you would miss it. It is named by its number.
- * 2. Partner rule, when no area qualifies. Take the highest-scoring partner in
- *    a top area that is not a national chain (config/chains.json), whose type
- *    is not the most common type on the list (ties all count as most common)
- *    and that the room's usual crowd ranks at least 5 places lower, or not at
- *    all (the pool's house twin).
  * 3. Otherwise none.
  */
 import type { LiftTile, Partner, SheetDiscovery } from "@walkup/contracts";
 import { categoryWord } from "./explain";
 import { cmpStr } from "./num";
-import { joinAnd, ordinal } from "./steps";
+import { ordinal } from "./steps";
 
 export const DISCOVERY_RULES = {
   /** Fans-alone rank at least this many places below the lift rank. */
@@ -33,7 +36,7 @@ export const DISCOVERY_RULES = {
 
 export const AREA_RULE = "the highest-lift numbered area that ranks at least 5 places lower when you look at this crowd on its own.";
 export const PARTNER_RULE =
-  "the best-scoring partner in a top area that isn't a national chain or the most common type on the list and that the room's usual crowd ranks at least 5 places lower, or not at all. Walkup tries the area rule first; no numbered area met it on this sheet.";
+  "the highest-ranked place for this crowd in the top area that the room's usual crowd ranks at least 5 places lower in the same search, or not at all; national chains are skipped. When no place in area 1 qualifies, area 2 is tried, and so on.";
 
 export interface AreaRank {
   tile: LiftTile;
@@ -93,6 +96,8 @@ export function areaDiscovery(i: AreaDiscoveryInput): SheetDiscovery | null {
 export interface PartnerDiscoveryInput {
   partners: readonly Partner[];
   baseline: "house" | "tag" | "none";
+  /** The numbered areas, in number order (area 1 first). Absent: the areas in the order the partner list has them. */
+  numbered?: readonly LiftTile[];
   /** Size of the house twin's list a partner was compared with, for "isn't in the top N". */
   twinSize?: (p: Partner) => number | null;
   /** Receipts for a partner pick; default its explain refs, else its chips' refs. */
@@ -107,80 +112,73 @@ export function mostCommonCategories(partners: readonly Pick<Partner, "category"
   return [...counts.entries()].filter(([, n]) => n === max && max > 0).map(([c]) => c).sort(cmpStr);
 }
 
-/** "a bar or record store", "a bar, cafe or record store". */
-function joinOr(words: readonly string[]): string {
-  if (words.length <= 1) return words.join("");
-  return `${words.slice(0, -1).join(", ")} or ${words[words.length - 1]}`;
-}
-
 function withArticle(word: string): string {
   return `${/^[aeiou]/i.test(word) ? "an" : "a"} ${word}`;
 }
 
+/** True when the room's usual crowd ranks the partner at least `minHouseGap` places lower, or not at all (on a list that came back). */
+function standsApart(p: Partner, twinSize?: (p: Partner) => number | null): boolean {
+  if (p.houseRank === undefined) return false;
+  if (p.houseRank === null) return (twinSize?.(p) ?? 1) > 0;
+  return p.houseRank - p.qlooRank >= DISCOVERY_RULES.minHouseGap;
+}
+
 export function partnerDiscovery(i: PartnerDiscoveryInput): SheetDiscovery | null {
   if (i.baseline !== "house" || i.partners.length === 0) return null;
-  const common = new Set(mostCommonCategories(i.partners));
-  const ordered = i.partners.map((p, idx) => ({ p, idx })).sort((a, b) => b.p.score - a.p.score || a.idx - b.idx);
-  const hit = ordered.find(({ p }) => {
-    if (p.tileGeohash === null || p.chain === true || common.has(p.category)) return false;
-    if (p.houseRank === undefined) return false;
-    // "Not at all" counts only when the usual crowd's list actually came back with places in it.
-    if (p.houseRank === null) return (i.twinSize?.(p) ?? 1) > 0;
-    return p.houseRank - p.qlooRank >= DISCOVERY_RULES.minHouseGap;
-  });
-  if (!hit) return null;
-  const p = hit.p;
-  const name = p.entity.name;
-  let headline: string;
-  if (typeof p.houseRank === "number") headline = `${name} ranks ${ordinal(p.qlooRank)} for this crowd and ${ordinal(p.houseRank)} for the room's usual crowd.`;
-  else {
-    const size = i.twinSize?.(p) ?? null;
-    headline =
-      size !== null && size > 0
-        ? `${name} ranks ${ordinal(p.qlooRank)} for this crowd and isn't in the room's usual crowd's top ${size}.`
-        : `${name} ranks ${ordinal(p.qlooRank)} for this crowd and doesn't come up for the room's usual crowd.`;
+  const areas: { geohash: string; name: string | undefined }[] = [];
+  if (i.numbered && i.numbered.length > 0) for (const t of i.numbered) areas.push({ geohash: t.geohash, name: t.name });
+  else for (const p of i.partners) if (p.tileGeohash && !areas.some((a) => a.geohash === p.tileGeohash)) areas.push({ geohash: p.tileGeohash, name: p.tileName });
+  let hit: { p: Partner; number: number; areaName: string | undefined } | null = null;
+  for (let a = 0; a < areas.length && !hit; a++) {
+    const area = areas[a] as { geohash: string; name: string | undefined };
+    const inArea = i.partners
+      .map((p, idx) => ({ p, idx }))
+      .filter(({ p }) => p.tileGeohash === area.geohash && p.chain !== true)
+      .sort((x, y) => x.p.qlooRank - y.p.qlooRank || y.p.score - x.p.score || x.idx - y.idx);
+    const pick = inArea.find(({ p }) => standsApart(p, i.twinSize));
+    if (pick) hit = { p: pick.p, number: a + 1, areaName: area.name ?? pick.p.tileName };
   }
-  const area = p.explain?.areaName ?? p.tileName;
+  if (!hit) return null;
+  const { p, number } = hit;
+  const name = p.entity.name;
+  const area = hit.areaName ?? p.explain?.areaName;
+  const size = i.twinSize?.(p) ?? null;
+  const usualRank =
+    typeof p.houseRank === "number"
+      ? `${ordinal(p.houseRank)} for the room's usual crowd`
+      : size !== null && size > 0
+        ? `not in the room's usual crowd's top ${size}`
+        : "not on the room's usual crowd's list";
+  const headline = `${name}, ${withArticle(categoryWord(p.category))} in area ${number}${area ? ` (${area})` : ""}: ${ordinal(p.qlooRank)} for this crowd, ${usualRank}.`;
   const km = p.explain?.distanceKm;
-  // An area named with its own distance ("Nashville-Davidson, 17 km west") needs no second one.
-  const named = !!area && /\d km \w+$/.test(area);
-  const where = `${area ? ` in ${area}` : ""}${typeof km === "number" && !named ? `, ${km.toFixed(1)} km from the venue` : ""}`;
-  const commonWords = [...common].map((c) => categoryWord(c, true)).sort(cmpStr);
-  const top = i.partners.filter((x) => x.category === [...common][0]).length;
-  const lead = joinAnd(commonWords);
-  const counts =
-    common.size > 1
-      ? `${lead.charAt(0).toUpperCase()}${lead.slice(1)} are the most common types on the list (${top} of ${i.partners.length} each)`
-      : `${lead.charAt(0).toUpperCase()}${lead.slice(1)} are the most common type on the list (${top} of ${i.partners.length})`;
-  const detail = [`${counts}; this one is ${withArticle(categoryWord(p.category))}${where}.`, p.explain?.activation ?? ""].filter(Boolean).join(" ");
+  const detail = [typeof km === "number" ? `${km.toFixed(1)} km from the venue.` : "", p.explain?.activation ?? ""].filter(Boolean).join(" ");
+  const gap = typeof p.houseRank === "number" ? `the room's usual crowd ranks ${p.houseRank - p.qlooRank} places lower` : "the room's usual crowd doesn't rank";
+  const where = number === 1 ? "area 1" : `area ${number} (no place in ${number === 2 ? "area 1" : `areas 1 to ${number - 1}`} qualified)`;
   const refs = i.ledgerRefs?.(p) ?? p.explain?.ledgerRefs ?? p.chips.map((c) => c.ledgerRef);
-  const notTypes = joinOr([...common].map((c) => categoryWord(c)).sort(cmpStr));
-  const usual =
-    typeof p.houseRank === "number" ? `the room's usual crowd ranks it ${p.houseRank - p.qlooRank} places lower` : "the room's usual crowd doesn't rank it at all";
   return {
     kind: "partner",
     headline,
-    detail,
+    detail: detail || `${withArticle(categoryWord(p.category)).replace(/^./, (c) => c.toUpperCase())} on the partner list.`,
     rule: PARTNER_RULE,
-    why: `the best fit that isn't ${withArticle(notTypes)}, and ${usual}`,
+    why: `the highest-ranked place for this crowd in ${where} that ${gap}${typeof p.houseRank === "number" ? "" : " at all"}`,
     entityId: p.entity.entityId,
     ledgerRefs: [...new Set(refs.filter(Boolean))],
   };
 }
 
-export interface DiscoveryInput extends AreaDiscoveryInput, Omit<PartnerDiscoveryInput, "baseline" | "ledgerRefs"> {
+export interface DiscoveryInput extends AreaDiscoveryInput, Omit<PartnerDiscoveryInput, "baseline" | "ledgerRefs" | "numbered"> {
   partnerRefs?: (p: Partner) => string[];
 }
 
-/** The area rule, then the partner rule, else null. */
+/** "Start with this place" (the partner rule), then the area rule, else null. */
 export function pickDiscovery(i: DiscoveryInput): SheetDiscovery | null {
   return (
-    areaDiscovery(i) ??
     partnerDiscovery({
       partners: i.partners,
       baseline: i.baseline,
+      numbered: i.numbered,
       ...(i.twinSize ? { twinSize: i.twinSize } : {}),
       ...(i.partnerRefs ? { ledgerRefs: i.partnerRefs } : {}),
-    })
+    }) ?? areaDiscovery(i)
   );
 }

@@ -166,9 +166,9 @@ describe("pre/post block", () => {
     expect(m.get("T1")!.deltaRank).toBe(-5);
     expect(m.get("T1")!.chips).toEqual([
       { label: "near the room, ranked for this bill", ledgerRef: "Q10" },
-      { label: "tonight vs house -5 ranks", ledgerRef: "Q10b" },
+      { label: "ranks 5 places lower here than for the room's usual crowd", ledgerRef: "Q10b" },
     ]);
-    expect(m.get("B1")!.chips[1]!.label).toBe("tonight vs house +1 ranks");
+    expect(m.get("B1")!.chips[1]!.label).toBe("ranks 1 place higher here than for the room's usual crowd");
   });
   it("without attendance, shares follow weights and no capacity is applied", () => {
     const { spots, report } = buildPrePostSpots(entities.slice(0, 1).concat(entities.slice(3, 4)), {

@@ -9,11 +9,13 @@
  * - secrets: ledger params and copy-as-curl strings keep only "$ENV_VAR"
  *   references; any literal key-like value is replaced with "[redacted]".
  * An older stored sheet's Google Places list (`control`) is dropped first
- * (withoutControl): the product no longer shows it.
+ * (withoutControl): the product no longer shows it. A live sheet is never
+ * flagged hypothetical (its counts are the operator's own), even when an older
+ * stored sheet says so.
  */
 import { withoutControl, type StreetSheet } from "@walkup/contracts";
 import { isDeniedTag, isPersonEntity } from "@walkup/engine";
-import { FIXTURE_NOTICE } from "./format";
+import { countsAreWhatIf, FIXTURE_NOTICE } from "./format";
 
 export const SHEET_JSON_FORMAT = "walkup.street-sheet";
 export const SHEET_JSON_VERSION = 1;
@@ -30,6 +32,7 @@ export interface SheetJsonDocument {
   formatVersion: typeof SHEET_JSON_VERSION;
   planId: string;
   mode: StreetSheet["mode"];
+  /** True only on a sample (fixture) sheet with what-if counts; always false on a live sheet. */
   hypothetical: boolean;
   /** Present on fixture sheets: they are never presented as live runs. */
   notice?: string;
@@ -115,7 +118,8 @@ export function sanitizeSheet(sheet: StreetSheet): { sheet: StreetSheet; tagsRem
 }
 
 export function sheetJsonDocument(stored: StreetSheet, opts: SheetJsonOptions = {}): SheetJsonDocument {
-  const sheet = withoutControl(stored);
+  const hypothetical = countsAreWhatIf(stored);
+  const sheet = { ...withoutControl(stored), hypothetical };
   const doSanitize = opts.sanitize ?? true;
   const s = doSanitize ? sanitizeSheet(sheet) : null;
   const body: StreetSheet = s ? s.sheet : { ...sheet, ledger: sheet.ledger ?? [] };
@@ -124,7 +128,7 @@ export function sheetJsonDocument(stored: StreetSheet, opts: SheetJsonOptions = 
     formatVersion: SHEET_JSON_VERSION,
     planId: sheet.planId,
     mode: sheet.mode,
-    hypothetical: sheet.hypothetical,
+    hypothetical,
     ...(sheet.mode === "fixture" ? { notice: FIXTURE_NOTICE } : {}),
     sanitized: s ? { tagsRemoved: s.tagsRemoved, secretsRedacted: s.secretsRedacted } : null,
     sheet: body,

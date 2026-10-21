@@ -35,6 +35,16 @@ describe("toSheetJson", () => {
     expect(toSheetJson(makeSheet())).toBe(toSheetJson(makeSheet()));
   });
 
+  it("never flags a live sheet hypothetical, even an older stored one that says so; a sample keeps its flag", () => {
+    const live = JSON.parse(toSheetJson(makeSheet({ hypothetical: true }))) as SheetJsonDocument;
+    expect(live.hypothetical).toBe(false);
+    expect(live.sheet.hypothetical).toBe(false);
+    const fx = JSON.parse(toSheetJson(makeSheet({ mode: "fixture", hypothetical: true }))) as SheetJsonDocument;
+    expect(fx.hypothetical).toBe(true);
+    expect(fx.sheet.hypothetical).toBe(true);
+    expect((JSON.parse(toSheetJson(makeSheet({ mode: "fixture", hypothetical: false }))) as SheetJsonDocument).hypothetical).toBe(false);
+  });
+
   it("drops an older sheet's Google Places list, its step and its limits line", () => {
     const old: StreetSheet = {
       ...makeSheet(),

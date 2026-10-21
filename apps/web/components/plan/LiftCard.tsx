@@ -5,7 +5,7 @@ import { LiftLegend } from "../LiftLegend";
 import { LiftMap, squareSizeLine } from "../LiftMap";
 import { TileList } from "../TileList";
 import { formatPct, formatUsd } from "../../lib/format";
-import { allTiles, areaName, baselineName, liftWeak, spreadSentence, tileWhy, topTiles } from "../../lib/sheet-utils";
+import { allTiles, areaName, baselineName, liftWeak, plainText, spreadSentence, tileWhy, topTiles } from "../../lib/sheet-utils";
 import { PlanCard } from "./PlanCard";
 import { Refs } from "./receipts";
 
@@ -145,7 +145,7 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
         <div className="min-w-0">
           <h3 className="text-base">How far to trust this map</h3>
           <p className="mt-1">{trustSentence(extra ? extra.splitHalfSpearman : undefined, weak)}</p>
-          {extra?.note ? <p className="mt-2 text-base">{extra.note}</p> : null}
+          {extra?.note ? <p className="mt-2 text-base">{plainText(extra.note)}</p> : null}
           <p className="hint mt-1">
             <a href="#different" className="underline underline-offset-2 hover:text-ink">
               More about this crowd

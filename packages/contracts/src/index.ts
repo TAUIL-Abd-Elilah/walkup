@@ -487,6 +487,22 @@ export interface PopularityCheckArea {
   notInPopularTop: number;
   /** Ledger id of the area's popularity twin. */
   ledgerRef: string;
+  /**
+   * The places the partners were compared with: the area's first `partners` places by popularity alone (the same
+   * search without the bill, after the same eligibility rules), best first. Names and Qloo ids only; `onSheet` marks
+   * the ones that are also partners. Absent on older sheets.
+   */
+  popularTop?: PopularPlace[];
+}
+
+/** One place on an area's popularity-alone list. */
+export interface PopularPlace {
+  entityId: string;
+  name: string;
+  /** 1-based rank on the popularity-alone list (after eligibility). */
+  rank: number;
+  /** True when this place is also one of the area's partners. */
+  onSheet: boolean;
 }
 
 /**

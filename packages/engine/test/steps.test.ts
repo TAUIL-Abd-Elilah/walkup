@@ -140,7 +140,7 @@ describe("baseline, map and check", () => {
     const wide = heatStep({ status: "degraded", baseline: "tag", first: { name: "Carriage House", lift: 1.52 }, topCount: 1, minLift: 1.3, billFloor: 0.7, excludedAreas: 0, widened: { fromKm: 40, toKm: 60, minCells: 200 }, ledgerRefs: [] });
     expect(wide.decision).toBe("Put Carriage House first: about 1.5 times the genre baseline.");
     expect(wide.cause).toBe(
-      "1 area passes both tests: at least 1.3 times the genre baseline, and percentile 70 or higher for this crowd. The search widened to 60 km: fewer than 200 map cells came back inside 40 km.",
+      "1 area passes both tests: at least 1.3 times the genre baseline, and percentile 70 or higher for this crowd. The search widened to 60 km: fewer than 200 map squares came back within 40 km.",
     );
     const none = heatStep({ status: "partial", baseline: "house", first: null, topCount: 0, minLift: 1.3, billFloor: 0.7, excludedAreas: 0, thinCells: 120, ledgerRefs: [] });
     expect(none.decision).toBe("No area stood out against the room's usual crowd.");
@@ -213,7 +213,7 @@ describe("partners and the usual crowd", () => {
     });
     expect(s.decision).toBe("Kept 10 places: 6 in 1 top area and 4 near the venue.");
     expect(s.cause).toBe(
-      "Qloo ranked them for this crowd. 2 places list no hours for Thursday, so call first; the rest are open. Left out 3 places by type (all-ages show). Only 1 area stood out, so the rest of the list comes from near the venue. 1 area search came back short and widened to 3,500 m. 1 search also took in more kinds of places. 2 kinds of place skipped: no pinned tag yet. That's short of the 15 the list aims for, so treat it as a starting list.",
+      "Qloo ranked them for this crowd. 2 places list no hours for Thursday, so call first; the rest are open. Left out 3 places by type (all-ages show). Only 1 area stood out, so the rest of the list comes from near the venue. 1 area had few places close in, so the search widened to 3.5 km. 1 area also took in more kinds of places. 2 kinds of place aren't searched yet: Qloo has no tag to find them by. That's short of the 15 the list aims for, so treat it as a starting list.",
     );
     expectPlain(s);
     expect(partnersStep({ ...base, inAreas: 0, nearVenue: 24, areas: 0 }).decision).toBe("Kept 24 places near the venue, at most 2 of a kind.");

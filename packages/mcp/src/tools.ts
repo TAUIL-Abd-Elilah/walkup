@@ -13,7 +13,8 @@
  * the per-caller and daily caps. When the host serves recorded sheets only
  * (policy.recorded), the tools that only read stored sheets still answer (get_sheet,
  * bill_vs_house, plan_show for a preset or plan id); everything that would run
- * refuses with 503, and revise_plan names any recorded revision of the plan.
+ * refuses with 503 (live runs are paused for judging), and revise_plan names any recorded revision of
+ * the plan, saying whether it was made for the caller's note or a different one.
  */
 import { createHash } from "node:crypto";
 import { createMemoryLedger, type DeclaredPartnerScore, type EnvelopeStatus, type OperatorInputs, type Resolution, type StreetSheet } from "@walkup/contracts";
@@ -72,7 +73,7 @@ function fail(services: McpServices, httpStatus: number, reason: string, extras:
   return { envelope: errorEnvelope(reason, services.mode, extras), httpStatus };
 }
 
-/** Recorded state (Qloo is no longer available): the refusal for anything that would run, or null. */
+/** Recorded state (recorded sheets served, live runs paused for judging): the refusal for anything that would run, or null. */
 function recordedRefusal(services: McpServices): ToolOutcome<null> | null {
   const reason = services.policy.recorded;
   return reason ? { envelope: errorEnvelope(reason, "recorded"), httpStatus: 503 } : null;
@@ -573,26 +574,60 @@ export async function getSheetTool(services: McpServices, caller: Caller, args: 
 /** How many recent live sheets the recorded state searches for revisions of a plan. */
 const RECORDED_REVISION_LOOKBACK = 30;
 
+/** A note as the user typed it, on one line. */
+function noteText(note: string): string {
+  return note.replace(/\s+/g, " ").trim();
+}
+
+/** Two notes are the same note when they differ only in case and spacing. */
+function sameNote(a: string, b: string): boolean {
+  return a.replace(/\s+/g, "").toLowerCase() === b.replace(/\s+/g, "").toLowerCase();
+}
+
 /**
- * The recorded state cannot revise, but a revision made while the server was live is still stored: the refusal
- * names it (plan id, note and sheet link) so an agent can read it with get_sheet.
+ * The recorded state cannot revise (live runs are paused), but a revision made while the server was live is still
+ * stored. The refusal says the caller's note was not run and names each recorded revision (plan id, its note, sheet
+ * link) so an agent can read it with get_sheet, saying plainly whether it was made for the same note (case and
+ * spacing aside) or for a different one.
  */
-async function withRecordedRevisions(services: McpServices, caller: Caller, planId: string, off: ToolOutcome<null>): Promise<ToolOutcome<null>> {
+async function withRecordedRevisions(services: McpServices, caller: Caller, planId: string, instruction: string, off: ToolOutcome<null>): Promise<ToolOutcome<null>> {
+  const asked = noteText(instruction);
+  const lead = asked ? `Live runs are paused for judging, so your note "${asked}" was not run.` : "Live runs are paused for judging, so your note was not run.";
+  const refuse = (detail: string): ToolOutcome<null> => {
+    const reason = [lead, detail, off.envelope.reason ?? ""].filter(Boolean).join(" ");
+    return { ...off, envelope: { ...off.envelope, summary: reason, reason } };
+  };
+  let revisions: StoredPlan[] = [];
   try {
     const parent = await readView(services, planId);
     const parentId = parent?.kind === "sheet" ? parent.sheet.planId : planId;
     const recent = await services.store.listComplete({ mode: "live" }, RECORDED_REVISION_LOOKBACK);
-    const revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 3);
-    if (revisions.length === 0) return off;
-    const named = revisions.map((p) => {
-      const url = sheetUrlFor(caller.origin, p.planId);
-      return `${p.planId} ("${p.sheet?.revision?.instruction ?? ""}")${url ? `, ${url}` : ""}`;
-    });
-    const reason = `${off.envelope.reason} Recorded ${revisions.length === 1 ? "revision" : "revisions"} of this plan, readable with get_sheet: ${named.join("; ")}.`;
-    return { ...off, envelope: { ...off.envelope, summary: reason, reason } };
+    revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 3);
   } catch {
-    return off;
+    revisions = [];
   }
+  if (revisions.length === 0) return refuse("");
+  const where = (p: StoredPlan): string => {
+    const url = sheetUrlFor(caller.origin, p.planId);
+    return `plan ${p.planId}${url ? `, ${url}` : ""}`;
+  };
+  const noteOf = (p: StoredPlan): string => noteText(p.sheet?.revision?.instruction ?? "");
+  const same = asked ? revisions.filter((p) => sameNote(noteOf(p), asked)) : [];
+  const other = revisions.filter((p) => !same.includes(p));
+  const parts: string[] = [];
+  if (same.length > 0) {
+    parts.push(`This plan has a recorded run of that same note (${same.map(where).join("; ")}), readable with get_sheet.`);
+  }
+  if (other.length > 0) {
+    const listed = other.map((p) => `"${noteOf(p)}" (${where(p)})`).join("; ");
+    const head = same.length > 0 ? "It also has" : "This plan has";
+    parts.push(
+      other.length === 1
+        ? `${head} a recorded revision for a different note: ${listed}, readable with get_sheet. That is not your note.`
+        : `${head} recorded revisions for different notes: ${listed}, readable with get_sheet. None of them is your note.`,
+    );
+  }
+  return refuse(parts.join(" "));
 }
 
 export const REVISE_QUESTION_REASON = "Nothing was changed. Put the question to the user, then call revise_plan again with their clearer note.";
@@ -606,7 +641,7 @@ export const REVISE_QUESTION_REASON = "Nothing was changed. Put the question to 
  */
 export async function revisePlanTool(services: McpServices, caller: Caller, args: RevisePlanArgs): Promise<ToolOutcome> {
   const off = recordedRefusal(services);
-  if (off) return withRecordedRevisions(services, caller, args.planId, off);
+  if (off) return withRecordedRevisions(services, caller, args.planId, args.instruction, off);
   const problem = inputProblem([{ field: "instruction", value: args.instruction }]);
   if (problem) return fail(services, 400, problem.reason);
   const v = await readView(services, args.planId);

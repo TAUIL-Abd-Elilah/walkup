@@ -7,7 +7,7 @@ import type { StreetSheet } from "@walkup/contracts";
 import { toIcs, type IcsOptions } from "./ics";
 import { toSheetJson, type SheetJsonOptions } from "./json";
 import { toPdf, type PdfOptions } from "./pdf";
-import { offerCodesCsv, partnersCsv, pinsCsv, zipsCsv, type OfferCodeOptions, type PinOptions } from "./tables";
+import { offerCodesCsv, partnersCsv, pinsCsv, zipsCsv, type OfferCodeOptions, type PinOptions, type ZipOptions } from "./tables";
 import type { TileSelectOptions } from "./format";
 
 export type ExportKind = "pdf" | "partners" | "zips" | "pins" | "offerCodes" | "ics" | "json";
@@ -50,6 +50,7 @@ export interface ExportAllOptions {
   /** Tile selection for zips.csv, pins.csv and the tile offer codes. */
   tiles?: TileSelectOptions;
   pins?: Omit<PinOptions, keyof TileSelectOptions>;
+  zips?: Omit<ZipOptions, keyof TileSelectOptions>;
   offerCodes?: Omit<OfferCodeOptions, keyof TileSelectOptions>;
   /**
    * UTF-8 byte order mark on the human-facing CSVs (partners, offer codes) so
@@ -73,10 +74,11 @@ export async function toExportFiles(sheet: StreetSheet, opts: ExportAllOptions =
         data = await toPdf(sheet, opts.pdf);
         break;
       case "partners":
-        data = Buffer.from(partnersCsv(sheet, { bom }), "utf8");
+        // The day column comes from the same street-team plan as street-team.ics.
+        data = Buffer.from(partnersCsv(sheet, { bom, visits: { ...opts.tiles, ...opts.ics } }), "utf8");
         break;
       case "zips":
-        data = Buffer.from(zipsCsv(sheet, { ...opts.tiles, bom: false }), "utf8");
+        data = Buffer.from(zipsCsv(sheet, { ...opts.tiles, ...opts.zips, bom: false }), "utf8");
         break;
       case "pins":
         data = Buffer.from(pinsCsv(sheet, { ...opts.tiles, ...opts.pins, bom: false }), "utf8");

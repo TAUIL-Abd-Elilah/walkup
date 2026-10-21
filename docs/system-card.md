@@ -1,10 +1,10 @@
 # Walkup System Card
 
-The same content is served by the app at `/system-card`. The probe outcomes below come from the day-one checks against `hackathon.api.qloo.com` on Oct 15 2026, as derived facts only (statuses, counts, field names). Nothing here is a projection, and no full live sheet has been recorded yet.
+The same content is served by the app at `/system-card`. The probe outcomes below come from the day-one checks against `hackathon.api.qloo.com` on Oct 15 2026, as derived facts only (statuses, counts, field names). The live hero sheets (two bills at The Anthem, Washington DC) were recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; the hosted site, https://walkup-eight.vercel.app, serves what a live run produced and calls no API. Nothing here is a projection.
 
 ## Purpose and operator
 
-**Purpose.** Walkup helps the person filling one already-booked live show (a promoter, venue marketer or street-team lead) decide where to spend the last weeks of local effort: which neighbourhoods, which real local businesses for ticket drops and posters, which pre/post-show spots, which podcasts and one local sponsor. It produces a Street Sheet and, after a human confirm, sends it to the street team.
+**Purpose.** Walkup helps the person filling one already-booked live show (a promoter, venue marketer or street-team lead) decide where to spend the last weeks of local effort: which neighbourhoods, which real local businesses for ticket drops and posters, which pre/post-show spots, which podcasts and one sponsor brand. It produces a Street Sheet and, after a human confirm, sends it to the street team.
 
 **Operator.** The person running a plan. They supply the show (a Ticketmaster event or a free-text description), optional what-if counts, street-team days, a radius and their own partner list. They confirm every send.
 
@@ -14,30 +14,30 @@ The same content is served by the app at `/system-card`. The probe outcomes belo
 
 | Component | Model / version | Settings |
 |---|---|---|
-| Narration (summary, why-this-tile, partner one-liners, 3 copy hooks) | `claude-opus-5-5`, through OpenRouter (`anthropic/claude-opus-5.5`, Chat Completions) when `OPENROUTER_API_KEY` is set, else the Anthropic Messages API (`@anthropic-ai/sdk`) | `output_config.effort: "low"`; structured output (JSON schema) whose ID and number fields are enums built from this run; adaptive thinking (always on for this model); prompt caching on the frozen system prompt. On the OpenRouter route effort is sent as `verbosity`, the schema as `response_format`, and there is no server-side refusal fallback |
-| Free-text intake (parse "Artist @ Venue, Date" into a Ticketmaster query) | `claude-opus-5-5` | `effort: "low"`; output is a query only, resolved by Ticketmaster |
-| Revisions (an operator's change note, e.g. "All ages: no bars") | `claude-opus-5-5` | `effort: "medium"`; `tool_choice: auto`; six strict tools (`set_all_ages`, `exclude_partner_categories`, `exclude_areas`, `set_street_team_days`, `set_radius` 5-60 km, `ask_operator`) whose allowed values come from the sheet being revised. The tools only set operator inputs; the plan then runs again through Qloo and the same code. Without a model key, or on a refusal, outage or the spend cap, fixed rules read common phrasings into the same tools and the sheet says so; anything they can't read gets a question and no change |
-| Refusals and outages | Server-side fallback (`fallbacks: "default"`); `stop_reason` checked before content is read | Above the daily spend cap or on failure, narration uses a deterministic template, labelled as such |
+| Narration (summary, why-this-tile, partner one-liners, 3 copy hooks) | Claude Haiku 5.5 through OpenRouter (`anthropic/claude-haiku-5.5`, Chat Completions; `OPENROUTER_MODEL` overrides) when `OPENROUTER_API_KEY` is set. Otherwise Claude Opus 5.5 (`claude-opus-5-5`) through the Anthropic Messages API (`@anthropic-ai/sdk`), also used when both keys are set and `WALKUP_LLM_PROVIDER=anthropic` | `output_config.effort: "low"`; structured output (JSON schema) whose ID and number fields are enums built from this run; adaptive thinking (always on for this model); prompt caching on the frozen system prompt. On the OpenRouter route effort is sent as `verbosity`, the schema as `response_format`, and there is no server-side refusal fallback |
+| Free-text intake (parse "Artist @ Venue, Date" into a Ticketmaster query) | The same model and route as narration | `effort: "low"`; output is a query only, resolved by Ticketmaster |
+| Revisions (an operator's change note, e.g. "All ages: no bars") | The same model and route as narration | `effort: "medium"`; `tool_choice: auto`; six strict tools (`set_all_ages`, `exclude_partner_categories`, `exclude_areas`, `set_street_team_days`, `set_radius` 5-60 km, `ask_operator`) whose allowed values come from the sheet being revised. The tools only set operator inputs; the plan then runs again through Qloo and the same code. Without a model key, or on a refusal, outage or the spend cap, fixed rules read common phrasings into the same tools and the sheet says so; anything they can't read gets a question and no change |
+| Refusals and outages | On the Anthropic route, server-side fallback (`fallbacks: "default"`); on both routes `stop_reason` is checked before content is read | Above the daily spend cap or on failure, narration uses a deterministic template, labelled as such |
 | Ranking, lift, scoring, guard | No model. Deterministic TypeScript in `packages/engine` | Unit-tested |
 
 ## Qloo endpoints
 
-Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. Global limit 3 requests/second with at most 2 retries on 429/5xx. A month guard reads `x-month-ratelimit-remaining`; below 1,500, fresh runs stop and presets are served from cache.
+Base URL `https://hackathon.api.qloo.com`, header `X-Api-Key`, server-side only. Global limit 3 requests/second with at most 2 retries on 429/5xx. A month guard reads `x-month-ratelimit-remaining` (the hackathon key's monthly limit read 50,000); below 1,500, fresh runs stop and presets are served from cache.
 
-About **16 to 32 calls per fresh run**, counted from the sample run (G1-A makes 32 from cold, including the signal check, 4 split-half heatmaps, 3 partner usual-crowd searches and 3 partner popularity searches; G3, with no lift map, makes 16). Full request shapes: [mapping-table.md](mapping-table.md).
+A live hero run makes about 30 calls; on the sample world a fresh run makes **16 to 32** (G1-A makes 32 from cold, including the signal check, 4 split-half heatmaps, 3 partner usual-crowd searches and 3 partner popularity searches; G3, with no lift map, makes 16). Full request shapes: [mapping-table.md](mapping-table.md).
 
 | Call | Endpoint | Calls per run | Probe outcome |
 |---|---|---|---|
 | Q1 | `GET /entities?external.spotify.ids=`, else `GET /search` (typed, exact), then one signal check (`filter.type=urn:entity:place`, the seeds, `POINT(venue)`, 1,500 m, `take=1`) | 2-5 | Verified Oct 15. Musicians often come back as an artist and a person entry, counted as one act. An entry Qloo has no taste data for comes back as a `not_found` warning; the run swaps it for the next usable entry of the same search, asks, or leaves the act out |
 | Q2 | `GET /search?types=urn:entity:place` near the venue | 1 | Verified Oct 15: a room found 5 m from its point within 1 mile; another room is not in the catalog |
-| Q3 | `GET /entities?external.spotify.ids=` over the venue's Ticketmaster roster (+ up to 6 typed `/search`) | 1-3, weekly per venue | Shape verified Oct 15 (ids under `properties.external`); a roster-wide check waits for the Ticketmaster key |
+| Q3 | `GET /entities?external.spotify.ids=` over the venue's Ticketmaster roster (+ up to 6 typed `/search`) | 1-3, weekly per venue | Shape verified Oct 15 (ids under `properties.external`); run on real rosters (The Truth, Nashville, for the foot-traffic check on Oct 20; The Anthem for the hero sheets, recorded Oct 21) |
 | Q4 | `GET /v2/insights?filter.type=urn:heatmap` (bill) | 1 | Verified Oct 15; radius honoured; a seed Qloo has no taste data for is dropped without a warning, and a map of only such seeds still comes back with cells. POST `{entity, weight}` signals: 400, removed |
 | Q5 | `GET /v2/insights?filter.type=urn:heatmap` (house, else a pinned genre tag) | 0-1, weekly per venue | Verified Oct 15. The stand-up comedy tag map came back with 0 areas, so comedy never gets a genre baseline; no music genre tag is pinned yet |
 | Q6 | `GET /v2/insights?filter.type=urn:heatmap` (generic tag baseline, diagnostic) | 0-1 | Verified Oct 15 (pinned restaurant tag) |
 | Q7 | `GET /v2/insights?filter.type=urn:demographics` | 1 | Verified Oct 15: one block per signal, 6 age buckets, 2 gender keys. `signal.demographics.age` is not used: its check ran on a seed Qloo had no taste data for, so it showed nothing |
 | Q8 | `GET /v2/analysis/compare` | 1 (+2 on tag-diff fallback) | Verified Oct 15; `take` has no effect, so each list is cut on our side (`degraded: tag diff` if generic) |
 | Q9 | `GET /v2/insights?filter.type=urn:entity:place` per top tile, explainability on | 3 | Verified Oct 15; `filter.hours` honoured (5 places closed that day without it, 0 with it); 11 of 14 category tags pinned; `filter.exclude.tags` and `filter.exclude.entities` not checked yet |
-| Q9 popularity twin | `GET /v2/insights?filter.type=urn:entity:place`, the same request as a Q9 pool with no signal and no explainability | 1-3 (one per pool that gave partners) | Verified Oct 15 (probe 1, KG1): with no signal Qloo returns the pool in popularity order |
+| Q9 popularity twin | `GET /v2/insights?filter.type=urn:entity:place`, the same request as a Q9 pool with no signal and no explainability | 1-3 (one per pool that gave partners) | Verified Oct 15 (probe 1): with no signal Qloo returns the pool in popularity order |
 | Q10 | `GET /v2/insights?filter.type=urn:entity:place` at the venue (+ weekly house twin) | 1 (+1 weekly) | Verified Oct 15 (same shape as Q9) |
 | Q11 | `GET /v2/insights?filter.type=urn:entity:place&filter.results.entities=` | 1 (+1 pick-list search per typed partner, cap 20) | Verified Oct 15 (a 10-entity shortlist fully scored). `filter.results.entities.query` (names instead of ids): 400, never sent |
 | Q12 | `GET /v2/insights?filter.type=urn:entity:podcast` with `signal.location` | 1 | Verified Oct 15: 200, 15 rows with a usable seed. The day-one 400s came from a seed Qloo had no taste data for. Location effect not shown, so podcasts are labelled national |
@@ -54,7 +54,7 @@ Each request shape a run sends, checked against the live host on Oct 15 2026 (th
 | `GET /search` `types=urn:entity:artist,urn:entity:person`, `take=5`, exact name | Acts (Q1), the room's usual acts (Q3) | 200. Most musicians are listed twice under one exact name, an artist entry and a person entry; the run now counts them as one act | verified, changed |
 | `GET /v2/insights` `filter.type=urn:entity:place`, the seeds as `signal.interests.entities`, `filter.location=POINT(venue)`, 1,500 m, `take=1` | Signal check (Q1): one call per 25 ids, plus one per Spotify-matched act Qloo drops (a 200 is cached 7 days, a 400 is not) | 200 with a top-level `not_found` warning naming each seed Qloo has no taste data for ("Jason Isbell" was one; "Jason Isbell and The 400 Unit" works) | added |
 | `GET /search` `types=urn:entity:place`, `filter.location=<lat>,<lon>`, `filter.radius` in miles | Venue (Q2), pick list for your partners (Q11) | 200; a room was found 5 m from its point within 1 mile; another room is not in the catalog | verified |
-| `GET /entities?external.spotify.ids=` | Acts and the room's roster by Spotify id (Q1, Q3) | 200; the ids come back under `properties.external`. The roster-wide check waits for the Ticketmaster key | verified, changed |
+| `GET /entities?external.spotify.ids=` | Acts and the room's roster by Spotify id (Q1, Q3) | 200; the ids come back under `properties.external`. | verified, changed |
 | `filter.type=urn:heatmap`, `signal.interests.entities`, `filter.location=POINT`, `filter.location.radius` | Bill and usual-crowd maps (Q4, Q5), the split-half check | 200; the radius is honoured; a seed Qloo has no taste data for is dropped with no warning, and a map of only such seeds still comes back (200, with cells), which is why the signal check exists | verified |
 | `filter.type=urn:heatmap` with a pinned place tag (restaurant) as the signal | Popularity check (Q6) | 200 | verified |
 | `filter.type=urn:heatmap` with a genre tag as the signal | Genre baseline when the roster is short (Q5) | The stand-up comedy tag returned 0 areas near a comedy club. Music genre tags are not checked yet, so none is pinned | changed: no comedy baseline |
@@ -72,7 +72,7 @@ Each request shape a run sends, checked against the live host on Oct 15 2026 (th
 | `signal.demographics.age` on place calls | Age-tuned partner ranking | No change in the top 10, but the test ran on a seed Qloo had no taste data for, so it shows nothing | removed, never sent |
 | `GET /v2/audiences` `filter.query` | Declared group segments | 0 results for both test queries | removed |
 
-Known API behaviour we design around: invalid or type-inapplicable parameters are ignored with HTTP 200, so every shape is probe-verified before it is trusted; affinities are normalized per query and compared only as ranks inside one response; `filter.type` uses `video_game` while `/search` uses `videogame`; WKT points are `POINT(lon lat)`; `output.heatmap.boundary=city|neighborhood` returns 400 on this host, so tiles are named by our own gazetteer.
+Known API behaviour we design around: invalid or type-inapplicable parameters are ignored with HTTP 200, so every shape is probe-verified before it is trusted; affinities are normalized per query and compared only as ranks inside one response; `filter.type` uses `video_game` while `/search` uses `videogame`; WKT points are `POINT(lon lat)`; `output.heatmap.boundary=city|neighborhood` is reported by other developers to return 400 on this host and is never sent, so tiles are named by our own gazetteer.
 
 ## Data sources and licences
 
@@ -80,10 +80,10 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 |---|---|---|
 | Qloo Insights API | All taste decisions (Q1-Q16) | Key server-side only. Response bodies are never committed (git-ignored private cache, CI check). Only IDs, counts and derived metrics appear in the repo |
 | Ticketmaster Discovery API | Event, venue coordinates, age policy, the venue's upcoming roster, attraction Spotify IDs | Attribution and deep links; within published rate limits |
-| Google Places API (New) | Nothing in the product since Oct 20 2026, when the "Without Qloo" comparison list was removed. Only the P1 research harness (not run) would call it | Sheets stored before then are shown without their Places list; their ledgers keep the request records (queries and counts, no place content) |
+| Google Places API (New) | Nothing. The "Without Qloo" comparison list was removed from the product on Oct 20 2026, and the project's Google billing is closed, so Places is not available. Only the Fan-Bar Test research code (not run) has a client for it | Sheets stored before then are shown without their Places list; their ledgers keep the request records (queries and counts, no place content) |
 | OpenStreetMap via OpenFreeMap, Nominatim, Overpass | Base map and neighbourhood names | ODbL attribution; cached; polite request rates |
 | US Census ACS 5-year, TIGER/Line | Adults per ZCTA for the budget heuristic and tile floor | Public domain |
-| Official supporters'-club pages | P1 ground truth (collected; P1 itself was not run) | Facts only (club, metro, bar, address, source URL, fetch date); robots.txt respected; 1 request/second; derived metrics and a 20-row sample published, never the full table |
+| Official supporters'-club pages | Fan-Bar Test ground truth (collected; the test itself was not run) | Facts only (club, metro, bar, address, source URL, fetch date); robots.txt respected; 1 request/second; derived metrics and a 20-row sample published, never the full table |
 | Spotify IDs | Join keys taken from Ticketmaster attractions | Not fetched from Spotify |
 | OpenRouter (when `OPENROUTER_API_KEY` is set), which forwards to a host of the Claude model, or the Anthropic Messages API | Narration, free-text parsing, change notes | No personal data is sent |
 | Resend | The confirm-gated send | Test inbox is the default recipient |
@@ -99,14 +99,14 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 **What each provider receives:**
 - **Qloo:** act, venue and partner names (for typed search and pick lists), entity IDs, tag IDs, coordinates, radii, weekdays and filters. "Already reached" ZIP counts are never sent to Qloo; they only down-weight tiles in our own code.
 - **OpenRouter / Anthropic:** the show's public listing facts, the operator's what-ifs and declared partner names, and this run's results for narration. For a revision: the operator's note and a short summary of the sheet (acts, venue, date, age policy, settings, area names and geohashes, place types with counts), with no partner names and no contact details.
-- **Google:** nothing. The product makes no Google Places request.
+- **Google:** nothing. The product makes no Google request; partner hours, addresses, phones and the closed check come from Qloo's place data.
 
 ## Evals
 
 | Eval | What it measures | Result |
 |---|---|---|
 | Product eval (20 cases) | Four goldens and sixteen scenario cases run end to end on the sample data: every cited ID appears in the run's ledger, zero guard drops, call budget, fallbacks shown on their cards, policy rules | All 20 pass on sample data (`evals/product/out/score.md`). It checks behaviour, not whether Qloo's picks are better |
-| P1 Fan-Bar Test | Rank of official supporters'-club bars under a Qloo signal vs Qloo popularity vs the same model with Google Places | Designed and sealed in [`preregistration/`](preregistration/), not run (it needs up to 1,331 Qloo calls). No result |
+| Fan-Bar Test | Rank of official supporters'-club bars under a Qloo signal vs Qloo popularity vs the same model with Google Places | Designed and sealed in [`preregistration/`](preregistration/), not run (it needs up to 1,331 Qloo calls and a Google Places arm, which the product doesn't use). No result |
 
 ## Counsel note: the ad-export flow
 
@@ -133,7 +133,7 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 | One headliner dominates the explainability | Balance check down-weights it and shows "headliner was dominating; rebalanced". Off: explainability scores are shares per place, not shown informative on Oct 15 |
 | LLM refusal, outage or spend cap reached | Deterministic template narration, labelled; revision notes read by fixed rules, labelled |
 | A change note Walkup can't read, an area not on the sheet, or a radius outside 5-60 km | One question back; the plan is not changed or re-run |
-| Qloo key deactivated (the hackathon key ends Nov 2 2026) | Recorded mode: sheets recorded from earlier live runs, each with its date, under a strip that says Qloo is unavailable and new plans are off; a preset with no usable recording shows its sample sheet, labelled sample. New plans, searches and revisions answer 503 with the reason. A rejected key with no live sheet stored falls back to the sample world |
+| Live runs paused (`WALKUP_MODE=recorded`, or the hackathon key's end date, Nov 2 2026, in `WALKUP_QLOO_UNTIL`) | Recorded mode: sheets recorded from earlier live runs, each with its date, under a strip that says they were recorded from live runs and live runs are paused; a preset with no usable recording shows its sample sheet, labelled sample. New plans, searches and revisions answer 503 with the reason. A rejected key with no live sheet stored falls back to the sample world |
 | Qloo month quota low (under 1,500 calls left) | Presets and stored sheets only; fresh runs stop with an explanation |
 
 ## Human gates
@@ -158,4 +158,4 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 
 ## Contact
 
-Open an issue in this repository. Security or data concerns: open an issue titled "security" without details and we will reply with a private channel.
+Open an issue at https://github.com/TAUIL-Abd-Elilah/walkup/issues. Security or data concerns: open an issue titled "security" without details and we will reply with a private channel.

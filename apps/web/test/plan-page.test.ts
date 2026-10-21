@@ -348,13 +348,16 @@ describe("the plan page as a document", () => {
     expect(renderView(sheet, { runtimeLive: false })).not.toContain("Sample sheet.");
   });
 
-  it("says when a live sheet was recorded once Qloo is unavailable, and keeps a sample sheet a sample", () => {
+  it("says when a live sheet was recorded while live runs are paused, and keeps a sample sheet a sample", () => {
     const metaLine = (html: string) => visibleText(/data-testid="meta-line">([\s\S]*?)<\/p>/.exec(html)?.[1] ?? "").trim();
     // A live copy of a preset sheet, standing in for a run recorded mode serves from the plan store.
     const live: StreetSheet = { ...structuredClone(fixture("g1-a").sheet), mode: "live" };
     const html = renderView(live, { recorded: true, canRerun: false, revisable: false });
     expect(metaLine(html)).toMatch(/^Street sheet · Draft, not sent · Recorded Oct 30 2026, 15:00 UTC from \d+ requests in \d+ steps$/);
-    expect(visibleText(html)).toContain("Recorded from a live run on Oct 30 2026, 15:00 UTC and not refreshed since.");
+    expect(visibleText(html)).toContain(
+      "Recorded from a live Qloo and Ticketmaster run on Oct 30 2026, 15:00 UTC. Live runs are paused for judging; this is what the live run produced.",
+    );
+    expect(visibleText(html)).not.toMatch(/not refreshed|no longer|unavailable/);
     for (const gone of ["Sample sheet.", "Sample street sheet", "A live run.", "Run it again", 'id="revise"']) expect(html).not.toContain(gone);
     // Live mode keeps saying when the sheet was planned.
     expect(metaLine(renderView(live, { runtimeLive: true, canRerun: false }))).toMatch(/· Planned Oct 30 2026, 15:00 UTC from/);
@@ -366,15 +369,23 @@ describe("the plan page as a document", () => {
     expect(visibleText(html + sample)).not.toMatch(BANNED);
   });
 
-  it("puts recorded mode in one plain strip at the top, with the date Qloo went away", () => {
-    const mode = runtimeMode({ WALKUP_MODE: "recorded", WALKUP_QLOO_UNTIL: "2026-11-02" }, { now: Date.parse("2026-11-10T00:00:00Z") });
+  it("puts recorded mode in one plain strip at the top, with the day the sheets were recorded", () => {
+    const mode = runtimeMode(
+      { WALKUP_MODE: "recorded", WALKUP_QLOO_UNTIL: "2026-11-02" },
+      { now: Date.parse("2026-11-10T00:00:00Z"), recordedOn: () => "2026-10-21" },
+    );
     const text = visibleText(renderToStaticMarkup(createElement(RecordedStrip, { mode })));
     expect(text.trim()).toBe(
-      "Qloo has been unavailable since Nov 2 2026. New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.",
+      "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a live run produced.",
     );
-    expect(text).not.toMatch(/\bsample\b|made-up|\bfresh\b|live data/i);
+    expect(text).not.toMatch(/\bsample\b|made-up|\bfresh\b|live data|no longer|unavailable|are off/i);
     // The first sentence is the strip's bold lead.
-    expect(renderToStaticMarkup(createElement(RecordedStrip, { mode }))).toContain('<strong class="font-semibold">Qloo has been unavailable since Nov 2 2026.</strong> New plans');
+    expect(renderToStaticMarkup(createElement(RecordedStrip, { mode }))).toContain(
+      '<strong class="font-semibold">Recorded from live Qloo and Ticketmaster runs on Oct 21 2026.</strong> Live runs are paused',
+    );
+    // Without a stored recording the sentence leaves the date out rather than guessing one.
+    const undated = runtimeMode({ WALKUP_MODE: "recorded" }, { recordedOn: () => null });
+    expect(undated.detail).toBe("Recorded from live Qloo and Ticketmaster runs. Live runs are paused for judging; these sheets are what a live run produced.");
   });
 });
 
@@ -495,11 +506,11 @@ describe("sheet page patterns from the design research", () => {
     const a = fixture("g1-a").sheet;
     const text = utils.partnerSummary(a);
     expect(text).not.toMatch(/more when the two ranks are close/);
-    expect(text).toMatch(/ Places the room's usual crowd ranks as high are marked down; \d+ of them didn't make the list and come back only if nothing better is open nearby\.$/);
+    expect(text).toMatch(/ Places the room's usual crowd ranks as high are marked down; \d+ of them dropped off the list and come back only if nothing better is open nearby\.$/);
     expect(text).toMatch(/^24 partners in 3 areas/);
     // G3: the markdown changed nothing, so nothing is said about it.
     const g3 = utils.partnerSummary(fixture("g3").sheet);
-    expect(g3).not.toMatch(/marked down|didn't make the list/);
+    expect(g3).not.toMatch(/marked down|dropped off the list/);
     // Without steps the sentence simply goes.
     const { steps: _s, ...noSteps } = structuredClone(a);
     expect(utils.partnerSummary(noSteps as StreetSheet)).not.toMatch(/marked down|Left off/);
@@ -580,7 +591,9 @@ describe("sheet page patterns from the design research", () => {
     const { sheet } = fixture("g1-a");
     const c = sheet.popularityCheck!;
     const html = renderView(sheet);
-    expect(visibleText(html)).toContain(`${c.notInPopularTop} of the ${c.partners} partners would not make a list of the most popular places in their areas.`);
+    expect(visibleText(html)).toContain(
+      `${c.notInPopularTop} of the ${c.partners} partners aren t among the most popular places in their areas, so a popularity list would miss them.`,
+    );
     const line = /<p[^>]*data-testid="popularity-check"[^>]*>([\s\S]*?)<\/p>/.exec(html)?.[1] ?? "";
     // Footnote receipts: consecutive ids collapse into one range ("Q20–Q22").
     expect(line).toContain(`#receipt-${c.ledgerRefs[0]}`);
@@ -601,10 +614,21 @@ describe("sheet page patterns from the design research", () => {
   });
 
   it("marks thin-signal places with a dagger and new partners with the word new", () => {
-    const g3 = fixture("g3").sheet;
+    // Only the outliers get a dagger: some picks sure, some less so.
+    const g3 = structuredClone(fixture("g3").sheet);
+    g3.cards.partners.results[0]!.explain = { ...g3.cards.partners.results[0]!.explain!, confidence: "high" };
+    const lessSure = g3.cards.partners.results.filter((p) => p.explain && p.explain.confidence !== "high").length;
+    expect(lessSure).toBeGreaterThan(0);
     const html = renderView(g3);
-    expect(html.match(/<span aria-hidden="true">†<\/span>/g)?.length).toBe(g3.cards.partners.results.filter((p) => p.explain && p.explain.confidence !== "high").length);
+    expect(html.match(/<span aria-hidden="true">†<\/span>/g)?.length).toBe(lessSure);
     expect(visibleText(html)).toContain("† Less certain:");
+    // Every pick less certain: no dagger on every row, one line instead.
+    const all = structuredClone(fixture("g3").sheet);
+    for (const p of all.cards.partners.results) p.explain = { ...p.explain!, confidence: "low" };
+    const allHtml = renderView(all);
+    expect(allHtml).not.toContain('<span aria-hidden="true">†</span>');
+    expect(allHtml).not.toContain("(less certain)");
+    expect(visibleText(allHtml)).toContain("Every pick on this list is less certain");
     const a = structuredClone(fixture("g1-a").sheet);
     const name = a.cards.partners.results[2]!.entity.name;
     a.revision = { ...extended("g1-a").revision!, changes: [{ kind: "partner_added", label: name, ledgerRefs: [] }] };

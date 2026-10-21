@@ -1,5 +1,5 @@
 /**
- * Recorded mode (Qloo unavailable) through the web app's own front doors: the
+ * Recorded mode (live runs paused) through the web app's own front doors: the
  * landing page rendered to static HTML, GET /api/sheet/<id> and the /mcp route.
  * Live runs are recorded first by the live-mode harness (the fixture world
  * standing in for the live transports, memory plan store, temp data dir).
@@ -123,7 +123,7 @@ describe("recorded mode before any live run was recorded", () => {
     const html = await landing();
     const sheets = sheetsSection(html);
     expect(sheets).toContain("Sample sheets");
-    expect(sheets).toContain("No live run was recorded before it went away, so these are sample sheets with made-up places and numbers.");
+    expect(sheets).toContain("No live run was recorded on this server, so these are sample sheets with made-up places and numbers.");
     expect(sheets).not.toMatch(/Recorded sheets|were recorded from live runs/);
     expect(sheets.match(/· sample ·/g)?.length).toBe(4);
     expect(text(html)).toContain("Data: made-up sample data in Qloo's format.");
@@ -166,7 +166,7 @@ describe("live runs recorded, then Qloo goes away", () => {
     const sheets = sheetsSection(html);
     expect(sheets).toContain("Recorded sheets");
     expect(sheets).toContain(
-      "Qloo is no longer available, so new plans are off. The sheets not marked sample were recorded from live runs on the dates shown. A sheet marked sample uses made-up places and numbers.",
+      "Live runs are paused for judging. The sheets not marked sample were recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced. A sheet marked sample uses made-up places and numbers.",
     );
     expect(sheets.match(/· recorded /g)?.length).toBe(2);
     expect(sheets.match(/· sample ·/g)?.length).toBe(2);
@@ -200,7 +200,7 @@ describe("live runs recorded, then Qloo goes away", () => {
     expect(sheet?.isError).toBeFalsy();
     expect(sheet?.structuredContent).toMatchObject({ planId: recordedIds["g1-a"], mode: "recorded" });
     expect((sheet?.structuredContent?.results as StreetSheet).control).toBeUndefined();
-    expect(sheet?.content.map((c) => c.text ?? "").join("\n")).toMatch(/Mode: recorded \(a live run recorded on \d{4}-\d{2}-\d{2}; Qloo is no longer available/);
+    expect(sheet?.content.map((c) => c.text ?? "").join("\n")).toMatch(/Mode: recorded \(recorded from live Qloo and Ticketmaster runs on \w{3} \d{1,2} \d{4}; live runs are paused for judging/);
     const before = (await stores().plans.list(1000)).length;
     const plan = await mcpCall("plan_show", { presetId: "g1-a" });
     expect(plan?.isError).toBeFalsy();

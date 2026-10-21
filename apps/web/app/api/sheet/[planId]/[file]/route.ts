@@ -1,6 +1,6 @@
 import { PLAN_ID_RE } from "@/lib/api";
 import { runtimeMode } from "@/lib/mode";
-import { exportKind, exportResponse } from "@/lib/server/exports";
+import { exportKind, exportResponse, exportShowName } from "@/lib/server/exports";
 import { contextOf, json } from "@/lib/server/http";
 import { loadPlan } from "@/lib/server/service";
 
@@ -21,12 +21,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ plan
   if (!v) return json({ reason: `No plan with id ${planId}.` }, 404);
   if (v.kind !== "sheet") return json({ reason: "This plan has no finished sheet yet (it is running or waiting for a pick)." }, 409);
   const url = new URL(request.url);
+  const showName = exportShowName(planId, v.presetId, v.sheet);
   try {
     return await exportResponse(v.sheet, kind, {
       ledgerUrl: `${ctx.origin}/plan/${planId}#ledger`,
       inline: url.searchParams.get("inline") === "1",
       ...(url.searchParams.get("size")?.toLowerCase() === "a4" ? { pageSize: "A4" as const } : {}),
       ...(runtimeMode().kind === "recorded" ? { recorded: true } : {}),
+      ...(showName ? { showName } : {}),
     });
   } catch (err) {
     return json({ reason: `Could not build ${file}: ${err instanceof Error ? err.message : String(err)}` }, 500);

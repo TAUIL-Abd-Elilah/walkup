@@ -52,6 +52,20 @@ describe("tools/list", () => {
     expect(tools.find((t) => t.name === "get_sheet")?.annotations?.readOnlyHint).toBe(true);
   });
 
+  it("promises no partner count: plan_show ranks real local partner places where the bill's crowd stands out", async () => {
+    const { tools } = await c.client.listTools();
+    const plan = tools.find((t) => t.name === "plan_show")?.description ?? "";
+    expect(plan).toMatch(/real local partner places ranked in the areas where that crowd stands out/);
+    for (const t of tools) expect(t.description ?? "", t.name).not.toMatch(/\b15\s*(-|–|to)\s*25\b|\b15\b/);
+  });
+
+  it("describes recorded mode as live runs paused for judging, never as Qloo gone", () => {
+    const text = c.client.getInstructions() ?? "";
+    expect(text).toMatch(/recorded from live Qloo and Ticketmaster runs, and live runs are paused for judging/);
+    expect(text).toMatch(/what a live run produced/);
+    expect(text).not.toMatch(/no longer available|unavailable|are off\b/i);
+  });
+
   it("gives agents instructions about receipts, needs_input and limits", () => {
     const text = c.client.getInstructions() ?? "";
     expect(text).toMatch(/needs_input/);

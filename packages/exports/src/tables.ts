@@ -3,13 +3,36 @@
  * targeting inputs derived from the top lift tiles), offer-codes.csv (codes to
  * create in the operator's own ticketing platform).
  *
- * Ad-targeting files carry no audience labels: a ZIP or a pin and a weight,
- * nothing about who lives there.
+ * Ad-targeting files carry no audience labels: a ZIP or a pin, the numbered
+ * area it belongs to and a weight, nothing about who lives there. Distances
+ * are in km.
  */
 import type { DeclaredPartnerScore, LiftTile, Partner, QlooEntity, StreetSheet } from "@walkup/contracts";
+import { WEEKDAYS } from "@walkup/contracts";
 import { geohashPolygon, haversineM, isValidGeohash } from "@walkup/engine";
+import { areaZips } from "./area-zips";
 import { toCsv, type CsvCell, type CsvOptions } from "./csv";
-import { categoryLabel, codeFragment, DECLARED_UNRANKED, FIXTURE_NOTICE, partnerWhyLong, round, SAMPLE_PREFIX, tileLabel, topTiles, ymdOf, type TileSelectOptions } from "./format";
+import {
+  areaLabel,
+  categoryLabel,
+  codeFragment,
+  dayHoursText,
+  DECLARED_UNRANKED,
+  FIXTURE_NOTICE,
+  hoursWeekday,
+  partnerAreaLabel,
+  partnerWhyLong,
+  round,
+  SAMPLE_PREFIX,
+  sortedReceipts,
+  streetDaysText,
+  SUGGESTED_NOT_AFFILIATED,
+  topTiles,
+  weekdayShort,
+  ymdOf,
+  type TileSelectOptions,
+} from "./format";
+import { partnerVisits, type IcsOptions } from "./ics";
 
 // ---------------------------------------------------------------------------
 // partners.csv
@@ -23,7 +46,9 @@ export const PARTNERS_CSV_COLUMNS = [
   "tile",
   "tile_lift",
   "address",
+  "day",
   "hours_on_day",
+  "visit_dates",
   "phone",
   "website",
   "contact_email",
@@ -44,6 +69,8 @@ export const PARTNERS_CSV_COLUMNS = [
 export interface PartnersCsvOptions extends CsvOptions {
   /** Append the operator's declared list after the suggested partners. Default true. */
   includeDeclared?: boolean;
+  /** The street-team plan options, the same as for street-team.ics, so the day column matches the calendar. */
+  visits?: IcsOptions;
 }
 
 function prop(e: QlooEntity | undefined, key: string): string {
@@ -55,8 +82,9 @@ function chipsText(chips: readonly { label: string; ledgerRef: string }[]): stri
   return chips.map((c) => `${c.label} [${c.ledgerRef}]`).join("; ");
 }
 
+/** The receipts once each, in ledger order: "Q12 Q15 Q16". */
 function refsText(chips: readonly { ledgerRef: string }[]): string {
-  return chips.map((c) => c.ledgerRef).join(" ");
+  return sortedReceipts(chips.map((c) => c.ledgerRef)).join(" ");
 }
 
 /** Declared partners in call order: ranked first (rank ascending), then the ones not in Qloo's catalog, in the operator's order. */
@@ -79,26 +107,36 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
   // A fixture call list says so in every row, not only in its file name.
   const fixtureNote = sheet.mode === "fixture" ? FIXTURE_NOTICE : "";
   const notes = (...parts: string[]): string => parts.filter((x) => x !== "").join("; ");
+  // The day column is the street-team day the calendar visits the partner on; the hours are that day's.
+  const visits = partnerVisits(sheet, opts.visits);
+  const streetDays = WEEKDAYS.filter((d) => (opts.visits?.streetTeamDays ?? sheet.operator.streetTeamDays ?? []).includes(d));
+  // With no calendar at all (no street-team days, or the show is past), the hours are the ones the plan read.
+  const day = hoursWeekday(sheet) ?? undefined;
   const rows: CsvCell[][] = [];
   let order = 0;
   for (const p of sheet.cards.partners.results as Partner[]) {
     order += 1;
     const tile = p.tileGeohash ? tiles.get(p.tileGeohash) : undefined;
+    const visit = visits.get(p.entity.entityId);
+    const closedAll = !visit && visits.size > 0;
     rows.push([
       order,
       "suggested",
       p.entity.name,
       categoryLabel(p.category),
-      p.tileName ?? (tile ? tileLabel(tile) : p.tileGeohash ?? ""),
+      partnerAreaLabel(p, tiles),
       tile ? round(tile.lift, 2) : null,
       p.address ?? prop(p.entity, "address"),
-      p.hoursOnDay ?? "",
+      visit ? visit.weekdays.map(weekdayShort).join("; ") : "",
+      visit ? dayHoursText(visit.hours, visit.weekdays[0]) : closedAll ? `Closed ${streetDaysText(streetDays)}: not on the calendar` : dayHoursText(p.hoursOnDay, day),
+      visit ? visit.dates.join("; ") : "",
       p.phone ?? prop(p.entity, "phone"),
       p.website ?? prop(p.entity, "website"),
       "",
       // The partner panel's parts, when the run built them: what to do there, why it is listed, how sure.
       p.explain?.activation ?? "",
-      p.explain ? partnerWhyLong(p.explain) : "",
+      // The affiliation column already says "suggested, not affiliated"; the why text doesn't repeat it.
+      p.explain ? partnerWhyLong({ ...p.explain, limits: p.explain.limits?.trim() === SUGGESTED_NOT_AFFILIATED ? "" : p.explain.limits }) : "",
       p.explain?.confidence ?? "",
       "suggested, not affiliated",
       refsText(p.chips),
@@ -122,6 +160,8 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
         "",
         null,
         prop(d.entity, "address"),
+        "",
+        "",
         "",
         prop(d.entity, "phone"),
         prop(d.entity, "website"),
@@ -151,13 +191,14 @@ export function partnersCsv(sheet: StreetSheet, opts: PartnersCsvOptions = {}): 
 }
 
 // ---------------------------------------------------------------------------
-// Tile weights shared by zips.csv and pins.csv
+// Area weights shared by zips.csv and the sheet's budget split
 // ---------------------------------------------------------------------------
 
 /**
- * Weight per selected tile, summing to 1: the sheet's budget split when it
- * covers every selected tile, otherwise proportional to lift. Same "heuristic,
- * not a forecast" status as the budget split.
+ * Weight per numbered area, summing to 1 and never rising with the area number (area 1 gets the most), so every
+ * file agrees with the order the sheet recommends. The values are the sheet's budget split when it covers every
+ * area (the largest share goes to area 1, the next to area 2, ...), otherwise proportional to lift (already in
+ * area order). Same "heuristic, not a forecast" status as the budget split.
  */
 export function tileWeights(sheet: StreetSheet, tiles: readonly LiftTile[]): Map<string, number> {
   const out = new Map<string, number>();
@@ -167,10 +208,19 @@ export function tileWeights(sheet: StreetSheet, tiles: readonly LiftTile[]): Map
     const s = split.get(t.geohash);
     return typeof s === "number" && Number.isFinite(s) && s >= 0;
   });
-  const raw = tiles.map((t) => (fromSplit ? (split.get(t.geohash) as number) : Math.max(0, t.lift)));
+  const raw = tiles.map((t) => (fromSplit ? (split.get(t.geohash) as number) : Math.max(0, Number.isFinite(t.lift) ? t.lift : 0)));
   const total = raw.reduce((a, b) => a + b, 0);
-  tiles.forEach((t, i) => out.set(t.geohash, total > 0 ? (raw[i] ?? 0) / total : 1 / tiles.length));
+  const ordered = [...raw].sort((a, b) => b - a);
+  tiles.forEach((t, i) => out.set(t.geohash, total > 0 ? (ordered[i] ?? 0) / total : 1 / tiles.length));
   return out;
+}
+
+/** The budget split by area number: one row per numbered area with its share, or [] when the sheet has no split. */
+export function areaBudget(sheet: StreetSheet, opts: TileSelectOptions = {}): { rank: number; tile: LiftTile; share: number }[] {
+  if ((sheet.budgetSplit ?? []).length === 0) return [];
+  const tiles = topTiles(sheet, opts);
+  const w = tileWeights(sheet, tiles);
+  return tiles.map((t, i) => ({ rank: i + 1, tile: t, share: w.get(t.geohash) ?? 0 }));
 }
 
 /**
@@ -199,52 +249,63 @@ export function apportion(weights: readonly { key: string; w: number }[], units 
 // zips.csv
 // ---------------------------------------------------------------------------
 
-export const ZIPS_CSV_COLUMNS = ["zip", "lift_score", "suggested_weight"] as const;
+export const ZIPS_CSV_COLUMNS = ["zip", "area", "area_name", "lift_score", "suggested_weight"] as const;
 
 export interface ZipRow {
   zip: string;
-  /** Highest lift among the tiles that contain this ZCTA, 2 decimals. */
+  /** The numbered area (1-5) the ZIP is listed under: the first area that has it. */
+  area: number;
+  areaName: string;
+  /** That area's lift, 2 decimals. */
   liftScore: number;
-  /** Share of the tile weights, 4 decimals, summing to 1 across rows. */
+  /** The area's weight for each of its ZIPs, 4 decimals, summing to 1 across rows; never higher than an earlier area's. */
   suggestedWeight: number;
-  /** Geohashes of the selected tiles this ZCTA came from. */
+  /** Geohashes of the numbered areas that contain this ZCTA, first area first. */
   tiles: string[];
 }
 
-const ZIP_RE = /^\d{5}$/;
-
-/**
- * One row per 5-digit ZCTA found in the selected tiles' `zctas`. A tile's
- * weight is split evenly across its ZCTAs; a ZCTA in several tiles sums its
- * shares and keeps the highest lift. Tiles without ZCTAs drop out and the rest
- * are renormalised.
- */
-export function zipRows(sheet: StreetSheet, opts: TileSelectOptions = {}): ZipRow[] {
-  const tiles = topTiles(sheet, opts);
-  const weights = tileWeights(sheet, tiles);
-  const acc = new Map<string, { w: number; lift: number; tiles: string[] }>();
-  for (const t of tiles) {
-    const zips = [...new Set((t.zctas ?? []).map((z) => String(z).trim()).filter((z) => ZIP_RE.test(z)))];
-    if (zips.length === 0) continue;
-    const share = (weights.get(t.geohash) ?? 0) / zips.length;
-    for (const z of zips) {
-      const cur = acc.get(z) ?? { w: 0, lift: Number.NEGATIVE_INFINITY, tiles: [] };
-      cur.w += share;
-      cur.lift = Math.max(cur.lift, t.lift);
-      cur.tiles.push(t.geohash);
-      acc.set(z, cur);
-    }
-  }
-  const ordered = [...acc.entries()].sort((a, b) => b[1].w - a[1].w || b[1].lift - a[1].lift || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  const rounded = apportion(ordered.map(([zip, v]) => ({ key: zip, w: v.w })));
-  return ordered.map(([zip, v]) => ({ zip, liftScore: round(v.lift, 2), suggestedWeight: rounded.get(zip) ?? 0, tiles: v.tiles }));
+export interface ZipOptions extends TileSelectOptions {
+  /**
+   * Which ZIPs to keep: false drops a ZIP that is not residential (a P.O. box, a single business or a campus, with
+   * no one to reach at home). Default: `isResidentialZip` from @walkup/gazetteer/zips.
+   */
+  isResidentialZip?: (zip: string) => boolean;
 }
 
-/** zips.csv: zip, lift_score, suggested_weight. ZIPs are written as text so leading zeros survive. */
-export function zipsCsv(sheet: StreetSheet, opts: TileSelectOptions & CsvOptions = {}): string {
+/**
+ * One row per residential 5-digit ZCTA in the numbered areas' `zctas`, in area order. A ZIP in several areas is
+ * listed once, under the first. Every ZIP of an area carries that area's weight (`tileWeights`), so the weights
+ * fall with the area number as the sheet's areas and budget split do; the rows are then scaled to sum to 1. Areas
+ * without a residential ZIP drop out.
+ */
+export function zipRows(sheet: StreetSheet, opts: ZipOptions = {}): ZipRow[] {
+  const tiles = topTiles(sheet, opts);
+  const weights = tileWeights(sheet, tiles);
+  const acc = new Map<string, { area: number; t: LiftTile; tiles: string[] }>();
+  tiles.forEach((t, i) => {
+    for (const z of [...areaZips(t.zctas, opts.isResidentialZip)].sort()) {
+      const cur = acc.get(z);
+      if (cur) cur.tiles.push(t.geohash);
+      else acc.set(z, { area: i + 1, t, tiles: [t.geohash] });
+    }
+  });
+  const ordered = [...acc.entries()].sort((a, b) => a[1].area - b[1].area || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const rounded = apportion(ordered.map(([zip, v]) => ({ key: zip, w: weights.get(v.t.geohash) ?? 0 })));
+  return ordered.map(([zip, v]) => ({
+    zip,
+    area: v.area,
+    areaName: areaLabel(v.t),
+    liftScore: round(v.t.lift, 2),
+    suggestedWeight: rounded.get(zip) ?? 0,
+    tiles: v.tiles,
+  }));
+}
+
+/** zips.csv: zip, area, area_name, lift_score, suggested_weight. ZIPs are written as text so leading zeros survive. */
+export function zipsCsv(sheet: StreetSheet, opts: ZipOptions & CsvOptions = {}): string {
   return toCsv(
     ZIPS_CSV_COLUMNS,
-    zipRows(sheet, opts).map((r) => [r.zip, r.liftScore, r.suggestedWeight]),
+    zipRows(sheet, opts).map((r) => [r.zip, r.area, r.areaName, r.liftScore, r.suggestedWeight]),
     opts,
   );
 }
@@ -253,52 +314,57 @@ export function zipsCsv(sheet: StreetSheet, opts: TileSelectOptions & CsvOptions
 // pins.csv
 // ---------------------------------------------------------------------------
 
-export const PINS_CSV_COLUMNS = ["lat", "lon", "radius_mi"] as const;
-export const METERS_PER_MILE = 1609.344;
+export const PINS_CSV_COLUMNS = ["area", "area_name", "lat", "lon", "radius_km"] as const;
+/** The smallest pin radius, in km (one mile): smaller radii are commonly refused or barely deliver on ad platforms. */
+export const MIN_PIN_RADIUS_KM = 1.6;
 
 export interface PinRow {
+  /** The numbered area (1-5), as on the sheet's map. */
+  area: number;
   lat: number;
   lon: number;
-  /** Never below 1 mile: smaller radii are commonly refused or barely deliver on ad platforms. */
-  radiusMi: number;
+  /** In km, one decimal; never below 1.6 km. */
+  radiusKm: number;
   geohash: string;
   name: string;
 }
 
 export interface PinOptions extends TileSelectOptions {
-  /** Minimum radius in miles; values below 1 are raised to 1. Default 1. */
-  minRadiusMi?: number;
+  /** Minimum radius in km; values below 1.6 are raised to 1.6. Default 1.6. */
+  minRadiusKm?: number;
 }
 
-/** Half the diagonal of a geohash cell, in miles. */
-export function geohashHalfDiagonalMi(geohash: string): number {
+/** Half the diagonal of a geohash cell, in km. */
+export function geohashHalfDiagonalKm(geohash: string): number {
   if (!isValidGeohash(geohash)) return 0;
   const ring = geohashPolygon(geohash);
   const sw = ring[0];
   const ne = ring[2];
   if (!sw || !ne) return 0;
-  return haversineM({ lat: sw[1], lon: sw[0] }, { lat: ne[1], lon: ne[0] }) / 2 / METERS_PER_MILE;
+  return haversineM({ lat: sw[1], lon: sw[0] }, { lat: ne[1], lon: ne[0] }) / 2 / 1000;
 }
 
-/** One pin per selected tile at the tile's centre, radius covering the cell and never under 1 mile. */
+/** One pin per numbered area at the tile's centre, radius covering the cell and never under 1.6 km. */
 export function pinRows(sheet: StreetSheet, opts: PinOptions = {}): PinRow[] {
-  const floor = Math.max(1, opts.minRadiusMi ?? 1);
+  const floor = Math.max(MIN_PIN_RADIUS_KM, opts.minRadiusKm ?? MIN_PIN_RADIUS_KM);
   return topTiles(sheet, opts)
-    .filter((t) => Number.isFinite(t.lat) && Number.isFinite(t.lon))
-    .map((t) => ({
+    .map((t, i) => ({ t, area: i + 1 }))
+    .filter(({ t }) => Number.isFinite(t.lat) && Number.isFinite(t.lon))
+    .map(({ t, area }) => ({
+      area,
       lat: round(t.lat, 5),
       lon: round(t.lon, 5),
-      radiusMi: Math.max(floor, Math.ceil(geohashHalfDiagonalMi(t.geohash) * 10) / 10),
+      radiusKm: Math.max(floor, Math.ceil(round(geohashHalfDiagonalKm(t.geohash) * 10, 6)) / 10),
       geohash: t.geohash,
-      name: tileLabel(t),
+      name: areaLabel(t),
     }));
 }
 
-/** pins.csv: lat, lon, radius_mi (>= 1). */
+/** pins.csv: area, area_name, lat, lon, radius_km (>= 1.6). */
 export function pinsCsv(sheet: StreetSheet, opts: PinOptions & CsvOptions = {}): string {
   return toCsv(
     PINS_CSV_COLUMNS,
-    pinRows(sheet, opts).map((p) => [p.lat, p.lon, p.radiusMi]),
+    pinRows(sheet, opts).map((p) => [p.area, p.name, p.lat, p.lon, p.radiusKm]),
     opts,
   );
 }
@@ -385,8 +451,7 @@ export function offerCodeRows(sheet: StreetSheet, opts: OfferCodeOptions = {}): 
   } as const;
   const rows: OfferCodeRow[] = [];
   for (const p of sheet.cards.partners.results) {
-    const tile = p.tileGeohash ? tiles.get(p.tileGeohash) : undefined;
-    const tileText = p.tileName ?? (tile ? tileLabel(tile) : p.tileGeohash ?? "");
+    const tileText = partnerAreaLabel(p, tiles);
     rows.push({
       ...base,
       code: make(p.entity.name, "PARTNER"),
@@ -410,7 +475,7 @@ export function offerCodeRows(sheet: StreetSheet, opts: OfferCodeOptions = {}): 
   }
   if (opts.includeTiles ?? true) {
     topTiles(sheet, opts).forEach((t, i) => {
-      const name = tileLabel(t);
+      const name = areaLabel(t);
       rows.push({
         ...base,
         code: make(t.name ?? "", `TILE${i + 1}`),

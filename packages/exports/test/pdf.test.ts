@@ -60,17 +60,22 @@ describe("toPdf", () => {
       for (const title of ["Where this crowd stands out", "Before and after the show", "Partners (6)", "Your list", "What this sheet doesn't show", "Requests behind this sheet"]) {
         expect(text).toContain(title);
       }
-      // The street team's page leaves podcasts, the sponsor, copy lines and the budget to the web sheet, and says so.
-      expect(text).not.toContain("Podcasts and a sponsor");
-      expect(text).not.toContain("Copy lines");
-      expect(text).toContain("Podcasts, the sponsor pick, copy lines and the budget split are on the web sheet and in sheet.json.");
+      // The same sections as the print view: podcasts and a sponsor, copy lines and the budget split are on the page.
+      for (const title of ["Podcasts and a sponsor", "Copy lines", "Budget split (a heuristic, not a forecast)"]) expect(text).toContain(title);
+      expect(text).toContain("Long Drive Radio Hour");
+      expect(text).toContain("Cumberland Lemonade Co.");
+      expect(text).toContain("Americana and string bands, one night.");
+      expect(text).toContain("30% · $750");
+      expect(text).toContain("Street-team days and times are in street-team.ics; ad ZIPs and pins in zips.csv and pins.csv.");
       expect(text).toContain("Suggested, not affiliated: no partner has agreed to anything.");
       // Receipts are one quiet group per row, no brackets.
       expect(text).toContain("Q9-Q10");
       expect(text).not.toMatch(/\[Q\d+\]/);
       // The partner table is a form: tick box, number, place, area, hours, why and a blank Notes column.
-      for (const head of ["Place and address", "Area", "Open Thu", "Why", "Notes"]) expect(text).toContain(head);
-      expect(text).toContain("10 am to 7 pm");
+      for (const head of ["Place, address and phone", "Area", "Visit day", "Why", "Notes"]) expect(text).toContain(head);
+      expect(text).toContain("Thu 10 am to 7 pm");
+      // Every phone is printed whole.
+      for (const p of makeSheet().cards.partners.results) if (p.phone) expect(text).toContain(p.phone);
       // Honest blanks: a missing phone is said out loud.
       expect(text).toContain("Phone not listed");
       // Before and after the show is a small table.
@@ -110,11 +115,39 @@ describe("toPdf", () => {
   );
 
   it(
-    "carries a What-if counts watermark on a live what-if sheet",
+    "carries no what-if watermark or label on a live sheet, even one stored as hypothetical",
     async () => {
       const text = pdfPlainText(await toPdf(makeSheet({ hypothetical: true })));
-      expect(countOccurrences(text, "What-if counts")).toBeGreaterThanOrEqual(1);
+      expect(text).not.toContain("What-if counts");
+      expect(text).not.toContain("(assumed)");
       expect(text).not.toContain("Sample data");
+      expect(walk(streetSheetDocument(makeSheet({ hypothetical: true }))).filter((n) => (n.props.style as { position?: string } | undefined)?.position === "absolute")).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
+    "puts the phone on its own line, cuts area blurbs at a sentence end, and drops an all-equal share column",
+    async () => {
+      const s = makeSheet();
+      s.cards.partners.results = s.cards.partners.results.map((p, i) => (i === 0 ? { ...p, address: "1000 Extremely Long Boulevard Name Northeast, Suite 12, Nashville", phone: "(615) 555-0199" } : p));
+      s.cards.prePost.results = s.cards.prePost.results.map((x) => ({ ...x, expectedShare: 0.02, assumedCapacity: 120 }));
+      const long = "A first sentence about this area that says what it is. Then a second sentence that is long enough to push past the paper's limit for this blurb. A third.";
+      s.narration = { ...s.narration!, tileWhy: [{ geohash: s.cards.liftMap.results.tiles[0]!.geohash, text: long }] };
+      const nodes = walk(streetSheetDocument(s));
+      // The phone is a text node of its own, with no line limit.
+      const phone = nodes.find((n) => n.type === "TEXT" && textOf(n) === "(615) 555-0199");
+      expect(phone).toBeDefined();
+      expect(JSON.stringify(phone!.props.style)).not.toContain("maxLines");
+      const all = nodes.filter((n) => n.type === "TEXT").map(textOf);
+      expect(all).toContain("ZIP 37206. A first sentence about this area that says what it is.");
+      expect(all.join(" ")).not.toContain("Then a second sentence");
+      // No share column when every spot gets the same share.
+      expect(all).not.toContain("Share");
+      expect(all.join(" ")).not.toMatch(/2\.0%|assuming about/);
+      const text = pdfPlainText(await toPdf(s));
+      expect(text).toContain("(615) 555-0199");
+      expect(text).not.toContain("Share");
     },
     SLOW,
   );

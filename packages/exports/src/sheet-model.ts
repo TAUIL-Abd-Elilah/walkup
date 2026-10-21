@@ -3,25 +3,33 @@
  * line, the six panels and the footer. The React tree in pdf.ts only lays this
  * out, so the content rules (fan-facing filters, call order, caps, the sample
  * label) live and are tested here. The web print sheet (/s/[id]) reads the same
- * model, so the paper and the PDF say the same things.
+ * model, and `sections` says which sections the page prints, so the paper and
+ * the PDF carry the same sections and say the same things.
  */
 import type { Envelope, LiftTile, Partner, PartnerConfidence, StreetSheet } from "@walkup/contracts";
 import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
-import { findAlcoholTerm, isBarCategory } from "@walkup/engine";
+import { findAlcoholTerm } from "@walkup/engine";
+import { partnerIsFanFacing, spotIsFanFacing } from "./audience";
 import {
   actsLine,
+  areaLabel,
   ATTRIBUTION,
   categoryLabel,
+  countsAreWhatIf,
   DECLARED_UNRANKED,
   FIXTURE_NOTICE,
   formatHours,
   formatInt,
+  formatKm,
   formatLift,
   formatPct,
+  formatPhone,
   formatShowDate,
   formatUsd,
+  hoursWeekday,
   isAllAgesForCopy,
   ledgerRanges,
+  partnerAreaLabel,
   partnerLessSure,
   partnerWhyLine,
   partnerWhyRefs,
@@ -29,8 +37,11 @@ import {
   receiptGroup,
   SAMPLE_ATTRIBUTION,
   SAMPLE_LABEL,
+  sentencesUpTo,
   sheetAgeLabel,
+  sheetSpots,
   shortDomain,
+  spotSharesDiffer,
   spotsShareNote,
   spotVsUsual,
   streetDaysText,
@@ -41,7 +52,9 @@ import {
   topTiles,
   weekdayShort,
 } from "./format";
-import { declaredInCallOrder } from "./tables";
+import { areaZips } from "./area-zips";
+import { partnerVisits } from "./ics";
+import { areaBudget, declaredInCallOrder } from "./tables";
 
 /**
  * "operator": the street sheet as the operator uses it. "fan": the fan-facing
@@ -56,7 +69,7 @@ export interface SheetModelOptions {
   maxPartners?: number; // 25
   maxDeclared?: number; // 12
   maxSpots?: number; // 8
-  maxPodcasts?: number; // 5
+  maxPodcasts?: number; // 3
   maxHooks?: number; // 3
   maxLimits?: number; // 8
   /** Top tiles on the map and in the list. Default 5. */
@@ -76,6 +89,16 @@ export interface SheetModelOptions {
   recorded?: boolean;
 }
 
+/**
+ * The sections of the one-page sheet, in reading order. The PDF and the print view (/s/[id]) print exactly the
+ * sections in `SheetModel.sections`: every one of these, on one page (the caps keep the lists short).
+ */
+export type SheetSection = "map" | "spots" | "partners" | "media" | "hooks" | "budget" | "declared" | "limits" | "requests";
+export const PAGE_SECTIONS: readonly SheetSection[] = ["map", "spots", "partners", "media", "hooks", "budget", "declared", "limits", "requests"];
+
+/** Longest area blurb (ZIPs and why) on paper, in characters, cut at a sentence end. */
+export const AREA_BLURB_CHARS = 130;
+
 /** Blanks the paper says out loud instead of leaving a cell empty. */
 export const PHONE_NOT_LISTED = "Phone not listed";
 export const HOURS_NOT_LISTED = "Hours not listed: call first";
@@ -86,7 +109,13 @@ export interface TileItem {
   geohash: string;
   lift: string;
   zips: string;
+  /** The full why line (the web sheet). */
   why: string;
+  /**
+   * What the paper prints: "ZIP 20002, 20019. <why>", whole sentences only, about 130 characters (more only when the
+   * why's first sentence is longer: it is never cut).
+   */
+  blurb: string;
 }
 
 export interface PartnerRow {
@@ -105,9 +134,15 @@ export interface PartnerRow {
   tile: string;
   tileLift: string;
   address: string;
-  /** Hours on the first street-team day in words ("4 pm to 2 am"), or "Hours not listed: call first". */
+  /**
+   * The hours in words. With one street-team day: that day's hours ("4 pm to 2 am"), or "Hours not listed: call
+   * first". With more: the day street-team.ics visits the partner and its hours that day ("Sat 10 am to 2 pm",
+   * "Sat, hours not listed: call first"), or "Closed Thu and Sat" when it is closed on every street-team day.
+   */
   hours: string;
-  /** True when the hours are not listed: the row the street team must act on (call first). */
+  /** The street-team day of the visit, "Sat"; "" with one street-team day or no visit. */
+  visitDay: string;
+  /** True when the hours are not listed (call first) or the place is closed on every street-team day: the row to act on. */
   hoursMissing: boolean;
   phone: string;
   /** The phone, or "Phone not listed" (the paper never leaves the blank silent). */
@@ -142,6 +177,7 @@ export interface SpotRow {
   /** The same facts one by one, for a table: "Bar" (", not for fans" on an operator-only spot), "1.5 km", "2.7%", "3 places higher" / "the same" / "". */
   category: string;
   distance: string;
+  /** "" when every spot gets the same share (the column is then left out). */
   share: string;
   vsUsual: string;
   /** The assumed capacity behind the share. */
@@ -157,6 +193,8 @@ export interface MediaRow {
 }
 
 export interface BudgetRow {
+  /** The area's number on the map (1-5). */
+  rank: number | null;
   name: string;
   share: string;
   usd: string | null;
@@ -201,9 +239,11 @@ export interface SheetModel {
    * what-ifs" when no what-if line says so.
    */
   labels: string[];
-  /** Light page watermarks: "Sample data" on fixture sheets, "What-if counts" on live what-if sheets. */
+  /** Light page watermarks: one, "Sample data", on sample (fixture) sheets only. A live sheet has none. */
   watermarks: string[];
-  /** Counts as "n of m": "640 of 1,200 seats left", "Capacity 4,400", with "(assumed)" on a what-if sheet. */
+  /** The sections this page prints, in order: the PDF and the print view both follow it. */
+  sections: readonly SheetSection[];
+  /** Counts as "n of m": "640 of 1,200 seats left", "Capacity 4,400", with "(assumed)" on a sample sheet's what-if counts. */
   seatsLine: string | null;
   notes: string[];
   /** One line calling out the sheet's discovery, when the sheet has one. */
@@ -245,7 +285,9 @@ export interface SheetModel {
     rows: SpotRow[];
     withheld: number;
     ageLine: string;
-    /** What the share column assumes, said once (`spotsShareNote`, the same sentence as the web sheet). */
+    /** False when every listed spot gets the same share: the table has no Share column and no share note. */
+    showShare: boolean;
+    /** What the share column assumes, said once (`spotsShareNote`, the same sentence as the web sheet); null without the column. */
     shareNote: string | null;
     empty: string | null;
   };
@@ -265,7 +307,7 @@ export interface SheetModel {
     attribution: string;
     /** Kept for callers that want it; the PDF and the print view say "Sample" in the header, the footer line and the watermark only. */
     fixtureNote: string | null;
-    /** What the one-page PDF leaves to the web sheet and sheet.json (podcasts, sponsor, copy lines, budget split). */
+    /** What the files carry that the page doesn't (the calendar and the ad files). */
     elsewhere: string;
     /** One small line for the foot of the page: headliner, room and date, print date, data date, "Sample" on fixtures. */
     printLine: string;
@@ -303,11 +345,6 @@ function refsOf(chips: readonly { ledgerRef: string }[]): string {
 
 function refsList(refs: readonly string[]): string {
   return receiptGroup(refs);
-}
-
-function distanceText(m: number | null | undefined): string {
-  if (m === null || m === undefined || !Number.isFinite(m)) return "";
-  return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m / 10) * 10} m`;
 }
 
 function tagNames(e: { tags?: { name: string }[] }): string {
@@ -432,17 +469,16 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   } else if (opts.recorded) {
     labels.push(`Recorded ${formatShowDate(sheet.createdAt.slice(0, 10))}`);
   }
-  const whatIf = sheet.hypothetical ? " (assumed)" : "";
+  // What-if counts are a sample sheet's only: a live sheet's counts are the operator's own, whatever an older stored
+  // sheet's `hypothetical` says. The sample watermark already covers them, so there is never a second watermark.
+  const countsWhatIf = countsAreWhatIf(sheet);
+  const whatIf = countsWhatIf ? " (assumed)" : "";
   const seats = seatsText(sheet.operator.seatsLeft, sheet.operator.capacity);
-  if (sheet.hypothetical) {
-    // The seats line already says "(what-if)"; the label is only needed when no count is printed.
-    if (seats === null) labels.push("Counts are what-ifs");
-    // A sample sheet already carries one watermark; a live what-if sheet carries this one.
-    if (!fixture) watermarks.push("What-if counts");
-  }
+  // The seats line already says "(assumed)"; the label is only needed when no count is printed.
+  if (countsWhatIf && seats === null) labels.push("Counts are what-ifs");
   const notes: string[] = [];
   // Said once: a sheet whose limits already carry the planning-tool line doesn't repeat it in the header.
-  if (sheet.hypothetical) notes.push("Planning tool: Walkup has no sales data for this show.");
+  if (countsWhatIf) notes.push("Planning tool: Walkup has no sales data for this show.");
   const baselineIsTag = cards.liftMap.results.diagnostics.baseline === "tag";
   // "none": no house set and no pinned genre tag, so there is nothing to compare with and no lift map.
   const noBaseline = cards.liftMap.results.diagnostics.baseline === "none";
@@ -472,17 +508,21 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const top = topTiles(sheet, { maxTiles: opts.maxTiles ?? 5 });
   const why = new Map((sheet.narration?.tileWhy ?? []).map((w) => [w.geohash, w.text]));
   const tiles: TileItem[] = top.map((t, i) => {
-    // Same rule as zips.csv: 5-digit ZCTAs only.
-    const zips = [...new Set((t.zctas ?? []).map((z) => String(z).trim()).filter((z) => /^\d{5}$/.test(z)))];
+    // Same rule as zips.csv: residential 5-digit ZIPs only.
+    const zips = areaZips(t.zctas);
+    const zipLine = zips.length > 0 ? `ZIP ${zips.join(", ")}` : "ZIP n/a";
+    const whyLine =
+      withoutLeadName(why.get(t.geohash), tileLabel(t)) ??
+      `${ordinalWord(Math.round(t.billPct * 100))} percentile for this crowd, ${ordinalWord(Math.round(t.housePct * 100))} for ${baselineIsTag ? genreFans(bill.classification) : "the room's usual crowd"}.`;
     return {
       rank: i + 1,
-      name: tileLabel(t),
+      name: areaLabel(t),
       geohash: t.geohash,
       lift: formatLift(t.lift),
-      zips: zips.length > 0 ? `ZIP ${zips.join(", ")}` : "ZIP n/a",
-      why:
-        withoutLeadName(why.get(t.geohash), tileLabel(t)) ??
-        `${ordinalWord(Math.round(t.billPct * 100))} percentile for this crowd, ${ordinalWord(Math.round(t.housePct * 100))} for ${baselineIsTag ? genreFans(bill.classification) : "the room's usual crowd"}.`,
+      zips: zipLine,
+      why: whyLine,
+      // The why line keeps at least its first sentence whole, however long.
+      blurb: `${zipLine}. ${sentencesUpTo(whyLine, Math.max(0, AREA_BLURB_CHARS - zipLine.length - 2))}`.trim(),
     };
   });
   const checks = cards.liftMap.results.liftDiagnostics;
@@ -501,14 +541,24 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const tileByHash = new Map(cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
   const topRank = new Map(top.map((t, i) => [t.geohash, i + 1]));
   const maxPartners = opts.maxPartners ?? 25;
-  // Same alcohol rule as panel 4: a fan-facing version of a show not known to be
-  // 21+ lists no bars (category or drinking word in the name).
-  const partners =
-    audience === "fan" && allAges
-      ? cards.partners.results.filter((p) => !isBarCategory(p.category) && findAlcoholTerm(p.entity.name) === null)
-      : cards.partners.results;
+  // The shared fan-facing rule (./audience), the same as panel 4 and the plan page: a fan-facing version of a
+  // show not known to be 21+ lists no bars (category or drinking word in the name).
+  const partners = audience === "fan" ? cards.partners.results.filter((p) => partnerIsFanFacing(p, sheet)) : cards.partners.results;
   const partnersWithheld = cards.partners.results.length - partners.length;
   const listed = partners.slice(0, maxPartners);
+  // With more than one street-team day, the hours column names the day street-team.ics visits each partner and
+  // gives that day's hours (from the place's own week), so the paper, partners.csv and the calendar agree.
+  const visits = days.length > 1 ? partnerVisits(sheet, { maxTiles: opts.maxTiles ?? 5 }) : new Map<string, never>();
+  const byVisit = visits.size > 0;
+  const hoursCell = (p: Partner): { hours: string; visitDay: string; hoursMissing: boolean } => {
+    if (!byVisit) {
+      return { hours: p.hoursOnDay ? formatHours(p.hoursOnDay.replace(/^[A-Z][a-z]{2} /, "")) : HOURS_NOT_LISTED, visitDay: "", hoursMissing: !p.hoursOnDay };
+    }
+    const v = visits.get(p.entity.entityId);
+    if (!v) return { hours: `Closed ${streetDaysText(days)}`, visitDay: "", hoursMissing: true };
+    const day = weekdayShort(v.weekdays[0]!);
+    return { hours: v.hours ? `${day} ${formatHours(v.hours)}` : `${day}, hours not listed: call first`, visitDay: day, hoursMissing: v.hours === null };
+  };
   const rows: PartnerRow[] = listed.map((p, i) => {
     const tile = p.tileGeohash ? tileByHash.get(p.tileGeohash) : undefined;
     const web = p.website ?? (typeof p.entity.properties?.website === "string" ? (p.entity.properties.website as string) : null);
@@ -520,13 +570,12 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       category: categoryLabel(p.category),
       house: houseShort(p),
       tileRank: p.tileGeohash && topRank.has(p.tileGeohash) ? (topRank.get(p.tileGeohash) as number) : null,
-      tile: p.tileName ?? (tile ? tileLabel(tile) : p.tileGeohash ?? "near venue"),
+      tile: partnerAreaLabel(p, tileByHash) || "near venue",
       tileLift: tile ? formatLift(tile.lift) : "",
       address: (p.address ?? (typeof p.entity.properties?.address === "string" ? (p.entity.properties.address as string) : "")).replace(/, [A-Z]{2}$/, ""),
-      hours: p.hoursOnDay ? formatHours(p.hoursOnDay.replace(/^[A-Z][a-z]{2} /, "")) : HOURS_NOT_LISTED,
-      hoursMissing: !p.hoursOnDay,
+      ...hoursCell(p),
       phone: p.phone ?? "",
-      phoneText: p.phone && p.phone.trim() !== "" ? p.phone : PHONE_NOT_LISTED,
+      phoneText: p.phone && p.phone.trim() !== "" ? formatPhone(p.phone) : PHONE_NOT_LISTED,
       web: web ? shortDomain(web) : "",
       webUrl: web && /^https?:\/\//i.test(web) ? web : null,
       activation: ex?.activation?.trim() ?? "",
@@ -540,7 +589,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   });
   const explained = listed.some((p) => !!p.explain);
   const hasHouse = rows.some((r) => r.house !== "");
-  const firstDay = days[0];
+  // The day the hours column shows: the day the plan read the hours for (first street-team day, else show day).
+  const firstDay = hoursWeekday(sheet);
 
   // Panel 3 ----------------------------------------------------------------
   const maxDeclared = opts.maxDeclared ?? 12;
@@ -554,31 +604,33 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   }));
 
   // Panel 4 ----------------------------------------------------------------
-  // Alcohol rules come from Ticketmaster's age policy only (the operator's
-  // all-ages setting can only add to them). On a show not known to be 21+,
-  // bars are operator-only (B2B); the fan version leaves them out.
+  // The shared fan-facing rule (./audience): alcohol rules come from Ticketmaster's age policy (the operator's
+  // all-ages setting can only add to them). On a show not known to be 21+, bars and places with a drinking word
+  // in the name are operator-only (B2B); the fan version leaves them out. The plan page uses the same rule.
+  // No carts, kiosks, stands or food trucks; nearest to the venue first (`sheetSpots`, the same list as the web).
   const maxSpots = opts.maxSpots ?? 8;
   let withheld = 0;
   const spots: SpotRow[] = [];
-  for (const sp of cards.prePost.results) {
-    const barLike = sp.category ? isBarCategory(sp.category) : false;
-    const alcoholName = findAlcoholTerm(sp.entity.name) !== null;
-    const operatorOnly = !sp.fanFacingAllowed || (allAges && (barLike || alcoholName));
+  const spotPicks = sheetSpots(cards.prePost.results);
+  const listedSpots = (audience === "fan" ? spotPicks.filter((sp) => spotIsFanFacing(sp, sheet)) : spotPicks).slice(0, maxSpots);
+  const showShare = spotSharesDiffer(listedSpots.map((sp) => sp.expectedShare));
+  for (const sp of spotPicks) {
+    const operatorOnly = !spotIsFanFacing(sp, sheet);
     if (audience === "fan" && operatorOnly) {
       withheld += 1;
       continue;
     }
     if (spots.length >= maxSpots) continue;
     const category = sp.category ? categoryLabel(sp.category) : "";
-    const distance = distanceText(sp.entity.distanceM);
-    const share = formatPct(sp.expectedShare, 1);
+    const distance = formatKm(sp.entity.distanceM);
+    const share = showShare ? formatPct(sp.expectedShare, 1) : "";
     // "3 places higher" here than for the room's usual crowd (the table's short form of `spotVsUsual`).
     const moved = sp.deltaRank === null ? "" : sp.deltaRank === 0 ? "the same" : `${Math.abs(sp.deltaRank)} ${Math.abs(sp.deltaRank) === 1 ? "place" : "places"} ${sp.deltaRank > 0 ? "higher" : "lower"}`;
     const notForFans = operatorOnly && audience === "operator";
     const bits = [
       category,
       distance,
-      `${share} of the crowd`,
+      share ? `${share} of the crowd` : "",
       spotVsUsual(sp.deltaRank),
       notForFans ? "not for fans" : "",
     ].filter((b) => b !== "");
@@ -596,7 +648,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   }
 
   // Panel 5 ----------------------------------------------------------------
-  const maxPodcasts = opts.maxPodcasts ?? 5;
+  const maxPodcasts = opts.maxPodcasts ?? 3;
   const podcasts: MediaRow[] = cards.media.results
     .filter((m) => m.kind === "podcast")
     .slice(0, maxPodcasts)
@@ -626,20 +678,20 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const hookRefs = receiptGroup(cards.copyHooks.provenance);
 
   // Footer -----------------------------------------------------------------
-  const budget: BudgetRow[] = (sheet.budgetSplit ?? []).map((b) => {
-    const t = tileByHash.get(b.geohash);
-    return {
-      name: t ? tileLabel(t) : b.geohash,
-      share: formatPct(b.share),
-      usd: sheet.operator.mediaBudgetUsd !== null && Number.isFinite(sheet.operator.mediaBudgetUsd) ? formatUsd(sheet.operator.mediaBudgetUsd * b.share) : null,
-    };
-  });
+  // By area number, the largest share to area 1 (`areaBudget`, the same weights as zips.csv).
+  const budget: BudgetRow[] = areaBudget(sheet, { maxTiles: opts.maxTiles ?? 5 }).map((b) => ({
+    rank: b.rank,
+    name: areaLabel(b.tile),
+    share: formatPct(b.share),
+    usd: sheet.operator.mediaBudgetUsd !== null && Number.isFinite(sheet.operator.mediaBudgetUsd) ? formatUsd(sheet.operator.mediaBudgetUsd * b.share) : null,
+  }));
   // The real limits only: lines about where the data came from (sample data, approximate venue points) belong in
   // the header, the footer line and the watermark, not here.
-  const limits = realLimits(sheet.limits, LIMITS_EVERY_SHEET).slice(
-    0,
-    opts.maxLimits ?? 8,
-  );
+  // The thin-signal warning is said once, in the header note; the limits don't repeat it.
+  const thinSaid = notes.includes(THIN_SIGNAL_NOTE);
+  const limits = realLimits(sheet.limits, LIMITS_EVERY_SHEET)
+    .filter((l) => !(thinSaid && /^thin signal:/i.test(l)))
+    .slice(0, opts.maxLimits ?? 8);
   const ranges = ledgerRanges(sheet.ledger ?? []);
   const n = (sheet.ledger ?? []).length;
   const ledgerUrl = opts.ledgerUrl && opts.ledgerUrl.trim() !== "" ? opts.ledgerUrl.trim() : null;
@@ -675,6 +727,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     tMinus: tMinusLabel(tMinusDays(opts.asOf ?? sheet.createdAt, bill.date)),
     labels,
     watermarks,
+    sections: PAGE_SECTIONS,
     seatsLine: seats ? `${seats}${whatIf}` : null,
     notes,
     discovery,
@@ -693,7 +746,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     panel2: {
       title: `Partners (${partners.length})`,
       status: statusOf(cards.partners),
-      hoursHeader: firstDay ? `Open ${weekdayShort(firstDay)}` : "Hours",
+      hoursHeader: byVisit ? "Visit day" : firstDay ? `Open ${weekdayShort(firstDay)}` : "Hours",
       explained,
       hasHouse,
       houseNote: null,
@@ -717,7 +770,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       rows: spots,
       withheld,
       ageLine: bill.legalAgeEnforced === null && sheet.operator.allAges !== true ? "Age policy: not on the listing, so treated as all ages." : `Age policy: ${age.long}.`,
-      shareNote: spotsShareNote(spots.map((sp) => sp.capacity)),
+      showShare,
+      shareNote: showShare ? spotsShareNote(spots.map((sp) => sp.capacity)) : null,
       empty: spots.length === 0 ? "No spots on this sheet." : null,
     },
     panel5: { title: "Podcasts and a sponsor", status: statusOf(cards.media), podcasts, sponsor, sponsorNote },
@@ -739,7 +793,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       ledgerUrl: ledgerUrl && /^https?:\/\//i.test(ledgerUrl) ? ledgerUrl : null,
       attribution: fixture ? SAMPLE_ATTRIBUTION : ATTRIBUTION,
       fixtureNote: fixture ? FIXTURE_NOTICE : null,
-      elsewhere: "Podcasts, the sponsor pick, copy lines and the budget split are on the web sheet and in sheet.json.",
+      elsewhere: "Street-team days and times are in street-team.ics; ad ZIPs and pins in zips.csv and pins.csv.",
       printLine,
     },
   };
@@ -753,7 +807,7 @@ export function sheetModelText(m: SheetModel): string[] {
   if (m.seatsLine) out.push(m.seatsLine);
   out.push(...m.notes);
   if (m.discovery) out.push(m.discovery.label, m.discovery.text, m.discovery.rule, m.discovery.refs);
-  out.push(m.panel1.title, ...m.panel1.tiles.flatMap((t) => [t.name, t.lift, t.zips, t.why]), m.panel1.legendCaption, m.panel1.baseline);
+  out.push(m.panel1.title, ...m.panel1.tiles.flatMap((t) => [t.name, t.lift, t.blurb]), m.panel1.legendCaption, m.panel1.baseline);
   if (m.panel1.empty) out.push(m.panel1.empty);
   out.push(
     m.panel2.title,

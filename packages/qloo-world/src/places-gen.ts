@@ -383,6 +383,7 @@ function generatePlace(gh5: string, i: number, m: MetroModel, b: { south: number
   const popularity = round(clamp(0.2 + 0.5 * best.d + 0.3 * unit(`${key}|pop`), 0.02, 0.99), 3);
   const price = unit(`${key}|price`) < 0.05 ? 4 : 1 + pick(`${key}|pl`, 3);
   const city = postalTown(m, best.lat, best.lon);
+  const street = choose(`${key}|st`, STREETS);
   return {
     id: generatedPlaceId(gh5, i),
     name,
@@ -397,9 +398,11 @@ function generatePlace(gh5: string, i: number, m: MetroModel, b: { south: number
     rating: round(3.6 + unit(`${key}|rating`) * 1.3, 1),
     ratingCount: 10 + Math.round(popularity * popularity * 2400 * (0.5 + unit(`${key}|rc`))),
     hours: hoursFor(key, category),
-    address: `${100 + pick(`${key}|num`, 4800)} ${choose(`${key}|st`, STREETS)}, ${city}, ${m.state}`,
+    address: `${100 + pick(`${key}|num`, 4800)} ${street}, ${city}, ${m.state}`,
     phone: placePhone(gh5, i, m.key),
-    website: `https://${slug(name)}.example`,
+    // Its own site, named for the street: two unrelated places that share a plain name ("Iron Skillet") are two
+    // businesses with two websites, not one chain.
+    website: `https://${slug(name)}-${slug(street)}.example`,
     neighborhood: m.neighbourhoodFor(best.lat, best.lon),
     zip: m.zipFor(best.lat, best.lon),
     city,

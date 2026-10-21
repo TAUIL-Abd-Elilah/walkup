@@ -59,12 +59,39 @@ export function houseFor(ctx: RunContext): HouseSet | null {
   return HOUSES.get(ctx) ?? null;
 }
 
-/** True when the tile's geohash or gazetteer name is in the operator's excluded areas (case-insensitive). */
-export function isExcludedArea(tile: Pick<LiftTile, "geohash" | "name">, excludeAreas: readonly string[] | undefined): boolean {
+/**
+ * "Alexandria (Del Ray), VA" -> ["alexandria (del ray), va", "alexandria (del ray)"], plus "alexandria" and "del ray"
+ * with `parts` (an area's own name matches either part; an operator's "Alexandria (Del Ray)" means that one area).
+ */
+function areaKeys(name: string, parts = true): string[] {
+  const out = new Set<string>();
+  const add = (x: string | undefined) => {
+    const k = (x ?? "").replace(/\s*\(\d{5}\)$/, "").trim().toLowerCase();
+    if (k) out.add(k);
+  };
+  add(name);
+  // "Nashville-Davidson, 17 km west" or "Laurel, MD" (a numbered area's label) names the place before the comma.
+  const head = name.split(",")[0] ?? name;
+  add(head);
+  const paren = parts ? /^(.*?)\s*\(([^)]+)\)\s*$/.exec(head.trim()) : null;
+  if (paren) {
+    add(paren[1]);
+    if (!/^\d{5}$/.test(paren[2] ?? "")) add(paren[2]);
+  }
+  return [...out];
+}
+
+/**
+ * True when the tile's geohash or name is in the operator's excluded areas (case-insensitive). The name matches with
+ * or without its state, distance or parenthesised part ("Alexandria (Del Ray)" matches "Alexandria" and "Del Ray"),
+ * and `alias` (the tile's OSM or Census name, e.g. "Langston" for "H Street NE") matches too.
+ */
+export function isExcludedArea(tile: Pick<LiftTile, "geohash" | "name">, excludeAreas: readonly string[] | undefined, alias?: string | null): boolean {
   if (!excludeAreas || excludeAreas.length === 0) return false;
-  // "Nashville-Davidson, 17 km west" (a numbered area's label) names the gazetteer place before the comma.
-  const wanted = new Set(excludeAreas.flatMap((a) => [a, a.split(",")[0] ?? a].map((x) => x.replace(/\s*\(\d{5}\)$/, "").trim().toLowerCase())).filter(Boolean));
-  return wanted.has(tile.geohash.toLowerCase()) || (tile.name !== undefined && wanted.has(tile.name.trim().toLowerCase()));
+  const wanted = new Set(excludeAreas.flatMap((a) => areaKeys(a, false)));
+  if (wanted.has(tile.geohash.toLowerCase())) return true;
+  const own = [...(tile.name ? areaKeys(tile.name) : []), ...(alias ? areaKeys(alias) : [])];
+  return own.some((k) => wanted.has(k));
 }
 
 export interface SplitHalfRun {
@@ -91,7 +118,7 @@ export async function runSplitHalf(
 ): Promise<SplitHalfRun> {
   const [seedsA, seedsB] = splitHalves(seeds, (x) => x.entity.entityId);
   if (seedsB.length === 0) {
-    return { spearman: null, houseSplit: false, note: "This bill has one seed, so it could not be split in two to check the map.", ledgerRefs: [] };
+    return { spearman: null, houseSplit: false, note: "This bill has one act, so there was no second half to check the map against.", ledgerRefs: [] };
   }
   const point = venuePoint(ctx);
   const refs: string[] = [];
@@ -139,14 +166,34 @@ export async function runSplitHalf(
   return out;
 }
 
-function annotateCache(ctx: RunContext): (t: { geohash: string; lat: number; lon: number }) => { name?: string; zctas?: string[]; adultPopulation?: number | null } {
-  const memo = new Map<string, { name?: string; zctas?: string[]; adultPopulation?: number | null }>();
+type Annotation = { name?: string; gazetteerName?: string; zctas?: string[]; adultPopulation?: number | null };
+
+/** Gazetteer names per run (geohash -> the OSM or Census name behind the area name), for the excluded-area match. */
+const ALIASES = new WeakMap<RunContext, Map<string, string>>();
+
+/** The OSM or Census name behind an area's name on this run ("Langston" behind "H Street NE"), or undefined. */
+export function areaAlias(ctx: RunContext, geohash: string): string | undefined {
+  return ALIASES.get(ctx)?.get(geohash);
+}
+
+function annotateCache(ctx: RunContext): (t: { geohash: string; lat: number; lon: number }) => Annotation {
+  const memo = new Map<string, Annotation>();
+  let aliases = ALIASES.get(ctx);
+  if (!aliases) {
+    aliases = new Map();
+    ALIASES.set(ctx, aliases);
+  }
+  const known = aliases;
   return (t) => {
     let hit = memo.get(t.geohash);
     if (!hit) {
       const a = ctx.gazetteer.annotateTile({ lat: t.lat, lon: t.lon });
       hit = {};
       if (a.name !== undefined) hit.name = a.name;
+      if (a.gazetteerName !== undefined) {
+        hit.gazetteerName = a.gazetteerName;
+        known.set(t.geohash, a.gazetteerName);
+      }
       if (a.zctas !== undefined) hit.zctas = a.zctas;
       if (a.adultPopulation !== undefined) hit.adultPopulation = a.adultPopulation;
       memo.set(t.geohash, hit);
@@ -189,19 +236,27 @@ export function compassFrom(from: { lat: number; lon: number }, to: { lat: numbe
 }
 
 /**
- * Gives tiles that share a gazetteer name a distance and direction from the
- * venue ("Nashville-Davidson, 17 km west"), then a ZIP if that still clashes,
- * so every numbered area reads as its own place. Returns new tile objects.
+ * Gives tiles that share a name a way apart, so every numbered area reads as its own place: the OSM or Census
+ * name behind it in brackets when that tells them apart ("Alexandria (Del Ray)", from `aliasOf`), else a distance
+ * and direction from the venue ("Nashville, 17 km west"), then a ZIP if that still clashes. Returns new tile objects.
  */
-export function disambiguateNames(tiles: readonly LiftTile[], venue: { lat: number; lon: number }): LiftTile[] {
+export function disambiguateNames(tiles: readonly LiftTile[], venue: { lat: number; lon: number }, aliasOf: (geohash: string) => string | undefined = () => undefined): LiftTile[] {
   const count = (list: readonly LiftTile[]) => {
     const m = new Map<string, number>();
     for (const t of list) if (t.name) m.set(t.name, (m.get(t.name) ?? 0) + 1);
     return m;
   };
   const first = count(tiles);
+  // Brackets only when every clashing tile has its own, different alias.
+  const aliasesOk = new Map<string, boolean>();
+  for (const [name, n] of first) {
+    if (n < 2) continue;
+    const group = tiles.filter((t) => t.name === name).map((t) => aliasOf(t.geohash));
+    aliasesOk.set(name, group.every((a) => !!a && a !== name) && new Set(group).size === group.length);
+  }
   let out = tiles.map((t) => {
     if (!t.name || (first.get(t.name) ?? 0) < 2) return t;
+    if (aliasesOk.get(t.name)) return { ...t, name: `${t.name} (${aliasOf(t.geohash)})` };
     const km = haversineM(venue, t) / 1000;
     const dist = km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`;
     return { ...t, name: `${t.name}, ${dist} ${compassFrom(venue, t)}` };
@@ -350,7 +405,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
         tagHeatProblem = `the genre tag heatmap failed (${errorStatus(err).reason})`;
       }
     } else {
-      tagHeatProblem = isComedyClassification(ctx.bill.classification) ? "comedy has no genre-wide map" : "no pinned genre tag for this bill";
+      tagHeatProblem = isComedyClassification(ctx.bill.classification) ? "comedy has no genre-wide map" : "no genre-wide crowd is set up for this bill's genre";
     }
   }
 
@@ -359,7 +414,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
     const lines = [
       `Qloo has no comedy-wide map to compare with, and fewer than ${HOUSE_MIN_RESOLVED} of the room's usual acts matched, so there's no lift map for this bill. Partners are picked near the venue.`,
     ];
-    if (result.widened) lines.push(`The search widened to 60 km (fewer than ${THIN_CELLS} areas came back inside ${ctx.operator.radiusKm} km).`);
+    if (result.widened) lines.push(`The search widened to 60 km (fewer than ${THIN_CELLS} map squares came back within ${ctx.operator.radiusKm} km).`);
     if (result.thin) lines.push(`Only ${plural(bill.length, "area")} came back, so the signal is thin.`);
     result.card = envelope("degraded", "There is no usual crowd to compare this bill with.", empty, provenance, lines.join(" "));
     return result;
@@ -414,12 +469,12 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
   const splitWeak = split.spearman !== null && !(split.spearman > MIN_SPLIT_HALF);
 
   const annotatedTop = lift.top.map(annotated);
-  const kept = annotatedTop.filter((t) => !isExcludedArea(t, ctx.operator.excludeAreas));
+  const kept = annotatedTop.filter((t) => !isExcludedArea(t, ctx.operator.excludeAreas, areaAlias(ctx, t.geohash)));
   result.excludedAreas = annotatedTop.length - kept.length;
   const reached = applyReachedZips(kept, ctx.operator.alreadyReachedZips);
   const top = reached.tiles;
   // Numbered areas: distinct places (3 km apart, no shared ZIP) with distinct names.
-  const spread = disambiguateNames(spreadTiles(top), venuePoint(ctx));
+  const spread = disambiguateNames(spreadTiles(top), venuePoint(ctx), (gh) => areaAlias(ctx, gh));
   const renamed = new Map(spread.map((t) => [t.geohash, t]));
   result.top = top.map((t) => renamed.get(t.geohash) ?? t);
   result.spread = spread;
@@ -440,7 +495,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
     .filter((t) => !shown.has(t.geohash))
     .slice(0, CONTEXT_TILES * 4)
     .map(annotated)
-    .filter((t) => !isExcludedArea(t, ctx.operator.excludeAreas))
+    .filter((t) => !isExcludedArea(t, ctx.operator.excludeAreas, areaAlias(ctx, t.geohash)))
     .slice(0, CONTEXT_TILES);
   result.cardTiles = [...leading, ...context];
   const rho = lift.diagnostics.spearmanLiftVsHeat;
@@ -484,7 +539,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
   }
   if (result.widened) {
     if (status === "ok") status = "partial";
-    reasons.push(`The search widened to 60 km (fewer than ${THIN_CELLS} areas came back inside ${ctx.operator.radiusKm} km).`);
+    reasons.push(`The search widened to 60 km (fewer than ${THIN_CELLS} map squares came back within ${ctx.operator.radiusKm} km).`);
   }
   if (result.thin) {
     if (status === "ok") status = "partial";

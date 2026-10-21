@@ -32,6 +32,8 @@ export interface PlaceRecord {
   kind?: "incorporated" | "cdp";
   /** Land area; used for the area-aware match. Null when the source had none. */
   landKm2?: number | null;
+  /** USPS state code ("MD"). Optional: derived from the GEOID's state FIPS when absent. */
+  state?: string;
 }
 
 /** A Census ZCTA internal point joined to ACS 5-year estimates. Nulls mean "not available". */
@@ -46,6 +48,8 @@ export interface ZctaRecord {
   medianAge: number | null;
   /** Median household income, ACS end-year dollars. */
   medianIncome: number | null;
+  /** USPS state code ("VA"). Optional: derived from the ZIP prefix when absent. */
+  state?: string;
 }
 
 export interface SourceStatus {

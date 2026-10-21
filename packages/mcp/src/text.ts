@@ -5,7 +5,7 @@
  * envelope; it adds no places or numbers of its own.
  */
 import type { DeclaredPartnerScore, StreetSheet } from "@walkup/contracts";
-import type { ToolEnvelope } from "./envelope";
+import { recordedDay, type ToolEnvelope } from "./envelope";
 import { TM_EVENT_SUBTYPE } from "./event";
 import type { BillVsHouse } from "./tools";
 
@@ -65,7 +65,9 @@ function sheetLines(s: StreetSheet): string[] {
   for (const [k, c] of Object.entries(s.cards)) {
     if (c.status !== "ok" && c.reason) out.push(`  ${k}: ${statusLine(c.status, c.reason)}`);
   }
-  if (s.hypothetical) out.push("Seat counts are operator what-ifs (HYPOTHETICAL), not sales data.");
+  // What-if counts are a sample sheet's only: a live sheet's counts are the operator's own, whatever an older stored
+  // sheet's `hypothetical` says (the same rule as countsAreWhatIf in @walkup/exports).
+  if (s.mode === "fixture" && s.hypothetical === true) out.push("Seat counts are operator what-ifs (HYPOTHETICAL), not sales data.");
   return out;
 }
 
@@ -134,6 +136,19 @@ function revisionLines(r: NonNullable<ToolEnvelope["revision"]>): string[] {
   return out;
 }
 
+/**
+ * The mode line on a recorded server: what it serves was recorded from live runs, and live runs are paused for
+ * judging. A sheet says its own day (from createdAt).
+ */
+function recordedModeLine(env: ToolEnvelope): string {
+  if (isSheet(env.results)) {
+    const day = recordedDay(env.results.createdAt);
+    return `Mode: recorded (recorded from live Qloo and Ticketmaster runs${day ? ` on ${day}` : ""}; live runs are paused for judging, and this sheet is what the live run produced).`;
+  }
+  if (env.status === "error") return "Mode: recorded (live runs are paused for judging; the recorded sheets are what live Qloo and Ticketmaster runs produced, and get_sheet reads them).";
+  return "Mode: recorded (read from a sheet recorded from live Qloo and Ticketmaster runs; live runs are paused for judging).";
+}
+
 /** The text content for a tool result. */
 export function envelopeText(tool: string, env: ToolEnvelope): string {
   const lines: string[] = [];
@@ -142,9 +157,7 @@ export function envelopeText(tool: string, env: ToolEnvelope): string {
     env.mode === "fixture"
       ? "Mode: fixture (synthetic data; no live API was called)."
       : env.mode === "recorded"
-        ? isSheet(env.results)
-          ? `Mode: recorded (a live run recorded on ${env.results.createdAt.slice(0, 10)}; Qloo is no longer available to this server, so it is not refreshed).`
-          : "Mode: recorded (Qloo is no longer available; only recorded sheets can be read)."
+        ? recordedModeLine(env)
         : "Mode: live.",
   );
   if (env.planId) lines.push(`Plan id: ${env.planId}${env.sheetUrl ? ` · Street Sheet: ${env.sheetUrl}` : ""}`);

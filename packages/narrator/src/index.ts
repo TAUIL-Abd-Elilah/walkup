@@ -78,7 +78,29 @@ export {
   type PolicyOptions,
 } from "./policy";
 export { NARRATOR_SYSTEM_PROMPT, CONTROL_SYSTEM_PROMPT, PARSE_SYSTEM_PROMPT } from "./prompts";
-export { isSlotTag, tagInProse, templateNarrate, templateSummary } from "./template";
+export {
+  headlinerName,
+  isSlotTag,
+  tagInProse,
+  templateNarrate,
+  templatePartnerLine,
+  templateSummary,
+  templateTileWhy,
+} from "./template";
+export {
+  vetNarration,
+  vetCopyHooks,
+  vetWhatsDifferent,
+  vetHookList,
+  vetGeneratedLines,
+  isAudienceTag,
+  geohashCenter,
+  compassIndex,
+  COMPASS_POINTS,
+  type Narration,
+  type HookVetOptions,
+} from "./vet";
+export { AUDIENCE_TAG_PREFIXES, AUDIENCE_WORDS, audienceWordIn } from "./audience";
 export { narrate, buildNarrationRequest, guardNarration, type NarrateOptions, type GuardedNarration } from "./narrate";
 
 export {

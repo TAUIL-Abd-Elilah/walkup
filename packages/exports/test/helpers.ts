@@ -266,3 +266,74 @@ export function makeExplainedSheet(over: Partial<StreetSheet> = {}): StreetSheet
     },
   };
 }
+
+/**
+ * A room in Washington, DC whose areas sit in three states, as a DC room's do. The area names are real place names
+ * so the labels can be checked; the ZIPs carry the real state prefixes; every business, id and number is invented.
+ */
+export const DC_VENUE = { name: "Example Hall", lat: 38.88, lon: -77.026, city: "Washington", state: "DC", country: "US", timeZone: "America/New_York" };
+
+export const DC_TILES: LiftTile[] = [
+  tile(38.9967, -77.0283, 2.4, { name: "Silver Spring", zctas: ["20910", "20012"] }),
+  tile(38.8816, -77.091, 2.0, { name: "Arlington", zctas: ["22201", "22209"] }),
+  tile(38.8899, -76.9905, 1.7, { name: "Capitol Hill", zctas: ["20003", "20002"] }),
+];
+
+export function makeMultiStateSheet(): StreetSheet {
+  const s = makeSheet();
+  const at = (i: number, name: string, tileIndex: number, extra: Partial<Partner> = {}): Partner => {
+    const t = DC_TILES[tileIndex]!;
+    return { ...partner(i, name, null), tileGeohash: t.geohash, tileName: t.name, address: `${100 + i} Example Ave`, ...extra };
+  };
+  const partners = [
+    at(1, "Corner Press Books", 0, { category: "book_store" }),
+    at(2, "Lantern Coffee", 1, { category: "cafe" }),
+    at(3, "Eastern Market Records", 2),
+    // In an area outside the lift map: its label takes the state from its own address.
+    { ...partner(4, "Riverside Barbers", null, { category: "barber_shop" }), tileGeohash: "dqcjxx", tileName: "Takoma Park", address: "7 Example Rd Takoma Park, MD 20912" },
+  ];
+  return {
+    ...s,
+    bill: { ...s.bill, venue: { ...DC_VENUE } },
+    cards: {
+      ...s.cards,
+      liftMap: { ...s.cards.liftMap, results: { ...s.cards.liftMap.results, tiles: DC_TILES } },
+      partners: { ...s.cards.partners, results: partners },
+    },
+    budgetSplit: DC_TILES.map((t, i) => ({ geohash: t.geohash, share: [0.5, 0.3, 0.2][i]!, label: "heuristic, not a forecast" as const })),
+  };
+}
+
+type Hours = Partial<Record<"monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday", [string, string][] | "closed">>;
+
+/** A week of hours in the shape live Qloo place entities carry ({ thursday: [{ opens: "T17:00:00", closes: ..., closed }] }). */
+export function qlooHours(week: Hours): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const d of ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const) {
+    const v = week[d] ?? "closed";
+    out[d] = v === "closed" ? [{ opens: null, closed: true, closes: null }] : v.map(([o, c]) => ({ opens: `T${o}:00`, closed: false, closes: `T${c}:00` }));
+  }
+  return out;
+}
+
+/**
+ * The test sheet with six partners in area 1 whose weeks of hours exercise the street-team calendar: open Thursday
+ * evening only, closed Thursday but open late Saturday, open early Thursday only, a split day, no hours at all, and
+ * closed on both street-team days.
+ */
+export function makeHoursSheet(): StreetSheet {
+  const s = makeSheet();
+  const withHours = (i: number, name: string, week: Hours | null, hoursOnDay: string | null): Partner => {
+    const p = partner(i, name, 0, { hoursOnDay });
+    return { ...p, entity: { ...p.entity, properties: week ? { hours: qlooHours(week) } : {} } };
+  };
+  const partners = [
+    withHours(1, "Evening Records", { thursday: [["17:00", "21:00"]], friday: [["17:00", "21:00"]] }, "17:00:00-21:00:00"),
+    withHours(2, "Late Bar Books", { saturday: [["20:00", "02:00"]], friday: [["20:00", "02:00"]] }, null),
+    withHours(3, "Early Bakery", { thursday: [["07:30", "09:00"]] }, "07:30:00-09:00:00"),
+    withHours(4, "Split Shift Diner", { thursday: [["10:00", "14:00"], ["17:00", "21:30"]], saturday: [["10:00", "14:00"], ["17:00", "21:30"]] }, "10:00:00-14:00:00, 17:00:00-21:30:00"),
+    withHours(5, "No Hours Cafe", null, null),
+    withHours(6, "Always Shut Shop", { monday: [["09:00", "17:00"]], friday: [["09:00", "17:00"]] }, null),
+  ];
+  return { ...s, cards: { ...s.cards, partners: { ...s.cards.partners, results: partners } } };
+}

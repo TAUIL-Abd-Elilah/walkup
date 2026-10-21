@@ -1,6 +1,6 @@
 ---
 name: walkup
-description: Plan where to sell one booked live show's remaining seats. Give it a Ticketmaster event URL or "Artist @ Venue, Date"; a Walkup server compares this bill's crowd with the venue's usual crowd using Qloo taste data and returns a Street Sheet - the neighbourhoods where this crowd over-indexes, 15-25 real local partner places for ticket drops and posters (bars, cafes, book stores, barbershops), pre/post-show spots, podcasts, one sponsor brand and copy hooks - as a share link plus a JSON envelope with numbered receipts. Use when a promoter, venue marketer or street-team lead asks where to promote a specific show, which local businesses to approach, or in what order to call their own partner list. Not for choosing cities, rooms or supporting acts, not for pricing, and never about individual fans.
+description: Plan where to sell one booked live show's remaining seats. Give it a Ticketmaster event URL or "Artist @ Venue, Date"; a Walkup server compares this bill's crowd with the venue's usual crowd using Qloo taste data and returns a Street Sheet - the neighbourhoods where this crowd over-indexes, real local partner places ranked in those areas for ticket drops and posters (bars, cafes, book stores, barbershops), pre/post-show spots, podcasts, one sponsor brand and copy hooks - as a share link plus a JSON envelope with numbered receipts. Use when a promoter, venue marketer or street-team lead asks where to promote a specific show, which local businesses to approach, or in what order to call their own partner list. Not for choosing cities, rooms or supporting acts, not for pricing, and never about individual fans.
 license: MIT
 compatibility: Needs network access to a Walkup server (WALKUP_URL). Uses curl, or Node 22+ for the bundled CLI in scripts/.
 metadata: {"openclaw": {"requires": {"env": ["WALKUP_URL"], "bins": ["curl"]}}}
@@ -14,7 +14,7 @@ This skill is a thin client. The Walkup server holds every API key and does all 
 
 ## Setup
 
-Set `WALKUP_URL` to a Walkup server: the hosted instance, or your own (`npm run dev` in the repository serves `http://localhost:3000`). In OpenClaw you can set it per skill under `skills.entries.walkup.env`. The bundled CLI falls back to `http://localhost:3000` when the variable is empty.
+Set `WALKUP_URL` to a Walkup server: the hosted instance, `https://walkup-eight.vercel.app` (recorded mode: it serves sheets recorded from live Qloo and Ticketmaster runs on Oct 21 2026, which are what a live run produced; live runs are paused for judging, so `sheet` and `health` work and `plan`/`rank-partners` are not run), or your own (`npm run dev` in the repository serves `http://localhost:3000`). In OpenClaw you can set it per skill under `skills.entries.walkup.env`. The bundled CLI falls back to `http://localhost:3000` when the variable is empty.
 
 No API key is needed or accepted. Self-hosters set `QLOO_API_KEY` and the other keys on the server only.
 
@@ -84,7 +84,7 @@ The server returns one envelope: `status`, `summary`, `planId`, `sheetUrl`, `mod
 - Partners are **suggested, not affiliated**: no business has agreed to anything.
 - Always pass on the `limits` lines ("What this does not establish").
 - If `mode` is `fixture`, say the data is sample data (synthetic), not live.
-- If the server answered with `mode` `recorded` (or `health` says so), Qloo is no longer available to it: a sheet it returns is a live run recorded on the sheet's `createdAt` date and is not refreshed. Say that date.
+- If the server answered with `mode` `recorded` (or `health` says so), it serves sheets recorded from live Qloo and Ticketmaster runs and live runs are paused for judging: a sheet it returns is what a live run produced on the sheet's `createdAt` date (say that date, e.g. "Oct 21 2026"). Do not say the product or Qloo is gone.
 
 ## What this sends
 
@@ -112,7 +112,7 @@ In full: the event text or URL, partner names, any what-if numbers you pass (sea
 | `server unreachable` (4) | `WALKUP_URL` is wrong or the server is down | Check the URL. For a local server run `npm run dev` in the repository |
 | `limit reached` (5, HTTP 429) | Fresh runs are capped per IP and per day, or the server's monthly Qloo quota guard is on | Use a cached preset in the web app, or try again tomorrow |
 | `fixture mode` (6, HTTP 503) | The server has no live Qloo key (or it was deactivated before any live run was stored) | Sample presets still open; fresh runs are disabled |
-| `Recorded sheets only` (6, HTTP 503, `mode: "recorded"`) | Qloo is no longer available to the server; it serves sheets recorded from earlier live runs | `sheet <plan-id>` and the PDF still work; new plans, rank-partners and revisions are off |
+| `Recorded sheets only` (6, HTTP 503, `mode: "recorded"`) | Live runs are paused for judging; the server serves sheets recorded from live Qloo and Ticketmaster runs | `sheet <plan-id>` and the PDF still work; new plans, rank-partners and revisions are not run until live runs resume |
 | `partial` / `degraded` card (0) | Thin signal, a new venue not yet in the catalog, generic compare results | Relay the card's reason; treat the list as a starting point |
 | `empty` card (0) | Nothing survived the filters (for example, no sponsor on an all-ages show) | Say so; don't fill the gap |
 | `Not found (HTTP 404)` (1) | Unknown plan id, or the URL is not a Walkup server | Check the plan id and `WALKUP_URL` |
@@ -130,7 +130,7 @@ In full: the event text or URL, partner names, any what-if numbers you pass (sea
 | Smaller metros | Fewer heatmap cells and places | Radius widens to 60 km; "thin signal: treat as a starting list" |
 | Partner categories | Bars, pubs, restaurants, cafes, book stores, clothing stores, barber shops and beauty salons (the categories pinned in `config/tags.json`; record stores could not be pinned) | Categories come from pinned tags only |
 | Podcasts | Ranked by this bill's crowd | Labelled "national, not local" unless location is shown to move the ranking |
-| Sponsors | One local brand | Alcohol, tobacco and gambling excluded on all-ages shows |
+| Sponsors | One brand, labelled national | Alcohol, tobacco and gambling excluded on shows that aren't 21+ |
 | The user's own partners | Up to 20 names | Not in the catalog: "not in Qloo's catalog, kept in your order" |
 | Outside the US | Not covered yet | Neighbourhood names and adult counts come from US Census data |
 | Political candidates and campaigns | Refused | Error |

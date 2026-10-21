@@ -3,9 +3,11 @@
  * explainability), the coded fallbacks (3,500 m, then a wider category set),
  * the near-venue pool when lift is weak, the house twin of each pool (the
  * same request with the room's usual crowd as the signal, for the ubiquity
- * penalty and the "tonight vs house" chip), the probe-gated balance check,
- * and deterministic scoring with the diversity caps. National chains on the
- * hand-kept list (config/chains.json) are listed after the local places.
+ * penalty and the usual-crowd chip), the probe-gated balance check,
+ * and deterministic scoring with the diversity caps. National chains (the
+ * hand-kept list in config/chains.json, Qloo's description, a store-locator
+ * website, or the same name at 3+ places) are listed after the local places,
+ * at most 2; malls, plazas, stations and adult-themed places never are.
  * Last, the popularity twin of each pool that gave partners (the same request
  * with no signal, which Qloo answers in popularity order) for the popularity
  * check: how many partners a popularity list of the same length would miss.
@@ -13,7 +15,10 @@
 import type { Chip, LiftTile, Partner, PopularityCheck, QlooEntity, StreetSheetCards, Weekday } from "@walkup/contracts";
 import {
   balanceCheck,
+  categoryWord,
+  chainSummary,
   DEFAULT_BAR_CATEGORIES,
+  isUsualCrowdChip,
   mergeRankedLists,
   popularityCheck,
   scorePartnersWithReport,
@@ -22,10 +27,11 @@ import {
   type PopularityTwin,
   type PartnerScoringReport,
   type PoolHouseTwin,
+  usualCrowdChipLabel,
 } from "@walkup/engine";
 import { errorStatus } from "@walkup/qloo";
 import { categoryTagMap, categoryUrns, DEFAULT_PARTNER_CATEGORIES, WIDEN_CATEGORIES } from "../tags";
-import { CHAIN_LIMIT, chainLine, CHAINS } from "../chains";
+import { CHAINS } from "../chains";
 import { cite, clean, droppedFrom, droppedReason, envelope, failure, node, plural, signal, venuePoint, type DroppedCheck, type HouseSet, type RunContext, type Seed } from "../context";
 import { houseFor } from "./heat";
 
@@ -36,14 +42,18 @@ export const PARTNER_TILES = 3;
 export const PRICE_MAX = 3;
 /** Node label of a pool's house twin (one per pool, at most PARTNER_TILES per run). */
 export const HOUSE_TWIN_NODE = "Q9 house twin";
-/** Chip prefix for the rank difference between the bill's list and the house twin's. */
-export const HOUSE_TWIN_CHIP = "tonight vs house";
+/** True for the chip comparing a place's rank with the room's usual crowd (see houseTwinChipLabel). */
+export const isHouseTwinChip = isUsualCrowdChip;
 export const HOUSE_TWIN_LIMIT =
   "The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.";
 /** Node label of a pool's popularity twin (one per pool that gave partners, at most PARTNER_TILES per run). */
 export const POPULARITY_TWIN_NODE = "Q9 popularity twin";
 export const POPULARITY_LIMIT =
   "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.";
+
+/** The card limit when any candidate was a national chain. */
+export const CHAIN_DETECT_LIMIT =
+  "National chains are spotted from a hand-kept list, Qloo's description of the place, a store-locator website, or the same name at 3 or more places; a chain none of these catches is listed like a local place.";
 
 type PartnersCard = StreetSheetCards["partners"];
 
@@ -91,11 +101,12 @@ export function excludedCategoriesFor(ctx: RunContext): string[] {
   return [...out].sort();
 }
 
-/** The chip label for a partner's house rank. */
+/**
+ * The chip label for a partner's rank for the room's usual crowd, in plain words ("ranks 5 places higher here than
+ * for the room's usual crowd", "not in the room's usual crowd's top 50"). Never "house".
+ */
 export function houseTwinChipLabel(houseRank: number | null, qlooRank: number, listSize: number): string {
-  if (houseRank === null) return listSize > 0 ? `${HOUSE_TWIN_CHIP}: not in the house top ${listSize}` : `${HOUSE_TWIN_CHIP}: no house list`;
-  const delta = houseRank - qlooRank;
-  return `${HOUSE_TWIN_CHIP} ${delta > 0 ? "+" : ""}${delta} ranks`;
+  return usualCrowdChipLabel(houseRank === null ? null : houseRank - qlooRank, listSize);
 }
 
 /** The house signal the twin uses: the same one as the Q10 twin (house entity ids, else the genre tag). */
@@ -247,7 +258,8 @@ export async function runPartners(
   const excludeIds = venueEntityId ? [venueEntityId] : [];
   const reasons: string[] = [];
   if (cats.skipped.length > 0) {
-    reasons.push(`Skipped ${plural(cats.skipped.length, "type", "types")} of place that have no Qloo tag set up yet (${cats.skipped.join(", ")}).`);
+    const words = cats.skipped.map((k) => categoryWord(k, true));
+    reasons.push(`${words.join(", ").replace(/^./, (c) => c.toUpperCase())} ${words.length === 1 ? "isn't" : "aren't"} searched yet: Qloo has no tag to find ${words.length === 1 && !/s$/.test(words[0] ?? "") ? "it" : "them"} by.`);
   }
   const tiles = liftWeak ? [] : top.slice(0, PARTNER_TILES);
   const specs: PoolSpec[] = tiles.map((t) => ({ tileGeohash: t.geohash, point: { lat: t.lat, lon: t.lon }, radiusM: TILE_RADIUS_M, tags: cats.urns }));
@@ -344,6 +356,8 @@ export async function runPartners(
   }
 
   const names = seedNames(seeds);
+  // "Most influenced by" says which act a place leans to: only meaningful when the bill has two or more acts.
+  const multiAct = ctx.bill.acts.length >= 2 && new Set(seeds.map((x) => x.act)).size >= 2;
   const tileByGh = new Map(top.map((t) => [t.geohash, t]));
   const twinByPool = new Map<string, PoolHouseTwin>();
   for (const p of pools) if (p.house) twinByPool.set(p.ledgerRef, p.house);
@@ -365,7 +379,7 @@ export async function runPartners(
       if (t && ctx.billHeatRef) chips.push({ label: `in a ${t.lift.toFixed(2)}x lift tile`, ledgerRef: ctx.billHeatRef });
       const best = [...(e.explainability ?? [])].sort((a, b) => b.score - a.score)[0];
       const who = best ? names.get(best.entityId) : undefined;
-      if (best && who && best.score >= 0.5) chips.push({ label: `most influenced by ${who}`, ledgerRef: c.ledgerRef });
+      if (multiAct && best && who && best.score >= 0.5) chips.push({ label: `most influenced by ${who}`, ledgerRef: c.ledgerRef });
       const twin = twinByPool.get(c.ledgerRef);
       if (twin) chips.push({ label: houseTwinChipLabel(twin.ranks.get(e.entityId) ?? null, c.qlooRank, twin.size), ledgerRef: twin.ledgerRef });
       return chips;
@@ -377,6 +391,9 @@ export async function runPartners(
   let summary = `${plural(cleaned.length, "partner")} in ${plural(tileCount, "area")}, at most 2 of a kind per area.`;
   if (report.droppedClosed > 0) summary += ` Dropped ${plural(report.droppedClosed, "place")} marked closed.`;
   if (report.droppedHoursClosed > 0) summary += ` Dropped ${plural(report.droppedHoursClosed, "place")} closed on the street-team day.`;
+  if (report.droppedNotVenue > 0) summary += ` Left out ${plural(report.droppedNotVenue, "place")} that ${report.droppedNotVenue === 1 ? "isn't a business" : "aren't businesses"} (a mall, plaza, station or park).`;
+  if (report.droppedStand > 0) summary += ` Left out ${plural(report.droppedStand, "food cart or kiosk", "food carts or kiosks")}.`;
+  if (report.droppedAdult > 0) summary += ` Left out ${plural(report.droppedAdult, "adult-themed place")}: never a street-team stop.`;
   if (report.hoursUnknown > 0) summary += ` ${report.hoursUnknown.toLocaleString("en-US")} list no hours for ${dayName}: call first.`;
   if (widenedRadius > 0) reasons.push(`${plural(widenedRadius, "area")} had fewer than ${MIN_POOL} places within 2 km, so the search widened to 3.5 km.`);
   if (widenedCats > 0) reasons.push(`${plural(widenedCats, "area search", "area searches")} also took in more types of place.`);
@@ -389,7 +406,7 @@ export async function runPartners(
   if (report.droppedCategory > 0) {
     summary += ` ${plural(report.droppedCategory, "place")} left out by category (${ctx.operator.allAges === true ? "all-ages show" : "your exclusions"}).`;
   }
-  const chains = chainLine(report.chainsMovedDown, report.chainsOffList.length);
+  const chains = chainSummary({ kept: cleaned.filter((p) => p.chain).length, listed: cleaned.length, leftOut: report.chainsLeftOut, capped: report.chainsCapped, cap: report.maxChains });
   if (chains) summary += ` ${chains}`;
   let status: PartnersCard["status"] = cleaned.length === 0 ? "empty" : "ok";
   if (status === "ok" && (widenedRadius > 0 || widenedCats > 0 || report.belowMinimum || tiles.length < PARTNER_TILES || cats.skipped.length > 0 || rebalanced || worstDrop.share === "some")) status = "partial";
@@ -400,7 +417,7 @@ export async function runPartners(
   provenance.push(...popularity.ledgerRefs);
   const limits = ["Suggested, not affiliated: no partner has agreed to anything."];
   if (twinByPool.size > 0) limits.push(HOUSE_TWIN_LIMIT);
-  if (report.chains > 0) limits.push(CHAIN_LIMIT);
+  if (report.chains > 0) limits.push(CHAIN_DETECT_LIMIT);
   if (popularity.check) limits.push(POPULARITY_LIMIT);
   base.card = envelope(status, summary, cleaned, provenance, reasons.length > 0 ? reasons.join(" ") : undefined, limits);
   base.partners = cleaned;

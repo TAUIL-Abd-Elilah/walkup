@@ -63,7 +63,7 @@ describe("Q1 signal check", () => {
     expect(check.share).toBe("all");
     expect(droppedReason(check, "Q9")).toBe("Qloo has no taste data for this bill's acts (Q9), so this list would only show general popularity.");
     expect(droppedReason(droppedFrom({ droppedSignals: [solo.id] }, [solo.id, band.id]), "Q9")).toBe(
-      "Qloo ignored 1 of this bill's seeds (Q9), so this list rests on the others.",
+      "Qloo has no taste data for 1 of the names behind this bill (Q9), so this list rests on the others.",
     );
     expect(droppedFrom({ droppedSignals: [] }, [band.id]).share).toBe("none");
     expect(droppedFrom(undefined, [band.id]).share).toBe("none");

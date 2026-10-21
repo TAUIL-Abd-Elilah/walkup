@@ -93,8 +93,17 @@ export function twinChipLabel(delta: number | null, listSize: number): string {
   return `${TWIN_CHIP_PREFIX} ${delta > 0 ? "+" : ""}${delta} ranks`;
 }
 
+/**
+ * True for a chip comparing a place's rank with the room's usual crowd: this file's "tonight vs house ..." wording or
+ * the engine's plain one ("ranks 3 places higher here than for the room's usual crowd", "not in the room's usual
+ * crowd's top 25").
+ */
+export function isTwinChip(label: string): boolean {
+  return label.startsWith(TWIN_CHIP_PREFIX) || /(?:here (?:than|as) for|not in|no list for) the room's usual crowd/.test(label);
+}
+
 export function hasTwinChips(sheet: StreetSheet): boolean {
-  return sheet.cards.partners.results.some((p) => p.chips.some((c) => c.label.startsWith(TWIN_CHIP_PREFIX)));
+  return sheet.cards.partners.results.some((p) => p.chips.some((c) => isTwinChip(c.label)));
 }
 
 /** True when the run itself already asked for the house twin (whether or not it answered). */

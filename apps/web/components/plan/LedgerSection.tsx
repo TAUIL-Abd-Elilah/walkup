@@ -2,6 +2,7 @@
 import type { LedgerEntry } from "@walkup/contracts";
 import { formatMs } from "../../lib/format";
 import { LEDGER_KIND_LABEL, STATUS_LABEL, ledgerNoteText } from "../../lib/labels";
+import { FoldBody } from "./fold";
 import { receiptAnchor, useReceipts } from "./receipts";
 
 /** Every request and action behind the sheet, as a plain table. Each id opens its receipt. */
@@ -23,6 +24,7 @@ export function LedgerSection({ entries, exportHref, sample = false }: { entries
         </a>{" "}
         to keep the full ledger.
       </p>
+      <FoldBody title="the requests">
       <table className="table mt-4">
         <caption className="sr-only">Every request and action behind this sheet</caption>
         <thead>
@@ -83,6 +85,7 @@ export function LedgerSection({ entries, exportHref, sample = false }: { entries
           ))}
         </tbody>
       </table>
+      </FoldBody>
     </section>
   );
 }

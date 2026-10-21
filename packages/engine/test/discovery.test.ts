@@ -86,63 +86,66 @@ describe("area rule", () => {
   });
 });
 
-describe("partner rule", () => {
+describe("partner rule: start with this place", () => {
+  const AREA1 = NUMBERED[0]!.geohash; // Baylake Pines
+  const AREA2 = NUMBERED[1]!.geohash; // Hampton
   const list = [
-    partner("Teal Lounge", "bar", 0.76, 2, 16),
-    partner("Opal Tavern", "bar", 0.7, 1, 6),
-    partner("Alder Vinyl", "record_store", 0.6, 1, 2),
-    partner("Copper Vinyl", "record_store", 0.59, 2, 3),
+    partner("Teal Lounge", "bar", 0.76, 2, 4, AREA1),
+    partner("Opal Tavern", "bar", 0.7, 1, 2, AREA1),
+    partner("The Hollow Grill", "restaurant", 0.57, 6, 19, AREA1),
+    partner("Rowan Eatery", "restaurant", 0.5, 9, 28, AREA1),
+    partner("Alder Vinyl", "record_store", 0.6, 1, null, AREA2),
     partner("Near Cafe", "cafe", 0.9, 1, null, null),
-    partner("Quarter Books", "book_store", 0.58, 6, 1),
-    partner("The Hollow Grill", "restaurant", 0.57, 13, 26),
-    partner("Rowan Eatery", "restaurant", 0.5, 15, 28),
   ];
   it("finds the most common types, ties included", () => {
-    expect(mostCommonCategories(list)).toEqual(["bar", "record_store", "restaurant"]);
-    expect(mostCommonCategories(list.slice(0, 5))).toEqual(["bar", "record_store"]);
+    expect(mostCommonCategories(list)).toEqual(["bar", "restaurant"]);
     expect(mostCommonCategories([])).toEqual([]);
   });
-  it("takes the top-scoring place outside the common types that the usual crowd ranks 5 or more lower", () => {
-    const short = list.slice(0, 7); // restaurants no longer tie with bars and record stores
-    const d = partnerDiscovery({ partners: short, baseline: "house" });
-    // Near Cafe is near the venue, Quarter Books ranks higher for the house: The Hollow Grill wins.
+  it("takes the highest-ranked place for this crowd in area 1 that the usual crowd ranks at least 5 places lower", () => {
+    const d = partnerDiscovery({ partners: list, baseline: "house", numbered: NUMBERED });
+    // Opal Tavern (1st) and Teal Lounge (2nd) rank about as high for the usual crowd: The Hollow Grill (6th, 19th) wins.
     expect(d).toMatchObject({ kind: "partner", entityId: "E-The Hollow Grill", rule: PARTNER_RULE, ledgerRefs: ["Q17"] });
-    expect(d?.headline).toBe("The Hollow Grill ranks 13th for this crowd and 26th for the room's usual crowd.");
-    expect(d?.detail).toBe("Bars and record stores are the most common types on the list (2 of 7 each); this one is a restaurant.");
-    expect(d?.why).toBe("the best fit that isn't a bar or record store, and the room's usual crowd ranks it 13 places lower");
+    expect(d?.headline).toBe("The Hollow Grill, a restaurant in area 1 (Baylake Pines): 6th for this crowd, 19th for the room's usual crowd.");
+    expect(d?.why).toBe("the highest-ranked place for this crowd in area 1 that the room's usual crowd ranks 13 places lower");
+    expect(DISCOVERY_RULES.minHouseGap).toBe(5);
   });
-  it("words a place the usual crowd's list leaves out, with area, distance and the ask", () => {
-    const p = partner("Slate Cafe", "cafe", 0.75, 2, null);
-    p.explain = { tags: [], areaName: "Carriage House", distanceKm: 4.04, activation: "Ask to leave table cards.", confidence: "medium", confidenceWhy: "x", ledgerRefs: ["Q30", "Q31"] };
-    const d = partnerDiscovery({ partners: [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.8, 2, 3), p], baseline: "house", twinSize: () => 28 });
-    expect(d?.headline).toBe("Slate Cafe ranks 2nd for this crowd and isn't in the room's usual crowd's top 28.");
-    expect(d?.detail).toBe("Bars are the most common type on the list (2 of 3); this one is a cafe in Carriage House, 4.0 km from the venue. Ask to leave table cards.");
+  it("is not put off by a common type: the rule is about the crowd, not the kind of place", () => {
+    const d = partnerDiscovery({ partners: list.filter((p) => p.entity.name !== "The Hollow Grill"), baseline: "house", numbered: NUMBERED });
+    expect(d?.entityId).toBe("E-Rowan Eatery");
+  });
+  it("moves to area 2 when no place in area 1 qualifies, and says so", () => {
+    const p = list.slice(0, 2).concat(list[4]!);
+    p[2]!.explain = { tags: [], areaName: "Hampton", distanceKm: 4.04, activation: "Ask to leave table cards.", confidence: "medium", confidenceWhy: "x", ledgerRefs: ["Q30", "Q31"] };
+    const d = partnerDiscovery({ partners: p, baseline: "house", numbered: NUMBERED, twinSize: () => 28 });
+    expect(d?.headline).toBe("Alder Vinyl, a record store in area 2 (Hampton): 1st for this crowd, not in the room's usual crowd's top 28.");
+    expect(d?.detail).toBe("4.0 km from the venue. Ask to leave table cards.");
+    expect(d?.why).toBe("the highest-ranked place for this crowd in area 2 (no place in area 1 qualified) that the room's usual crowd doesn't rank at all");
     expect(d?.ledgerRefs).toEqual(["Q30", "Q31"]);
-    expect(d?.why).toBe("the best fit that isn't a bar, and the room's usual crowd doesn't rank it at all");
-    expect(partnerDiscovery({ partners: [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.8, 2, 3), p], baseline: "house" })?.headline).toBe(
-      "Slate Cafe ranks 2nd for this crowd and doesn't come up for the room's usual crowd.",
-    );
+    expect(partnerDiscovery({ partners: p, baseline: "house", numbered: NUMBERED })?.headline).toMatch(/not on the room's usual crowd's list\.$/);
   });
-  it("never picks a national chain", () => {
-    const chain = { ...partner("Mall Outfitters", "clothing_store", 0.8, 3, 30), chain: true };
-    const d = partnerDiscovery({ partners: [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.85, 2, 3), chain, partner("Slate Cafe", "cafe", 0.7, 4, 12)], baseline: "house" });
-    expect(d?.entityId).toBe("E-Slate Cafe");
-    expect(partnerDiscovery({ partners: [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.85, 2, 3), chain], baseline: "house" })).toBeNull();
+  it("never picks a national chain or a place outside the numbered areas", () => {
+    const chain = { ...partner("Mall Outfitters", "clothing_store", 0.8, 3, 30, AREA1), chain: true };
+    expect(partnerDiscovery({ partners: [list[1]!, chain], baseline: "house", numbered: NUMBERED })).toBeNull();
+    expect(partnerDiscovery({ partners: [list[5]!], baseline: "house", numbered: NUMBERED })).toBeNull();
   });
-  it("finds nothing without the room's own crowd, a house rank, a gap, or a less common type", () => {
-    expect(partnerDiscovery({ partners: list.slice(0, 7), baseline: "tag" })).toBeNull();
-    expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 1, 2), partner("B", "cafe", 0.8, 3, undefined), partner("C", "bar", 0.7, 2, 3)], baseline: "house" })).toBeNull();
-    expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 1, 2), partner("B", "cafe", 0.8, 3, 7), partner("C", "bar", 0.7, 2, 3)], baseline: "house" })).toBeNull();
-    expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 1, null), partner("B", "cafe", 0.8, 3, null)], baseline: "house" })).toBeNull();
-    expect(partnerDiscovery({ partners: [], baseline: "house" })).toBeNull();
+  it("finds nothing without the room's own crowd, a usual-crowd rank, a gap, or a usual-crowd list", () => {
+    expect(partnerDiscovery({ partners: list, baseline: "tag", numbered: NUMBERED })).toBeNull();
+    expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 1, undefined, AREA1)], baseline: "house", numbered: NUMBERED })).toBeNull();
+    expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 3, 7, AREA1)], baseline: "house", numbered: NUMBERED })).toBeNull();
+    expect(partnerDiscovery({ partners: [partner("A", "bar", 0.9, 1, null, AREA1)], baseline: "house", numbered: NUMBERED, twinSize: () => 0 })).toBeNull();
+    expect(partnerDiscovery({ partners: [], baseline: "house", numbered: NUMBERED })).toBeNull();
+  });
+  it("without numbered areas, uses the areas in the order the partner list has them", () => {
+    expect(partnerDiscovery({ partners: list, baseline: "house" })?.entityId).toBe("E-The Hollow Grill");
   });
 });
 
 describe("pickDiscovery", () => {
   const partners = [partner("Bar A", "bar", 0.9, 1, 2), partner("Bar B", "bar", 0.8, 2, 3), partner("Slate Cafe", "cafe", 0.75, 2, null)];
-  it("prefers the area rule, then the partner rule, else nothing", () => {
-    expect(pickDiscovery({ ...AREA, partners })?.kind).toBe("area");
-    expect(pickDiscovery({ ...AREA, liftTrusted: false, partners })?.kind).toBe("partner");
+  it("prefers the place rule, then the area rule, else nothing", () => {
+    expect(pickDiscovery({ ...AREA, partners })?.kind).toBe("partner");
+    expect(pickDiscovery({ ...AREA, partners: partners.slice(0, 2) })?.kind).toBe("area");
+    expect(pickDiscovery({ ...AREA, liftTrusted: false, partners: partners.slice(0, 2) })).toBeNull();
     expect(pickDiscovery({ ...AREA, baseline: "tag", partners })).toBeNull();
   });
   it("is deterministic", () => {

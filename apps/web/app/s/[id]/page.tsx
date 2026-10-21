@@ -13,6 +13,7 @@ import { runtimeMode } from "@/lib/mode";
 import { presetForPlan } from "@/lib/presets";
 import { SESSION_COOKIE } from "@/lib/server/http";
 import { loadPlan } from "@/lib/server/service";
+import { vettedSheet } from "@/lib/vetted";
 
 export const dynamic = "force-dynamic";
 
@@ -101,11 +102,14 @@ function PartnerName({ row, partner }: { row: PartnerRow; partner: Partner | und
   );
 }
 
-/** The phone as a call link (the caller says "Phone not listed" on paper when there is none). */
+/**
+ * The phone as a call link, printed the way the PDF prints it ("(202) 733-4604"); the link dials the raw number.
+ * The caller says "Phone not listed" on paper when there is none.
+ */
 function Phone({ row }: { row: PartnerRow }) {
   return (
     <a href={telHref(row.phone)} className="tabular hover:underline">
-      {row.phone}
+      {row.phoneText}
     </a>
   );
 }
@@ -134,15 +138,8 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
               </span>
             </p>
             <p className="text-[0.92em] text-muted">{[r.category, `${m.panel2.hoursHeader}: ${r.hours}`].filter(Boolean).join(" · ")}</p>
-            <p className="text-[0.92em] text-muted">
-              {r.address}
-              {r.phone ? (
-                <>
-                  {r.address ? " · " : null}
-                  <Phone row={r} />
-                </>
-              ) : null}
-            </p>
+            {r.address ? <p className="text-[0.92em] text-muted">{r.address}</p> : null}
+            <p className="text-[0.92em] text-muted">{r.phone ? <Phone row={r} /> : r.phoneText}</p>
             <p className="text-[0.92em]">{r.why}</p>
           </li>
         ))}
@@ -164,7 +161,7 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
               <span className="sr-only">Done</span>
             </th>
             <th scope="col">#</th>
-            <th scope="col">Place and address</th>
+            <th scope="col">Place, address and phone</th>
             <th scope="col">Area</th>
             <th scope="col">{m.panel2.hoursHeader}</th>
             <th scope="col">Why</th>
@@ -187,21 +184,14 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
                   <PartnerName row={r} partner={partners.get(r.entityId)} />
                   {r.category ? <span className="text-muted"> · {r.category}</span> : null}
                 </span>
-                {/* Only the address is cut short when the line is too long: the phone always shows in full. */}
-                <span className="flex min-w-0 text-muted" title={r.address || undefined}>
-                  <span className="min-w-0 truncate">{r.address}</span>
-                  {r.phone ? (
-                    <span className="shrink-0 whitespace-nowrap">
-                      {r.address ? " · " : null}
-                      <Phone row={r} />
-                    </span>
-                  ) : (
-                    <span className="hidden shrink-0 whitespace-nowrap print:inline">
-                      {r.address ? " · " : null}
-                      {r.phoneText}
-                    </span>
-                  )}
-                </span>
+                {/* As in the PDF: the address on its own line (cut short when too long), then the phone on a line of
+                    its own, never cut, or "Phone not listed". */}
+                {r.address ? (
+                  <span className="block truncate text-muted" title={r.address}>
+                    {r.address}
+                  </span>
+                ) : null}
+                <span className="block whitespace-nowrap text-muted">{r.phone ? <Phone row={r} /> : r.phoneText}</span>
               </td>
               <td title={r.tile}>
                 <span className="line-clamp-2">
@@ -226,7 +216,7 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
 }
 
 /** Before and after the show: a short table (spot, type, distance, share, rank for this crowd), blocks under 640px. */
-function SpotsTable({ rows, planId }: { rows: SpotRow[]; planId: string }) {
+function SpotsTable({ rows, planId, showShare }: { rows: SpotRow[]; planId: string; showShare: boolean }) {
   return (
     <>
       <ol className="space-y-1.5 sm:hidden print:hidden">
@@ -239,12 +229,13 @@ function SpotsTable({ rows, planId }: { rows: SpotRow[]; planId: string }) {
         ))}
       </ol>
       <table className="table w-full table-fixed text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[2px] [&_td]:pr-2 [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em] [&_.fn]:align-[0.3em]">
-        <caption className="sr-only">Spots for before and after the show, with their share of the crowd.</caption>
+        <caption className="sr-only">Spots for before and after the show, nearest first{showShare ? ", with their share of the crowd" : ""}.</caption>
+        {/* The same widths as the PDF; no Share column when every spot gets the same share. */}
         <colgroup>
-          <col style={{ width: "37%" }} />
-          <col style={{ width: "20%" }} />
-          <col style={{ width: "13%" }} />
-          <col style={{ width: "10%" }} />
+          <col style={{ width: showShare ? "35%" : "40%" }} />
+          <col style={{ width: showShare ? "23%" : "25%" }} />
+          <col style={{ width: showShare ? "12%" : "15%" }} />
+          {showShare ? <col style={{ width: "10%" }} /> : null}
           <col style={{ width: "20%" }} />
         </colgroup>
         <thead>
@@ -254,9 +245,11 @@ function SpotsTable({ rows, planId }: { rows: SpotRow[]; planId: string }) {
             <th scope="col" className="num">
               Distance
             </th>
-            <th scope="col" className="num">
-              Share
-            </th>
+            {showShare ? (
+              <th scope="col" className="num">
+                Share
+              </th>
+            ) : null}
             <th scope="col">Vs usual crowd</th>
           </tr>
         </thead>
@@ -271,7 +264,7 @@ function SpotsTable({ rows, planId }: { rows: SpotRow[]; planId: string }) {
                 {r.category}
               </td>
               <td className="num tabular">{r.distance}</td>
-              <td className="num tabular">{r.share}</td>
+              {showShare ? <td className="num tabular">{r.share}</td> : null}
               <td className="truncate text-muted">{r.vsUsual}</td>
             </tr>
           ))}
@@ -319,7 +312,8 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-  const s = v.sheet;
+  // The narration and copy lines as checked at view time, the same as the plan page and the PDF.
+  const s = vettedSheet(v.sheet).sheet;
   const preset = presetForPlan(v.presetId ?? id, s.mode, s.bill);
   const m = buildSheetModel(s, { ...(preset?.showName ? { showName: preset.showName } : {}), recorded: runtimeMode().kind === "recorded" });
   const partners = new Map(s.cards.partners.results.map((p) => [p.entity.entityId, p]));
@@ -429,9 +423,8 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                             <span className="sr-only">{t.rank}. </span>
                             <strong className="font-semibold">{t.name}</strong> <span className="tabular">{t.lift}</span>
                           </span>
-                          <span className="block text-[0.92em] text-muted print:line-clamp-3">
-                            {t.zips}. {t.why}
-                          </span>
+                          {/* The paper's blurb: the ZIPs, then whole sentences of the why line (the PDF prints the same). */}
+                          <span className="block text-[0.92em] text-muted">{t.blurb}</span>
                         </span>
                       </li>
                     ))}
@@ -443,11 +436,34 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
               <p className="mt-1.5 text-[0.92em] text-muted">{p1.baseline}</p>
             </SheetSection>
 
-            <SheetSection id="prepost" title={m.panel4.title} status={m.panel4.status}>
-              {m.panel4.rows.length === 0 ? <p className="text-muted">{m.panel4.empty}</p> : <SpotsTable rows={m.panel4.rows} planId={m.planId} />}
-              {m.panel4.shareNote ? <p className="mt-1.5 text-[0.92em] text-muted">{m.panel4.shareNote}</p> : null}
-              <p className="text-[0.92em] text-muted">{m.panel4.ageLine}</p>
-            </SheetSection>
+            {/* Before and after the show, with the budget split under it (the right column has room there, as in the PDF). */}
+            <div className="min-w-0">
+              <SheetSection id="prepost" title={m.panel4.title} status={m.panel4.status}>
+                {m.panel4.rows.length === 0 ? <p className="text-muted">{m.panel4.empty}</p> : <SpotsTable rows={m.panel4.rows} planId={m.planId} showShare={m.panel4.showShare} />}
+                {m.panel4.shareNote ? <p className="mt-1.5 text-[0.92em] text-muted">{m.panel4.shareNote}</p> : null}
+                <p className="text-[0.92em] text-muted">{m.panel4.ageLine}</p>
+              </SheetSection>
+              <SheetSection id="budget" title={m.footer.budgetTitle} className="mt-3 print:mt-2">
+                {m.footer.budget.length > 0 ? (
+                  <ul>
+                    {m.footer.budget.map((b, i) => (
+                      <li key={`${b.name}-${i}`} className="flex justify-between gap-2">
+                        <span className="min-w-0 truncate">
+                          {b.rank !== null ? <span className="tabular font-semibold">{b.rank} </span> : null}
+                          {b.name}
+                        </span>
+                        <span className="tabular shrink-0">
+                          {b.share}
+                          {b.usd ? ` · ${b.usd}` : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted">{m.footer.budgetEmpty}</p>
+                )}
+              </SheetSection>
+            </div>
           </div>
 
           {/* Partners, as a form */}
@@ -466,8 +482,8 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
             </SheetSection>
           </div>
 
-          {/* On screen only: the one-page paper leaves these to the web sheet. */}
-          <div className="relative mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-3 print:hidden">
+          {/* Podcasts and a sponsor beside copy lines, under the partner table: on paper too, as in the PDF. */}
+          <div className="relative mt-4 grid gap-x-6 gap-y-4 border-t border-ink pt-2 sm:grid-cols-[42fr_58fr] print:mt-2.5 print:grid-cols-[42fr_58fr] [&_h2]:border-b-0 [&_h2]:pb-0">
             <SheetSection id="media" title={m.panel5.title} status={m.panel5.status}>
               <ul className="space-y-0.5">
                 {m.panel5.podcasts.map((r) => (
@@ -499,23 +515,6 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                 </p>
               ) : null}
               <p className="mt-1 text-[0.92em] text-muted">{m.panel6.note}</p>
-            </SheetSection>
-            <SheetSection id="budget" title={m.footer.budgetTitle}>
-              {m.footer.budget.length > 0 ? (
-                <ul>
-                  {m.footer.budget.map((b, i) => (
-                    <li key={`${b.name}-${i}`} className="flex justify-between gap-2">
-                      <span className="min-w-0 truncate">{b.name}</span>
-                      <span className="tabular shrink-0">
-                        {b.share}
-                        {b.usd ? ` · ${b.usd}` : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted">{m.footer.budgetEmpty}</p>
-              )}
             </SheetSection>
           </div>
 

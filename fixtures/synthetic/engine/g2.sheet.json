@@ -314,7 +314,7 @@
       },
       "liftMap": {
         "status": "ok",
-        "summary": "45 areas where this bill's crowd ranks higher than the room's usual crowd. The top 5 are in Baylake Pines, Hampton, Huntersville, Lake Shores and Green Meadow Point.",
+        "summary": "45 areas where this bill's crowd ranks higher than the room's usual crowd. The top 4 are in Virginia Beach, Hampton, Suffolk (Huntersville) and Suffolk (Green Meadow Point).",
         "results": {
           "tiles": [
             {
@@ -326,7 +326,7 @@
               "housePct": 0.2408,
               "popularityPct": 0.2612,
               "adultPopulation": 37656,
-              "name": "Baylake Pines",
+              "name": "Virginia Beach",
               "zctas": [
                 "23455"
               ]
@@ -339,11 +339,10 @@
               "billPct": 0.8008,
               "housePct": 0.2858,
               "popularityPct": 0.3365,
-              "adultPopulation": 3082,
+              "adultPopulation": 40497,
               "name": "Hampton",
               "zctas": [
-                "23665",
-                "23681"
+                "23666"
               ]
             },
             {
@@ -355,7 +354,7 @@
               "housePct": 0.3365,
               "popularityPct": 0.3565,
               "adultPopulation": 37656,
-              "name": "Chesapeake Beach",
+              "name": "Virginia Beach",
               "zctas": [
                 "23455"
               ]
@@ -369,7 +368,7 @@
               "housePct": 0.2977,
               "popularityPct": 0.2781,
               "adultPopulation": 24780,
-              "name": "Huntersville",
+              "name": "Suffolk (Huntersville)",
               "zctas": [
                 "23435"
               ]
@@ -383,7 +382,7 @@
               "housePct": 0.3023,
               "popularityPct": 0.2815,
               "adultPopulation": 24780,
-              "name": "Wynnewood",
+              "name": "Suffolk",
               "zctas": [
                 "23435"
               ]
@@ -396,11 +395,10 @@
               "billPct": 0.7604,
               "housePct": 0.2954,
               "popularityPct": 0.2662,
-              "adultPopulation": 3082,
+              "adultPopulation": 28771,
               "name": "Hampton",
               "zctas": [
-                "23665",
-                "23681"
+                "23669"
               ]
             },
             {
@@ -411,10 +409,10 @@
               "billPct": 0.7281,
               "housePct": 0.1758,
               "popularityPct": 0.1869,
-              "adultPopulation": 854,
-              "name": "Bayside",
+              "adultPopulation": 37656,
+              "name": "Virginia Beach",
               "zctas": [
-                "23459"
+                "23455"
               ]
             },
             {
@@ -425,24 +423,10 @@
               "billPct": 0.8765,
               "housePct": 0.3919,
               "popularityPct": 0.3946,
-              "adultPopulation": 854,
-              "name": "Bayside",
+              "adultPopulation": 37656,
+              "name": "Virginia Beach",
               "zctas": [
-                "23459"
-              ]
-            },
-            {
-              "geohash": "dq9cfy",
-              "lat": 36.905823,
-              "lon": -76.16272,
-              "lift": 1.3793,
-              "billPct": 0.8092,
-              "housePct": 0.4492,
-              "popularityPct": 0.4165,
-              "adultPopulation": 854,
-              "name": "Lake Shores",
-              "zctas": [
-                "23459"
+                "23455"
               ]
             },
             {
@@ -454,7 +438,7 @@
               "housePct": 0.4873,
               "popularityPct": 0.4627,
               "adultPopulation": 27839,
-              "name": "Green Meadow Point",
+              "name": "Suffolk (Green Meadow Point)",
               "zctas": [
                 "23321"
               ]
@@ -468,7 +452,7 @@
               "housePct": 0.3769,
               "popularityPct": 0.4223,
               "adultPopulation": 31657,
-              "name": "Lakewood Park",
+              "name": "Newport News",
               "zctas": [
                 "23602"
               ]
@@ -496,7 +480,7 @@
               "housePct": 0.2769,
               "popularityPct": 0.2581,
               "adultPopulation": 19300,
-              "name": "Morrison",
+              "name": "Hampton",
               "zctas": [
                 "23601"
               ]
@@ -510,7 +494,7 @@
               "housePct": 0.3285,
               "popularityPct": 0.3331,
               "adultPopulation": 31657,
-              "name": "Lakewood Park",
+              "name": "Newport News",
               "zctas": [
                 "23602"
               ]
@@ -632,7 +616,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0139",
-                "website": "https://fulton-s.example",
+                "website": "https://fulton-s-garrison-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.7,
@@ -671,7 +655,7 @@
             "qlooRank": 1,
             "address": "3816 Garrison St, Norfolk, VA",
             "phone": "+1 948-555-0139",
-            "website": "https://fulton-s.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -686,11 +670,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house +27 ranks",
+                "label": "ranks 27 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "16:00-02:00",
             "houseRank": 28,
             "ubiquityPenalty": 0,
@@ -710,14 +694,14 @@
                 }
               ],
               "activation": "Ask to put up a poster.",
-              "confidence": "medium",
-              "confidenceWhy": "Rank 1 of 28 in a top area, but the search widened to 3,500 m.",
+              "confidence": "high",
+              "confidenceWhy": "Rank 1 of 28 in a top area; the room's usual crowd ranks it 27 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 23.7
             }
           },
@@ -799,7 +783,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0128",
-                "website": "https://crabtree-s-barber-shop.example",
+                "website": "https://crabtree-s-barber-shop-linden-ave.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.9,
@@ -838,7 +822,7 @@
             "qlooRank": 2,
             "address": "4668 Linden Ave, Virginia Beach, VA",
             "phone": "+1 948-555-0128",
-            "website": "https://crabtree-s-barber-shop.example",
+            "website": "https://crabtree-s-barber-shop-linden-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -853,11 +837,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house +17 ranks",
+                "label": "ranks 17 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "09:00-19:00",
             "houseRank": 19,
             "ubiquityPenalty": 0,
@@ -873,14 +857,14 @@
                 }
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
-              "confidence": "medium",
-              "confidenceWhy": "Rank 2 of 28 in a top area, but the search widened to 3,500 m.",
+              "confidence": "high",
+              "confidenceWhy": "Rank 2 of 28 in a top area; the room's usual crowd ranks it 17 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 29.5
             }
           },
@@ -962,7 +946,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0192",
-                "website": "https://winslow-barbers.example",
+                "website": "https://winslow-barbers-5th-ave.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -1001,7 +985,7 @@
             "qlooRank": 3,
             "address": "603 5th Ave, Virginia Beach, VA",
             "phone": "+1 757-555-0192",
-            "website": "https://winslow-barbers.example",
+            "website": "https://winslow-barbers-5th-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1016,11 +1000,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house +18 ranks",
+                "label": "ranks 18 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "09:00-19:00",
             "houseRank": 21,
             "ubiquityPenalty": 0,
@@ -1036,14 +1020,14 @@
                 }
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
-              "confidence": "medium",
-              "confidenceWhy": "Rank 3 of 28 in a top area, but the search widened to 3,500 m.",
+              "confidence": "high",
+              "confidenceWhy": "Rank 3 of 28 in a top area; the room's usual crowd ranks it 18 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 25.8
             }
           },
@@ -1135,7 +1119,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0155",
-                "website": "https://rinaldi-s-bar.example",
+                "website": "https://rinaldi-s-bar-9th-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.7,
@@ -1174,7 +1158,7 @@
             "qlooRank": 9,
             "address": "2882 9th St, Virginia Beach, VA",
             "phone": "+1 948-555-0155",
-            "website": "https://rinaldi-s-bar.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1189,11 +1173,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house +15 ranks",
+                "label": "ranks 15 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "16:00-02:00",
             "houseRank": 24,
             "ubiquityPenalty": 0,
@@ -1214,13 +1198,13 @@
               ],
               "activation": "Ask to put up a poster.",
               "confidence": "medium",
-              "confidenceWhy": "Rank 9 of 28 in a top area, but the search widened to 3,500 m.",
+              "confidenceWhy": "Rank 9 of 28 in a top area; the room's usual crowd ranks it 15 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 27.7
             }
           },
@@ -1302,7 +1286,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0189",
-                "website": "https://maddox-salon.example",
+                "website": "https://maddox-salon-calloway-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 3.9,
@@ -1341,7 +1325,7 @@
             "qlooRank": 8,
             "address": "1144 Calloway St, Virginia Beach, VA",
             "phone": "+1 757-555-0189",
-            "website": "https://maddox-salon.example",
+            "website": "https://maddox-salon-calloway-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1356,11 +1340,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house +4 ranks",
+                "label": "ranks 4 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "09:00-18:00",
             "houseRank": 12,
             "ubiquityPenalty": 0.3571428571428572,
@@ -1376,14 +1360,14 @@
                 }
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
-              "confidence": "medium",
+              "confidence": "low",
               "confidenceWhy": "Rank 8 of 28 in a top area, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 28.8
             }
           },
@@ -1470,7 +1454,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0140",
-                "website": "https://iron-skillet.example",
+                "website": "https://iron-skillet-kimbrough-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -1509,7 +1493,7 @@
             "qlooRank": 12,
             "address": "4352 Kimbrough St, Virginia Beach, VA",
             "phone": "+1 757-555-0140",
-            "website": "https://iron-skillet.example",
+            "website": "https://iron-skillet-kimbrough-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1524,11 +1508,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house -6 ranks",
+                "label": "ranks 6 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 6,
             "ubiquityPenalty": 0.5,
@@ -1548,14 +1532,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "medium",
-              "confidenceWhy": "Rank 12 of 28 in a top area, but the search widened to 3,500 m.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 12 of 28 in a top area, but the search widened to 3,500 m and the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 27.1
             }
           },
@@ -1637,7 +1621,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0131",
-                "website": "https://tidwell-s-table.example",
+                "website": "https://tidwell-s-table-sycamore-ave.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 3.7,
@@ -1676,7 +1660,7 @@
             "qlooRank": 15,
             "address": "2099 Sycamore Ave, Virginia Beach, VA",
             "phone": "+1 948-555-0131",
-            "website": "https://tidwell-s-table.example",
+            "website": "https://tidwell-s-table-sycamore-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1691,11 +1675,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house +3 ranks",
+                "label": "ranks 3 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 18,
             "ubiquityPenalty": 0.3928571428571429,
@@ -1713,12 +1697,12 @@
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "low",
               "confidenceWhy": "Rank 15 of 28 in a top area, but the search widened to 3,500 m and it ranked in the lower half.",
-              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything. Closed Friday: visit on Thursday.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 26.6
             }
           },
@@ -1805,7 +1789,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0170",
-                "website": "https://cho-records.example",
+                "website": "https://cho-records-9th-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 3.9,
@@ -1844,7 +1828,7 @@
             "qlooRank": 14,
             "address": "3512 9th St, Virginia Beach, VA",
             "phone": "+1 948-555-0170",
-            "website": "https://cho-records.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1859,11 +1843,11 @@
                 "ledgerRef": "Q17"
               },
               {
-                "label": "tonight vs house -7 ranks",
+                "label": "ranks 7 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q18"
               }
             ],
-            "tileName": "Baylake Pines",
+            "tileName": "Virginia Beach",
             "hoursOnDay": "11:00-19:00",
             "houseRank": 7,
             "ubiquityPenalty": 0.5,
@@ -1883,14 +1867,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "medium",
-              "confidenceWhy": "Rank 14 of 28 in a top area, but the search widened to 3,500 m.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 14 of 28 in a top area, but the search widened to 3,500 m and the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q17",
                 "Q18"
               ],
-              "areaName": "Baylake Pines",
+              "areaName": "Virginia Beach",
               "distanceKm": 29
             }
           },
@@ -1972,7 +1956,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0152",
-                "website": "https://mcbride-s-tavern.example",
+                "website": "https://mcbride-s-tavern-3rd-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -2011,7 +1995,7 @@
             "qlooRank": 2,
             "address": "1094 3rd St, Hampton, VA",
             "phone": "+1 948-555-0152",
-            "website": "https://mcbride-s-tavern.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2026,7 +2010,7 @@
                 "ledgerRef": "Q19"
               },
               {
-                "label": "tonight vs house +6 ranks",
+                "label": "ranks 6 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q20"
               }
             ],
@@ -2135,7 +2119,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0134",
-                "website": "https://vance-barbers.example",
+                "website": "https://vance-barbers-9th-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -2174,7 +2158,7 @@
             "qlooRank": 3,
             "address": "457 9th St, Hampton, VA",
             "phone": "+1 757-555-0134",
-            "website": "https://vance-barbers.example",
+            "website": "https://vance-barbers-9th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2189,7 +2173,7 @@
                 "ledgerRef": "Q19"
               },
               {
-                "label": "tonight vs house +3 ranks",
+                "label": "ranks 3 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q20"
               }
             ],
@@ -2298,7 +2282,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0145",
-                "website": "https://ingram-barbers.example",
+                "website": "https://ingram-barbers-5th-ave.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.5,
@@ -2337,7 +2321,7 @@
             "qlooRank": 1,
             "address": "3318 5th Ave, Hampton, VA",
             "phone": "+1 948-555-0145",
-            "website": "https://ingram-barbers.example",
+            "website": "https://ingram-barbers-5th-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2352,7 +2336,7 @@
                 "ledgerRef": "Q19"
               },
               {
-                "label": "tonight vs house +1 ranks",
+                "label": "ranks 1 place higher here than for the room's usual crowd",
                 "ledgerRef": "Q20"
               }
             ],
@@ -2466,7 +2450,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0148",
-                "website": "https://hagan-s-tavern.example",
+                "website": "https://hagan-s-tavern-pruitt-ave.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.1,
@@ -2505,7 +2489,7 @@
             "qlooRank": 5,
             "address": "2948 Pruitt Ave, Hampton, VA",
             "phone": "+1 757-555-0148",
-            "website": "https://hagan-s-tavern.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2520,7 +2504,7 @@
                 "ledgerRef": "Q19"
               },
               {
-                "label": "tonight vs house +4 ranks",
+                "label": "ranks 4 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q20"
               }
             ],
@@ -2638,7 +2622,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0184",
-                "website": "https://night-owl-diner.example",
+                "website": "https://night-owl-diner-5th-ave.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 3.9,
@@ -2677,7 +2661,7 @@
             "qlooRank": 6,
             "address": "4324 5th Ave, Hampton, VA",
             "phone": "+1 948-555-0184",
-            "website": "https://night-owl-diner.example",
+            "website": "https://night-owl-diner-5th-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2692,7 +2676,7 @@
                 "ledgerRef": "Q19"
               },
               {
-                "label": "tonight vs house -5 ranks",
+                "label": "ranks 5 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q20"
               }
             ],
@@ -2717,7 +2701,7 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "low",
-              "confidenceWhy": "Rank 6 of 9 in a top area, but the list was short and it ranked in the lower half.",
+              "confidenceWhy": "Rank 6 of 9 in a top area, but the list was short, it ranked in the lower half and the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q19",
@@ -2805,7 +2789,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0126",
-                "website": "https://norwood-s-diner.example",
+                "website": "https://norwood-s-diner-delmar-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.5,
@@ -2844,7 +2828,7 @@
             "qlooRank": 7,
             "address": "1287 Delmar St, Hampton, VA",
             "phone": "+1 757-555-0126",
-            "website": "https://norwood-s-diner.example",
+            "website": "https://norwood-s-diner-delmar-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2859,7 +2843,7 @@
                 "ledgerRef": "Q19"
               },
               {
-                "label": "tonight vs house -4 ranks",
+                "label": "ranks 4 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q20"
               }
             ],
@@ -2880,7 +2864,7 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "low",
-              "confidenceWhy": "Rank 7 of 9 in a top area, but the list was short and it ranked in the lower half.",
+              "confidenceWhy": "Rank 7 of 9 in a top area, but the list was short, it ranked in the lower half and the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q19",
@@ -2973,7 +2957,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0127",
-                "website": "https://wren-s.example",
+                "website": "https://wren-s-pruitt-ave.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -3012,7 +2996,7 @@
             "qlooRank": 6,
             "address": "653 Pruitt Ave, Portsmouth, VA",
             "phone": "+1 948-555-0127",
-            "website": "https://wren-s.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3027,11 +3011,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house +16 ranks",
+                "label": "ranks 16 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "16:00-02:00",
             "houseRank": 22,
             "ubiquityPenalty": 0,
@@ -3048,13 +3032,13 @@
               ],
               "activation": "Ask to put up a poster.",
               "confidence": "medium",
-              "confidenceWhy": "Rank 6 of 30 in a top area, but the search widened to 3,500 m.",
+              "confidenceWhy": "Rank 6 of 30 in a top area; the room's usual crowd ranks it 16 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 17.5
             }
           },
@@ -3141,7 +3125,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0183",
-                "website": "https://garvey-s-tavern.example",
+                "website": "https://garvey-s-tavern-kimbrough-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -3180,7 +3164,7 @@
             "qlooRank": 5,
             "address": "370 Kimbrough St, Suffolk, VA",
             "phone": "+1 757-555-0183",
-            "website": "https://garvey-s-tavern.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3195,11 +3179,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house +12 ranks",
+                "label": "ranks 12 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "16:00-02:00",
             "houseRank": 17,
             "ubiquityPenalty": 0.09999999999999998,
@@ -3216,13 +3200,13 @@
               ],
               "activation": "Ask to put up a poster.",
               "confidence": "medium",
-              "confidenceWhy": "Rank 5 of 30 in a top area, but the search widened to 3,500 m.",
+              "confidenceWhy": "Rank 5 of 30 in a top area; the room's usual crowd ranks it 12 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 19.2
             }
           },
@@ -3309,7 +3293,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0170",
-                "website": "https://grimsley-s-record-shop.example",
+                "website": "https://grimsley-s-record-shop-hartley-rd.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -3348,7 +3332,7 @@
             "qlooRank": 10,
             "address": "2037 Hartley Rd, Portsmouth, VA",
             "phone": "+1 757-555-0170",
-            "website": "https://grimsley-s-record-shop.example",
+            "website": "https://grimsley-s-record-shop-hartley-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3363,11 +3347,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house +10 ranks",
+                "label": "ranks 10 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "11:00-19:00",
             "houseRank": 20,
             "ubiquityPenalty": 0.16666666666666674,
@@ -3388,13 +3372,13 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "medium",
-              "confidenceWhy": "Rank 10 of 30 in a top area, but the search widened to 3,500 m.",
+              "confidenceWhy": "Rank 10 of 30 in a top area; the room's usual crowd ranks it 10 places lower, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 20.4
             }
           },
@@ -3471,7 +3455,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0188",
-                "website": "https://mabry-salon.example",
+                "website": "https://mabry-salon-delmar-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.4,
@@ -3510,7 +3494,7 @@
             "qlooRank": 7,
             "address": "2633 Delmar St, Portsmouth, VA",
             "phone": "+1 757-555-0188",
-            "website": "https://mabry-salon.example",
+            "website": "https://mabry-salon-delmar-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3525,11 +3509,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house +6 ranks",
+                "label": "ranks 6 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "09:00-18:00",
             "houseRank": 13,
             "ubiquityPenalty": 0.29999999999999993,
@@ -3541,14 +3525,14 @@
                 }
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
-              "confidence": "medium",
+              "confidence": "low",
               "confidenceWhy": "Rank 7 of 30 in a top area, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 21.2
             }
           },
@@ -3635,7 +3619,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0179",
-                "website": "https://mockingbird-kitchen.example",
+                "website": "https://mockingbird-kitchen-alder-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -3674,7 +3658,7 @@
             "qlooRank": 8,
             "address": "3058 Alder St, Portsmouth, VA",
             "phone": "+1 948-555-0179",
-            "website": "https://mockingbird-kitchen.example",
+            "website": "https://mockingbird-kitchen-alder-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3689,11 +3673,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house +4 ranks",
+                "label": "ranks 4 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 12,
             "ubiquityPenalty": 0.3666666666666667,
@@ -3713,14 +3697,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "medium",
+              "confidence": "low",
               "confidenceWhy": "Rank 8 of 30 in a top area, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 18.1
             }
           },
@@ -3802,7 +3786,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0176",
-                "website": "https://ambrose-s-barber-shop.example",
+                "website": "https://ambrose-s-barber-shop-kimbrough-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.8,
@@ -3841,7 +3825,7 @@
             "qlooRank": 2,
             "address": "2182 Kimbrough St, Portsmouth, VA",
             "phone": "+1 757-555-0176",
-            "website": "https://ambrose-s-barber-shop.example",
+            "website": "https://ambrose-s-barber-shop-kimbrough-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3856,11 +3840,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house -1 ranks",
+                "label": "ranks 1 place lower here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "09:00-19:00",
             "houseRank": 1,
             "ubiquityPenalty": 0.5,
@@ -3876,14 +3860,14 @@
                 }
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
-              "confidence": "medium",
-              "confidenceWhy": "Rank 2 of 30 in a top area, but the search widened to 3,500 m.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 2 of 30 in a top area, but the search widened to 3,500 m and the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 16.9
             }
           },
@@ -3970,7 +3954,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0198",
-                "website": "https://fresh-fade.example",
+                "website": "https://fresh-fade-pruitt-ave.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.5,
@@ -4009,7 +3993,7 @@
             "qlooRank": 3,
             "address": "590 Pruitt Ave, Suffolk, VA",
             "phone": "+1 948-555-0198",
-            "website": "https://fresh-fade.example",
+            "website": "https://fresh-fade-pruitt-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4024,11 +4008,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house 0 ranks",
+                "label": "ranks the same here as for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "09:00-19:00",
             "houseRank": 3,
             "ubiquityPenalty": 0.5,
@@ -4055,7 +4039,7 @@
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 21.8
             }
           },
@@ -4137,7 +4121,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0162",
-                "website": "https://jessup-hair.example",
+                "website": "https://jessup-hair-9th-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -4176,7 +4160,7 @@
             "qlooRank": 12,
             "address": "4211 9th St, Suffolk, VA",
             "phone": "+1 948-555-0162",
-            "website": "https://jessup-hair.example",
+            "website": "https://jessup-hair-9th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4191,11 +4175,11 @@
                 "ledgerRef": "Q22"
               },
               {
-                "label": "tonight vs house +4 ranks",
+                "label": "ranks 4 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q23"
               }
             ],
-            "tileName": "Huntersville",
+            "tileName": "Suffolk (Huntersville)",
             "hoursOnDay": "09:00-18:00",
             "houseRank": 16,
             "ubiquityPenalty": 0.3666666666666667,
@@ -4211,14 +4195,14 @@
                 }
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
-              "confidence": "medium",
+              "confidence": "low",
               "confidenceWhy": "Rank 12 of 30 in a top area, but the search widened to 3,500 m.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q22",
                 "Q23"
               ],
-              "areaName": "Huntersville",
+              "areaName": "Suffolk (Huntersville)",
               "distanceKm": 20.6
             }
           }
@@ -4658,7 +4642,7 @@
       },
       "prePost": {
         "status": "ok",
-        "summary": "8 spots within 1.5 km open on show night. Ticketmaster doesn't list an age policy, so bars stay on your list but off anything fans see.",
+        "summary": "8 spots within 1.5 km open on show night. Ticketmaster doesn't list an age policy, so bars stay on your list but off anything fans see. Left out 2 places that close before the evening.",
         "results": [
           {
             "entity": {
@@ -4738,7 +4722,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0164",
-                "website": "https://langford-s-bar.example",
+                "website": "https://langford-s-bar-whitfield-rd.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -4782,662 +4766,7 @@
                 "ledgerRef": "Q32"
               },
               {
-                "label": "tonight vs house +13 ranks",
-                "ledgerRef": "Q33"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "0000653a-7229-4aab-ab5a-f0cb259c0041",
-              "name": "Blue Plate Kitchen",
-              "subtype": "urn:entity:place",
-              "popularity": 0.816,
-              "affinity": 0.9129,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:restaurant",
-                  "name": "Restaurant",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:trendy",
-                  "name": "Trendy",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:date_night",
-                  "name": "Date night",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "4323 Ashby Ln, Hampton, VA",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ]
-                },
-                "phone": "+1 757-555-0131",
-                "website": "https://blue-plate-kitchen.example",
-                "price_level": 2,
-                "is_closed": false,
-                "business_rating": 4.6,
-                "geocode": {
-                  "city": "Hampton",
-                  "admin1_region": "VA",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "23669"
-              },
-              "location": {
-                "lat": 37.043444,
-                "lon": -76.370919,
-                "geohash": "dq9dwps3sw7q"
-              },
-              "distanceM": 1343.6,
-              "explainability": [
-                {
-                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
-                  "score": 0.386
-                },
-                {
-                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
-                  "score": 0.409
-                }
-              ]
-            },
-            "deltaRank": -1,
-            "expectedShare": 0.029629629629629634,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "restaurant",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q32"
-              },
-              {
-                "label": "tonight vs house -1 ranks",
-                "ledgerRef": "Q33"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "0000bf2a-d5e3-4f02-aab7-f0cb25990001",
-              "name": "Sandoval's Bar",
-              "subtype": "urn:entity:place",
-              "popularity": 0.67,
-              "affinity": 0.7944,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:bar",
-                  "name": "Bar",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
-                  "name": "Neighborhood feel",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:happy_hour",
-                  "name": "Happy hour",
-                  "type": "urn:tag:good_for:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:late_night",
-                  "name": "Late night",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "4614 Prescott Ave, Hampton, VA",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ]
-                },
-                "phone": "+1 948-555-0171",
-                "website": "https://sandoval-s-bar.example",
-                "price_level": 3,
-                "is_closed": false,
-                "business_rating": 4.7,
-                "geocode": {
-                  "city": "Hampton",
-                  "admin1_region": "VA",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "23666"
-              },
-              "location": {
-                "lat": 37.041305,
-                "lon": -76.393702,
-                "geohash": "dq9dtx5v1xxp"
-              },
-              "distanceM": 1318.4,
-              "explainability": [
-                {
-                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
-                  "score": 0.635
-                },
-                {
-                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
-                  "score": 0.637
-                }
-              ]
-            },
-            "deltaRank": 6,
-            "expectedShare": 0.027777777777777787,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": false,
-            "category": "bar",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q32"
-              },
-              {
-                "label": "tonight vs house +6 ranks",
-                "ledgerRef": "Q33"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "0000b1c2-f677-4349-afe9-f0cb259901f1",
-              "name": "Long Table",
-              "subtype": "urn:entity:place",
-              "popularity": 0.545,
-              "affinity": 0.7715,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:restaurant",
-                  "name": "Restaurant",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:cozy",
-                  "name": "Cozy",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:lively",
-                  "name": "Lively",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:date_night",
-                  "name": "Date night",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "2633 Alder St, Hampton, VA",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ]
-                },
-                "phone": "+1 948-555-0124",
-                "website": "https://long-table.example",
-                "price_level": 3,
-                "is_closed": false,
-                "business_rating": 4.1,
-                "geocode": {
-                  "city": "Hampton",
-                  "admin1_region": "VA",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "23666"
-              },
-              "location": {
-                "lat": 37.043023,
-                "lon": -76.386243,
-                "geohash": "dq9dtz3ppxbz"
-              },
-              "distanceM": 1021.7,
-              "explainability": [
-                {
-                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
-                  "score": 0.419
-                },
-                {
-                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
-                  "score": 0.431
-                }
-              ]
-            },
-            "deltaRank": 11,
-            "expectedShare": 0.025925925925925932,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "restaurant",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q32"
-              },
-              {
-                "label": "tonight vs house +11 ranks",
-                "ledgerRef": "Q33"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "0000c220-077a-4c40-a497-f0cb259c02b1",
-              "name": "Cho's",
-              "subtype": "urn:entity:place",
-              "popularity": 0.521,
-              "affinity": 0.7076,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:bar",
-                  "name": "Bar",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:cozy",
-                  "name": "Cozy",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:late_night",
-                  "name": "Late night",
-                  "type": "urn:tag:good_for:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:live_music",
-                  "name": "Live music",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "3077 Birchwood Dr, Hampton, VA",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ]
-                },
-                "phone": "+1 948-555-0112",
-                "website": "https://cho-s.example",
-                "price_level": 1,
-                "is_closed": false,
-                "business_rating": 4.8,
-                "geocode": {
-                  "city": "Hampton",
-                  "admin1_region": "VA",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "23661"
-              },
-              "location": {
-                "lat": 37.026731,
-                "lon": -76.372067,
-                "geohash": "dq9dwhe83fgm"
-              },
-              "distanceM": 1211.1,
-              "explainability": [
-                {
-                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
-                  "score": 0.512
-                },
-                {
-                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
-                  "score": 0.502
-                }
-              ]
-            },
-            "deltaRank": 8,
-            "expectedShare": 0.02407407407407408,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": false,
-            "category": "bar",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q32"
-              },
-              {
-                "label": "tonight vs house +8 ranks",
-                "ledgerRef": "Q33"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "00006c95-43c5-4774-a11f-f0cb25990211",
-              "name": "Albright's Table",
-              "subtype": "urn:entity:place",
-              "popularity": 0.768,
-              "affinity": 0.7018,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:restaurant",
-                  "name": "Restaurant",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:laid_back",
-                  "name": "Laid-back",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:retro",
-                  "name": "Retro",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:groups",
-                  "name": "Groups",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "2384 14th St, Hampton, VA",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ]
-                },
-                "phone": "+1 757-555-0150",
-                "website": "https://albright-s-table.example",
-                "price_level": 3,
-                "is_closed": false,
-                "business_rating": 4.8,
-                "geocode": {
-                  "city": "Hampton",
-                  "admin1_region": "VA",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "23666"
-              },
-              "location": {
-                "lat": 37.042471,
-                "lon": -76.382355,
-                "geohash": "dq9dtzkh41h4"
-              },
-              "distanceM": 868.5,
-              "explainability": [
-                {
-                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
-                  "score": 0.421
-                },
-                {
-                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
-                  "score": 0.437
-                }
-              ]
-            },
-            "deltaRank": -4,
-            "expectedShare": 0.022222222222222227,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "restaurant",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q32"
-              },
-              {
-                "label": "tonight vs house -4 ranks",
+                "label": "ranks 13 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q33"
               }
             ]
@@ -5525,7 +4854,7 @@
                   ]
                 },
                 "phone": "+1 757-555-0191",
-                "website": "https://night-owl-diner.example",
+                "website": "https://night-owl-diner-ashby-ln.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.7,
@@ -5569,7 +4898,662 @@
                 "ledgerRef": "Q32"
               },
               {
-                "label": "tonight vs house +5 ranks",
+                "label": "ranks 5 places higher here than for the room's usual crowd",
+                "ledgerRef": "Q33"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "00006c95-43c5-4774-a11f-f0cb25990211",
+              "name": "Albright's Table",
+              "subtype": "urn:entity:place",
+              "popularity": 0.768,
+              "affinity": 0.7018,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:laid_back",
+                  "name": "Laid-back",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:retro",
+                  "name": "Retro",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "2384 14th St, Hampton, VA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 757-555-0150",
+                "website": "https://albright-s-table-14th-st.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.8,
+                "geocode": {
+                  "city": "Hampton",
+                  "admin1_region": "VA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "23666"
+              },
+              "location": {
+                "lat": 37.042471,
+                "lon": -76.382355,
+                "geohash": "dq9dtzkh41h4"
+              },
+              "distanceM": 868.5,
+              "explainability": [
+                {
+                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
+                  "score": 0.421
+                },
+                {
+                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
+                  "score": 0.437
+                }
+              ]
+            },
+            "deltaRank": -4,
+            "expectedShare": 0.022222222222222227,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "category": "restaurant",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q32"
+              },
+              {
+                "label": "ranks 4 places lower here than for the room's usual crowd",
+                "ledgerRef": "Q33"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000b1c2-f677-4349-afe9-f0cb259901f1",
+              "name": "Long Table",
+              "subtype": "urn:entity:place",
+              "popularity": 0.545,
+              "affinity": 0.7715,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:lively",
+                  "name": "Lively",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:date_night",
+                  "name": "Date night",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "2633 Alder St, Hampton, VA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 948-555-0124",
+                "website": "https://long-table-alder-st.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.1,
+                "geocode": {
+                  "city": "Hampton",
+                  "admin1_region": "VA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "23666"
+              },
+              "location": {
+                "lat": 37.043023,
+                "lon": -76.386243,
+                "geohash": "dq9dtz3ppxbz"
+              },
+              "distanceM": 1021.7,
+              "explainability": [
+                {
+                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
+                  "score": 0.419
+                },
+                {
+                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
+                  "score": 0.431
+                }
+              ]
+            },
+            "deltaRank": 11,
+            "expectedShare": 0.025925925925925932,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "category": "restaurant",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q32"
+              },
+              {
+                "label": "ranks 11 places higher here than for the room's usual crowd",
+                "ledgerRef": "Q33"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000c220-077a-4c40-a497-f0cb259c02b1",
+              "name": "Cho's",
+              "subtype": "urn:entity:place",
+              "popularity": 0.521,
+              "affinity": 0.7076,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "3077 Birchwood Dr, Hampton, VA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ]
+                },
+                "phone": "+1 948-555-0112",
+                "website": "https://cho-s-birchwood-dr.example",
+                "price_level": 1,
+                "is_closed": false,
+                "business_rating": 4.8,
+                "geocode": {
+                  "city": "Hampton",
+                  "admin1_region": "VA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "23661"
+              },
+              "location": {
+                "lat": 37.026731,
+                "lon": -76.372067,
+                "geohash": "dq9dwhe83fgm"
+              },
+              "distanceM": 1211.1,
+              "explainability": [
+                {
+                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
+                  "score": 0.512
+                },
+                {
+                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
+                  "score": 0.502
+                }
+              ]
+            },
+            "deltaRank": 8,
+            "expectedShare": 0.02407407407407408,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": false,
+            "category": "bar",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q32"
+              },
+              {
+                "label": "ranks 8 places higher here than for the room's usual crowd",
+                "ledgerRef": "Q33"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000bf2a-d5e3-4f02-aab7-f0cb25990001",
+              "name": "Sandoval's Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.67,
+              "affinity": 0.7944,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:happy_hour",
+                  "name": "Happy hour",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "4614 Prescott Ave, Hampton, VA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ]
+                },
+                "phone": "+1 948-555-0171",
+                "website": "https://sandoval-s-bar-prescott-ave.example",
+                "price_level": 3,
+                "is_closed": false,
+                "business_rating": 4.7,
+                "geocode": {
+                  "city": "Hampton",
+                  "admin1_region": "VA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "23666"
+              },
+              "location": {
+                "lat": 37.041305,
+                "lon": -76.393702,
+                "geohash": "dq9dtx5v1xxp"
+              },
+              "distanceM": 1318.4,
+              "explainability": [
+                {
+                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
+                  "score": 0.635
+                },
+                {
+                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
+                  "score": 0.637
+                }
+              ]
+            },
+            "deltaRank": 6,
+            "expectedShare": 0.027777777777777787,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": false,
+            "category": "bar",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q32"
+              },
+              {
+                "label": "ranks 6 places higher here than for the room's usual crowd",
+                "ledgerRef": "Q33"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000653a-7229-4aab-ab5a-f0cb259c0041",
+              "name": "Blue Plate Kitchen",
+              "subtype": "urn:entity:place",
+              "popularity": 0.816,
+              "affinity": 0.9129,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:trendy",
+                  "name": "Trendy",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:date_night",
+                  "name": "Date night",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "4323 Ashby Ln, Hampton, VA",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T11:00",
+                      "closes": "T22:00"
+                    }
+                  ]
+                },
+                "phone": "+1 757-555-0131",
+                "website": "https://blue-plate-kitchen-ashby-ln.example",
+                "price_level": 2,
+                "is_closed": false,
+                "business_rating": 4.6,
+                "geocode": {
+                  "city": "Hampton",
+                  "admin1_region": "VA",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "23669"
+              },
+              "location": {
+                "lat": 37.043444,
+                "lon": -76.370919,
+                "geohash": "dq9dwps3sw7q"
+              },
+              "distanceM": 1343.6,
+              "explainability": [
+                {
+                  "entityId": "0000abb8-403d-46d7-8a90-c6f76677a2bc",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "00008f05-684d-484f-8594-a9ae375b52a1",
+                  "score": 0.386
+                },
+                {
+                  "entityId": "00002bea-860e-4dac-80f3-aa013b0ccb5b",
+                  "score": 0.409
+                }
+              ]
+            },
+            "deltaRank": -1,
+            "expectedShare": 0.029629629629629634,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": true,
+            "category": "restaurant",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q32"
+              },
+              {
+                "label": "ranks 1 place lower here than for the room's usual crowd",
                 "ledgerRef": "Q33"
               }
             ]
@@ -5657,7 +5641,7 @@
                   ]
                 },
                 "phone": "+1 948-555-0160",
-                "website": "https://waddell-s-bar.example",
+                "website": "https://waddell-s-bar-harlow-rd.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.9,
@@ -5701,7 +5685,7 @@
                 "ledgerRef": "Q32"
               },
               {
-                "label": "tonight vs house +9 ranks",
+                "label": "ranks 9 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q33"
               }
             ]
@@ -6294,23 +6278,23 @@
         "summary": "3 lines, each built only from approved Qloo tags.",
         "results": [
           {
-            "text": "R&B and soul at Hampton Coliseum, Saturday, Dec 19.",
+            "text": "Dorian Pike: R&B and soul at Hampton Coliseum, Saturday, Dec 19.",
             "tagIds": [
               "urn:tag:genre:music:r_and_b",
               "urn:tag:genre:music:soul"
             ]
           },
           {
-            "text": "For the comedy crowd: Saturday night at Hampton Coliseum.",
+            "text": "Dorian Pike for the hip-hop crowd: Saturday night at Hampton Coliseum.",
             "tagIds": [
-              "urn:tag:audience:qloo:comedy_fans"
+              "urn:tag:genre:music:hip_hop"
             ]
           },
           {
-            "text": "Hip-hop and jazz, live at Hampton Coliseum.",
+            "text": "Dorian Pike: Jazz and americana, live at Hampton Coliseum.",
             "tagIds": [
-              "urn:tag:genre:music:hip_hop",
-              "urn:tag:genre:music:jazz"
+              "urn:tag:genre:music:jazz",
+              "urn:tag:genre:music:americana"
             ]
           }
         ],
@@ -6323,7 +6307,7 @@
       }
     },
     "narration": {
-      "summary": "Dorian Pike, Sidecar and Reggie Collier at Hampton Coliseum, Saturday, Dec 19. This crowd stands out from the room's usual crowd in 5 areas; the strongest, Baylake Pines, is about 1.8 times the room's usual crowd. The sheet suggests 22 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward stand-up comedy, comedy and sitcom.",
+      "summary": "Dorian Pike, Sidecar and Reggie Collier at Hampton Coliseum, Saturday, Dec 19. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Virginia Beach, is about 1.8 times the room's usual crowd. The sheet suggests 22 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward stand-up comedy, sitcom and friendship.",
       "tileWhy": [
         {
           "geohash": "dq9cgz",
@@ -6338,10 +6322,6 @@
           "text": "About 1.6 times the room's usual crowd. 80th percentile for this crowd, 30th for the room's usual crowd."
         },
         {
-          "geohash": "dq9cfy",
-          "text": "About 1.4 times the room's usual crowd. 81st percentile for this crowd, 45th for the room's usual crowd."
-        },
-        {
           "geohash": "dq99t5",
           "text": "About 1.3 times the room's usual crowd. 80th percentile for this crowd, 49th for the room's usual crowd."
         }
@@ -6349,35 +6329,35 @@
       "partnerLines": [
         {
           "entityId": "0000a88e-32d1-4622-a7f0-f0cb25c50051",
-          "text": "A bar in Baylake Pines, 1st on that area's list for this crowd."
+          "text": "A bar in Virginia Beach, 1st on that area's list for this crowd."
         },
         {
           "entityId": "00007fe2-907e-4971-aa3d-f0cb25d00041",
-          "text": "A barbershop in Baylake Pines, 2nd on that area's list for this crowd."
+          "text": "A barbershop in Virginia Beach, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "00000f2d-d276-4d7a-ad9a-f0cb25c50041",
-          "text": "A barbershop in Baylake Pines, 3rd on that area's list for this crowd."
+          "text": "A barbershop in Virginia Beach, 3rd on that area's list for this crowd."
         },
         {
           "entityId": "000012c0-6312-4e2b-a078-f0cb25d00051",
-          "text": "A bar in Baylake Pines, 9th on that area's list for this crowd."
+          "text": "A bar in Virginia Beach, 9th on that area's list for this crowd."
         },
         {
           "entityId": "0000a8cc-77e2-491b-ad93-f0cb257a03a1",
-          "text": "A beauty salon in Baylake Pines, 8th on that area's list for this crowd."
+          "text": "A beauty salon in Virginia Beach, 8th on that area's list for this crowd."
         },
         {
           "entityId": "00009d2f-e32a-4008-ab9b-f0cb256f0311",
-          "text": "A restaurant in Baylake Pines, 12th on that area's list for this crowd."
+          "text": "A restaurant in Virginia Beach, 12th on that area's list for this crowd."
         },
         {
           "entityId": "0000619f-aea7-4e5c-a012-f0cb256f0061",
-          "text": "A restaurant in Baylake Pines, 15th on that area's list for this crowd."
+          "text": "A restaurant in Virginia Beach, 15th on that area's list for this crowd."
         },
         {
           "entityId": "00004af9-a3f1-49a8-ad1f-f0cb257a0471",
-          "text": "A record store in Baylake Pines, 14th on that area's list for this crowd."
+          "text": "A record store in Virginia Beach, 14th on that area's list for this crowd."
         },
         {
           "entityId": "000082ef-de69-463b-ac00-f0cb25b400c1",
@@ -6405,35 +6385,35 @@
         },
         {
           "entityId": "00003c00-03ee-4e73-aa01-f0cb253a0051",
-          "text": "A bar in Huntersville, 6th on that area's list for this crowd."
+          "text": "A bar in Suffolk (Huntersville), 6th on that area's list for this crowd."
         },
         {
           "entityId": "00006755-7b31-42f7-a7a6-f0cb253a0111",
-          "text": "A bar in Huntersville, 5th on that area's list for this crowd."
+          "text": "A bar in Suffolk (Huntersville), 5th on that area's list for this crowd."
         },
         {
           "entityId": "0000d5ee-3bf4-4629-a55b-f0cb25380161",
-          "text": "A record store in Huntersville, 10th on that area's list for this crowd."
+          "text": "A record store in Suffolk (Huntersville), 10th on that area's list for this crowd."
         },
         {
           "entityId": "0000d4ce-3a69-4acd-a0c1-f0cb25380101",
-          "text": "A beauty salon in Huntersville, 7th on that area's list for this crowd."
+          "text": "A beauty salon in Suffolk (Huntersville), 7th on that area's list for this crowd."
         },
         {
           "entityId": "000098ab-bb14-4b3e-a95e-f0cb253b0241",
-          "text": "A restaurant in Huntersville, 8th on that area's list for this crowd."
+          "text": "A restaurant in Suffolk (Huntersville), 8th on that area's list for this crowd."
         },
         {
           "entityId": "0000e56f-f63c-4de2-aa9d-f0cb253a01c1",
-          "text": "A barbershop in Huntersville, 2nd on that area's list for this crowd."
+          "text": "A barbershop in Suffolk (Huntersville), 2nd on that area's list for this crowd."
         },
         {
           "entityId": "0000aec3-b0cf-4326-a426-f0cb253802e1",
-          "text": "A barbershop in Huntersville, 3rd on that area's list for this crowd."
+          "text": "A barbershop in Suffolk (Huntersville), 3rd on that area's list for this crowd."
         },
         {
           "entityId": "00002586-33a8-4763-a8a0-f0cb252d0351",
-          "text": "A beauty salon in Huntersville, 12th on that area's list for this crowd."
+          "text": "A beauty salon in Suffolk (Huntersville), 12th on that area's list for this crowd."
         }
       ],
       "templated": true
@@ -6679,10 +6659,10 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 2009,
+        "bytes": 2016,
         "cacheHit": false,
         "resultCount": 1,
-        "note": "node Q1 signal check; fixture world: synthetic response; signal check: which ids Qloo has taste data for",
+        "note": "node Q1 signal check; fixture world: synthetic response; which ids Qloo has taste data for",
         "id": "Q8"
       },
       {
@@ -6905,7 +6885,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 11727,
+        "bytes": 11773,
         "cacheHit": false,
         "resultCount": 5,
         "note": "node Q9 partners, tile 1; fixture world: synthetic response",
@@ -6948,7 +6928,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 62383,
+        "bytes": 62672,
         "cacheHit": false,
         "resultCount": 28,
         "note": "node Q9 partners, tile 1 (3,500 m); fixture world: synthetic response",
@@ -6998,7 +6978,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 54998,
+        "bytes": 55287,
         "cacheHit": false,
         "resultCount": 28,
         "note": "node Q9 house twin, tile 1; fixture world: synthetic response",
@@ -7041,7 +7021,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 20270,
+        "bytes": 20353,
         "cacheHit": false,
         "resultCount": 9,
         "note": "node Q9 partners, tile 2; fixture world: synthetic response",
@@ -7091,7 +7071,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 17595,
+        "bytes": 17678,
         "cacheHit": false,
         "resultCount": 9,
         "note": "node Q9 house twin, tile 2; fixture world: synthetic response",
@@ -7134,7 +7114,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 15866,
+        "bytes": 15947,
         "cacheHit": false,
         "resultCount": 7,
         "note": "node Q9 partners, tile 3; fixture world: synthetic response",
@@ -7177,7 +7157,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 65388,
+        "bytes": 65722,
         "cacheHit": false,
         "resultCount": 30,
         "note": "node Q9 partners, tile 3 (3,500 m); fixture world: synthetic response",
@@ -7227,7 +7207,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 57506,
+        "bytes": 57840,
         "cacheHit": false,
         "resultCount": 30,
         "note": "node Q9 house twin, tile 3; fixture world: synthetic response",
@@ -7264,7 +7244,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 54498,
+        "bytes": 54787,
         "cacheHit": false,
         "resultCount": 28,
         "note": "node Q9 popularity twin, tile 1; fixture world: synthetic response",
@@ -7301,7 +7281,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 17437,
+        "bytes": 17520,
         "cacheHit": false,
         "resultCount": 9,
         "note": "node Q9 popularity twin, tile 2; fixture world: synthetic response",
@@ -7338,7 +7318,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 56976,
+        "bytes": 57310,
         "cacheHit": false,
         "resultCount": 30,
         "note": "node Q9 popularity twin, tile 3; fixture world: synthetic response",
@@ -7501,7 +7481,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 37702,
+        "bytes": 37876,
         "cacheHit": false,
         "resultCount": 17,
         "note": "node Q10 pre/post; fixture world: synthetic response",
@@ -7546,7 +7526,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 47573,
+        "bytes": 47747,
         "cacheHit": false,
         "resultCount": 17,
         "note": "node Q10 house twin; fixture world: synthetic response",
@@ -7737,27 +7717,22 @@
     "budgetSplit": [
       {
         "geohash": "dq9cgz",
-        "share": 0.37,
+        "share": 0.317,
         "label": "heuristic, not a forecast"
       },
       {
         "geohash": "dq9dyp",
-        "share": 0.1,
+        "share": 0.317,
         "label": "heuristic, not a forecast"
       },
       {
         "geohash": "dq99u8",
-        "share": 0.226,
-        "label": "heuristic, not a forecast"
-      },
-      {
-        "geohash": "dq9cfy",
-        "share": 0.1,
+        "share": 0.192,
         "label": "heuristic, not a forecast"
       },
       {
         "geohash": "dq99t5",
-        "share": 0.204,
+        "share": 0.174,
         "label": "heuristic, not a forecast"
       }
     ],
@@ -7770,13 +7745,101 @@
           "partners": 8,
           "notInPopularTop": 6,
           "ledgerRef": "Q24",
-          "tileName": "Baylake Pines"
+          "popularTop": [
+            {
+              "entityId": "00004d41-b1ad-4c74-ab6e-f0cb257a0261",
+              "name": "Slade's Kitchen",
+              "rank": 1,
+              "onSheet": false
+            },
+            {
+              "entityId": "00006a33-dcb6-4dad-a367-f0cb256f0541",
+              "name": "Goins' Tavern",
+              "rank": 2,
+              "onSheet": false
+            },
+            {
+              "entityId": "00007ae7-4e36-4eae-a5b7-f0cb256f0261",
+              "name": "Fontaine's Table",
+              "rank": 3,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000beaa-746a-409b-a05b-f0cb256f04d1",
+              "name": "Moody & Daughters",
+              "rank": 4,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000a8cc-77e2-491b-ad93-f0cb257a03a1",
+              "name": "Maddox Salon",
+              "rank": 5,
+              "onSheet": true
+            },
+            {
+              "entityId": "00006b84-e2a7-4b5b-a816-f0cb257a0151",
+              "name": "Hearn's Barber Shop",
+              "rank": 6,
+              "onSheet": false
+            },
+            {
+              "entityId": "00007616-15a0-47f3-ace2-f0cb256f02d1",
+              "name": "Slow Burn",
+              "rank": 7,
+              "onSheet": false
+            },
+            {
+              "entityId": "00009d2f-e32a-4008-ab9b-f0cb256f0311",
+              "name": "Iron Skillet",
+              "rank": 8,
+              "onSheet": true
+            }
+          ],
+          "tileName": "Virginia Beach"
         },
         {
           "tileGeohash": "dq9dyp",
           "partners": 6,
           "notInPopularTop": 1,
           "ledgerRef": "Q25",
+          "popularTop": [
+            {
+              "entityId": "000047fd-78ee-4f30-a113-f0cb25b10071",
+              "name": "Norwood's Diner",
+              "rank": 1,
+              "onSheet": true
+            },
+            {
+              "entityId": "0000bd17-8b21-4307-a74f-f0cb259e0351",
+              "name": "Night Owl Diner",
+              "rank": 2,
+              "onSheet": true
+            },
+            {
+              "entityId": "000032db-95fd-4203-acb6-f0cb25b400a1",
+              "name": "Vance Barbers",
+              "rank": 3,
+              "onSheet": true
+            },
+            {
+              "entityId": "0000bb98-876f-4ab7-a580-f0cb25b100a1",
+              "name": "Ingram Barbers",
+              "rank": 4,
+              "onSheet": true
+            },
+            {
+              "entityId": "00005ff3-dfa3-40ce-abbf-f0cb25b101a1",
+              "name": "Sisk's Bar",
+              "rank": 5,
+              "onSheet": false
+            },
+            {
+              "entityId": "000082ef-de69-463b-ac00-f0cb25b400c1",
+              "name": "McBride's Tavern",
+              "rank": 6,
+              "onSheet": true
+            }
+          ],
           "tileName": "Hampton"
         },
         {
@@ -7784,7 +7847,57 @@
           "partners": 8,
           "notInPopularTop": 4,
           "ledgerRef": "Q26",
-          "tileName": "Huntersville"
+          "popularTop": [
+            {
+              "entityId": "0000611c-2b24-41b5-a6fa-f0cb25380241",
+              "name": "Abernathy's Diner",
+              "rank": 1,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000aec3-b0cf-4326-a426-f0cb253802e1",
+              "name": "Fresh Fade",
+              "rank": 2,
+              "onSheet": true
+            },
+            {
+              "entityId": "00004e8c-fb44-45fe-ac2d-f0cb25380081",
+              "name": "Tackett's Diner",
+              "rank": 3,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000d4ce-3a69-4acd-a0c1-f0cb25380101",
+              "name": "Mabry Salon",
+              "rank": 4,
+              "onSheet": true
+            },
+            {
+              "entityId": "0000d5ee-3bf4-4629-a55b-f0cb25380161",
+              "name": "Grimsley's Record Shop",
+              "rank": 5,
+              "onSheet": true
+            },
+            {
+              "entityId": "000042c0-8d55-4eb7-ae23-f0cb25390051",
+              "name": "Petrakis' Bar",
+              "rank": 6,
+              "onSheet": false
+            },
+            {
+              "entityId": "00006147-8942-4e7b-a6f0-f0cb25380311",
+              "name": "Maddox's",
+              "rank": 7,
+              "onSheet": false
+            },
+            {
+              "entityId": "000098ab-bb14-4b3e-a95e-f0cb253b0241",
+              "name": "Mockingbird Kitchen",
+              "rank": 8,
+              "onSheet": true
+            }
+          ],
+          "tileName": "Suffolk (Huntersville)"
         }
       ],
       "ledgerRefs": [
@@ -7837,7 +7950,7 @@
         "id": "heat",
         "kind": "heat",
         "label": "Lift map",
-        "decision": "Put Baylake Pines first: about 1.8 times the room's usual crowd.",
+        "decision": "Put Virginia Beach first: about 1.8 times the room's usual crowd.",
         "status": "ok",
         "ledgerRefs": [
           "Q9",
@@ -7873,7 +7986,7 @@
           "Q21",
           "Q22"
         ],
-        "cause": "Qloo ranked them for this crowd, and every one is open Thursday. Dropped 6 places marked closed. 2 area searches came back short and widened to 3,500 m."
+        "cause": "Qloo ranked them for this crowd, and every one is open Thursday. Dropped 6 places marked closed. 2 areas had few places close in, so the search widened to 3.5 km."
       },
       {
         "id": "partners-usual",
@@ -7895,7 +8008,7 @@
         "id": "partners-popular",
         "kind": "partners",
         "label": "Popularity check",
-        "decision": "Checked against popularity alone: 11 of the 22 partners wouldn't make a list of the most popular places in their areas.",
+        "decision": "Popularity alone would miss 11 of the 22 partners: they aren't among the most popular places in their areas.",
         "status": "ok",
         "ledgerRefs": [
           "Q24",
@@ -7965,14 +8078,14 @@
     ],
     "discovery": {
       "kind": "partner",
-      "headline": "Grimsley's Record Shop ranks 10th for this crowd and 20th for the room's usual crowd.",
-      "detail": "Barbershops and bars are the most common types on the list (6 of 22 each); this one is a record store in Huntersville, 20.4 km from the venue. Ask to leave flyers at the counter.",
-      "rule": "the best-scoring partner in a top area that isn't the most common type on the list and that the room's usual crowd ranks at least 5 places lower, or not at all. Walkup tries the area rule first; no numbered area met it on this sheet.",
-      "why": "the best fit that isn't a bar or barbershop, and the room's usual crowd ranks it 10 places lower",
-      "entityId": "0000d5ee-3bf4-4629-a55b-f0cb25380161",
+      "headline": "Fulton's, a bar in area 1 (Virginia Beach): 1st for this crowd, 28th for the room's usual crowd.",
+      "detail": "23.7 km from the venue. Ask to put up a poster.",
+      "rule": "the highest-ranked place for this crowd in the top area that the room's usual crowd ranks at least 5 places lower in the same search, or not at all; national chains are skipped. When no place in area 1 qualifies, area 2 is tried, and so on.",
+      "why": "the highest-ranked place for this crowd in area 1 that the room's usual crowd ranks 27 places lower",
+      "entityId": "0000a88e-32d1-4622-a7f0-f0cb25c50051",
       "ledgerRefs": [
-        "Q22",
-        "Q23"
+        "Q17",
+        "Q18"
       ]
     }
   }

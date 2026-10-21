@@ -62,11 +62,14 @@ export function popularityCheck(
       continue;
     }
     const top = new Set(popular.slice(0, a.ids.length));
+    const names = new Map(twin.entities.map((e) => [e.entityId, e.name]));
+    const mine = new Set(a.ids);
     const row: PopularityCheckArea = {
       tileGeohash: a.tileGeohash,
       partners: a.ids.length,
       notInPopularTop: a.ids.filter((id) => !top.has(id)).length,
       ledgerRef: twin.ledgerRef,
+      popularTop: popular.slice(0, a.ids.length).map((id, i) => ({ entityId: id, name: names.get(id) ?? "", rank: i + 1, onSheet: mine.has(id) })),
     };
     if (a.tileName) row.tileName = a.tileName;
     perArea.push(row);
@@ -84,16 +87,16 @@ export function popularityCheck(
 }
 
 /**
- * The one sentence for the partners card: "8 of the 11 partners would not make a list of the most popular places in
- * their areas."
+ * The one sentence for the partners card: "8 of the 11 partners aren't among the most popular places in their
+ * areas: a list by popularity alone would miss them."
  */
 export function popularitySentence(c: Pick<PopularityCheck, "partners" | "notInPopularTop" | "perArea">): string {
   const where =
     c.perArea.length === 1 ? (c.perArea[0]?.tileGeohash === null ? "near the venue" : c.partners === 1 ? "in its area" : "in their area") : "in their areas";
-  const list = `a list of the most popular places ${where}`;
+  const most = `the most popular places ${where}`;
   const n = c.notInPopularTop;
-  if (c.partners === 1) return n === 1 ? `The one partner would not make ${list}.` : `The one partner would also make ${list}.`;
-  if (n === 0) return `All ${c.partners} partners would also make ${list}.`;
-  if (n === c.partners) return `None of the ${c.partners} partners would make ${list}.`;
-  return `${n} of the ${c.partners} partners would not make ${list}.`;
+  if (c.partners === 1) return n === 1 ? `The one partner isn't among ${most}: a list by popularity alone would miss it.` : `The one partner is also among ${most}.`;
+  if (n === 0) return `All ${c.partners} partners are also among ${most}.`;
+  if (n === c.partners) return `None of the ${c.partners} partners is among ${most}: a list by popularity alone would miss them all.`;
+  return `${n} of the ${c.partners} partners aren't among ${most}: a list by popularity alone would miss them.`;
 }

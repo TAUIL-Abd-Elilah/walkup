@@ -105,8 +105,7 @@ const G1_OPERATOR: OperatorInputs = {
  * The rule was run with npm run tm:room on 2026-10-20 over the room's Ticketmaster calendar:
  *   npm run tm:room -- --venue-id=KovZ917A3Y7 --as-of=2026-10-20
  * Both picks are the rule's own; no bill was skipped. Rhiannon Giddens resolves by her Spotify id and FLO by an
- * exact name search with one match; both pass the signal check. (The Basement East, Nashville, was tried first: its
- * bill B came back too thin to map, so partners fell back to the venue's block.)
+ * exact name search with one match; both pass the signal check.
  */
 const HERO_VENUE = { name: "The Anthem", city: "Washington", state: "DC" } as const;
 const HERO_VENUE_ID = "KovZ917A3Y7";

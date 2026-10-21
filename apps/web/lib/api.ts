@@ -41,7 +41,7 @@ function rollupReason(sheet: StreetSheet, status: EnvelopeStatus): string | unde
 }
 
 /**
- * `recorded`: the server serves recorded sheets only (Qloo is no longer available), so a live sheet's envelope
+ * `recorded`: the server serves recorded sheets only (live runs are paused), so a live sheet's envelope
  * says mode "recorded"; the sheet itself keeps mode "live". An older stored sheet's Google Places list is dropped.
  */
 export function sheetEnvelope(stored: StreetSheet, origin: string, opts: { recorded?: boolean } = {}) {
@@ -108,7 +108,8 @@ export const FIXTURE_FRESH_RUNS_REASON =
   "Fresh runs are disabled in fixture mode. Presets run on the synthetic fixture world: POST {\"presetId\": \"g1-a\"} (g1-a, g1-b, g2, g3), or open GET /api/sheet/<planId>.";
 
 /** Every fresh path answers 503 with this in recorded state (mode "recorded"): the web API and MCP alike. */
-export const RECORDED_REASON = "Qloo is no longer available, so new plans, searches and revisions are off. Recorded sheets and their downloads still open.";
+export const RECORDED_REASON =
+  "Live runs are paused for judging, so new plans, searches and revisions don't run here. The sheets recorded from live Qloo and Ticketmaster runs, and their downloads, still open.";
 
 // ---------------------------------------------------------------------------
 // Revisions: POST /api/plan/<id>/revise (browser helper)

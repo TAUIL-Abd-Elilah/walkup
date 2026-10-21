@@ -149,7 +149,7 @@
           "Q8"
         ],
         "limits": [],
-        "reason": "Qloo has no comedy-wide map to compare with, and fewer than 5 of the room's usual acts matched, so there's no lift map for this bill. Partners are picked near the venue. The search widened to 60 km (fewer than 200 areas came back inside 40 km)."
+        "reason": "Qloo has no comedy-wide map to compare with, and fewer than 5 of the room's usual acts matched, so there's no lift map for this bill. Partners are picked near the venue. The search widened to 60 km (fewer than 200 map squares came back within 40 km)."
       },
       "partners": {
         "status": "partial",
@@ -238,7 +238,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0171",
-                "website": "https://yoder-s-cafe.example",
+                "website": "https://yoder-s-cafe-willard-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -269,14 +269,10 @@
             "qlooRank": 1,
             "address": "2883 Willard St, Tacoma, WA",
             "phone": "+1 253-555-0171",
-            "website": "https://yoder-s-cafe.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
-                "ledgerRef": "Q9"
-              },
-              {
-                "label": "most influenced by Ada Pell",
                 "ledgerRef": "Q9"
               }
             ],
@@ -390,7 +386,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0125",
-                "website": "https://gaddis-barber-shop.example",
+                "website": "https://gaddis-barber-shop-oakhurst-ave.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.6,
@@ -421,14 +417,10 @@
             "qlooRank": 2,
             "address": "546 Oakhurst Ave, Tacoma, WA",
             "phone": "+1 253-555-0125",
-            "website": "https://gaddis-barber-shop.example",
+            "website": "https://gaddis-barber-shop-oakhurst-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
-                "ledgerRef": "Q9"
-              },
-              {
-                "label": "most influenced by Ada Pell",
                 "ledgerRef": "Q9"
               }
             ],
@@ -542,7 +534,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0123",
-                "website": "https://crenshaw-s-table.example",
+                "website": "https://crenshaw-s-table-ashby-ln.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -573,14 +565,10 @@
             "qlooRank": 3,
             "address": "4739 Ashby Ln, Tacoma, WA",
             "phone": "+1 253-555-0123",
-            "website": "https://crenshaw-s-table.example",
+            "website": "https://crenshaw-s-table-ashby-ln.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
-                "ledgerRef": "Q9"
-              },
-              {
-                "label": "most influenced by Ada Pell",
                 "ledgerRef": "Q9"
               }
             ],
@@ -699,7 +687,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0197",
-                "website": "https://dalrymple-s-table.example",
+                "website": "https://dalrymple-s-table-tolliver-ln.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -730,14 +718,10 @@
             "qlooRank": 4,
             "address": "3358 Tolliver Ln, Tacoma, WA",
             "phone": "+1 253-555-0197",
-            "website": "https://dalrymple-s-table.example",
+            "website": "https://dalrymple-s-table-tolliver-ln.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
-                "ledgerRef": "Q9"
-              },
-              {
-                "label": "most influenced by Ada Pell",
                 "ledgerRef": "Q9"
               }
             ],
@@ -846,7 +830,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0183",
-                "website": "https://ramsey-s-tavern.example",
+                "website": "https://ramsey-s-tavern-hartley-rd.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 3.6,
@@ -877,14 +861,10 @@
             "qlooRank": 5,
             "address": "3710 Hartley Rd, Tacoma, WA",
             "phone": "+1 253-555-0183",
-            "website": "https://ramsey-s-tavern.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
-                "ledgerRef": "Q9"
-              },
-              {
-                "label": "most influenced by Ada Pell",
                 "ledgerRef": "Q9"
               }
             ],
@@ -990,7 +970,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0177",
-                "website": "https://crate-and-needle.example",
+                "website": "https://crate-and-needle-pruitt-ave.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -1021,14 +1001,10 @@
             "qlooRank": 7,
             "address": "3674 Pruitt Ave, Tacoma, WA",
             "phone": "+1 253-555-0177",
-            "website": "https://crate-and-needle.example",
+            "website": "https://crate-and-needle-pruitt-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
-                "ledgerRef": "Q9"
-              },
-              {
-                "label": "most influenced by Ada Pell",
                 "ledgerRef": "Q9"
               }
             ],
@@ -1080,128 +1056,8 @@
       },
       "prePost": {
         "status": "partial",
-        "summary": "3 spots within 2.5 km open on show night, with the crowd spread across them by assumed capacity.",
+        "summary": "2 spots within 2.5 km open on show night, with the crowd spread across them by assumed capacity. Left out 1 place that closes before the evening.",
         "results": [
-          {
-            "entity": {
-              "entityId": "0000646f-6c0d-4550-aa49-f0b10b5b0051",
-              "name": "Yoder's Cafe",
-              "subtype": "urn:entity:place",
-              "popularity": 0.955,
-              "affinity": 0.99,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:cafe",
-                  "name": "Cafe",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:lively",
-                  "name": "Lively",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:brunch",
-                  "name": "Brunch",
-                  "type": "urn:tag:good_for:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:groups",
-                  "name": "Groups",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "2883 Willard St, Tacoma, WA",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ]
-                },
-                "phone": "+1 253-555-0171",
-                "website": "https://yoder-s-cafe.example",
-                "price_level": 3,
-                "is_closed": false,
-                "business_rating": 4.6,
-                "geocode": {
-                  "city": "Tacoma",
-                  "admin1_region": "WA",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "98402"
-              },
-              "location": {
-                "lat": 47.250767,
-                "lon": -122.434075,
-                "geohash": "c22uvcwpxm2u"
-              },
-              "distanceM": 1614.6,
-              "explainability": [
-                {
-                  "entityId": "0000c782-048a-4a80-8990-95d0d5287866",
-                  "score": 0.9
-                }
-              ]
-            },
-            "deltaRank": null,
-            "expectedShare": 0.1,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "cafe",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q12"
-              }
-            ]
-          },
           {
             "entity": {
               "entityId": "0000f079-a067-480a-a7e5-f0b10b5b0311",
@@ -1285,7 +1141,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0123",
-                "website": "https://crenshaw-s-table.example",
+                "website": "https://crenshaw-s-table-ashby-ln.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -1311,7 +1167,7 @@
               ]
             },
             "deltaRank": null,
-            "expectedShare": 0.065625,
+            "expectedShare": 0.134375,
             "assumedCapacity": 120,
             "fanFacingAllowed": true,
             "category": "restaurant",
@@ -1410,7 +1266,7 @@
                   ]
                 },
                 "phone": "+1 253-555-0197",
-                "website": "https://dalrymple-s-table.example",
+                "website": "https://dalrymple-s-table-tolliver-ln.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -1436,7 +1292,7 @@
               ]
             },
             "deltaRank": null,
-            "expectedShare": 0.034375,
+            "expectedShare": 0.065625,
             "assumedCapacity": 120,
             "fanFacingAllowed": true,
             "category": "restaurant",
@@ -1455,7 +1311,7 @@
         "limits": [
           "Expected shares are a heuristic with assumed capacities, not a forecast."
         ],
-        "reason": "Fewer than 6 spots came back inside 1.5 km, so the search widened to 2,500 m."
+        "reason": "Fewer than 6 spots came back within 1.5 km, so the search widened to 2.5 km."
       },
       "media": {
         "status": "partial",
@@ -1593,7 +1449,7 @@
         "summary": "1 line, each built only from approved Qloo tags.",
         "results": [
           {
-            "text": "Alternative rock at Super Funny Comedy Club, Friday, Dec 4.",
+            "text": "Ada Pell: Alternative rock at Super Funny Comedy Club, Friday, Dec 4.",
             "tagIds": [
               "urn:tag:genre:music:alternative_rock"
             ]
@@ -1609,7 +1465,7 @@
       }
     },
     "narration": {
-      "summary": "Ada Pell and Margo Vint at Super Funny Comedy Club, Friday, Dec 4. No area stands out on this run, so partners are picked near the venue. The sheet suggests 6 partners of 5 kinds; none has agreed to anything. It also lists 3 spots for before and after the show and 3 podcasts.",
+      "summary": "Ada Pell and Margo Vint at Super Funny Comedy Club, Friday, Dec 4. No area stands out on this run, so partners are picked near the venue. The sheet suggests 6 partners of 5 kinds; none has agreed to anything. It also lists 2 spots for before and after the show and 3 podcasts.",
       "tileWhy": [],
       "partnerLines": [
         {
@@ -1814,10 +1670,10 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 1979,
+        "bytes": 1988,
         "cacheHit": false,
         "resultCount": 1,
-        "note": "node Q1 signal check; fixture world: synthetic response; signal check: which ids Qloo has taste data for",
+        "note": "node Q1 signal check; fixture world: synthetic response; which ids Qloo has taste data for",
         "id": "Q6"
       },
       {
@@ -1901,7 +1757,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 16821,
+        "bytes": 16906,
         "cacheHit": false,
         "resultCount": 8,
         "note": "node Q9 partners, near venue; fixture world: synthetic response",
@@ -1938,7 +1794,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 92840,
+        "bytes": 93364,
         "cacheHit": false,
         "resultCount": 50,
         "note": "node Q9 popularity twin, near venue; fixture world: synthetic response",
@@ -1970,7 +1826,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 2274,
+        "bytes": 2283,
         "cacheHit": false,
         "resultCount": 1,
         "note": "node Q10 pre/post; fixture world: synthetic response",
@@ -2002,7 +1858,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 6435,
+        "bytes": 6467,
         "cacheHit": false,
         "resultCount": 3,
         "note": "node Q10 pre/post (2,500 m); fixture world: synthetic response",
@@ -2145,7 +2001,45 @@
           "tileGeohash": null,
           "partners": 6,
           "notInPopularTop": 5,
-          "ledgerRef": "Q10"
+          "ledgerRef": "Q10",
+          "popularTop": [
+            {
+              "entityId": "00005a4a-74ad-4b28-a482-f0b10b5b0441",
+              "name": "Pickett's Bar",
+              "rank": 1,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000646f-6c0d-4550-aa49-f0b10b5b0051",
+              "name": "Yoder's Cafe",
+              "rank": 2,
+              "onSheet": true
+            },
+            {
+              "entityId": "000073fc-1c2c-4868-a164-f0b10b5b08a1",
+              "name": "Gentry's Record Shop",
+              "rank": 3,
+              "onSheet": false
+            },
+            {
+              "entityId": "00004fe8-2f01-488e-ad73-f0b10b5b02f1",
+              "name": "Shackleford's Cafe",
+              "rank": 4,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000fadb-9175-4fe5-a2c3-f0b10b5b05e1",
+              "name": "Main Line Barbers",
+              "rank": 5,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000a0cf-65d3-4c15-afa6-f0b10b5b0701",
+              "name": "Wren's",
+              "rank": 6,
+              "onSheet": false
+            }
+          ]
         }
       ],
       "ledgerRefs": [
@@ -2205,7 +2099,7 @@
         "id": "partners-popular",
         "kind": "partners",
         "label": "Popularity check",
-        "decision": "Checked against popularity alone: 5 of the 6 partners wouldn't make a list of the most popular places near the venue.",
+        "decision": "Popularity alone would miss 5 of the 6 partners: they aren't among the most popular places near the venue.",
         "status": "ok",
         "ledgerRefs": [
           "Q10"
@@ -2216,7 +2110,7 @@
         "id": "prepost",
         "kind": "prepost",
         "label": "Before and after",
-        "decision": "Picked 3 spots within 2.5 km of the room, open on show night.",
+        "decision": "Picked 2 spots within 2.5 km of the room, open on show night.",
         "status": "partial",
         "ledgerRefs": [
           "Q11",

@@ -11,8 +11,8 @@
  * Modes: in fixture mode the four presets run through the orchestrator on the
  * synthetic fixture world (free, unlimited); free-form runs are refused with
  * 503. In live mode fresh runs are capped per IP and per day; a preset with a
- * stored run is served from storage. In recorded mode (Qloo is no longer
- * available) nothing runs: presets show their recorded live run, or the
+ * stored run is served from storage. In recorded mode (live runs are
+ * paused) nothing runs: presets show their recorded live run, or the
  * bundled sample sheet, and every fresh path answers 503 (recordedRefusal).
  */
 import { randomUUID } from "node:crypto";

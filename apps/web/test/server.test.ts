@@ -2,7 +2,7 @@
  * The web wiring end to end, without a server: the plan service on the
  * synthetic fixture world (memory plan store, temp data dir, no keys), the SSE
  * frames, the confirm-gated send in demo mode, exports, caps, /healthz, and
- * recorded mode (Qloo unavailable) on runs stored by the live-mode harness.
+ * recorded mode (live runs paused) on runs stored by the live-mode harness.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,7 +19,7 @@ import { restoreLiveShows, useWorldLiveShows } from "./live-presets";
 import { validateSheet } from "../lib/validate";
 import { resetActionsForTests, sessionActions } from "../lib/server/actions";
 import { depsFor, resetEngineForTests, setEngineForTests, stores } from "../lib/server/engine";
-import { exportKind, exportResponse } from "../lib/server/exports";
+import { exportKind, exportResponse, exportShowName } from "../lib/server/exports";
 import type { RequestContext } from "../lib/server/http";
 import { clientIp, operatorAuthorized, parseCookies, sessionCookie } from "../lib/server/http";
 import { parseOperator, parsePlanBody, POLITICAL_REFUSAL, tmEventIdFrom } from "../lib/server/input";
@@ -34,7 +34,7 @@ import { searchShows } from "../lib/server/search";
 import { confirmSendFor, prepareSendFor } from "../lib/server/send";
 import { loadPlan, planSnapshot, resolvePlan, startPlan, storedPresetRun } from "../lib/server/service";
 import { planEventStream, staticFrames } from "../lib/server/stream";
-import { addPartnerHouseRanks, continueLedger, houseSignalOf, TWIN_CHIP_PREFIX, twinChipLabel } from "../lib/server/twin";
+import { addPartnerHouseRanks, continueLedger, houseSignalOf, isTwinChip, TWIN_CHIP_PREFIX, twinChipLabel } from "../lib/server/twin";
 
 const KEYS = ["QLOO_API_KEY", "TICKETMASTER_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENROUTER_API_KEY", "RESEND_API_KEY", "RESEND_FROM", "WALKUP_MODE", "WALKUP_QLOO_UNTIL"];
 const saved: Record<string, string | undefined> = {};
@@ -159,12 +159,12 @@ describe("mode", () => {
     // What the site strip says, with the date Qloo went away when it is known.
     const words = (env: Record<string, string>, now: number, has = false) => runtimeMode(env, { now, liveSheetStored: stored(has) });
     expect(words(keys, NOV2 + 2 * DAY, true)).toMatchObject({
-      label: "RECORDED · Qloo unavailable",
+      kind: "recorded",
       liveSearch: false,
-      detail: "Qloo has been unavailable since Nov 3 2026. New plans are off. Sheets recorded from live runs show the date of the run and are not refreshed.",
+      detail: expect.stringMatching(/^Recorded from live Qloo and Ticketmaster runs( on \w{3} \d{1,2} \d{4})?\. Live runs are paused for judging; these sheets are what a live run produced\.$/),
     });
-    expect(words(until, NOV2 + 5 * DAY).detail).toMatch(/^Qloo has been unavailable since Nov 2 2026\. /);
-    expect(words({ WALKUP_MODE: "recorded" }, NOV2).detail).toMatch(/^Qloo is no longer available to this server\. New plans are off\. /);
+    expect(words(until, NOV2 + 5 * DAY).detail).toMatch(/Live runs are paused for judging/);
+    expect(words({ WALKUP_MODE: "recorded" }, NOV2).detail).not.toMatch(/no longer|unavailable|are off/i);
     resetKeyStatusMemo();
   });
 });
@@ -217,7 +217,8 @@ describe("partner house ranks (tonight vs house)", () => {
     expect(validateSheet(s)).toEqual([]);
     const ids = new Set(s.ledger.map((e) => e.id));
     for (const p of s.cards.partners.results) {
-      const chip = p.chips.find((c) => c.label.startsWith(TWIN_CHIP_PREFIX));
+      // Current runs word the chip for the room's usual crowd; older sheets carry the twin prefix.
+      const chip = p.chips.find((c) => c.label.startsWith(TWIN_CHIP_PREFIX) || /the room's usual crowd/.test(c.label));
       expect(chip, p.entity.name).toBeDefined();
       expect(ids.has(chip!.ledgerRef)).toBe(true);
     }
@@ -274,14 +275,14 @@ describe("plans", () => {
     expect(body.mode).toBe("fixture");
     const sheet = body.results as StreetSheet;
     expect(validateSheet(sheet)).toEqual([]);
-    expect(sheet.cards.partners.results.every((p) => p.chips.some((c) => c.label.startsWith(TWIN_CHIP_PREFIX)))).toBe(true);
+    expect(sheet.cards.partners.results.every((p) => p.chips.some((c) => isTwinChip(c.label)))).toBe(true);
     // No comparison arm runs: no Google Places list and no Places call.
     expect(sheet.control).toBeUndefined();
     expect(sheet.ledger.some((e) => e.kind === "places")).toBe(false);
     const run = getRun(String(body.planId));
     expect(run?.cards.map((c) => c.key)).toEqual([...CARD_ORDER]);
     // Stored, so it reloads after the run registry forgets it.
-    expect((await stores().plans.get(String(body.planId)))?.sheet?.cards.partners.results[0]?.chips.some((c) => c.label.startsWith(TWIN_CHIP_PREFIX))).toBe(true);
+    expect((await stores().plans.get(String(body.planId)))?.sheet?.cards.partners.results[0]?.chips.some((c) => isTwinChip(c.label))).toBe(true);
     const snap = await planSnapshot(String(body.planId), ctx());
     expect((snap.body as Body).status).toBe("complete");
   });
@@ -461,9 +462,21 @@ describe("exports", () => {
     expect(pdf.headers.get("content-disposition")).toBe('attachment; filename="fixture-street-sheet.pdf"');
     expect(Buffer.from(await pdf.arrayBuffer()).subarray(0, 5).toString()).toBe("%PDF-");
     const zips = await exportResponse(v.sheet, "zips");
-    expect((await zips.text()).split("\r\n")[0]).toBe("zip,lift_score,suggested_weight");
+    expect((await zips.text()).split("\r\n")[0]).toMatch(/^zip,(area,area_name,)?lift_score,suggested_weight$/);
     const ics = await exportResponse(v.sheet, "ics");
     expect(await ics.text()).toMatch(/^BEGIN:VCALENDAR/);
+  }, 120_000);
+
+  it("prints the preset's show name on the PDF, as the print view does", async () => {
+    const g2 = await loadPlan("g2", { view: "api" });
+    if (g2?.kind !== "sheet") throw new Error("g2");
+    expect(exportShowName("g2", g2.presetId, g2.sheet)).toBe("Peninsula Comedy Night");
+    const g3 = await loadPlan("g3", { view: "api" });
+    if (g3?.kind !== "sheet") throw new Error("g3");
+    expect(exportShowName("g3", g3.presetId, g3.sheet)).toBeUndefined();
+    // The route passes it through, and the PDF still builds with it.
+    const pdf = await exportResponse(g2.sheet, "pdf", { showName: "Peninsula Comedy Night" });
+    expect(Buffer.from(await pdf.arrayBuffer()).subarray(0, 5).toString()).toBe("%PDF-");
   }, 120_000);
 });
 
@@ -649,7 +662,7 @@ describe("live mode (keys present; the fixture world stands in for the live tran
   });
 });
 
-describe("recorded mode (Qloo unavailable; the live-mode harness records the runs first)", () => {
+describe("recorded mode (live runs paused; the live-mode harness records the runs first)", () => {
   type Health = Record<string, unknown> & {
     qloo: { keyRejected: { httpStatus: number; at: string } | null; until: string | null };
     recorded: { presets: Record<string, { planId: string; createdAt: string } | null> } | null;
@@ -754,7 +767,7 @@ describe("recorded mode (Qloo unavailable; the live-mode harness records the run
     expect(qlooKeyRejection()?.httpStatus).toBe(401);
     const m = runtimeMode();
     expect(m.kind).toBe("recorded");
-    expect(m.detail).toMatch(/^Qloo has been unavailable since \w{3} \d{1,2} \d{4}\. /);
+    expect(m.detail).toMatch(/^Recorded from live Qloo and Ticketmaster runs on \w{3} \d{1,2} \d{4}\. Live runs are paused for judging/);
   });
 
   describe("with WALKUP_MODE=recorded", () => {
@@ -817,7 +830,7 @@ describe("recorded mode (Qloo unavailable; the live-mode harness records the run
       const b = (await health()).body as Health & { reachability: Record<string, { status: string }> };
       delete process.env.WALKUP_QLOO_UNTIL;
       expect(b.mode).toBe("recorded");
-      expect(b.detail).toMatch(/^Qloo has been unavailable since /);
+      expect(b.detail).toMatch(/^Recorded from live Qloo and Ticketmaster runs on \w{3} \d{1,2} \d{4}\. Live runs are paused for judging/);
       expect(b.qloo).toEqual({ keyRejected: { httpStatus: 401, at: expect.any(String) }, until: "2026-11-02T00:00:00.000Z" });
       expect(b.recorded?.presets["g1-b"]?.planId).toBe(recordedIds["g1-b"]);
       expect(b.recorded?.presets.g3).toBeNull();

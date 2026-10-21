@@ -1,8 +1,8 @@
 {
   "$schema": "./chains.schema.json",
   "version": 1,
-  "about": "National and large regional US chain brands that show up as Qloo places (coffee, fast food, casual dining, sports bars, retail, book stores, barbers and salons). A hand-kept list, reviewed by hand: a chain that is not on it ranks as a local place. Partner and pre/post lists put these after local places; nothing on the list is dropped.",
-  "reviewedAt": "2026-10-20",
+  "about": "National and large regional US chain brands that show up as Qloo places (coffee, fast food, casual dining, sports bars, retail, book stores, barbers and salons). A hand-kept list, reviewed by hand; Qloo's description, a store-locator website and the same name at 3 or more places catch chains it misses. Partner and pre/post lists put chains after local places and keep at most 2 per list. Brands marked adult (servers in revealing uniforms) are never a street-team stop.",
+  "reviewedAt": "2026-10-21",
   "chains": [
     {"name":"Starbucks","aliases":["Starbucks Coffee","Starbucks Coffee Company","Starbucks Reserve"],"kind":"coffee"},
     {"name":"Dunkin'","aliases":["Dunkin' Donuts"],"kind":"coffee"},
@@ -137,8 +137,11 @@
     {"name":"The Capital Grille","kind":"casual_dining"},
     {"name":"Fogo de Chão","kind":"casual_dining"},
     {"name":"Chuck E. Cheese","kind":"casual_dining"},
-    {"name":"Hooters","kind":"sports_bar"},
-    {"name":"Twin Peaks","kind":"sports_bar"},
+    {"name":"Hooters","kind":"sports_bar","adult":true},
+    {"name":"Twin Peaks","aliases":["Twin Peaks Restaurant"],"kind":"sports_bar","exact":true,"adult":true},
+    {"name":"Tilted Kilt Pub & Eatery","aliases":["Tilted Kilt"],"kind":"sports_bar","adult":true},
+    {"name":"Bombshells Restaurant & Bar","aliases":["Bombshells"],"kind":"sports_bar","adult":true},
+    {"name":"Ojos Locos Sports Cantina","kind":"sports_bar","adult":true},
     {"name":"Buffalo Wild Wings","aliases":["BWW","B-Dubs"],"kind":"sports_bar"},
     {"name":"Bar Louie","kind":"sports_bar"},
     {"name":"World of Beer","kind":"sports_bar"},
@@ -208,6 +211,18 @@
     {"name":"Bowlero","aliases":["Bowlmor","AMF Bowling","AMF"],"kind":"sports_bar"},
     {"name":"Main Event","kind":"sports_bar","exact":true},
     {"name":"Round1","aliases":["Round1 Bowling & Amusement","Round 1"],"kind":"sports_bar"},
-    {"name":"Total Wine & More","aliases":["Total Wine"],"kind":"retail"}
+    {"name":"Total Wine & More","aliases":["Total Wine"],"kind":"retail"},
+    {"name":"Whole Foods Market","aliases":["Whole Foods"],"kind":"retail"},
+    {"name":"Trader Joe's","kind":"retail"},
+    {"name":"Safeway","kind":"retail","exact":true},
+    {"name":"Giant Food","aliases":["Giant"],"kind":"retail","exact":true},
+    {"name":"Harris Teeter","kind":"retail"},
+    {"name":"Wegmans","aliases":["Wegmans Food Markets"],"kind":"retail"},
+    {"name":"Kroger","kind":"retail","exact":true},
+    {"name":"Publix","aliases":["Publix Super Market"],"kind":"retail"},
+    {"name":"Aldi","aliases":["ALDI"],"kind":"retail","exact":true},
+    {"name":"Costco","aliases":["Costco Wholesale"],"kind":"retail"},
+    {"name":"CVS","aliases":["CVS Pharmacy"],"kind":"retail","exact":true},
+    {"name":"Walgreens","kind":"retail"}
   ]
 }

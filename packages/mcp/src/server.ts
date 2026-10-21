@@ -24,7 +24,7 @@ export const SERVER_INSTRUCTIONS = [
   "Seat counts are what-ifs: pass them only if the user offers them, and never call a real show soft or selling badly.",
   "Send only what the user typed: event text, partner names, what-if numbers. Never send personal data, buyer data or contact details. Sending the sheet to anyone happens only in the Walkup web app after the user confirms.",
   "Fresh runs are capped per caller per day; presets and existing plans are not. Without a live Qloo key the data is synthetic (mode fixture), and a hosted server then runs presets only.",
-  "If a tool answers with mode recorded, Qloo is no longer available to the server: get_sheet, bill_vs_house and plan_show for a preset or a plan id still read sheets recorded from earlier live runs (with their dates); new plans, rank_partners and revise_plan are off, and revise_plan names any recorded revision of the plan.",
+  "If a tool answers with mode recorded, the server serves sheets recorded from live Qloo and Ticketmaster runs, and live runs are paused for judging: get_sheet, bill_vs_house and plan_show for a preset or a plan id read those sheets, which are what a live run produced (say the day each was recorded). New plans, rank_partners and revise_plan are not run while live runs are paused; revise_plan names any recorded revision of the plan and says whether it was made for the same note or a different one.",
 ].join("\n");
 
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true } as const;
@@ -58,9 +58,9 @@ export function createWalkupMcpServer(services: McpServices, caller: Caller): Mc
     {
       title: "Plan a show's street team",
       description:
-        "Build a Street Sheet for one booked show: where this bill's crowd over-indexes versus the room's usual crowd, 15-25 local partner places, pre/post spots, podcasts, a sponsor and copy hooks, each with receipts. " +
+        "Build a Street Sheet for one booked show: where this bill's crowd over-indexes versus the room's usual crowd, real local partner places ranked in the areas where that crowd stands out, pre/post spots, podcasts, a sponsor and copy hooks, each with receipts. " +
         "Give exactly one of: event (a Ticketmaster event link or \"Artist @ Venue, Date\"), presetId (g1-a, g1-b, g2, g3), or planId (resume a plan that returned needs_input, with picks). " +
-        "Optional operator what-ifs (seats left, capacity, radius, street-team days). A fresh run takes 15-25 s live and counts against a per-caller daily cap; presets do not. " +
+        "Optional operator what-ifs (seats left, capacity, radius, street-team days). A fresh run takes about 20 seconds live and counts against a per-caller daily cap; presets do not. " +
         "Returns the envelope: status, summary, planId, sheetUrl, mode, results (the Street Sheet with its ledger), resolution, provenance, limits.",
       inputSchema: PlanShowInput,
       outputSchema: EnvelopeOutput,

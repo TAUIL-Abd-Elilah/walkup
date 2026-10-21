@@ -1,6 +1,8 @@
 import type { LiftTile } from "@walkup/contracts";
 import { haversineKm } from "./haversine";
 import { resolveMetro, resolveMetros } from "./load";
+import { stateFromGeoid, stateFromZip } from "./states";
+import { isNeighbourhoodCity, isResidentialZip, knownAreaNear, MAX_AREA_ZIPS, zipPlace } from "./zips";
 import type {
   Bbox,
   LoadOptions,
@@ -74,6 +76,32 @@ export function nameForPoint(lat: number, lon: number, metro: MetroRef, opts?: N
   return { name: hit.place.name, source: "place", distanceKm: round3(hit.d), ref: hit.place.geoid, insideMetro };
 }
 
+/**
+ * The US state (USPS code, "MD") a point is in, for labels such as "Silver Spring, MD". The ZCTAs are read like
+ * the places: each is a circle of its land area, the smallest circle holding the point wins, else the circle with
+ * the nearest edge, and that ZCTA's ZIP prefix gives the state. When no ZCTA has a known state, the Census place
+ * the area-aware rule picks gives it (its GEOID). A record's own `state` field wins when the file carries one.
+ * Null when neither is known. Like the names this is "near", not "inside": right on a state line it can be wrong.
+ */
+export function stateForPoint(lat: number, lon: number, metro: MetroRef, opts?: LoadOptions): string | null {
+  assertPoint(lat, lon);
+  const m = resolveMetro(metro, opts);
+  let inside: { st: string; area: number; d: number } | null = null;
+  let edge: { st: string; gap: number } | null = null;
+  for (const z of m.zctas) {
+    const st = z.state ?? stateFromZip(z.zcta);
+    if (!st) continue;
+    const d = haversineKm(lat, lon, z.lat, z.lon);
+    const r = z.landKm2 != null && z.landKm2 > 0 ? Math.sqrt(z.landKm2 / Math.PI) : 0;
+    if (r > 0 && d <= r && (!inside || z.landKm2! < inside.area || (z.landKm2 === inside.area && d < inside.d))) inside = { st, area: z.landKm2!, d };
+    if (!edge || d - r < edge.gap) edge = { st, gap: d - r };
+  }
+  const fromZcta = inside?.st ?? edge?.st ?? null;
+  if (fromZcta) return fromZcta;
+  const hit = pickPlace(lat, lon, m.places, "area-aware");
+  return hit ? (hit.place.state ?? stateFromGeoid(hit.place.geoid)) : null;
+}
+
 /** ZCTAs whose internal point lies within radiusKm, nearest first. */
 export function zctasNear(lat: number, lon: number, radiusKm: number, metro: MetroRef, opts?: LoadOptions): ZctaHit[] {
   assertPoint(lat, lon);
@@ -124,6 +152,13 @@ export interface AdultsOptions extends MultiMetroOptions {
   metro?: MetroRef;
   /** When no ZCTA internal point is inside the radius, count the nearest ZCTA instead of returning 0. */
   ensureNearest?: boolean;
+  /**
+   * Count only residential ZIPs (`isResidentialZip`: no federal, single-organisation, military or campus ZIP and
+   * none with fewer than 250 adults 21+). Default false.
+   */
+  residentialOnly?: boolean;
+  /** Count at most this many ZCTAs, the nearest first. Default: no cap. */
+  maxZctas?: number;
 }
 
 export interface AdultsDetail {
@@ -144,8 +179,9 @@ function candidateMetros(opts?: AdultsOptions): MetroGazetteer[] {
 export function adultsNearDetail(lat: number, lon: number, radiusKm: number, opts?: AdultsOptions): AdultsDetail {
   assertPoint(lat, lon);
   const metros = candidateMetros(opts);
+  const pool = (m: MetroGazetteer) => (opts?.residentialOnly ? m.zctas.filter((z) => isResidentialZip(z.zcta, z.adults21)) : m.zctas);
   const seen = new Map<string, ZctaHit>();
-  for (const m of metros) for (const z of withinRadius(lat, lon, radiusKm, m.zctas)) if (!seen.has(z.zcta)) seen.set(z.zcta, z);
+  for (const m of metros) for (const z of withinRadius(lat, lon, radiusKm, pool(m))) if (!seen.has(z.zcta)) seen.set(z.zcta, z);
 
   const covering = metros.filter((m) => bboxContains(m.bbox, lat, lon));
   const metroName = opts?.metro !== undefined ? (metros[0]?.metro ?? null) : metroForPoint(lat, lon, { metros });
@@ -155,13 +191,15 @@ export function adultsNearDetail(lat: number, lon: number, radiusKm: number, opt
     // "nearest" ZCTA can be any distance away, so the count stays unknown (null).
     let best: ZctaHit | null = null;
     for (const m of covering) {
-      const z = nearestZcta(lat, lon, m);
+      const z = nearestZcta(lat, lon, { ...m, zctas: pool(m) });
       if (z && (!best || z.distanceKm < best.distanceKm)) best = z;
     }
     if (best) seen.set(best.zcta, best);
   }
 
-  const hits = [...seen.values()].sort((a, b) => a.distanceKm - b.distanceKm || a.zcta.localeCompare(b.zcta));
+  const sorted = [...seen.values()].sort((a, b) => a.distanceKm - b.distanceKm || a.zcta.localeCompare(b.zcta));
+  const cap = opts?.maxZctas !== undefined && opts.maxZctas >= 1 ? Math.floor(opts.maxZctas) : Infinity;
+  const hits = sorted.slice(0, cap);
   const known = hits.filter((z) => z.adults21 != null);
   const missing = hits.filter((z) => z.adults21 == null).map((z) => z.zcta);
   let adults21: number | null;
@@ -189,15 +227,90 @@ export interface AnnotateOptions extends NameOptions, MultiMetroOptions {
   metro?: MetroRef;
   /** Radius for ZCTAs and adults. Default 3 km. */
   radiusKm?: number;
+  /** Most ZCTAs one area counts, nearest first. Default MAX_AREA_ZIPS (4). */
+  maxZctas?: number;
+  /**
+   * "local" (default): the name people use (`areaNameForPoint`). "gazetteer": the OSM neighbourhood or Census
+   * place (`nameForPoint`), as before the ZIP table.
+   */
+  naming?: "local" | "gazetteer";
+}
+
+/** What annotateTile fills in. */
+export interface AnnotatedFields {
+  name?: string;
+  zctas?: string[];
+  adultPopulation?: number | null;
+  /** The OSM or Census name behind `name` when it differs. */
+  gazetteerName?: string;
+}
+
+/** The residential ZCTA a point is in: the smallest equivalent circle holding it, else the circle with the nearest edge. */
+export function zipForPoint(lat: number, lon: number, metro: MetroRef, opts?: LoadOptions): ZctaHit | null {
+  assertPoint(lat, lon);
+  const m = resolveMetro(metro, opts);
+  let inside: { z: ZctaRecord; area: number; d: number } | null = null;
+  let edge: { z: ZctaRecord; gap: number; d: number } | null = null;
+  for (const z of m.zctas) {
+    if (!isResidentialZip(z.zcta, z.adults21)) continue;
+    const d = haversineKm(lat, lon, z.lat, z.lon);
+    const r = z.landKm2 != null && z.landKm2 > 0 ? Math.sqrt(z.landKm2 / Math.PI) : 0;
+    if (r > 0 && d <= r && (!inside || z.landKm2! < inside.area || (z.landKm2 === inside.area && d < inside.d))) inside = { z, area: z.landKm2!, d };
+    if (!edge || d - r < edge.gap) edge = { z, gap: d - r, d };
+  }
+  const hit = inside ?? edge;
+  return hit ? { ...hit.z, distanceKm: round3(hit.d) } : null;
+}
+
+export type AreaNameSource = "known" | "neighbourhood" | "zip" | "place";
+
+export interface AreaName {
+  /** The name people use: a well-known district, else the town of the ZIP, else (in a big city) the neighbourhood. */
+  name: string;
+  source: AreaNameSource;
+  /** The OSM neighbourhood or Census place at the point, when it differs from `name` (for "Alexandria (Del Ray)"). */
+  gazetteerName?: string;
+  /** The residential ZIP the point is in. */
+  zip?: string;
 }
 
 /**
- * Fill a lift tile's gazetteer fields: name, zctas and adultPopulation. Uses the nearest
- * ZCTA when none is inside the radius. Leaves the tile's other fields untouched; a tile
+ * The name a promoter would use for a point, from data (no names written per sheet):
+ *
+ *  1. a well-known district (data/gazetteer/areas.json) whose radius holds the point: "H Street NE", "U Street / Shaw";
+ *  2. else the place name of the residential ZIP the point is in (data/gazetteer/zip_places.csv): "Laurel", "Bowie",
+ *     "Bethesda", "Greenbelt", "Alexandria". In a city named by neighbourhood (Washington, Nashville, Seattle) the
+ *     OSM neighbourhood within 2.5 km is used instead, and the city only when there is none;
+ *  3. else `nameForPoint` (OSM neighbourhood, else Census place), as before.
+ */
+export function areaNameForPoint(lat: number, lon: number, metro: MetroRef, opts?: NameOptions & LoadOptions): AreaName | null {
+  assertPoint(lat, lon);
+  const m = resolveMetro(metro, opts);
+  const named = nameForPoint(lat, lon, m, opts);
+  const other = (name: string) => (named && named.name !== name ? { gazetteerName: named.name } : {});
+  const known = knownAreaNear(lat, lon, m.metro);
+  const zip = zipForPoint(lat, lon, m);
+  const zipRef = zip ? { zip: zip.zcta } : {};
+  if (known) return { name: known.name, source: "known", ...other(known.name), ...zipRef };
+  const place = zipPlace(zip?.zcta);
+  if (place) {
+    if (isNeighbourhoodCity(m.metro, place.city) && named?.source === "neighbourhood") return { name: named.name, source: "neighbourhood", ...zipRef };
+    return { name: place.city, source: "zip", ...other(place.city), ...zipRef };
+  }
+  return named ? { name: named.name, source: named.source, ...zipRef } : null;
+}
+
+/**
+ * Fill a lift tile's gazetteer fields: name (the name people use, `areaNameForPoint`; the
+ * OSM/Census name rides along as `gazetteerName` when it differs), zctas and adultPopulation.
+ * Only residential ZIPs count (no federal, single-organisation, military or campus ZIP), at
+ * most MAX_AREA_ZIPS of them, nearest first, so a dense downtown area keeps a meaningful
+ * count. Uses the nearest residential ZCTA when none is inside the radius. Leaves the
+ * tile's other fields untouched; a tile
  * outside the metro's box (the one passed in opts.metro, or any loaded metro) gets
  * adultPopulation null and no name, rather than the name and count of a far-away area.
  */
-export function annotateTile<T extends Pick<LiftTile, "lat" | "lon"> & Partial<LiftTile>>(tile: T, opts?: AnnotateOptions): T {
+export function annotateTile<T extends Pick<LiftTile, "lat" | "lon"> & Partial<LiftTile>>(tile: T, opts?: AnnotateOptions): T & AnnotatedFields {
   const radiusKm = opts?.radiusKm ?? 3;
   let metro: MetroGazetteer | null = null;
   if (opts?.metro !== undefined) metro = resolveMetro(opts.metro, opts);
@@ -207,10 +320,18 @@ export function annotateTile<T extends Pick<LiftTile, "lat" | "lon"> & Partial<L
     metro = metros.find((m) => m.metro === name) ?? null;
   }
   if (!metro || !bboxContains(metro.bbox, tile.lat, tile.lon)) return { ...tile, adultPopulation: null };
-  const named = nameForPoint(tile.lat, tile.lon, metro, opts);
-  const detail = adultsNearDetail(tile.lat, tile.lon, radiusKm, { metro, ensureNearest: true });
-  const out: T = { ...tile, zctas: detail.zctas, adultPopulation: detail.adults21 };
-  if (named) out.name = named.name;
+  const detail = adultsNearDetail(tile.lat, tile.lon, radiusKm, { metro, ensureNearest: true, residentialOnly: true, maxZctas: opts?.maxZctas ?? MAX_AREA_ZIPS });
+  const out: T & AnnotatedFields = { ...tile, zctas: detail.zctas, adultPopulation: detail.adults21 };
+  if (opts?.naming === "gazetteer") {
+    const named = nameForPoint(tile.lat, tile.lon, metro, opts);
+    if (named) out.name = named.name;
+    return out;
+  }
+  const local = areaNameForPoint(tile.lat, tile.lon, metro, opts);
+  if (local) {
+    out.name = local.name;
+    if (local.gazetteerName) out.gazetteerName = local.gazetteerName;
+  }
   return out;
 }
 

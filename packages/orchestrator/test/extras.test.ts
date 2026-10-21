@@ -184,39 +184,33 @@ describe("the discovery", () => {
   /** The numbered areas (1-5), in number order: the budget split lists the spread areas in that order. */
   const numbered = (s: StreetSheet) => (s.budgetSplit ?? []).slice(0, 5).map((b) => b.geohash);
 
-  it("picks a numbered area by its rule when one qualifies, and names it by its number (G1-B)", () => {
-    const s = sheet("g1-b");
-    const d = s.discovery;
-    expect(d?.kind).toBe("area");
-    const ranks = rankAreas(s.cards.liftMap.results.tiles);
-    const nums = numbered(s);
-    const top = nums.map((g) => ranks.find((r) => r.tile.geohash === g)!).filter((r) => r.tile.lift >= LIFT_DEFAULTS.minLift && r.tile.billPct >= LIFT_DEFAULTS.billFloor);
-    const expected = top.find((r) => r.heatRank - r.liftRank >= 5);
-    expect(d?.geohash).toBe(expected?.tile.geohash);
-    expect(d?.headline).toMatch(new RegExp(`^Area ${nums.indexOf(d!.geohash!) + 1}, `));
-    expect(d?.headline).toContain(`of the ${ranks.length} squares on the map for this crowd on its own`);
-    expect(s.cards.liftMap.results.liftDiagnostics?.splitHalfSpearman).toBeGreaterThan(0.5);
-  });
-  it("never points at an area without a number: G2 falls through to the partner rule", () => {
-    const s = sheet("g2");
-    const ranks = rankAreas(s.cards.liftMap.results.tiles);
-    const nums = new Set(numbered(s));
-    expect(ranks.filter((r) => nums.has(r.tile.geohash)).some((r) => r.tile.lift >= 1.3 && r.tile.billPct >= 0.7 && r.heatRank - r.liftRank >= 5)).toBe(false);
-    expect(s.discovery?.kind).toBe("partner");
-  });
-  it("falls back to the partner rule (G1-A)", () => {
-    const s = sheet("g1-a");
-    const d = s.discovery;
-    expect(d?.kind).toBe("partner");
-    const ranks = rankAreas(s.cards.liftMap.results.tiles);
-    expect(ranks.some((r) => r.tile.lift >= 1.3 && r.tile.billPct >= 0.7 && r.heatRank - r.liftRank >= 5)).toBe(false);
-    const list = s.cards.partners.results;
-    const common = new Set(mostCommonCategories(list));
-    const eligible = (p: Partner) => p.tileGeohash !== null && !common.has(p.category) && p.houseRank !== undefined && (p.houseRank === null || p.houseRank - p.qlooRank >= 5);
-    const best = [...list].filter(eligible).sort((a, b) => b.score - a.score)[0];
-    expect(d?.entityId).toBe(best?.entity.entityId);
-    expect(d?.headline).toContain(best!.entity.name);
-  });
+  /** "Start with this place": area by area, the best-ranked non-chain place the usual crowd ranks 5+ lower or not at all. */
+  const expectedPick = (s: StreetSheet): Partner | undefined => {
+    for (const g of numbered(s)) {
+      const inArea = s.cards.partners.results.filter((p) => p.tileGeohash === g && p.chain !== true).sort((a, b) => a.qlooRank - b.qlooRank || b.score - a.score);
+      const hit = inArea.find((p) => p.houseRank !== undefined && (p.houseRank === null || p.houseRank - p.qlooRank >= 5));
+      if (hit) return hit;
+    }
+    return undefined;
+  };
+
+  for (const id of ["g1-a", "g1-b", "g2"]) {
+    it(`${id}: starts with the best-ranked place for this crowd in the first area that the usual crowd ranks much lower`, () => {
+      const s = sheet(id);
+      const d = s.discovery;
+      const best = expectedPick(s);
+      if (!best) {
+        expect(d?.kind ?? "area").toBe("area");
+        return;
+      }
+      expect(d?.kind).toBe("partner");
+      expect(d?.entityId).toBe(best.entity.entityId);
+      const n = numbered(s).indexOf(best.tileGeohash as string) + 1;
+      expect(d?.headline).toMatch(new RegExp(`^${best.entity.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}, an? .+ in area ${n}`));
+      expect(d?.why).toMatch(new RegExp(`^the highest-ranked place for this crowd in area ${n}`));
+      expect(d?.why).not.toMatch(/house/);
+    });
+  }
   it("finds none when there is no usual crowd to compare with (G3: no house set, no genre tag)", () => {
     expect(sheet("g3").cards.liftMap.results.diagnostics.baseline).toBe("none");
     expect(sheet("g3").discovery).toBeUndefined();

@@ -25,7 +25,7 @@ describe("toExportFiles", () => {
       expect([...byKind.get("partners")!.data.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
       expect([...byKind.get("offerCodes")!.data.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
       expect(byKind.get("zips")!.data.subarray(0, 3).toString("utf8")).toBe("zip");
-      expect(byKind.get("pins")!.data.subarray(0, 3).toString("utf8")).toBe("lat");
+      expect(byKind.get("pins")!.data.subarray(0, 4).toString("utf8")).toBe("area");
     },
     60_000,
   );
@@ -41,8 +41,16 @@ describe("toExportFiles", () => {
   });
 
   it("passes tile options through to zips and pins", async () => {
-    const files = await toExportFiles(makeSheet(), { include: ["zips", "pins"], tiles: { maxTiles: 1 } });
-    expect(files[0]!.data.toString("utf8")).toBe("zip,lift_score,suggested_weight\r\n37206,2.1,1\r\n");
+    const files = await toExportFiles(makeSheet(), { include: ["zips", "pins"], tiles: { maxTiles: 1 }, zips: { isResidentialZip: () => true } });
+    expect(files[0]!.data.toString("utf8")).toBe('zip,area,area_name,lift_score,suggested_weight\r\n37206,1,"East Bank, TN",2.1,1\r\n');
     expect(files[1]!.data.toString("utf8").split("\r\n").filter((l) => l !== "")).toHaveLength(2);
+  });
+
+  it("gives partners.csv the same street-team days as street-team.ics", async () => {
+    const files = await toExportFiles(makeSheet(), { include: ["partners", "ics"], ics: { streetTeamDays: ["saturday"] } });
+    const csv = files[0]!.data.toString("utf8");
+    expect(csv).toContain(",Sat,");
+    expect(csv).not.toContain(",Thu,");
+    expect(files[1]!.data.toString("utf8")).toContain("DTSTART:20261114T");
   });
 });

@@ -100,7 +100,7 @@ fly logs -a walkup-agent
 ```
 
 `/healthz` answers `{"ok":true,"mode":...,"configured":{...},"qloo":{...},"recorded":{...}}`. `mode` is `live`,
-`fixture` or `recorded` (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)).
+`fixture` or `recorded` (see [Recorded mode](#recorded-mode-live-runs-paused)).
 `configured` shows which keys are present, never their values; `qloo` shows a key Qloo rejected (status and time) and
 `WALKUP_QLOO_UNTIL`; `recorded` lists the stored live run each preset shows in recorded mode.
 
@@ -111,7 +111,7 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 
 | Variable | Set on the host as | Value or note |
 |---|---|---|
-| `QLOO_API_KEY` | secret | Can stay set after the key is switched off: recorded mode calls nothing (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). |
+| `QLOO_API_KEY` | secret | Can stay set after the key is switched off: recorded mode calls nothing (see [Recorded mode](#recorded-mode-live-runs-paused)). |
 | `QLOO_BASE_URL` | `fly.toml` `[env]` | `https://hackathon.api.qloo.com`. Any other host is refused. |
 | `TICKETMASTER_API_KEY` | secret | |
 | `CENSUS_API_KEY` | secret | Optional: the gazetteer already carries adult counts. |
@@ -199,10 +199,10 @@ restarts, especially during PDF exports, and go back to 2 GB if they appear.
 | Claude (OpenRouter or Anthropic) | $5/day | The narrator's spend guard; the spend file lives on the volume. Above the cap narration uses the labelled template. |
 | Resend | free tier, 100/day; 10 confirmed sends per requester per day | Resend's plan; `WALKUP_SEND_DAILY_CAP` in `packages/send`. Every send needs a human confirm in the app. |
 
-## Recorded mode after the Qloo key is switched off (Nov 2 2026)
+## Recorded mode (live runs paused)
 
-The Qloo hackathon key stops working on Nov 2 2026. From then on the site serves the sheets it recorded on live runs
-and makes nothing new. The web app calls this **recorded** mode:
+Live runs can be paused: for judging, and in any case when the Qloo hackathon key ends on Nov 2 2026. While they are
+paused, the site serves the sheets it recorded on live runs and makes nothing new. The web app calls this **recorded** mode:
 
 - Each preset (`g1-a`, `g1-b`, `g2`, `g3`) shows its latest stored live run made with the preset's own inputs, skipping
   a run on which Qloo refused the key (401, or 403 with no fresh Qloo call answered; answers from the Qloo cache do not
@@ -211,8 +211,8 @@ and makes nothing new. The web app calls this **recorded** mode:
   sheets stored earlier stay labelled sample. The send step stays as it is (confirm first, test inbox by default).
   A recorded sheet's envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps
   `"mode": "live"`. A sheet recorded before Oct 20 2026 is served without the Google Places comparison list it carried.
-- A strip on every page says since when Qloo has been unavailable, that new plans are off, and that sheets recorded
-  from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
+- A strip on every page says the sheets were recorded from live Qloo and Ticketmaster runs and that live runs are
+  paused; sheets recorded from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
   sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
   "Planned <date>", on the page and in the PDF.
 - New plans, the show and title searches, picks and revisions answer with `"mode": "recorded"` and one plain reason
@@ -348,7 +348,7 @@ fly ssh sftp get /tmp/walkup-data.tgz "$HOME/walkup-data.tgz" -a walkup-agent
 
 ## Static mirror
 
-Down since the Fly trial ended (Oct 2026), and no longer checked by the uptime workflow. https://walkup-mirror.fly.dev was a static copy of the hero sheets for when the main app is down: the home page,
+Down since the Fly trial ended (Oct 2026), and no longer checked by the uptime workflow. `walkup-mirror.fly.dev` was a static copy of the hero sheets for when the main app is down: the home page,
 both Anthem sheets and the "All ages, no bars" revision (each with its print view and every download), the system
 card and the eval. It is a second Fly app in another region (`ord`; the main app is in `iad`), plain nginx, no
 Node, no keys, no database. Every page says at the top that it is a static copy and when it was saved; the street
@@ -398,4 +398,4 @@ HTTPS-only proxy can reach neither. There, build the app on the host and package
 | Health check fails, logs show the server listening | The port must be 3000 (`PORT`, `internal_port`); the entrypoint sets `HOSTNAME=0.0.0.0`. |
 | `EACCES` under `/data` | Files were copied in as root after the last start: `fly apps restart walkup-agent`. |
 | Restarts with `Out of memory` in `fly logs` | `fly scale memory 2048 -a walkup-agent`. |
-| Cards show `error` on every Qloo call | The key was deactivated but is still set. The run that saw it switches the server to recorded mode (fixture mode if no live sheet is stored); set `WALKUP_QLOO_UNTIL` or `WALKUP_MODE=recorded` so no visitor gets that run (see [Recorded mode](#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026)). |
+| Cards show `error` on every Qloo call | The key was deactivated but is still set. The run that saw it switches the server to recorded mode (fixture mode if no live sheet is stored); set `WALKUP_QLOO_UNTIL` or `WALKUP_MODE=recorded` so no visitor gets that run (see [Recorded mode](#recorded-mode-live-runs-paused)). |

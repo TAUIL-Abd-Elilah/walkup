@@ -11,6 +11,7 @@
 import type { LedgerEntry, StreetSheet, StreetSheetCards, TraceStep } from "@walkup/contracts";
 import {
   baselineStep,
+  categoryWord,
   checkStep,
   declaredStep,
   guardStep,
@@ -283,8 +284,13 @@ export function partnersTrace(ctx: RunContext, partners: PartnersResult): TraceS
     belowMinimum: r?.belowMinimum ?? false,
     minTotal: PARTNER_DEFAULTS.minTotal,
     skippedCategories: cats.skipped.length,
-    chainsMoved: r?.chainsMovedDown ?? 0,
+    skippedCategoryNames: cats.skipped.map((k) => categoryWord(k, true)),
+    chainsKept: r?.chainsKept ?? 0,
     chainsOffList: r?.chainsOffList ?? [],
+    chainsCapped: r?.chainsCapped ?? 0,
+    chainsCap: r?.maxChains ?? 0,
+    droppedNotVenue: r?.droppedNotVenue ?? 0,
+    droppedAdult: r?.droppedAdult ?? 0,
     failure,
     ledgerRefs: refs,
   });
@@ -363,8 +369,12 @@ export function prePostTrace(ctx: RunContext, card: StreetSheetCards["prePost"])
     barsOperatorOnly: card.results.filter((s) => !s.fanFacingAllowed).length,
     legalAgeEnforced: ctx.bill.legalAgeEnforced,
     typeDrops: prePostTypeDrops(ctx),
-    chainsMoved: prePostChainMoves(ctx)?.chainsMovedDown ?? 0,
+    chainsKept: prePostChainMoves(ctx)?.chainsKept ?? 0,
     chainsOffList: prePostChainMoves(ctx)?.chainsOffList ?? [],
+    chainsCapped: prePostChainMoves(ctx)?.chainsCapped ?? 0,
+    chainsCap: prePostChainMoves(ctx)?.maxChains ?? 0,
+    droppedNotVenue: prePostChainMoves(ctx)?.droppedNotVenue ?? 0,
+    droppedAdult: prePostChainMoves(ctx)?.droppedAdult ?? 0,
     failure,
     ledgerRefs: card.provenance,
   });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { guardNarration, isAllowedNumber, policyProblem, prepareRun, templateNarrate } from "../src/index";
-import { readableForPromoter } from "../src/narrate";
+import { readableForPromoter, tagNamesInSentenceCase } from "../src/narrate";
 import { makeInput } from "./helpers";
 
 describe("templateNarrate", () => {
@@ -153,5 +153,22 @@ describe("readableForPromoter", () => {
     expect(readableForPromoter("The Anthem, 2027-02-17.", show)).toBe("The Anthem, Wednesday, Feb 17.");
     expect(readableForPromoter("53% of the media budget of 6000 USD", show)).toBe("53% of the media budget of $6,000");
     expect(readableForPromoter("Nothing to change on 2027-03-01.", show)).toBe("Nothing to change on 2027-03-01.");
+    expect(readableForPromoter("roots rock and alt- country", show)).toBe("roots rock and alt-country");
+    expect(readableForPromoter("the 6000-dollar media budget", show)).toBe("the $6,000 media budget");
+    expect(readableForPromoter("heritage in a intimate room, a upbeat night", show)).toBe("heritage in an intimate room, an upbeat night");
+    expect(readableForPromoter("a one-off, a unique room, a European tour, A open door", show)).toBe("a one-off, a unique room, a European tour, An open door");
+    expect(readableForPromoter("pre- and post-show spots", show)).toBe("pre- and post-show spots");
+    expect(readableForPromoter("Feb 17 - doors at 7", show)).toBe("Feb 17 - doors at 7");
+  });
+});
+
+describe("tagNamesInSentenceCase", () => {
+  it("writes tag names mid-sentence in sentence case, keeping names, proper adjectives and acronyms", () => {
+    const tags = ["Intimate", "Alt-country", "American History", "Stylish", "R&B", "Heritage"];
+    expect(tagNamesInSentenceCase("Act at Hall: an Intimate night of roots rock and Alt-country.", tags)).toBe("Act at Hall: an intimate night of roots rock and alt-country.");
+    expect(tagNamesInSentenceCase("Heritage and American History in a Stylish room, with R&B.", tags)).toBe("Heritage and American history in a stylish room, with R&B.");
+    expect(tagNamesInSentenceCase("Stylish Heritage Cafe, open Thursday.", tags, ["Stylish Heritage Cafe"])).toBe("Stylish Heritage Cafe, open Thursday.");
+    expect(tagNamesInSentenceCase("Act: roots rock and Alt-country.", ["Alt- Country"])).toBe("Act: roots rock and alt-country.");
+    expect(tagNamesInSentenceCase("Act: heritage and american history.", ["American History"])).toBe("Act: heritage and American history.");
   });
 });

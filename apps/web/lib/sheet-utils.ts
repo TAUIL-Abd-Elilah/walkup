@@ -1,7 +1,8 @@
-import type { GuardReport, LedgerEntry, LiftTile, Partner, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
+import type { GuardReport, LedgerEntry, LiftTile, Partner, PopularityCheck, PopularPlace, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
+import { areaState, partnerAreaLabel } from "@walkup/exports/format";
 import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd } from "./format";
 import { TOP_LIFT } from "./lift";
-import { LEDGER_SOURCE_SHORT, tagFallbackName } from "./labels";
+import { CATEGORY_LABEL, LEDGER_SOURCE_SHORT, tagFallbackName } from "./labels";
 
 /** Areas closer than this (km) to a higher-lift area are the same place and get no number of their own. */
 export const AREA_MERGE_KM = 3;
@@ -15,7 +16,9 @@ export function sameArea(o: Pick<LiftTile, "lat" | "lon" | "zctas">, t: Pick<Lif
 /**
  * The numbered areas 1-5: lift 1.3 and up, highest first, skipping a tile that is the same place as one already
  * numbered (within 3 km or sharing a ZIP). The orchestrator's budget split, partner areas and narration use the
- * same rule, so these numbers match them everywhere. Names that still clash get a distance and direction.
+ * same rule, so these numbers match them everywhere. Each name carries the area's own state ("Silver Spring, MD",
+ * the same label as the street sheet, the PDF, the CSVs and the calendar); names that still clash get a distance
+ * and direction.
  */
 export function topTiles(sheet: StreetSheet, n = 5): LiftTile[] {
   const sorted = [...sheet.cards.liftMap.results.tiles]
@@ -27,7 +30,10 @@ export function topTiles(sheet: StreetSheet, n = 5): LiftTile[] {
     if (out.some((o) => sameArea(o, t))) continue;
     out.push(t);
   }
-  return distinctNames(out, sheet.bill.venue);
+  return distinctNames(
+    out.map((t) => (t.name ? { ...t, name: areaName(t) } : t)),
+    sheet.bill.venue,
+  );
 }
 
 /** Gives areas that still share a name a distance and direction from the venue ("Nashville-Davidson, 17 km west"). */
@@ -39,9 +45,20 @@ export function distinctNames(tiles: LiftTile[], venue: { lat: number; lon: numb
   );
 }
 
-/** An area's display name: its gazetteer name, never a geohash. */
-export function areaName(t: Pick<LiftTile, "name"> | undefined, number?: number): string {
-  if (t?.name) return t.name;
+const DISTANCE_SUFFIX = /, [\d.]+ km (north|northeast|east|southeast|south|southwest|west|northwest)$/;
+
+/**
+ * An area's display name: its gazetteer name with its own state ("Arlington, VA", from the area's ZIPs, never the
+ * venue's), never a geohash. A name that already carries the state, or a tile without ZIPs, is left as it is; a
+ * distance suffix ("..., 17 km west") stays last.
+ */
+export function areaName(t: (Pick<LiftTile, "name"> & Partial<Pick<LiftTile, "zctas">>) | undefined, number?: number): string {
+  if (t?.name) {
+    const st = areaState(t);
+    if (!st || t.name.split(/,\s*/).includes(st)) return t.name;
+    const suffix = DISTANCE_SUFFIX.exec(t.name)?.[0] ?? "";
+    return `${t.name.slice(0, t.name.length - suffix.length)}, ${st}${suffix}`;
+  }
   return number ? `Area ${number}` : "Unnamed area";
 }
 
@@ -162,7 +179,9 @@ function clock(hh: number, mm: number): string {
  * recognise come back unchanged.
  */
 export function guardNoteText(note: string): string {
-  const m = /^(summary|tileWhy|partnerLines|copyHooks)(?:\[(\d+)\])?: (.+)$/.exec(note.trim());
+  // "replaced by the template: tileWhy[1]: ..." -> the line was swapped for fixed wording, not left out.
+  const swapped = /^replaced by the template: (.+)$/.exec(note.trim());
+  const m = /^(summary|tileWhy|partnerLines|copyHooks)(?:\[(\d+)\])?: (.+)$/.exec(swapped ? swapped[1]! : note.trim());
   if (!m) return note;
   const [, field, idx, why] = m;
   const n = idx === undefined ? null : Number(idx) + 1;
@@ -181,7 +200,9 @@ export function guardNoteText(note: string): string {
         .replace(/geohash not in this run/, "it named an area that isn't on this sheet")
         .replace(/entityId not in this run/, "it named a place that isn't on this sheet")
         .replace(/^duplicate (tile|entity)$/, "it repeated another line");
-  return `${what} was left out: ${reason}.`;
+  const plainReason = reason.replace(/\s*\(dropped\)$/, "");
+  if (swapped && !/\(dropped\)$/.test(reason)) return `${what} was replaced with fixed wording: ${plainReason}.`;
+  return `${what} was left out: ${plainReason}.`;
 }
 
 export function humanTimes(text: string): string {
@@ -381,20 +402,20 @@ export function comparisonSentence(c: BillComparison, names: { a: string; b: str
 }
 
 /**
- * The landing's sheets section in recorded mode (Qloo is no longer available): its heading and why nothing new
+ * The landing's sheets section in recorded mode (live runs are paused): its heading and why nothing new
  * runs, said from what is served. Recordings are called recordings; a sheet marked sample is not one, and when no
  * live run was recorded the section says they are all samples.
  */
 export function recordedSheetsSection(sheets: readonly Pick<StreetSheet, "mode">[]): { heading: string; intro: string } {
-  const lead = "Qloo is no longer available, so new plans are off.";
+  const lead = "Live runs are paused for judging.";
   const live = sheets.filter((s) => s.mode === "live").length;
   if (live === 0) {
     return {
       heading: "Sample sheets",
-      intro: `${lead} No live run was recorded before it went away, so these are sample sheets with made-up places and numbers.`,
+      intro: `${lead} No live run was recorded on this server, so these are sample sheets with made-up places and numbers.`,
     };
   }
-  const intro = `${lead} ${live === sheets.length ? "These sheets were" : "The sheets not marked sample were"} recorded from live runs on the dates shown.`;
+  const intro = `${lead} ${live === sheets.length ? "These sheets were" : "The sheets not marked sample were"} recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced.`;
   return { heading: "Recorded sheets", intro: live === sheets.length ? intro : `${intro} A sheet marked sample uses made-up places and numbers.` };
 }
 
@@ -504,7 +525,7 @@ export function partnerSummary(sheet: StreetSheet): string {
   const n = m ? Number(m[1]!.replace(/,/g, "")) : 0;
   if (n > 0) {
     const one = n === 1;
-    s += ` Places ${baselineName(sheet)} ranks as high are marked down; ${one ? "1 of them didn't make the list and comes" : `${n} of them didn't make the list and come`} back only if nothing better is open nearby.`;
+    s += ` Places ${baselineName(sheet)} ranks as high are marked down; ${one ? "1 of them dropped off the list and comes" : `${n} of them dropped off the list and come`} back only if nothing better is open nearby.`;
   }
   return s.trim();
 }
@@ -526,4 +547,159 @@ export function spreadSentence(tiles: readonly Pick<LiftTile, "lat" | "lon">[], 
   const where = best.n * 2 > d.length ? (best.n === d.length ? `all of them to the ${best.c}` : `most of them to the ${best.c}`) : "in different directions";
   const span = formatKm(min) === formatKm(max) ? `about ${formatKm(min)}` : `${formatKm(min)} to ${formatKm(max)}`;
   return `The ${d.length} top areas are ${span} from the room, ${where}.`;
+}
+
+/** "3,500 m" -> "3.5 km"; "2,000 m" -> "2 km". Distances of a kilometre or more read in km, as everywhere else. */
+function metresToKm(text: string): string {
+  return text.replace(/\b(\d{1,3}(?:,\d{3})+|\d{4,})\s?m\b/g, (_, n: string) => {
+    const km = Number(n.replace(/,/g, "")) / 1000;
+    return `${Number.isInteger(km) ? km : km.toFixed(1).replace(/\.0$/, "")} km`;
+  });
+}
+
+/**
+ * A run's own words (a section's "Why", a step's decision, a map note) for the page: internal keys become the
+ * words the rest of the sheet uses ("record_store" -> "record store"), metres over 1,000 become km, a lone "seed"
+ * is an act, and "1 type of place that have" agrees. Never changes a name or a number's value.
+ */
+export function plainText(text: string): string {
+  let s = metresToKm(text);
+  s = s.replace(/\b[a-z]+(?:_[a-z]+)+\b/g, (key) => (CATEGORY_LABEL[key] ?? key.replace(/_/g, " ")).toLowerCase());
+  s = s.replace(/\b1 (type|kind) of place that have\b/g, "1 $1 of place that has");
+  s = s.replace(/\bone seed\b/g, "one act").replace(/\bseeds\b/g, "acts").replace(/\bseed\b/g, "act");
+  s = s
+    .replace(/\b(?:wouldn't|would not) make a list of the most popular places\b/g, "aren't among the most popular places")
+    .replace(/\bwould also make a list of the most popular places\b/g, "are also among the most popular places")
+    .replace(/\bno pinned tag yet\b/g, "no Qloo tag set up for it yet");
+  return s;
+}
+
+/**
+ * The popularity check in one plain sentence: how many partners are not among the most popular places in their
+ * areas, so a list built on popularity alone would leave them out.
+ */
+export function popularityLine(c: Pick<PopularityCheck, "partners" | "notInPopularTop" | "perArea">): string {
+  const near = c.perArea.length === 1 && c.perArea[0]?.tileGeohash === null;
+  const where = near ? "near the venue" : c.perArea.length === 1 ? "in their area" : "in their areas";
+  const n = c.notInPopularTop;
+  if (c.partners === 1) {
+    return n === 1
+      ? `The one partner isn't among the most popular places ${near ? "near the venue" : "in its area"}, so a popularity list would miss it.`
+      : `The one partner is also among the most popular places ${near ? "near the venue" : "in its area"}.`;
+  }
+  if (n === 0) return `All ${c.partners} partners are also among the most popular places ${where}.`;
+  if (n === c.partners) return `None of the ${c.partners} partners is among the most popular places ${where}, so a popularity list would miss all of them.`;
+  return `${n} of the ${c.partners} partners aren't among the most popular places ${where}, so a popularity list would miss them.`;
+}
+
+// ---------------------------------------------------------------------------
+// The landing's story: one real pick a popularity list would miss, and one area side by side
+// ---------------------------------------------------------------------------
+
+/** One partner as the landing names it: where, and its rank for this crowd and for the room's usual crowd. */
+export interface RankedPick {
+  entityId: string;
+  name: string;
+  /** Its area, named as on the map ("Langston, DC"). */
+  area: string;
+  /** Rank in the partner search with this bill as the signal (1 = best). */
+  billRank: number;
+  /** Rank in the same search for the room's usual crowd, or null when it isn't in that list. */
+  houseRank: number | null;
+  /** The receipts: the partner search, the usual-crowd search and the popularity-only search. */
+  refs: string[];
+}
+
+/** One partner area of the popularity check with the picks Walkup made there, best first. */
+export interface PopularityArea {
+  geohash: string;
+  area: string;
+  /** How many places the popularity-only list was cut to (as many as the area has partners). */
+  k: number;
+  /** Of Walkup's picks here, how many are not in that list. */
+  notInPopularTop: number;
+  /** Ledger id of the popularity-only search for this area. */
+  popularRef: string;
+  picks: RankedPick[];
+  /**
+   * The places the picks were compared with, by name: the area's popularity-only list, best first (the sheet's
+   * `popularTop`). Null on sheets made before it was stored, or when a name is missing.
+   */
+  popular: PopularPlace[] | null;
+}
+
+function rankedPick(p: Partner, popularRef: string, tiles: ReadonlyMap<string, LiftTile>): RankedPick | null {
+  if (typeof p.qlooRank !== "number") return null;
+  const refs = [...new Set([...(p.explain?.ledgerRefs ?? p.chips.map((c) => c.ledgerRef)), popularRef])];
+  return {
+    entityId: p.entity.entityId,
+    name: p.entity.name,
+    area: partnerAreaLabel(p, tiles) || "its area",
+    billRank: p.qlooRank,
+    houseRank: typeof p.houseRank === "number" ? p.houseRank : null,
+    refs,
+  };
+}
+
+/**
+ * The popularity check's partner areas, in the sheet's order, each with Walkup's picks there and their two ranks.
+ * Only areas with a tile (not the near-venue list) and at least one ranked pick.
+ */
+export function popularityAreas(sheet: StreetSheet): PopularityArea[] {
+  const pc = sheet.popularityCheck;
+  if (!pc) return [];
+  const tiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
+  const out: PopularityArea[] = [];
+  for (const a of pc.perArea) {
+    if (!a.tileGeohash || a.partners <= 0) continue;
+    const picks = sheet.cards.partners.results
+      .filter((p) => p.tileGeohash === a.tileGeohash)
+      .map((p) => rankedPick(p, a.ledgerRef, tiles))
+      .filter((x): x is RankedPick => x !== null)
+      .sort((x, y) => x.billRank - y.billRank);
+    if (picks.length === 0) continue;
+    const tile = tiles.get(a.tileGeohash);
+    out.push({
+      geohash: a.tileGeohash,
+      area: tile?.name ? areaName(tile) : a.tileName ? areaName({ name: a.tileName, ...(tile?.zctas ? { zctas: tile.zctas } : {}) }) : "this area",
+      k: a.partners,
+      notInPopularTop: a.notInPopularTop,
+      popularRef: a.ledgerRef,
+      picks,
+      popular: a.popularTop && a.popularTop.length > 0 && a.popularTop.every((x) => x.name.trim() !== "") ? [...a.popularTop].sort((x, y) => x.rank - y.rank) : null,
+    });
+  }
+  return out;
+}
+
+/**
+ * One real pick a popularity list would miss: from an area where none of Walkup's picks is among the area's most
+ * popular places (so this one surely isn't), the pick this crowd ranks furthest above the room's usual crowd. A pick
+ * with both ranks beats one the usual crowd doesn't rank at all (two numbers say more); ties go to the better rank
+ * for this crowd. National chains are skipped. Null when no area qualifies.
+ */
+export function missedPick(sheet: StreetSheet): (RankedPick & { k: number }) | null {
+  let best: (RankedPick & { k: number }) | null = null;
+  const key = (p: RankedPick): [number, number, number] => (p.houseRank === null ? [0, 0, -p.billRank] : [1, p.houseRank - p.billRank, -p.billRank]);
+  const better = (x: RankedPick, y: RankedPick) => {
+    const [a, b] = [key(x), key(y)];
+    return a[0] !== b[0] ? a[0] > b[0] : a[1] !== b[1] ? a[1] > b[1] : a[2] > b[2];
+  };
+  // A national chain is never the example: a popularity list missing a Ross or a Starbucks says little.
+  const chains = new Set(sheet.cards.partners.results.filter((p) => p.chain).map((p) => p.entity.entityId));
+  for (const a of popularityAreas(sheet)) {
+    if (a.notInPopularTop < a.k) continue;
+    for (const p of a.picks) {
+      if (chains.has(p.entityId)) continue;
+      if (p.houseRank !== null && p.houseRank <= p.billRank) continue;
+      if (!best || better(p, best)) best = { ...p, k: a.k };
+    }
+  }
+  return best;
+}
+
+/** "Stable DC in Langston, DC: 7th for this crowd, 14th for the room's usual crowd, and not among the area's 4 most popular places." */
+export function missedPickLine(p: RankedPick & { k: number }): string {
+  const house = p.houseRank === null ? "not ranked for the room's usual crowd" : `${ordinal(p.houseRank)} for the room's usual crowd`;
+  return `${p.name} in ${p.area}: ${ordinal(p.billRank)} for this crowd, ${house}, and not among the area's ${p.k} most popular places.`;
 }

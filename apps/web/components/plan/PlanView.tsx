@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { revisePlan } from "../../lib/api";
 import type { ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from "@walkup/contracts";
 import { SampleStrip } from "../SampleStrip";
-import { actsLine, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
-import { streetDaysText } from "@walkup/exports/format";
+import { actsLine, formatDayMonth, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
+import { countsAreWhatIf, streetDaysText } from "@walkup/exports/format";
 import { entityIndex, guardNoteText, isThinSignal, sendStatus, sendSteps, sheetTitle } from "../../lib/sheet-utils";
 import { CopyHooksCard, DeclaredCard, DifferentCard, MediaCard, PrePostCard } from "./MoreCards";
 import { LedgerSection } from "./LedgerSection";
@@ -19,6 +19,7 @@ import { ResolutionCard } from "./ResolutionCard";
 import { ReviseBox } from "./ReviseBox";
 import { SendModal } from "./SendModal";
 import { DiscoveryNote, RevisionNote, StepList } from "./SheetExtras";
+import { FoldBody, FoldContext, openFoldsFor } from "./fold";
 
 /** What the interactive sheet renders: a finished sheet plus where it came from. */
 export interface PlanPayload {
@@ -40,7 +41,7 @@ export interface PlanViewProps {
   /** The server is live: a fixture sheet then says it is a sample. */
   runtimeLive: boolean;
   /**
-   * The server serves recorded sheets only (Qloo is no longer available): a live sheet says when it was recorded
+   * The server serves recorded sheets only (live runs are paused): a live sheet says when it was recorded
    * instead of when it was planned, and a fixture sheet says it is a sample.
    */
   recorded?: boolean;
@@ -56,6 +57,22 @@ export interface PlanViewProps {
    * Ignored when `onRevise` is given. The server page sets it; a server component can't pass a function.
    */
   revisable?: boolean;
+  /** Stored revisions of this sheet ("All ages, no bars"), linked from the header. */
+  revisions?: readonly { planId: string; instruction: string }[];
+  /** When the page is viewed (ISO), for "Days to show". Default: now. */
+  today?: string;
+  /** Narration lines the checks replaced with fixed-template lines at view time (said under the Summary). */
+  narrationReplaced?: number;
+}
+
+/** True when the run's own checks set Claude's summary aside (a claim the sheet doesn't back) and the template's stands in. */
+function summaryFixed(sheet: StreetSheet): boolean {
+  return (sheet.guard?.reasons ?? []).some((r) => /^(?:replaced by the template: )?summary:/.test(r));
+}
+
+/** Area and partner lines the run's own checks replaced with the template's line (said with the view-time count). */
+function lineFixes(sheet: StreetSheet): number {
+  return (sheet.guard?.reasons ?? []).filter((r) => /^replaced by the template: (?:tileWhy|partnerLines)\[/.test(r)).length;
 }
 
 /** The default revise handler: starts the revision and hands back the new plan id, the question, or why it failed. */
@@ -83,11 +100,12 @@ function contentsFor(opts: { revise: boolean; steps: boolean }): { href: string;
   return [
     { href: "#lift", label: "Areas" },
     { href: "#partners", label: "Partners" },
+    { href: "#downloads", label: "Downloads" },
     ...(opts.revise ? [{ href: "#revise", label: "Change something" }] : []),
     ...(opts.steps ? [{ href: "#steps", label: "Steps" }] : []),
+    { href: "#prepost", label: "Before and after" },
     { href: "#resolution", label: "Acts and venue" },
     { href: "#declared", label: "Your list" },
-    { href: "#prepost", label: "Before and after" },
     { href: "#media", label: "Podcasts" },
     { href: "#hooks", label: "Copy lines" },
     { href: "#limits", label: "Limits" },
@@ -101,7 +119,9 @@ function aboutNote(p: PlanPayload, recorded: boolean): string {
     return "Made with Walkup's sample data, so no live service was called; the venue and area names are real, and every act, business, podcast, brand and number is made up.";
   }
   if (p.source === "preset" && p.note) return p.note;
-  if (recorded) return `Recorded from a live run on ${formatStamp(p.sheet.createdAt)} and not refreshed since. Every footnote points to the request that produced the claim.`;
+  if (recorded) {
+    return `Recorded from a live Qloo and Ticketmaster run on ${formatStamp(p.sheet.createdAt)}. Live runs are paused for judging; this is what the live run produced. Every footnote points to the request that produced the claim.`;
+  }
   return "A live run. Every footnote points to the request that produced the claim.";
 }
 
@@ -125,7 +145,9 @@ function inputsSentences(sheet: StreetSheet, realShow: boolean): string {
   const tm = sheet.bill.legalAgeEnforced;
   const listed = tm === true ? "Ticketmaster lists the show as 21+" : tm === false ? "Ticketmaster lists the show as all ages" : "Ticketmaster lists no age policy, so the show is treated as all ages";
   parts.push(op.allAges === true && tm === true ? `${listed}; you set it to all ages.` : `${listed}.`);
-  if (sheet.hypothetical) parts.push(realShow ? "The bill, venue and date are public listing facts; Walkup has no sales data for this show." : "Walkup has no sales data for this show.");
+  // What-if counts are a sample sheet's only (`countsAreWhatIf`): a live sheet is never read as a what-if, whatever an
+  // older stored sheet's `hypothetical` says.
+  if (countsAreWhatIf(sheet)) parts.push(realShow ? "The bill, venue and date are public listing facts; Walkup has no sales data for this show." : "Walkup has no sales data for this show.");
   return parts.join(" ");
 }
 
@@ -180,7 +202,21 @@ function RerunLink({ presetId }: { presetId: string }) {
   );
 }
 
-export function PlanView({ payload, line, realShow, showName, paired, runtimeLive, recorded = false, canRerun, onRevise, revisable = false }: PlanViewProps) {
+export function PlanView({
+  payload,
+  line,
+  realShow,
+  showName,
+  paired,
+  runtimeLive,
+  recorded = false,
+  canRerun,
+  onRevise,
+  revisable = false,
+  revisions = [],
+  today,
+  narrationReplaced = 0,
+}: PlanViewProps) {
   const router = useRouter();
   const sheet = payload.sheet;
   const [actions, setActions] = useState<LedgerEntry[]>([]);
@@ -195,11 +231,12 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
   const open = useCallback((ref: string, entityId?: string) => setDrawer(entityId ? { ref, entityId } : { ref }), []);
   const ctx = useMemo(() => ({ entries, open, sample: sheet.mode === "fixture" }), [entries, open, sheet.mode]);
 
-  // A footnote link shared as /plan/<id>#receipt-Q13 opens that receipt.
+  // A footnote link shared as /plan/<id>#receipt-Q13 opens that receipt; a link to a folded section opens it.
   useEffect(() => {
     const fromHash = () => {
       const m = /^#receipt-([A-Za-z0-9_-]+)$/.exec(window.location.hash);
       if (m && sheet.ledger.some((e) => e.id === m[1])) setDrawer({ ref: m[1]! });
+      else openFoldsFor(decodeURIComponent(window.location.hash.slice(1)));
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
@@ -221,7 +258,8 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
   }, [sheet]);
   const names = useMemo(() => entityIndex(sheet), [sheet]);
 
-  const days = tMinusDays(sheet.createdAt, sheet.bill.date);
+  // Counted from the day the page is viewed, not the day the sheet was made; a recording says its own date.
+  const days = tMinusDays(today ?? new Date().toISOString(), sheet.bill.date);
   const thin = isThinSignal(sheet);
   const op = sheet.operator;
   const venue = sheet.bill.venue;
@@ -248,9 +286,13 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
   // Four key facts, label over value. A number the operator typed says so in its label.
   const facts: { k: string; v: string; note?: string }[] = [
     op.seatsLeft === null ? { k: "Seats left", v: "Not entered" } : { k: "Seats left, your number", v: formatInt(op.seatsLeft) },
-    { k: "Days to show", v: days >= 0 ? String(days) : "Past" },
+    {
+      k: "Days to show",
+      v: days >= 0 ? String(days) : "Past",
+      ...(recorded && !sample ? { note: `Recorded ${formatDayMonth(sheet.createdAt)}` } : {}),
+    },
     { k: op.streetTeamDays.length > 1 ? "Street-team days" : "Street-team day", v: streetDaysText(op.streetTeamDays) || "None set" },
-    { k: "Partners found", v: String(partnersFound), ...(partnersFound < 15 ? { note: "of 15 wanted" } : {}) },
+    { k: "Partners found", v: String(partnersFound) },
   ];
   // The rest of the inputs as one muted line, honest about blanks.
   const inputsLine = inputsSentences(sheet, realShow);
@@ -297,7 +339,21 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
                 </>
               ) : null}
             </p>
-            {pairLine && paired ? (
+            {revisions.length > 0 ? (
+              <p className="mt-2" data-testid="revision-links">
+                {revisions.map((r, i) => (
+                  <span key={r.planId}>
+                    {i > 0 ? <span className="text-muted"> · </span> : null}
+                    <span className="text-muted">Revised: </span>
+                    <Link href={`/plan/${r.planId}`} className="link">
+                      {r.instruction} &rarr;
+                    </Link>
+                  </span>
+                ))}
+              </p>
+            ) : null}
+            {/* The one link to the other bill in the same room (the old "Swap the bill" link said the same thing). */}
+            {paired ? (
               <p className="mt-2">
                 The other bill at {venue.name}:{" "}
                 <Link href={`/plan/${paired.planId}`} className="link">
@@ -306,9 +362,8 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
                 </Link>
                 .
               </p>
-            ) : line ? (
-              <p className="mt-2 text-muted">{line}</p>
             ) : null}
+            {line && !pairLine ? <p className="mt-2 text-muted">{line}</p> : null}
           </div>
 
           <dl className="mt-5 grid max-w-[760px] grid-cols-2 gap-y-3 border-y border-rule py-3 sm:grid-cols-4">
@@ -317,7 +372,7 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
                 <dt className="text-sm text-muted">{x.k}</dt>
                 <dd className="tabular text-xl">
                   {x.v}
-                  {x.note ? <span className="text-sm text-muted"> {x.note}</span> : null}
+                  {x.note ? <span className="block text-sm text-muted">{x.note}</span> : null}
                 </dd>
               </div>
             ))}
@@ -343,18 +398,6 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
             <Link href={`/s/${sheet.planId}`} className="text-button">
               Print view
             </Link>
-            {paired ? (
-              <Link href={`/plan/${paired.planId}`} className="text-button" aria-label={`Swap the bill: open ${paired.headliner} in the same room`}>
-                Swap the bill
-              </Link>
-            ) : (
-              <button type="button" className="text-button" aria-disabled="true" aria-describedby="swap-help" onClick={() => undefined}>
-                Swap the bill
-                <span id="swap-help" className="sr-only">
-                  No second bill is recorded for this room yet.
-                </span>
-              </button>
-            )}
             {canRerun && payload.presetId ? <RerunLink presetId={payload.presetId} /> : null}
           </p>
         </div>
@@ -379,7 +422,15 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
             <p className="mt-1 max-w-[760px] text-sm text-muted">
               {sheet.narration.templated
                 ? "Written from a fixed template; no model was called."
-                : "Written by Claude under checks that let it cite only names and numbers from this run."}
+                : summaryFixed(sheet)
+                  ? `Fixed wording: Claude's draft of this summary made a claim the sheet doesn't back, so the template's summary stands in. The area and partner lines are Claude's, under checks that let it cite only names and numbers from this run${
+                      lineFixes(sheet) + narrationReplaced > 0 ? `; ${lineFixes(sheet) + narrationReplaced} of them replaced with fixed wording` : ""
+                    }.`
+                : narrationReplaced + lineFixes(sheet) > 0
+                  ? `Written by Claude under checks that let it cite only names and numbers from this run. ${narrationReplaced + lineFixes(sheet)} ${
+                      narrationReplaced + lineFixes(sheet) === 1 ? "line was" : "lines were"
+                    } replaced with fixed wording because the sheet doesn't back ${narrationReplaced + lineFixes(sheet) === 1 ? "it" : "them"}.`
+                  : "Written by Claude under checks that let it cite only names and numbers from this run."}
             </p>
             <p className="mt-2 max-w-[760px]">{sheet.narration.summary}</p>
           </section>
@@ -393,37 +444,9 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
           />
         ) : null}
 
-        {/* The street team's part first: where to go, then who to call. How the plan was made follows. */}
+        {/* The street team's part first: where to go, who to call, the files to hand out. How the plan was made follows. */}
         <LiftCard sheet={sheet} selected={tile} onSelect={setTile} />
         <PartnersCard sheet={sheet} canRevise={revise !== null} />
-        {revise ? <ReviseBox onRevise={revise} onOpen={(id) => router.push(`/plan/${id}`)} /> : null}
-        {steps.length > 0 ? <StepList steps={steps} /> : null}
-        <ResolutionCard sheet={sheet} />
-        <DeclaredCard sheet={sheet} />
-        <PrePostCard sheet={sheet} />
-        <MediaCard sheet={sheet} />
-        <CopyHooksCard sheet={sheet} />
-        <DifferentCard sheet={sheet} />
-
-        <section id="limits" aria-labelledby="limits-title" className="section scroll-mt-4">
-          <h2 id="limits-title">What this sheet doesn&apos;t show</h2>
-          <ul className="mt-3 max-w-[760px] list-disc space-y-1 pl-5">
-            {limits.map((l) => (
-              <li key={l}>{l}</li>
-            ))}
-          </ul>
-          <h3 className="mt-6 text-base">Checks</h3>
-          <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard)}</p>
-          {guardNotes.length > 0 ? (
-            <ul className="mt-1 max-w-[760px] list-disc space-y-1 pl-5 text-muted">
-              {guardNotes.map((r) => (
-                <li key={r}>{guardNoteText(r)}</li>
-              ))}
-            </ul>
-          ) : null}
-          <h3 className="mt-6 text-base">About this sheet</h3>
-          <p className="mt-1 max-w-[760px] text-muted">{aboutNote(payload, recorded)}</p>
-        </section>
 
         <section id="downloads" aria-labelledby="downloads-title" className="section no-print scroll-mt-4">
           <h2 id="downloads-title">Downloads</h2>
@@ -442,7 +465,43 @@ export function PlanView({ payload, line, realShow, showName, paired, runtimeLiv
           </ul>
         </section>
 
-        <LedgerSection entries={entries} exportHref={`${base}/sheet.json`} sample={sample} />
+        {revise ? <ReviseBox onRevise={revise} onOpen={(id) => router.push(`/plan/${id}`)} /> : null}
+        {steps.length > 0 ? <StepList steps={steps} /> : null}
+        <PrePostCard sheet={sheet} />
+
+        {/* Lower sections: heading and summary in view, the rest behind a plain "Show". */}
+        <FoldContext.Provider value={true}>
+          <ResolutionCard sheet={sheet} />
+          <DeclaredCard sheet={sheet} />
+          <MediaCard sheet={sheet} />
+          <CopyHooksCard sheet={sheet} />
+          <DifferentCard sheet={sheet} />
+
+          <section id="limits" aria-labelledby="limits-title" className="section scroll-mt-4">
+            <h2 id="limits-title">What this sheet doesn&apos;t show</h2>
+            <p className="mt-2 max-w-[760px]">Limits, the checks run on every line, and where this sheet came from.</p>
+            <FoldBody title="limits, checks and about this sheet">
+              <ul className="mt-3 max-w-[760px] list-disc space-y-1 pl-5">
+                {limits.map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+              <h3 className="mt-6 text-base">Checks</h3>
+              <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard)}</p>
+              {guardNotes.length > 0 ? (
+                <ul className="mt-1 max-w-[760px] list-disc space-y-1 pl-5 text-muted">
+                  {guardNotes.map((r) => (
+                    <li key={r}>{guardNoteText(r)}</li>
+                  ))}
+                </ul>
+              ) : null}
+              <h3 className="mt-6 text-base">About this sheet</h3>
+              <p className="mt-1 max-w-[760px] text-muted">{aboutNote(payload, recorded)}</p>
+            </FoldBody>
+          </section>
+
+          <LedgerSection entries={entries} exportHref={`${base}/sheet.json`} sample={sample} />
+        </FoldContext.Provider>
       </div>
 
       <ReceiptDrawer

@@ -268,7 +268,7 @@
       },
       "liftMap": {
         "status": "ok",
-        "summary": "30 areas where this bill's crowd ranks higher than the room's usual crowd. The top 4 are in Beech Grove Farms, West Nashville, Nashville-Davidson and Windsor Green.",
+        "summary": "30 areas where this bill's crowd ranks higher than the room's usual crowd. The top 4 are in Brentwood, West Nashville, Nashville and Goodlettsville.",
         "results": {
           "tiles": [
             {
@@ -280,7 +280,7 @@
               "housePct": 0.2912,
               "popularityPct": 0.2677,
               "adultPopulation": 44368,
-              "name": "Beech Grove Farms",
+              "name": "Brentwood",
               "zctas": [
                 "37027"
               ]
@@ -296,7 +296,6 @@
               "adultPopulation": 47980,
               "name": "West Nashville",
               "zctas": [
-                "37232",
                 "37212",
                 "37203",
                 "37208"
@@ -311,7 +310,7 @@
               "housePct": 0.2454,
               "popularityPct": 0.1812,
               "adultPopulation": 19538,
-              "name": "Nashville-Davidson",
+              "name": "Nashville",
               "zctas": [
                 "37205"
               ]
@@ -325,7 +324,7 @@
               "housePct": 0.3265,
               "popularityPct": 0.2462,
               "adultPopulation": 32001,
-              "name": "Nashville-Davidson",
+              "name": "Nashville",
               "zctas": [
                 "37209"
               ]
@@ -339,7 +338,7 @@
               "housePct": 0.3808,
               "popularityPct": 0.245,
               "adultPopulation": 10915,
-              "name": "Nashville-Davidson",
+              "name": "Nashville",
               "zctas": [
                 "37218"
               ]
@@ -368,7 +367,7 @@
               "housePct": 0.3615,
               "popularityPct": 0.2196,
               "adultPopulation": 32001,
-              "name": "Nashville-Davidson",
+              "name": "Nashville",
               "zctas": [
                 "37209"
               ]
@@ -382,7 +381,7 @@
               "housePct": 0.2762,
               "popularityPct": 0.2281,
               "adultPopulation": 44368,
-              "name": "Estates of Bonbrook",
+              "name": "Brentwood",
               "zctas": [
                 "37027"
               ]
@@ -396,7 +395,7 @@
               "housePct": 0.2073,
               "popularityPct": 0.1435,
               "adultPopulation": 30717,
-              "name": "Windsor Green",
+              "name": "Goodlettsville",
               "zctas": [
                 "37115"
               ]
@@ -410,7 +409,7 @@
               "housePct": 0.3938,
               "popularityPct": 0.2785,
               "adultPopulation": 32001,
-              "name": "Nashville-Davidson",
+              "name": "Nashville",
               "zctas": [
                 "37209"
               ]
@@ -424,7 +423,7 @@
               "housePct": 0.4427,
               "popularityPct": 0.3012,
               "adultPopulation": 29414,
-              "name": "Nashville-Davidson",
+              "name": "Hermitage",
               "zctas": [
                 "37076"
               ]
@@ -438,7 +437,7 @@
               "housePct": 0.4231,
               "popularityPct": 0.3565,
               "adultPopulation": 29414,
-              "name": "Nashville-Davidson",
+              "name": "Hermitage",
               "zctas": [
                 "37076"
               ]
@@ -452,7 +451,7 @@
               "housePct": 0.3565,
               "popularityPct": 0.2115,
               "adultPopulation": 29414,
-              "name": "Nashville-Davidson",
+              "name": "Hermitage",
               "zctas": [
                 "37076"
               ]
@@ -559,7 +558,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0179",
-                "website": "https://curl-up-salon.example",
+                "website": "https://curl-up-salon-hartley-rd.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -598,7 +597,7 @@
             "qlooRank": 4,
             "address": "1195 Hartley Rd, Brentwood, TN",
             "phone": "+1 629-555-0179",
-            "website": "https://curl-up-salon.example",
+            "website": "https://curl-up-salon-hartley-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -613,11 +612,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +17 ranks",
+                "label": "ranks 17 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "09:00-18:00",
             "houseRank": 21,
             "ubiquityPenalty": 0,
@@ -630,13 +629,13 @@
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
               "confidence": "high",
-              "confidenceWhy": "Rank 4 of 32 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 4 of 32 in a top area; the room's usual crowd ranks it 17 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 19.2
             }
           },
@@ -723,7 +722,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0103",
-                "website": "https://beasley-barbers.example",
+                "website": "https://beasley-barbers-willard-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -762,7 +761,7 @@
             "qlooRank": 3,
             "address": "1940 Willard St, Brentwood, TN",
             "phone": "+1 629-555-0103",
-            "website": "https://beasley-barbers.example",
+            "website": "https://beasley-barbers-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -777,11 +776,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +14 ranks",
+                "label": "ranks 14 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "09:00-19:00",
             "houseRank": 17,
             "ubiquityPenalty": 0.0625,
@@ -802,13 +801,13 @@
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
               "confidence": "high",
-              "confidenceWhy": "Rank 3 of 32 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 3 of 32 in a top area; the room's usual crowd ranks it 14 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 19.8
             }
           },
@@ -895,7 +894,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0143",
-                "website": "https://deep-cuts.example",
+                "website": "https://deep-cuts-9th-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.3,
@@ -934,7 +933,7 @@
             "qlooRank": 5,
             "address": "732 9th St, Brentwood, TN",
             "phone": "+1 615-555-0143",
-            "website": "https://deep-cuts.example",
+            "website": "https://deep-cuts-9th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -949,11 +948,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +13 ranks",
+                "label": "ranks 13 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "11:00-19:00",
             "houseRank": 18,
             "ubiquityPenalty": 0.09375,
@@ -974,13 +973,13 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 5 of 32 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 5 of 32 in a top area; the room's usual crowd ranks it 13 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 20.5
             }
           },
@@ -1057,7 +1056,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0147",
-                "website": "https://clements.example",
+                "website": "https://clements-calloway-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4,
@@ -1096,7 +1095,7 @@
             "qlooRank": 1,
             "address": "3542 Calloway St, Brentwood, TN",
             "phone": "+1 629-555-0147",
-            "website": "https://clements.example",
+            "website": "https://clements-calloway-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1111,11 +1110,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +6 ranks",
+                "label": "ranks 6 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "10:00-20:00",
             "houseRank": 7,
             "ubiquityPenalty": 0.3125,
@@ -1129,12 +1128,12 @@
               "activation": "Ask for a poster in the window and a ticket drop at the counter.",
               "confidence": "high",
               "confidenceWhy": "Rank 1 of 32 in a top area, open Thursday.",
-              "limits": "Suggested, not affiliated: no partner has agreed to anything.",
+              "limits": "Suggested, not affiliated: no partner has agreed to anything. Closed Saturday: visit on Thursday.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 21.1
             }
           },
@@ -1221,7 +1220,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0140",
-                "website": "https://mockingbird-kitchen.example",
+                "website": "https://mockingbird-kitchen-willard-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -1260,7 +1259,7 @@
             "qlooRank": 14,
             "address": "760 Willard St, Brentwood, TN",
             "phone": "+1 615-555-0140",
-            "website": "https://mockingbird-kitchen.example",
+            "website": "https://mockingbird-kitchen-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1275,11 +1274,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +15 ranks",
+                "label": "ranks 15 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 29,
             "ubiquityPenalty": 0.03125,
@@ -1300,13 +1299,13 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 14 of 32 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 14 of 32 in a top area; the room's usual crowd ranks it 15 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 21.1
             }
           },
@@ -1383,7 +1382,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0131",
-                "website": "https://mane-street-salon.example",
+                "website": "https://mane-street-salon-willard-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -1422,7 +1421,7 @@
             "qlooRank": 12,
             "address": "2539 Willard St, Brentwood, TN",
             "phone": "+1 629-555-0131",
-            "website": "https://mane-street-salon.example",
+            "website": "https://mane-street-salon-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1437,11 +1436,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +12 ranks",
+                "label": "ranks 12 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "09:00-18:00",
             "houseRank": 24,
             "ubiquityPenalty": 0.125,
@@ -1454,13 +1453,13 @@
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
               "confidence": "high",
-              "confidenceWhy": "Rank 12 of 32 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 12 of 32 in a top area; the room's usual crowd ranks it 12 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 20.9
             }
           },
@@ -1552,7 +1551,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0116",
-                "website": "https://chandler-s-diner.example",
+                "website": "https://chandler-s-diner-kimbrough-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -1591,7 +1590,7 @@
             "qlooRank": 7,
             "address": "1358 Kimbrough St, Brentwood, TN",
             "phone": "+1 615-555-0116",
-            "website": "https://chandler-s-diner.example",
+            "website": "https://chandler-s-diner-kimbrough-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1606,11 +1605,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house +6 ranks",
+                "label": "ranks 6 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 13,
             "ubiquityPenalty": 0.3125,
@@ -1630,14 +1629,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "high",
+              "confidence": "medium",
               "confidenceWhy": "Rank 7 of 32 in a top area, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 20.7
             }
           },
@@ -1719,7 +1718,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0188",
-                "website": "https://galloway-s-record-shop.example",
+                "website": "https://galloway-s-record-shop-willard-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 3.8,
@@ -1758,7 +1757,7 @@
             "qlooRank": 2,
             "address": "3822 Willard St, Brentwood, TN",
             "phone": "+1 629-555-0188",
-            "website": "https://galloway-s-record-shop.example",
+            "website": "https://galloway-s-record-shop-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1773,11 +1772,11 @@
                 "ledgerRef": "Q14"
               },
               {
-                "label": "tonight vs house -1 ranks",
+                "label": "ranks 1 place lower here than for the room's usual crowd",
                 "ledgerRef": "Q15"
               }
             ],
-            "tileName": "Beech Grove Farms",
+            "tileName": "Brentwood",
             "hoursOnDay": "11:00-19:00",
             "houseRank": 1,
             "ubiquityPenalty": 0.5,
@@ -1793,14 +1792,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "high",
-              "confidenceWhy": "Rank 2 of 32 in a top area, open Thursday.",
+              "confidence": "medium",
+              "confidenceWhy": "Rank 2 of 32 in a top area, but the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q14",
                 "Q15"
               ],
-              "areaName": "Beech Grove Farms",
+              "areaName": "Brentwood",
               "distanceKm": 20.4
             }
           },
@@ -1882,7 +1881,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0133",
-                "website": "https://hagan-and-co.example",
+                "website": "https://hagan-and-co-cedar-ln.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.8,
@@ -1921,7 +1920,7 @@
             "qlooRank": 2,
             "address": "2443 Cedar Ln, Nashville, TN",
             "phone": "+1 615-555-0133",
-            "website": "https://hagan-and-co.example",
+            "website": "https://hagan-and-co-cedar-ln.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1936,7 +1935,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +18 ranks",
+                "label": "ranks 18 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -1957,7 +1956,7 @@
               ],
               "activation": "Ask for a poster in the window and a ticket drop at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 2 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 2 of 38 in a top area; the room's usual crowd ranks it 18 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -2045,7 +2044,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0144",
-                "website": "https://hightower-supply.example",
+                "website": "https://hightower-supply-3rd-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 3.8,
@@ -2084,7 +2083,7 @@
             "qlooRank": 1,
             "address": "4501 3rd St, Nashville, TN",
             "phone": "+1 615-555-0144",
-            "website": "https://hightower-supply.example",
+            "website": "https://hightower-supply-3rd-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2099,7 +2098,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +15 ranks",
+                "label": "ranks 15 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -2120,7 +2119,7 @@
               ],
               "activation": "Ask for a poster in the window and a ticket drop at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 1 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 1 of 38 in a top area; the room's usual crowd ranks it 15 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -2213,7 +2212,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0158",
-                "website": "https://prater-s-cafe.example",
+                "website": "https://prater-s-cafe-birchwood-dr.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.5,
@@ -2252,7 +2251,7 @@
             "qlooRank": 3,
             "address": "1769 Birchwood Dr, Nashville, TN",
             "phone": "+1 629-555-0158",
-            "website": "https://prater-s-cafe.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2267,7 +2266,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +11 ranks",
+                "label": "ranks 11 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -2292,7 +2291,7 @@
               ],
               "activation": "Ask to leave table cards.",
               "confidence": "high",
-              "confidenceWhy": "Rank 3 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 3 of 38 in a top area; the room's usual crowd ranks it 11 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -2380,7 +2379,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0136",
-                "website": "https://minton-s-barber-shop.example",
+                "website": "https://minton-s-barber-shop-whitfield-rd.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.1,
@@ -2419,7 +2418,7 @@
             "qlooRank": 11,
             "address": "3002 Whitfield Rd, Nashville, TN",
             "phone": "+1 615-555-0136",
-            "website": "https://minton-s-barber-shop.example",
+            "website": "https://minton-s-barber-shop-whitfield-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2434,7 +2433,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +22 ranks",
+                "label": "ranks 22 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -2455,7 +2454,7 @@
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
               "confidence": "high",
-              "confidenceWhy": "Rank 11 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 11 of 38 in a top area; the room's usual crowd ranks it 22 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -2543,7 +2542,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0189",
-                "website": "https://darby-barbers.example",
+                "website": "https://darby-barbers-14th-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.4,
@@ -2582,7 +2581,7 @@
             "qlooRank": 12,
             "address": "3889 14th St, Nashville, TN",
             "phone": "+1 629-555-0189",
-            "website": "https://darby-barbers.example",
+            "website": "https://darby-barbers-14th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2597,7 +2596,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +22 ranks",
+                "label": "ranks 22 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -2618,7 +2617,7 @@
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
               "confidence": "high",
-              "confidenceWhy": "Rank 12 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 12 of 38 in a top area; the room's usual crowd ranks it 22 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -2706,7 +2705,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0140",
-                "website": "https://lacy-coffee.example",
+                "website": "https://lacy-coffee-delmar-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.9,
@@ -2745,7 +2744,7 @@
             "qlooRank": 6,
             "address": "1055 Delmar St, Nashville, TN",
             "phone": "+1 629-555-0140",
-            "website": "https://lacy-coffee.example",
+            "website": "https://lacy-coffee-delmar-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2760,7 +2759,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +9 ranks",
+                "label": "ranks 9 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -2780,7 +2779,7 @@
                 }
               ],
               "activation": "Ask to leave table cards.",
-              "confidence": "high",
+              "confidence": "medium",
               "confidenceWhy": "Rank 6 of 38 in a top area, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
@@ -2869,7 +2868,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0193",
-                "website": "https://cagle-books.example",
+                "website": "https://cagle-books-bellamy-rd.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -2908,7 +2907,7 @@
             "qlooRank": 5,
             "address": "333 Bellamy Rd, Nashville, TN",
             "phone": "+1 615-555-0193",
-            "website": "https://cagle-books.example",
+            "website": "https://cagle-books-bellamy-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2923,7 +2922,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house -1 ranks",
+                "label": "ranks 1 place lower here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -2943,8 +2942,8 @@
                 }
               ],
               "activation": "Ask for a poster in the window and a ticket drop at the counter.",
-              "confidence": "high",
-              "confidenceWhy": "Rank 5 of 38 in a top area, open Thursday.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 5 of 38 in a top area, but the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -3032,7 +3031,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0146",
-                "website": "https://womack-s-grill.example",
+                "website": "https://womack-s-grill-9th-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.3,
@@ -3071,7 +3070,7 @@
             "qlooRank": 18,
             "address": "2044 9th St, Nashville, TN",
             "phone": "+1 615-555-0146",
-            "website": "https://womack-s-grill.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3086,7 +3085,7 @@
                 "ledgerRef": "Q16"
               },
               {
-                "label": "tonight vs house +11 ranks",
+                "label": "ranks 11 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q17"
               }
             ],
@@ -3107,7 +3106,7 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 18 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 18 of 38 in a top area; the room's usual crowd ranks it 11 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q16",
@@ -3190,7 +3189,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0156",
-                "website": "https://toombs.example",
+                "website": "https://toombs-kimbrough-st.example",
                 "price_level": 2,
                 "is_closed": false,
                 "business_rating": 4.6,
@@ -3229,7 +3228,7 @@
             "qlooRank": 1,
             "address": "1807 Kimbrough St, Nashville, TN",
             "phone": "+1 629-555-0156",
-            "website": "https://toombs.example",
+            "website": "https://toombs-kimbrough-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3244,11 +3243,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house +20 ranks",
+                "label": "ranks 20 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "10:00-20:00",
             "houseRank": 21,
             "ubiquityPenalty": 0,
@@ -3261,13 +3260,13 @@
               ],
               "activation": "Ask for a poster in the window and a ticket drop at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 1 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 1 of 38 in a top area; the room's usual crowd ranks it 20 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 13.6
             }
           },
@@ -3349,7 +3348,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0176",
-                "website": "https://birdsong-supply.example",
+                "website": "https://birdsong-supply-whitfield-rd.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -3388,7 +3387,7 @@
             "qlooRank": 5,
             "address": "4300 Whitfield Rd, Nashville, TN",
             "phone": "+1 615-555-0176",
-            "website": "https://birdsong-supply.example",
+            "website": "https://birdsong-supply-whitfield-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3403,11 +3402,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house +22 ranks",
+                "label": "ranks 22 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "10:00-20:00",
             "houseRank": 27,
             "ubiquityPenalty": 0,
@@ -3424,13 +3423,13 @@
               ],
               "activation": "Ask for a poster in the window and a ticket drop at the counter.",
               "confidence": "high",
-              "confidenceWhy": "Rank 5 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 5 of 38 in a top area; the room's usual crowd ranks it 22 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 13.3
             }
           },
@@ -3512,7 +3511,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0131",
-                "website": "https://hensley-coffee.example",
+                "website": "https://hensley-coffee-prescott-ave.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.2,
@@ -3551,7 +3550,7 @@
             "qlooRank": 2,
             "address": "577 Prescott Ave, Nashville, TN",
             "phone": "+1 615-555-0131",
-            "website": "https://hensley-coffee.example",
+            "website": "https://hensley-coffee-prescott-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3566,11 +3565,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house +7 ranks",
+                "label": "ranks 7 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "07:00-16:00",
             "houseRank": 9,
             "ubiquityPenalty": 0.3157894736842105,
@@ -3593,7 +3592,7 @@
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 13.4
             }
           },
@@ -3680,7 +3679,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0119",
-                "website": "https://lusk-coffee.example",
+                "website": "https://lusk-coffee-14th-st.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.4,
@@ -3719,7 +3718,7 @@
             "qlooRank": 10,
             "address": "1766 14th St, Nashville, TN",
             "phone": "+1 629-555-0119",
-            "website": "https://lusk-coffee.example",
+            "website": "https://lusk-coffee-14th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3734,11 +3733,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house +10 ranks",
+                "label": "ranks 10 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "07:00-16:00",
             "houseRank": 20,
             "ubiquityPenalty": 0.23684210526315785,
@@ -3759,13 +3758,13 @@
               ],
               "activation": "Ask to leave table cards.",
               "confidence": "high",
-              "confidenceWhy": "Rank 10 of 38 in a top area, open Thursday.",
+              "confidenceWhy": "Rank 10 of 38 in a top area; the room's usual crowd ranks it 10 places lower, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 13.1
             }
           },
@@ -3852,7 +3851,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0114",
-                "website": "https://iron-skillet.example",
+                "website": "https://iron-skillet-holloway-rd.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 4.4,
@@ -3891,7 +3890,7 @@
             "qlooRank": 20,
             "address": "1831 Holloway Rd, Nashville, TN",
             "phone": "+1 629-555-0114",
-            "website": "https://iron-skillet.example",
+            "website": "https://iron-skillet-holloway-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3906,11 +3905,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house +17 ranks",
+                "label": "ranks 17 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 37,
             "ubiquityPenalty": 0.052631578947368474,
@@ -3931,13 +3930,13 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "medium",
-              "confidenceWhy": "Rank 20 of 38 in a top area, but it ranked in the lower half.",
+              "confidenceWhy": "Rank 20 of 38 in a top area; the room's usual crowd ranks it 17 places lower, but it ranked in the lower half.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 12.8
             }
           },
@@ -4019,7 +4018,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0148",
-                "website": "https://shipley-s-grill.example",
+                "website": "https://shipley-s-grill-prescott-ave.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.7,
@@ -4058,7 +4057,7 @@
             "qlooRank": 6,
             "address": "2398 Prescott Ave, Nashville, TN",
             "phone": "+1 629-555-0148",
-            "website": "https://shipley-s-grill.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4073,11 +4072,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house -2 ranks",
+                "label": "ranks 2 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "11:00-22:00",
             "houseRank": 4,
             "ubiquityPenalty": 0.5,
@@ -4093,14 +4092,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "high",
-              "confidenceWhy": "Rank 6 of 38 in a top area, open Thursday.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 6 of 38 in a top area, but the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 12.9
             }
           },
@@ -4182,7 +4181,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0148",
-                "website": "https://fortner-records.example",
+                "website": "https://fortner-records-holloway-rd.example",
                 "price_level": 1,
                 "is_closed": false,
                 "business_rating": 3.7,
@@ -4221,7 +4220,7 @@
             "qlooRank": 11,
             "address": "2463 Holloway Rd, Nashville, TN",
             "phone": "+1 615-555-0148",
-            "website": "https://fortner-records.example",
+            "website": "https://fortner-records-holloway-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4236,11 +4235,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house -5 ranks",
+                "label": "ranks 5 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "11:00-19:00",
             "houseRank": 6,
             "ubiquityPenalty": 0.5,
@@ -4256,14 +4255,14 @@
                 }
               ],
               "activation": "Ask to leave flyers at the counter.",
-              "confidence": "high",
-              "confidenceWhy": "Rank 11 of 38 in a top area, open Thursday.",
+              "confidence": "low",
+              "confidenceWhy": "Rank 11 of 38 in a top area, but the room's usual crowd ranks it higher.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 13.3
             }
           },
@@ -4350,7 +4349,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0117",
-                "website": "https://mallory-s.example",
+                "website": "https://mallory-s-oakhurst-ave.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.3,
@@ -4389,7 +4388,7 @@
             "qlooRank": 16,
             "address": "2105 Oakhurst Ave, Nashville, TN",
             "phone": "+1 629-555-0117",
-            "website": "https://mallory-s.example",
+            "website": null,
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4404,11 +4403,11 @@
                 "ledgerRef": "Q18"
               },
               {
-                "label": "tonight vs house +2 ranks",
+                "label": "ranks 2 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q19"
               }
             ],
-            "tileName": "Nashville-Davidson",
+            "tileName": "Nashville",
             "hoursOnDay": "16:00-02:00",
             "houseRank": 18,
             "ubiquityPenalty": 0.4473684210526315,
@@ -4428,14 +4427,14 @@
                 }
               ],
               "activation": "Ask to put up a poster.",
-              "confidence": "high",
+              "confidence": "medium",
               "confidenceWhy": "Rank 16 of 38 in a top area, open Thursday.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q18",
                 "Q19"
               ],
-              "areaName": "Nashville-Davidson",
+              "areaName": "Nashville",
               "distanceKm": 14
             }
           }
@@ -5205,34 +5204,29 @@
       },
       "prePost": {
         "status": "ok",
-        "summary": "8 spots within 1.5 km open on show night, with the crowd spread across them by assumed capacity. All-ages show: bars stay on your list but off anything fans see.",
+        "summary": "8 spots within 1.5 km open on show night, with the crowd spread across them by assumed capacity. All-ages show: bars stay on your list but off anything fans see. Left out 6 places that close before the evening.",
         "results": [
           {
             "entity": {
-              "entityId": "0000b7e1-ec5e-4446-ad54-f0ca1a6b02f1",
-              "name": "Pickett's Cafe",
+              "entityId": "0000c5fb-073a-4ee5-af2c-f0ca1a690431",
+              "name": "Maddox's Table",
               "subtype": "urn:entity:place",
-              "popularity": 0.888,
-              "affinity": 0.99,
+              "popularity": 0.937,
+              "affinity": 0.8482,
               "tags": [
                 {
-                  "id": "urn:tag:category:place:cafe",
-                  "name": "Cafe",
+                  "id": "urn:tag:category:place:restaurant",
+                  "name": "Restaurant",
                   "type": "urn:tag:category:place"
                 },
                 {
-                  "id": "urn:tag:ambience:qloo:retro",
-                  "name": "Retro",
+                  "id": "urn:tag:ambience:qloo:laid_back",
+                  "name": "Laid-back",
                   "type": "urn:tag:ambience:qloo"
                 },
                 {
-                  "id": "urn:tag:ambience:qloo:trendy",
-                  "name": "Trendy",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:brunch",
-                  "name": "Brunch",
+                  "id": "urn:tag:good_for:qloo:date_night",
+                  "name": "Date night",
                   "type": "urn:tag:good_for:qloo"
                 },
                 {
@@ -5242,192 +5236,60 @@
                 }
               ],
               "properties": {
-                "address": "4309 Delmar St, Nashville, TN",
+                "address": "1134 Hawthorn St, Nashville, TN",
                 "hours": {
                   "monday": [
                     {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
                     }
                   ],
                   "tuesday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T11:00",
+                      "closes": "T22:00"
                     }
                   ],
                   "wednesday": [
                     {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
                     }
                   ],
                   "thursday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T11:00",
+                      "closes": "T22:00"
                     }
                   ],
                   "friday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T11:00",
+                      "closes": "T22:00"
                     }
                   ],
                   "saturday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T11:00",
+                      "closes": "T22:00"
                     }
                   ],
                   "sunday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T11:00",
+                      "closes": "T22:00"
                     }
                   ]
                 },
-                "phone": "+1 629-555-0112",
-                "website": "https://pickett-s-cafe.example",
-                "price_level": 3,
-                "is_closed": false,
-                "business_rating": 3.7,
-                "geocode": {
-                  "city": "Nashville",
-                  "admin1_region": "TN",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "37213"
-              },
-              "location": {
-                "lat": 36.17092,
-                "lon": -86.771859,
-                "geohash": "dn6mc2wwvhhq"
-              },
-              "distanceM": 1106.5,
-              "explainability": [
-                {
-                  "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
-                  "score": 0.8
-                },
-                {
-                  "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
-                  "score": 0.812
-                }
-              ]
-            },
-            "deltaRank": 5,
-            "expectedShare": 0.02727272727272727,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "cafe",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q26"
-              },
-              {
-                "label": "tonight vs house +5 ranks",
-                "ledgerRef": "Q27"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "00009bac-073c-4dd0-afb4-f0ca1a690081",
-              "name": "Colquitt's Cafe",
-              "subtype": "urn:entity:place",
-              "popularity": 0.878,
-              "affinity": 0.9038,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:cafe",
-                  "name": "Cafe",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
-                  "name": "Neighborhood feel",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:retro",
-                  "name": "Retro",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:brunch",
-                  "name": "Brunch",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "2211 Calloway St, Nashville, TN",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ]
-                },
-                "phone": "+1 615-555-0178",
-                "website": "https://colquitt-s-cafe.example",
+                "phone": "+1 615-555-0119",
+                "website": "https://maddox-s-table-hawthorn-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -5440,302 +5302,38 @@
                 "zip": "37213"
               },
               "location": {
-                "lat": 36.153909,
-                "lon": -86.761905,
-                "geohash": "dn6m9ttgv14e"
+                "lat": 36.163944,
+                "lon": -86.772523,
+                "geohash": "dn6m9rqnjxv2"
               },
-              "distanceM": 1391.4,
+              "distanceM": 353,
               "explainability": [
                 {
                   "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
-                  "score": 0.9
+                  "score": 0.705
                 },
                 {
                   "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
-                  "score": 0.817
+                  "score": 0.9
                 },
                 {
                   "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
-                  "score": 0.803
+                  "score": 0.61
                 }
               ]
             },
-            "deltaRank": 1,
+            "deltaRank": 6,
             "expectedShare": 0.02727272727272727,
             "assumedCapacity": 120,
             "fanFacingAllowed": true,
-            "category": "cafe",
+            "category": "restaurant",
             "chips": [
               {
                 "label": "near the room, open on show night",
                 "ledgerRef": "Q26"
               },
               {
-                "label": "tonight vs house +1 ranks",
-                "ledgerRef": "Q27"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "0000ee45-277b-4ccf-aa49-f0ca1a6903d1",
-              "name": "Delgado's Tavern",
-              "subtype": "urn:entity:place",
-              "popularity": 0.772,
-              "affinity": 0.892,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:bar",
-                  "name": "Bar",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
-                  "name": "Neighborhood feel",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:groups",
-                  "name": "Groups",
-                  "type": "urn:tag:good_for:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:late_night",
-                  "name": "Late night",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "4183 Oakhurst Ave, Nashville, TN",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": true,
-                      "opens": null,
-                      "closes": null
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T16:00",
-                      "closes": "T02:00"
-                    }
-                  ]
-                },
-                "phone": "+1 615-555-0125",
-                "website": "https://delgado-s-tavern.example",
-                "price_level": 1,
-                "is_closed": false,
-                "business_rating": 4.5,
-                "geocode": {
-                  "city": "Nashville",
-                  "admin1_region": "TN",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "37213"
-              },
-              "location": {
-                "lat": 36.161596,
-                "lon": -86.758931,
-                "geohash": "dn6m9z00d6h4"
-              },
-              "distanceM": 1398.4,
-              "explainability": [
-                {
-                  "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
-                  "score": 0.881
-                },
-                {
-                  "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
-                  "score": 0.851
-                }
-              ]
-            },
-            "deltaRank": -1,
-            "expectedShare": 0.02727272727272727,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": false,
-            "category": "bar",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q26"
-              },
-              {
-                "label": "tonight vs house -1 ranks",
-                "ledgerRef": "Q27"
-              }
-            ]
-          },
-          {
-            "entity": {
-              "entityId": "0000a866-d4e5-47aa-a5dc-f0ca1a6904e1",
-              "name": "Blevins Coffee",
-              "subtype": "urn:entity:place",
-              "popularity": 0.803,
-              "affinity": 0.8806,
-              "tags": [
-                {
-                  "id": "urn:tag:category:place:cafe",
-                  "name": "Cafe",
-                  "type": "urn:tag:category:place"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:lively",
-                  "name": "Lively",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:ambience:qloo:trendy",
-                  "name": "Trendy",
-                  "type": "urn:tag:ambience:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:brunch",
-                  "name": "Brunch",
-                  "type": "urn:tag:good_for:qloo"
-                }
-              ],
-              "properties": {
-                "address": "4728 Sycamore Ave, Nashville, TN",
-                "hours": {
-                  "monday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "tuesday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "thursday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "friday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "saturday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ],
-                  "sunday": [
-                    {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
-                    }
-                  ]
-                },
-                "phone": "+1 615-555-0108",
-                "website": "https://blevins-coffee.example",
-                "price_level": 2,
-                "is_closed": false,
-                "business_rating": 4.3,
-                "geocode": {
-                  "city": "Nashville",
-                  "admin1_region": "TN",
-                  "country_code": "US",
-                  "name": null
-                },
-                "zip": "37213"
-              },
-              "location": {
-                "lat": 36.161462,
-                "lon": -86.764993,
-                "geohash": "dn6m9wgxv1h5"
-              },
-              "distanceM": 854,
-              "explainability": [
-                {
-                  "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
-                  "score": 0.826
-                },
-                {
-                  "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
-                  "score": 0.9
-                },
-                {
-                  "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
-                  "score": 0.738
-                }
-              ]
-            },
-            "deltaRank": 7,
-            "expectedShare": 0.02590909090909091,
-            "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "cafe",
-            "chips": [
-              {
-                "label": "near the room, open on show night",
-                "ledgerRef": "Q26"
-              },
-              {
-                "label": "tonight vs house +7 ranks",
+                "label": "ranks 6 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q27"
               }
             ]
@@ -5823,7 +5421,7 @@
                   ]
                 },
                 "phone": "+1 615-555-0161",
-                "website": "https://cardenas-bar.example",
+                "website": "https://cardenas-bar-harlow-rd.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.8,
@@ -5857,7 +5455,7 @@
               ]
             },
             "deltaRank": 8,
-            "expectedShare": 0.024772727272727273,
+            "expectedShare": 0.02727272727272727,
             "assumedCapacity": 120,
             "fanFacingAllowed": false,
             "category": "bar",
@@ -5867,32 +5465,32 @@
                 "ledgerRef": "Q26"
               },
               {
-                "label": "tonight vs house +8 ranks",
+                "label": "ranks 8 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q27"
               }
             ]
           },
           {
             "entity": {
-              "entityId": "0000c5fb-073a-4ee5-af2c-f0ca1a690431",
-              "name": "Maddox's Table",
+              "entityId": "0000d03d-098b-41df-acbb-f0ca1a690331",
+              "name": "Chandler's Bar",
               "subtype": "urn:entity:place",
-              "popularity": 0.937,
-              "affinity": 0.8482,
+              "popularity": 0.818,
+              "affinity": 0.8314,
               "tags": [
                 {
-                  "id": "urn:tag:category:place:restaurant",
-                  "name": "Restaurant",
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
                   "type": "urn:tag:category:place"
                 },
                 {
-                  "id": "urn:tag:ambience:qloo:laid_back",
-                  "name": "Laid-back",
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate",
                   "type": "urn:tag:ambience:qloo"
                 },
                 {
-                  "id": "urn:tag:good_for:qloo:date_night",
-                  "name": "Date night",
+                  "id": "urn:tag:good_for:qloo:craft_beer",
+                  "name": "Craft beer",
                   "type": "urn:tag:good_for:qloo"
                 },
                 {
@@ -5902,7 +5500,7 @@
                 }
               ],
               "properties": {
-                "address": "1134 Hawthorn St, Nashville, TN",
+                "address": "875 Kimbrough St, Nashville, TN",
                 "hours": {
                   "monday": [
                     {
@@ -5913,52 +5511,52 @@
                   ],
                   "tuesday": [
                     {
-                      "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
-                    }
-                  ],
-                  "wednesday": [
-                    {
                       "closed": true,
                       "opens": null,
                       "closes": null
                     }
                   ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
                   "thursday": [
                     {
                       "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "friday": [
                     {
                       "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "saturday": [
                     {
                       "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "sunday": [
                     {
                       "closed": false,
-                      "opens": "T11:00",
-                      "closes": "T22:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ]
                 },
-                "phone": "+1 615-555-0119",
-                "website": "https://maddox-s-table.example",
-                "price_level": 3,
+                "phone": "+1 615-555-0135",
+                "website": "https://chandler-s-bar-kimbrough-st.example",
+                "price_level": 1,
                 "is_closed": false,
-                "business_rating": 4.8,
+                "business_rating": 4.6,
                 "geocode": {
                   "city": "Nashville",
                   "admin1_region": "TN",
@@ -5968,15 +5566,15 @@
                 "zip": "37213"
               },
               "location": {
-                "lat": 36.163944,
-                "lon": -86.772523,
-                "geohash": "dn6m9rqnjxv2"
+                "lat": 36.155592,
+                "lon": -86.765912,
+                "geohash": "dn6m9tfvxdyg"
               },
-              "distanceM": 353,
+              "distanceM": 991.6,
               "explainability": [
                 {
                   "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
-                  "score": 0.705
+                  "score": 0.879
                 },
                 {
                   "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
@@ -5984,38 +5582,43 @@
                 },
                 {
                   "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
-                  "score": 0.61
+                  "score": 0.86
                 }
               ]
             },
-            "deltaRank": 6,
-            "expectedShare": 0.023636363636363636,
+            "deltaRank": -3,
+            "expectedShare": 0.023181818181818182,
             "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "restaurant",
+            "fanFacingAllowed": false,
+            "category": "bar",
             "chips": [
               {
                 "label": "near the room, open on show night",
                 "ledgerRef": "Q26"
               },
               {
-                "label": "tonight vs house +6 ranks",
+                "label": "ranks 3 places lower here than for the room's usual crowd",
                 "ledgerRef": "Q27"
               }
             ]
           },
           {
             "entity": {
-              "entityId": "000014ff-98a6-4173-a6da-f0ca1a6904f1",
-              "name": "Tidwell Coffee",
+              "entityId": "00008ed5-20ab-45e0-a702-f0ca1a690181",
+              "name": "Iverson's Bar",
               "subtype": "urn:entity:place",
-              "popularity": 0.685,
-              "affinity": 0.8478,
+              "popularity": 0.825,
+              "affinity": 0.8392,
               "tags": [
                 {
-                  "id": "urn:tag:category:place:cafe",
-                  "name": "Cafe",
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
                   "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:cozy",
+                  "name": "Cozy",
+                  "type": "urn:tag:ambience:qloo"
                 },
                 {
                   "id": "urn:tag:ambience:qloo:lively",
@@ -6023,88 +5626,83 @@
                   "type": "urn:tag:ambience:qloo"
                 },
                 {
-                  "id": "urn:tag:good_for:qloo:brunch",
-                  "name": "Brunch",
-                  "type": "urn:tag:good_for:qloo"
-                },
-                {
-                  "id": "urn:tag:good_for:qloo:groups",
-                  "name": "Groups",
+                  "id": "urn:tag:good_for:qloo:late_night",
+                  "name": "Late night",
                   "type": "urn:tag:good_for:qloo"
                 }
               ],
               "properties": {
-                "address": "2196 Hartley Rd, Nashville, TN",
+                "address": "4648 14th St, Nashville, TN",
                 "hours": {
                   "monday": [
                     {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
                     }
                   ],
                   "tuesday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "wednesday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "thursday": [
                     {
-                      "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
                     }
                   ],
                   "friday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "saturday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ],
                   "sunday": [
                     {
                       "closed": false,
-                      "opens": "T07:00",
-                      "closes": "T16:00"
+                      "opens": "T16:00",
+                      "closes": "T02:00"
                     }
                   ]
                 },
-                "phone": "+1 615-555-0107",
-                "website": "https://tidwell-coffee.example",
-                "price_level": 4,
+                "phone": "+1 615-555-0162",
+                "website": "https://iverson-s-bar-14th-st.example",
+                "price_level": 2,
                 "is_closed": false,
-                "business_rating": 4.5,
+                "business_rating": 3.9,
                 "geocode": {
                   "city": "Nashville",
                   "admin1_region": "TN",
                   "country_code": "US",
                   "name": null
                 },
-                "zip": "37238"
+                "zip": "37203"
               },
               "location": {
-                "lat": 36.163739,
-                "lon": -86.780159,
-                "geohash": "dn6m9r2t59x3"
+                "lat": 36.153114,
+                "lon": -86.782306,
+                "geohash": "dn6m9jrp1syt"
               },
-              "distanceM": 581.2,
+              "distanceM": 1140,
               "explainability": [
                 {
                   "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
@@ -6112,26 +5710,153 @@
                 },
                 {
                   "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
-                  "score": 0.886
+                  "score": 0.873
                 },
                 {
                   "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
-                  "score": 0.798
+                  "score": 0.851
                 }
               ]
             },
-            "deltaRank": 12,
-            "expectedShare": 0.0225,
+            "deltaRank": -5,
+            "expectedShare": 0.026136363636363635,
             "assumedCapacity": 120,
-            "fanFacingAllowed": true,
-            "category": "cafe",
+            "fanFacingAllowed": false,
+            "category": "bar",
             "chips": [
               {
                 "label": "near the room, open on show night",
                 "ledgerRef": "Q26"
               },
               {
-                "label": "tonight vs house +12 ranks",
+                "label": "ranks 5 places lower here than for the room's usual crowd",
+                "ledgerRef": "Q27"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000521a-1a1c-4673-a761-f0ca1a690741",
+              "name": "Darby's Bar",
+              "subtype": "urn:entity:place",
+              "popularity": 0.895,
+              "affinity": 0.7878,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:live_music",
+                  "name": "Live music",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "2175 Alder St, Nashville, TN",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ]
+                },
+                "phone": "+1 629-555-0170",
+                "website": "https://darby-s-bar-alder-st.example",
+                "price_level": 2,
+                "is_closed": false,
+                "business_rating": 4.3,
+                "geocode": {
+                  "city": "Nashville",
+                  "admin1_region": "TN",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "37203"
+              },
+              "location": {
+                "lat": 36.150385,
+                "lon": -86.771658,
+                "geohash": "dn6m9kyz3b4q"
+              },
+              "distanceM": 1229.3,
+              "explainability": [
+                {
+                  "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
+                  "score": 0.802
+                },
+                {
+                  "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
+                  "score": 0.885
+                }
+              ]
+            },
+            "deltaRank": 5,
+            "expectedShare": 0.02,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": false,
+            "category": "bar",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q26"
+              },
+              {
+                "label": "ranks 5 places higher here than for the room's usual crowd",
                 "ledgerRef": "Q27"
               }
             ]
@@ -6214,7 +5939,7 @@
                   ]
                 },
                 "phone": "+1 629-555-0182",
-                "website": "https://brannon-s-grill.example",
+                "website": "https://brannon-s-grill-9th-st.example",
                 "price_level": 3,
                 "is_closed": false,
                 "business_rating": 4.1,
@@ -6248,7 +5973,7 @@
               ]
             },
             "deltaRank": null,
-            "expectedShare": 0.021363636363636362,
+            "expectedShare": 0.02727272727272727,
             "assumedCapacity": 120,
             "fanFacingAllowed": true,
             "category": "restaurant",
@@ -6256,6 +5981,265 @@
               {
                 "label": "near the room, open on show night",
                 "ledgerRef": "Q26"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000ee45-277b-4ccf-aa49-f0ca1a6903d1",
+              "name": "Delgado's Tavern",
+              "subtype": "urn:entity:place",
+              "popularity": 0.772,
+              "affinity": 0.892,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:neighborhood_feel",
+                  "name": "Neighborhood feel",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:groups",
+                  "name": "Groups",
+                  "type": "urn:tag:good_for:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:late_night",
+                  "name": "Late night",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "4183 Oakhurst Ave, Nashville, TN",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ]
+                },
+                "phone": "+1 615-555-0125",
+                "website": "https://delgado-s-tavern-oakhurst-ave.example",
+                "price_level": 1,
+                "is_closed": false,
+                "business_rating": 4.5,
+                "geocode": {
+                  "city": "Nashville",
+                  "admin1_region": "TN",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "37213"
+              },
+              "location": {
+                "lat": 36.161596,
+                "lon": -86.758931,
+                "geohash": "dn6m9z00d6h4"
+              },
+              "distanceM": 1398.4,
+              "explainability": [
+                {
+                  "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
+                  "score": 0.881
+                },
+                {
+                  "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
+                  "score": 0.851
+                }
+              ]
+            },
+            "deltaRank": -1,
+            "expectedShare": 0.02727272727272727,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": false,
+            "category": "bar",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q26"
+              },
+              {
+                "label": "ranks 1 place lower here than for the room's usual crowd",
+                "ledgerRef": "Q27"
+              }
+            ]
+          },
+          {
+            "entity": {
+              "entityId": "0000f02e-9a26-4a9a-a425-f0ca1a6b02b1",
+              "name": "Two Bit Tavern",
+              "subtype": "urn:entity:place",
+              "popularity": 0.909,
+              "affinity": 0.8101,
+              "tags": [
+                {
+                  "id": "urn:tag:category:place:bar",
+                  "name": "Bar",
+                  "type": "urn:tag:category:place"
+                },
+                {
+                  "id": "urn:tag:ambience:qloo:intimate",
+                  "name": "Intimate",
+                  "type": "urn:tag:ambience:qloo"
+                },
+                {
+                  "id": "urn:tag:good_for:qloo:happy_hour",
+                  "name": "Happy hour",
+                  "type": "urn:tag:good_for:qloo"
+                }
+              ],
+              "properties": {
+                "address": "3319 Kimbrough St, Nashville, TN",
+                "hours": {
+                  "monday": [
+                    {
+                      "closed": true,
+                      "opens": null,
+                      "closes": null
+                    }
+                  ],
+                  "tuesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "wednesday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "thursday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "friday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "saturday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ],
+                  "sunday": [
+                    {
+                      "closed": false,
+                      "opens": "T16:00",
+                      "closes": "T02:00"
+                    }
+                  ]
+                },
+                "phone": "+1 629-555-0164",
+                "website": "https://two-bit-tavern-kimbrough-st.example",
+                "price_level": 1,
+                "is_closed": false,
+                "business_rating": 4.1,
+                "geocode": {
+                  "city": "Nashville",
+                  "admin1_region": "TN",
+                  "country_code": "US",
+                  "name": null
+                },
+                "zip": "37213"
+              },
+              "location": {
+                "lat": 36.173952,
+                "lon": -86.770635,
+                "geohash": "dn6mc3r899mh"
+              },
+              "distanceM": 1459.8,
+              "explainability": [
+                {
+                  "entityId": "00003b66-661e-427c-8f98-8444e7230d80",
+                  "score": 0.9
+                },
+                {
+                  "entityId": "0000a4ce-cb8c-4552-8717-eedaedfef4e8",
+                  "score": 0.863
+                },
+                {
+                  "entityId": "0000a5fa-e997-41d0-8178-407ed866b4fe",
+                  "score": 0.844
+                }
+              ]
+            },
+            "deltaRank": -7,
+            "expectedShare": 0.02159090909090909,
+            "assumedCapacity": 120,
+            "fanFacingAllowed": false,
+            "category": "bar",
+            "chips": [
+              {
+                "label": "near the room, open on show night",
+                "ledgerRef": "Q26"
+              },
+              {
+                "label": "ranks 7 places lower here than for the room's usual crowd",
+                "ledgerRef": "Q27"
               }
             ]
           }
@@ -6862,20 +6846,20 @@
         "summary": "3 lines, each built only from approved Qloo tags.",
         "results": [
           {
-            "text": "Hip-hop and alternative rock at The Truth, Saturday, Dec 5.",
+            "text": "Neon Orchard: R&B and hip-hop at The Truth, Saturday, Dec 5.",
             "tagIds": [
-              "urn:tag:genre:music:hip_hop",
+              "urn:tag:genre:music:r_and_b",
+              "urn:tag:genre:music:hip_hop"
+            ]
+          },
+          {
+            "text": "Neon Orchard for the alternative rock crowd: Saturday night at The Truth.",
+            "tagIds": [
               "urn:tag:genre:music:alternative_rock"
             ]
           },
           {
-            "text": "For the R&B crowd: Saturday night at The Truth.",
-            "tagIds": [
-              "urn:tag:audience:qloo:rnb_fans"
-            ]
-          },
-          {
-            "text": "Indie pop and singer-songwriter, live at The Truth.",
+            "text": "Neon Orchard: Indie pop and singer-songwriter, live at The Truth.",
             "tagIds": [
               "urn:tag:genre:music:indie_pop",
               "urn:tag:genre:music:singer_songwriter"
@@ -6891,7 +6875,7 @@
       }
     },
     "narration": {
-      "summary": "Neon Orchard, Sable & Sun and Kites Over Concrete at The Truth, Saturday, Dec 5. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Beech Grove Farms, is about 1.6 times the room's usual crowd. The sheet suggests 24 partners of 8 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward R&B, R&B and hip-hop.",
+      "summary": "Neon Orchard, Sable & Sun and Kites Over Concrete at The Truth, Saturday, Dec 5. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Brentwood, is about 1.6 times the room's usual crowd. The sheet suggests 24 partners of 8 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward R&B, hip-hop and late night.",
       "tileWhy": [
         {
           "geohash": "dn6kdr",
@@ -6913,35 +6897,35 @@
       "partnerLines": [
         {
           "entityId": "0000ead4-d2ed-4d25-a4cc-f0ca1a4905d1",
-          "text": "A beauty salon in Beech Grove Farms, 4th on that area's list for this crowd."
+          "text": "A beauty salon in Brentwood, 4th on that area's list for this crowd."
         },
         {
           "entityId": "0000d8b1-6e12-4abc-a1bd-f0ca1a4c00d1",
-          "text": "A barbershop in Beech Grove Farms, 3rd on that area's list for this crowd."
+          "text": "A barbershop in Brentwood, 3rd on that area's list for this crowd."
         },
         {
           "entityId": "0000c117-0bf0-4501-a89c-f0ca1a4c0211",
-          "text": "A record store in Beech Grove Farms, 5th on that area's list for this crowd."
+          "text": "A record store in Brentwood, 5th on that area's list for this crowd."
         },
         {
           "entityId": "000070a9-9253-4932-acdd-f0ca1a4c0191",
-          "text": "A clothing store in Beech Grove Farms, 1st on that area's list for this crowd."
+          "text": "A clothing store in Brentwood, 1st on that area's list for this crowd."
         },
         {
           "entityId": "0000a742-72f7-4438-a16b-f0ca1a4c00e1",
-          "text": "A restaurant in Beech Grove Farms, 14th on that area's list for this crowd."
+          "text": "A restaurant in Brentwood, 14th on that area's list for this crowd."
         },
         {
           "entityId": "00005cc5-809c-44fc-ac32-f0ca1a4c0391",
-          "text": "A beauty salon in Beech Grove Farms, 12th on that area's list for this crowd."
+          "text": "A beauty salon in Brentwood, 12th on that area's list for this crowd."
         },
         {
           "entityId": "00009e6a-afee-4d67-ace1-f0ca1a4c03e1",
-          "text": "A restaurant in Beech Grove Farms, 7th on that area's list for this crowd."
+          "text": "A restaurant in Brentwood, 7th on that area's list for this crowd."
         },
         {
           "entityId": "00002215-b272-47b8-a2ad-f0ca1a4c0121",
-          "text": "A record store in Beech Grove Farms, 2nd on that area's list for this crowd."
+          "text": "A record store in Brentwood, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "0000462e-2d19-4876-a8f5-f0ca1a6800f1",
@@ -6977,35 +6961,35 @@
         },
         {
           "entityId": "0000a8ed-7c35-4b47-a6bc-f0ca1a3c02e1",
-          "text": "A clothing store in Nashville-Davidson, 1st on that area's list for this crowd."
+          "text": "A clothing store in Nashville, 1st on that area's list for this crowd."
         },
         {
           "entityId": "0000f0aa-17d1-4086-a6ab-f0ca1a3c0061",
-          "text": "A clothing store in Nashville-Davidson, 5th on that area's list for this crowd."
+          "text": "A clothing store in Nashville, 5th on that area's list for this crowd."
         },
         {
           "entityId": "000036fd-6477-4cd8-ac76-f0ca1a360181",
-          "text": "A cafe in Nashville-Davidson, 2nd on that area's list for this crowd."
+          "text": "A cafe in Nashville, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "00007b07-7b47-427a-a684-f0ca1a360301",
-          "text": "A cafe in Nashville-Davidson, 10th on that area's list for this crowd."
+          "text": "A cafe in Nashville, 10th on that area's list for this crowd."
         },
         {
           "entityId": "0000c168-91f0-4b74-ab32-f0ca1a360211",
-          "text": "A restaurant in Nashville-Davidson, 20th on that area's list for this crowd."
+          "text": "A restaurant in Nashville, 20th on that area's list for this crowd."
         },
         {
           "entityId": "00004d19-7399-4d44-a379-f0ca1a3600f1",
-          "text": "A restaurant in Nashville-Davidson, 6th on that area's list for this crowd."
+          "text": "A restaurant in Nashville, 6th on that area's list for this crowd."
         },
         {
           "entityId": "000068ea-5b6d-4f2c-aa63-f0ca1a3c0021",
-          "text": "A record store in Nashville-Davidson, 11th on that area's list for this crowd."
+          "text": "A record store in Nashville, 11th on that area's list for this crowd."
         },
         {
           "entityId": "0000db03-9ff4-4147-a6d9-f0ca1a360021",
-          "text": "A bar in Nashville-Davidson, 16th on that area's list for this crowd."
+          "text": "A bar in Nashville, 16th on that area's list for this crowd."
         }
       ],
       "templated": true
@@ -7212,10 +7196,10 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 2008,
+        "bytes": 2017,
         "cacheHit": false,
         "resultCount": 1,
-        "note": "node Q1 signal check; fixture world: synthetic response; signal check: which ids Qloo has taste data for",
+        "note": "node Q1 signal check; fixture world: synthetic response; which ids Qloo has taste data for",
         "id": "Q6"
       },
       {
@@ -7440,7 +7424,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 70320,
+        "bytes": 70673,
         "cacheHit": false,
         "resultCount": 32,
         "note": "node Q9 partners, tile 1; fixture world: synthetic response",
@@ -7491,7 +7475,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 61947,
+        "bytes": 62300,
         "cacheHit": false,
         "resultCount": 32,
         "note": "node Q9 house twin, tile 1; fixture world: synthetic response",
@@ -7534,7 +7518,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 82145,
+        "bytes": 82528,
         "cacheHit": false,
         "resultCount": 38,
         "note": "node Q9 partners, tile 2; fixture world: synthetic response",
@@ -7585,7 +7569,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 72550,
+        "bytes": 72933,
         "cacheHit": false,
         "resultCount": 38,
         "note": "node Q9 house twin, tile 2; fixture world: synthetic response",
@@ -7628,7 +7612,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 82460,
+        "bytes": 82866,
         "cacheHit": false,
         "resultCount": 38,
         "note": "node Q9 partners, tile 3; fixture world: synthetic response",
@@ -7679,7 +7663,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 72595,
+        "bytes": 73001,
         "cacheHit": false,
         "resultCount": 38,
         "note": "node Q9 house twin, tile 3; fixture world: synthetic response",
@@ -7716,7 +7700,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 61379,
+        "bytes": 61732,
         "cacheHit": false,
         "resultCount": 32,
         "note": "node Q9 popularity twin, tile 1; fixture world: synthetic response",
@@ -7753,7 +7737,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 71874,
+        "bytes": 72257,
         "cacheHit": false,
         "resultCount": 38,
         "note": "node Q9 popularity twin, tile 2; fixture world: synthetic response",
@@ -7790,7 +7774,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 71918,
+        "bytes": 72324,
         "cacheHit": false,
         "resultCount": 38,
         "note": "node Q9 popularity twin, tile 3; fixture world: synthetic response",
@@ -7905,7 +7889,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 55094,
+        "bytes": 55363,
         "cacheHit": false,
         "resultCount": 25,
         "note": "node Q10 pre/post; fixture world: synthetic response",
@@ -7948,7 +7932,7 @@
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
-        "bytes": 71343,
+        "bytes": 71621,
         "cacheHit": false,
         "resultCount": 25,
         "note": "node Q10 house twin; fixture world: synthetic response",
@@ -8141,22 +8125,22 @@
     "budgetSplit": [
       {
         "geohash": "dn6kdr",
-        "share": 0.325,
+        "share": 0.334,
         "label": "heuristic, not a forecast"
       },
       {
         "geohash": "dn6m8m",
-        "share": 0.344,
+        "share": 0.334,
         "label": "heuristic, not a forecast"
       },
       {
         "geohash": "dn6jw0",
-        "share": 0.139,
+        "share": 0.166,
         "label": "heuristic, not a forecast"
       },
       {
         "geohash": "dn6q7p",
-        "share": 0.192,
+        "share": 0.166,
         "label": "heuristic, not a forecast"
       }
     ],
@@ -8169,13 +8153,113 @@
           "partners": 8,
           "notInPopularTop": 3,
           "ledgerRef": "Q20",
-          "tileName": "Beech Grove Farms"
+          "popularTop": [
+            {
+              "entityId": "0000ead4-d2ed-4d25-a4cc-f0ca1a4905d1",
+              "name": "Curl Up Salon",
+              "rank": 1,
+              "onSheet": true
+            },
+            {
+              "entityId": "00002215-b272-47b8-a2ad-f0ca1a4c0121",
+              "name": "Galloway's Record Shop",
+              "rank": 2,
+              "onSheet": true
+            },
+            {
+              "entityId": "0000d8b1-6e12-4abc-a1bd-f0ca1a4c00d1",
+              "name": "Beasley Barbers",
+              "rank": 3,
+              "onSheet": true
+            },
+            {
+              "entityId": "00009e6a-afee-4d67-ace1-f0ca1a4c03e1",
+              "name": "Chandler's Diner",
+              "rank": 4,
+              "onSheet": true
+            },
+            {
+              "entityId": "000057a9-3c16-4eeb-a34e-f0ca1a4c0381",
+              "name": "Nolan Coffee",
+              "rank": 5,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000ed2d-9df9-4731-a63e-f0ca1a4c01a1",
+              "name": "Iron Skillet",
+              "rank": 6,
+              "onSheet": false
+            },
+            {
+              "entityId": "000070a9-9253-4932-acdd-f0ca1a4c0191",
+              "name": "Clements'",
+              "rank": 7,
+              "onSheet": true
+            },
+            {
+              "entityId": "0000e4ca-7b63-4ed4-a8fe-f0ca1a4c0201",
+              "name": "Pruett & Daughters",
+              "rank": 8,
+              "onSheet": false
+            }
+          ],
+          "tileName": "Brentwood"
         },
         {
           "tileGeohash": "dn6m8m",
           "partners": 8,
           "notInPopularTop": 5,
           "ledgerRef": "Q21",
+          "popularTop": [
+            {
+              "entityId": "0000f5c0-a428-4cd4-a691-f0ca1a6801c1",
+              "name": "Early Bird Coffee",
+              "rank": 1,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000b564-9966-44dd-aea1-f0ca1a680011",
+              "name": "Mabry & Daughters",
+              "rank": 2,
+              "onSheet": false
+            },
+            {
+              "entityId": "00003768-633b-4e1a-a056-f0ca1a6803e1",
+              "name": "Hightower Supply",
+              "rank": 3,
+              "onSheet": true
+            },
+            {
+              "entityId": "00002e57-2f53-468c-a7c9-f0ca1a6803c1",
+              "name": "Two Bit Tavern",
+              "rank": 4,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000fe1f-0040-4387-a794-f0ca1a680231",
+              "name": "Cagle Books",
+              "rank": 5,
+              "onSheet": true
+            },
+            {
+              "entityId": "0000a6ac-098b-4f1f-addc-f0ca1a680181",
+              "name": "Toombs'",
+              "rank": 6,
+              "onSheet": false
+            },
+            {
+              "entityId": "000016c1-6dce-4b57-acfe-f0ca1a6a00a1",
+              "name": "Eldridge Coffee",
+              "rank": 7,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000b940-4f28-4dc2-aa6d-f0ca1a680361",
+              "name": "Lacy Coffee",
+              "rank": 8,
+              "onSheet": true
+            }
+          ],
           "tileName": "West Nashville"
         },
         {
@@ -8183,7 +8267,57 @@
           "partners": 8,
           "notInPopularTop": 5,
           "ledgerRef": "Q22",
-          "tileName": "Nashville-Davidson"
+          "popularTop": [
+            {
+              "entityId": "0000a8ed-7c35-4b47-a6bc-f0ca1a3c02e1",
+              "name": "Toombs'",
+              "rank": 1,
+              "onSheet": true
+            },
+            {
+              "entityId": "00000adc-f808-4e3a-ab11-f0ca1a390461",
+              "name": "Thornton's Grill",
+              "rank": 2,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000c11b-570c-448d-ae3c-f0ca1a3c0151",
+              "name": "Burkett Barbers",
+              "rank": 3,
+              "onSheet": false
+            },
+            {
+              "entityId": "00007794-84bf-4237-abb6-f0ca1a3c0051",
+              "name": "Steady Pour",
+              "rank": 4,
+              "onSheet": false
+            },
+            {
+              "entityId": "0000935a-8e2a-4674-aac7-f0ca1a360161",
+              "name": "Atwater's Cafe",
+              "rank": 5,
+              "onSheet": false
+            },
+            {
+              "entityId": "00004d19-7399-4d44-a379-f0ca1a3600f1",
+              "name": "Shipley's Grill",
+              "rank": 6,
+              "onSheet": true
+            },
+            {
+              "entityId": "00007b07-7b47-427a-a684-f0ca1a360301",
+              "name": "Lusk Coffee",
+              "rank": 7,
+              "onSheet": true
+            },
+            {
+              "entityId": "00003ec9-76e7-4c0f-a88e-f0ca1a3c0241",
+              "name": "Coker's",
+              "rank": 8,
+              "onSheet": false
+            }
+          ],
+          "tileName": "Nashville"
         }
       ],
       "ledgerRefs": [
@@ -8224,7 +8358,7 @@
         "id": "heat",
         "kind": "heat",
         "label": "Lift map",
-        "decision": "Put Beech Grove Farms first: about 1.6 times the room's usual crowd.",
+        "decision": "Put Brentwood first: about 1.6 times the room's usual crowd.",
         "status": "ok",
         "ledgerRefs": [
           "Q7",
@@ -8280,7 +8414,7 @@
         "id": "partners-popular",
         "kind": "partners",
         "label": "Popularity check",
-        "decision": "Checked against popularity alone: 13 of the 24 partners wouldn't make a list of the most popular places in their areas.",
+        "decision": "Popularity alone would miss 13 of the 24 partners: they aren't among the most popular places in their areas.",
         "status": "ok",
         "ledgerRefs": [
           "Q20",
@@ -8347,15 +8481,15 @@
       }
     ],
     "discovery": {
-      "kind": "area",
-      "headline": "Area 1, Beech Grove Farms, is 7th of the 13 squares on the map for this crowd on its own, but 1st once it's compared with the room's usual crowd.",
-      "detail": "Looking at this crowd alone, you'd skip it. Next to the room's usual crowd, it stands out.",
-      "rule": "the highest-lift numbered area that ranks at least 5 places lower when you look at this crowd on its own.",
-      "why": "the highest-lift numbered area that this crowd on its own ranks 6 places lower",
-      "geohash": "dn6kdr",
+      "kind": "partner",
+      "headline": "Clements', a clothing store in area 1 (Brentwood): 1st for this crowd, 7th for the room's usual crowd.",
+      "detail": "21.1 km from the venue. Ask for a poster in the window and a ticket drop at the counter.",
+      "rule": "the highest-ranked place for this crowd in the top area that the room's usual crowd ranks at least 5 places lower in the same search, or not at all; national chains are skipped. When no place in area 1 qualifies, area 2 is tried, and so on.",
+      "why": "the highest-ranked place for this crowd in area 1 that the room's usual crowd ranks 6 places lower",
+      "entityId": "000070a9-9253-4932-acdd-f0ca1a4c0191",
       "ledgerRefs": [
-        "Q7",
-        "Q8"
+        "Q14",
+        "Q15"
       ]
     }
   }

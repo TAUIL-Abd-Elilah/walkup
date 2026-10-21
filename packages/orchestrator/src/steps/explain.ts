@@ -37,6 +37,8 @@ export function explainPartners(ctx: RunContext, result: PartnersResult, seeds: 
   const ectx: ExplainContext = {
     venue: { lat: ctx.bill.venue.lat, lon: ctx.bill.venue.lon },
     day: streetDay(ctx),
+    days: ctx.operator.streetTeamDays,
+    listSize: result.partners.length,
     adultsOnly: adultsOnly(ctx),
     thinSignal: opts.thinSignal,
     billTagIds: new Set(seeds.flatMap((s) => (s.entity.tags ?? []).map((t) => t.id))),
@@ -57,6 +59,7 @@ export function explainPartners(ctx: RunContext, result: PartnersResult, seeds: 
         poolSize,
         poolRef: ref,
         twinRef: pool?.house?.ledgerRef ?? null,
+        ...(pool?.house ? { houseListSize: entries.get(pool.house.ledgerRef)?.resultCount ?? pool.house.size } : {}),
         widenedRadiusM: spec && spec.tileGeohash !== null && spec.radiusM > TILE_RADIUS_M ? spec.radiusM : null,
         widenedCategories: spec ? spec.tags.length > baseTags : false,
         ...(area ? { areaName: area } : {}),

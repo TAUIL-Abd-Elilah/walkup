@@ -207,14 +207,14 @@ describe("other notes", { timeout: 90_000 }, () => {
   it("skip an area: the heat step says so, the area is gone, discovery never picks it", async () => {
     const d = deps();
     const parent = sheetOf(await planShow({ presetId: "g1-b" }, d));
-    const r = completed(await revisePlan({ sheet: parent, request: parentRequest(parent, { presetId: "g1-b" })! }, "skip Beech Grove Farms", d));
+    const r = completed(await revisePlan({ sheet: parent, request: parentRequest(parent, { presetId: "g1-b" })! }, "skip Brentwood", d));
     const s = sheetOf(r);
     expect(s.steps!.find((x) => x.id === "heat")!.cause).toMatch(/Left out \d+ areas? at your request/);
-    expect(sheetAreas(s).some((t) => t.name === "Beech Grove Farms")).toBe(false);
-    expect(s.cards.partners.results.some((p) => p.tileName === "Beech Grove Farms")).toBe(false);
-    const gh = new Set(sheetAreas(parent).filter((t) => t.name === "Beech Grove Farms").map((t) => t.geohash));
+    expect(sheetAreas(s).some((t) => t.name === "Brentwood")).toBe(false);
+    expect(s.cards.partners.results.some((p) => p.tileName === "Brentwood")).toBe(false);
+    const gh = new Set(sheetAreas(parent).filter((t) => t.name === "Brentwood").map((t) => t.geohash));
     if (s.discovery?.geohash) expect(gh.has(s.discovery.geohash)).toBe(false);
-    expect(s.revision!.changes.some((c) => c.kind === "tile_removed" && c.label === "Beech Grove Farms" && /skipped at your request/.test(c.detail ?? ""))).toBe(true);
+    expect(s.revision!.changes.some((c) => c.kind === "tile_removed" && c.label === "Brentwood" && /skipped at your request/.test(c.detail ?? ""))).toBe(true);
     expect(r.budget.venueLevel).toBe(0);
     expect(r.budget.qlooFresh).toBeLessThanOrEqual(6);
   });

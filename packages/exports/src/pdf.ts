@@ -8,10 +8,11 @@
  * and where on the left; date, room, days to go and seats on the right), where
  * to flyer beside before-and-after spots, the partner table as a form to write
  * on (tick box, place, area, hours, why, a blank Notes column, rows about 7 mm
- * tall), the operator's list, podcasts and copy lines, what the sheet doesn't
- * show, and one footer line with the print and data dates. A sample (fixture)
- * sheet says "Sample data" in its header and footer and carries one light
- * watermark.
+ * tall), podcasts and a sponsor beside copy lines, the operator's list, what
+ * the sheet doesn't show, and one footer line with the print and data dates;
+ * the budget split sits under the before-and-after table. The sections are the model's `sections`, the same as
+ * the print view's. A sample (fixture) sheet says "Sample data" in its header
+ * and footer and carries one light watermark; a live sheet has none.
  *
  * Fitting: the sheet is rendered at full size first; if it runs past one page
  * it is re-rendered at smaller type (the form rows shrink with it), and as a
@@ -24,7 +25,7 @@ import type { Style } from "@react-pdf/types";
 import type { StreetSheet } from "@walkup/contracts";
 import { DECLARED_UNRANKED, LESS_SURE_NOTE, LIFT_KEY } from "./format";
 import { LABEL_RADIUS, layoutTileMap, liftFill, MAP_COLORS, MIN_VISIBLE_CELL, niceKm } from "./map";
-import { buildSheetModel, type PartnerRow, type SheetModel, type SheetModelOptions } from "./sheet-model";
+import { buildSheetModel, type PartnerRow, type SheetModel, type SheetModelOptions, type SheetSection, type SpotRow } from "./sheet-model";
 import { pdfText } from "./winansi";
 
 export type PdfPageSize = "LETTER" | "A4";
@@ -251,7 +252,8 @@ function panel1(m: SheetModel, st: Styles, mapW: number, mapH: number, listW: nu
       view(
         { width: listW - st.fs(12) },
         text(lines(st.base, 2), text(st.bold, t.name), ` ${t.lift}`),
-        text(lines(st.small, 3), `${t.zips}. ${t.why}`),
+        // Whole sentences only (the model cuts the blurb at a sentence end), so no line limit here.
+        text(st.small, t.blurb),
       ),
     ),
   );
@@ -304,14 +306,16 @@ function partnerCols(_m: SheetModel, st: Styles): Col[] {
     text(oneLine(st.cell), text(st.bold, r.name), r.lessSure ? text(st.bold, "†") : null, r.category ? text(st.muted, ` · ${r.category}`) : null);
   const place: Col = {
     key: "place",
-    head: () => "Place and address",
+    head: () => "Place, address and phone",
     width: "29%",
     cell: (r) =>
       view(
         undefined,
         // The name links to the place's website when it has one.
         r.webUrl ? h(Link, { src: r.webUrl, style: { color: INK, textDecoration: "none" } }, nameText(r)) : nameText(r),
-        text([oneLine(st.cell), st.muted], [r.address, r.phoneText].filter((x) => x !== "").join(" · ")),
+        r.address ? text([oneLine(st.cell), st.muted], r.address) : null,
+        // The phone has a line of its own and is never cut short.
+        text([st.cell, st.muted], r.phoneText),
       ),
   };
   const area: Col = { key: "area", head: () => "Area", width: "12.5%", cell: (r) => areaText(r, st) };
@@ -374,26 +378,26 @@ function panel3(m: SheetModel, st: Styles): El {
   );
 }
 
-/** Before and after the show, as a small table: spot, type, distance, share of the crowd, and the usual crowd's rank. */
+type SpotCol = { head: string; width: string; cell: (r: SpotRow) => El };
+
+/**
+ * Before and after the show, as a small table: spot, type, distance (nearest first), share of the crowd (only when
+ * the shares differ), and the usual crowd's rank.
+ */
 function panel4(m: SheetModel, st: Styles): El {
   const p = m.panel4;
-  const widths = ["35%", "23%", "12%", "10%", "20%"];
-  const cell = (i: number, child: El): El => view({ width: widths[i], paddingRight: i === widths.length - 1 ? 0 : st.fs(3) }, child);
+  const share: SpotCol[] = p.showShare ? [{ head: "Share", width: "10%", cell: (r) => text(oneLine(st.cell), r.share) }] : [];
+  const cols: SpotCol[] = [
+    { head: "Spot", width: p.showShare ? "35%" : "40%", cell: (r) => text(lines(st.cell, 2), text(st.bold, r.name), r.refs ? text(st.ref, ` ${r.refs}`) : null) },
+    { head: "Type", width: p.showShare ? "23%" : "25%", cell: (r) => text(lines(st.cell, 2), r.category) },
+    { head: "Distance", width: p.showShare ? "12%" : "15%", cell: (r) => text(oneLine(st.cell), r.distance) },
+    ...share,
+    { head: "Vs usual crowd", width: "20%", cell: (r) => text([oneLine(st.cell), st.muted], r.vsUsual) },
+  ];
+  const cell = (i: number, child: El): El => view({ width: cols[i]!.width, paddingRight: i === cols.length - 1 ? 0 : st.fs(3) }, child);
   const rowStyle: Style = { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: RULE, borderBottomStyle: "solid", paddingVertical: st.fs(1.2) };
-  const head = view(
-    { ...rowStyle, borderBottomColor: INK, borderBottomWidth: 0.6 },
-    ...["Spot", "Type", "Distance", "Share", "Vs usual crowd"].map((t, i) => cell(i, text(st.th, t))),
-  );
-  const rows = p.rows.map((r) =>
-    view(
-      rowStyle,
-      cell(0, text(lines(st.cell, 2), text(st.bold, r.name), r.refs ? text(st.ref, ` ${r.refs}`) : null)),
-      cell(1, text(lines(st.cell, 2), r.category)),
-      cell(2, text(oneLine(st.cell), r.distance)),
-      cell(3, text(oneLine(st.cell), r.share)),
-      cell(4, text([oneLine(st.cell), st.muted], r.vsUsual)),
-    ),
-  );
+  const head = view({ ...rowStyle, borderBottomColor: INK, borderBottomWidth: 0.6 }, ...cols.map((c, i) => cell(i, text(st.th, c.head))));
+  const rows = p.rows.map((r) => view(rowStyle, ...cols.map((c, i) => cell(i, c.cell(r)))));
   return section(
     st,
     p.title,
@@ -406,17 +410,77 @@ function panel4(m: SheetModel, st: Styles): El {
   );
 }
 
+/** The budget split by area number, under the before-and-after table (the right column has room there). */
+function budgetPanel(m: SheetModel, st: Styles): El | null {
+  if (!m.sections.includes("budget")) return null;
+  const f = m.footer;
+  return view(
+    { marginTop: st.fs(6) },
+    section(
+      st,
+      f.budgetTitle,
+      null,
+      ...f.budget.map((b) =>
+        view(
+          { flexDirection: "row", justifyContent: "space-between" },
+          view({ width: "68%" }, text([oneLine(st.cell)], b.rank !== null ? text(st.bold, `${b.rank} `) : null, b.name)),
+          view({ width: "32%" }, text([oneLine(st.cell), { textAlign: "right" }], [b.share, b.usd ?? ""].filter((x) => x !== "").join(" · "))),
+        ),
+      ),
+      f.budgetEmpty ? text(st.small, f.budgetEmpty) : null,
+    ),
+  );
+}
+
+/**
+ * Podcasts and a sponsor beside copy lines, under the partner table (each only when the model's `sections` has it,
+ * as on the print view).
+ */
+function mediaRow(m: SheetModel, st: Styles): El | null {
+  const has = (x: SheetSection) => m.sections.includes(x);
+  if (!has("media") && !has("hooks")) return null;
+  const head = (t: string) => text([st.base, st.bold, { marginBottom: st.fs(1) }], t);
+  const p5 = m.panel5;
+  const p6 = m.panel6;
+  const media = view(
+    { width: "42%", paddingRight: st.fs(10) },
+    head(p5.title),
+    p5.status ? text([st.small, { maxLines: 2, textOverflow: "ellipsis" }], p5.status) : null,
+    ...p5.podcasts.map((r) => text(lines(st.small, 2), text({ color: INK }, r.name), ` · podcast, ${r.scope}`, r.refs ? text(st.ref, ` ${r.refs}`) : null)),
+    p5.podcasts.length === 0 ? text(st.small, "No podcasts came back for this bill.") : null,
+    p5.sponsor
+      ? text([lines(st.small, 2), st.gap(1)], text([st.bold, { color: INK }], p5.sponsor.name), ` · sponsor, ${p5.sponsor.scope}`, p5.sponsor.refs ? text(st.ref, ` ${p5.sponsor.refs}`) : null)
+      : null,
+    p5.sponsorNote ? text([st.small, st.gap(1)], p5.sponsorNote) : null,
+  );
+  const hooks = view(
+    { width: "58%" },
+    head(p6.title),
+    p6.status ? text([st.small, { maxLines: 2, textOverflow: "ellipsis" }], p6.status) : null,
+    ...p6.hooks.map((x) => text([st.cell, { marginBottom: st.fs(1) }], `"${x}"`)),
+    p6.hooks.length === 0 ? text(st.small, "No copy lines on this sheet.") : null,
+    p6.withheld > 0 ? text(st.small, `${p6.withheld} ${p6.withheld === 1 ? "line" : "lines"} left out: alcohol words on a show that is not 21+.`) : null,
+    text(st.small, p6.note),
+  );
+  return view(
+    { flexDirection: "row", borderTopWidth: 0.6, borderTopColor: INK, borderTopStyle: "solid", paddingTop: st.fs(4), marginTop: st.fs(7) },
+    has("media") ? media : null,
+    has("hooks") ? hooks : null,
+  );
+}
+
 /**
  * The foot of the sheet in three columns: your own list (to call), what this sheet doesn't show (every sheet
  * prints these lines), and the requests behind the sheet with the data credits and, on a sample, the sample line.
  */
 function footer(m: SheetModel, st: Styles): El {
   const f = m.footer;
+  const has = (x: SheetSection) => m.sections.includes(x);
   const head = (t: string) => text([st.base, st.bold, { marginBottom: st.fs(1) }], t);
   return view(
-    { flexDirection: "row", borderTopWidth: 0.6, borderTopColor: INK, borderTopStyle: "solid", paddingTop: st.fs(4), marginTop: st.fs(7) },
-    view({ width: "28%", paddingRight: st.fs(10) }, panel3(m, st)),
-    view({ width: "40%", paddingRight: st.fs(10) }, head(f.limitsTitle), ...f.limits.map((l) => text(st.small, `•  ${l}`))),
+    { flexDirection: "row", borderTopWidth: 0.6, borderTopColor: INK, borderTopStyle: "solid", paddingTop: st.fs(4), marginTop: st.fs(5) },
+    has("declared") ? view({ width: "28%", paddingRight: st.fs(10) }, panel3(m, st)) : null,
+    has("limits") ? view({ width: "40%", paddingRight: st.fs(10) }, head(f.limitsTitle), ...f.limits.map((l) => text(st.small, `•  ${l}`))) : null,
     view(
       { width: "32%" },
       head(f.receiptsTitle),
@@ -508,8 +572,9 @@ export function streetSheetElement(m: SheetModel, opts: DocumentOptions = {}): E
     header(m, st),
     ...m.notes.map((n, i) => text([st.small, { marginTop: st.fs(i === 0 ? 3 : 0.5), color: /thin/i.test(n) ? INK : MUTED }], n)),
     discoveryLine(m, st),
-    row(view({ width: leftW, paddingRight: leftPad }, panel1(m, st, mapW, mapH, listW)), view({ width: contentW - leftW }, panel4(m, st))),
+    row(view({ width: leftW, paddingRight: leftPad }, panel1(m, st, mapW, mapH, listW)), view({ width: contentW - leftW }, panel4(m, st), budgetPanel(m, st))),
     view(st.gap(8), panel2(m, st, opts.formRowPt ?? FORM_ROW_PT * s)),
+    mediaRow(m, st),
     footer(m, st),
     printLine(m, st),
     ...watermarks(m, dims.height),
@@ -550,9 +615,13 @@ const FIT_PLANS: readonly { scale: number; rowPt: number; caps?: SheetModelOptio
   // Rows stay 7 mm tall so they can be written in: the list gets shorter first (the rest is in partners.csv).
   { scale: 0.92, rowPt: FORM_ROW_PT, caps: { maxPartners: 16 } },
   { scale: 0.86, rowPt: FORM_ROW_PT, caps: { maxPartners: 16 } },
+  { scale: 0.8, rowPt: FORM_ROW_PT, caps: { maxPartners: 16 } },
   { scale: 0.8, rowPt: FORM_ROW_PT, caps: { maxPartners: 14 } },
   { scale: 0.8, rowPt: 16, caps: { maxPartners: 14 } },
   { scale: 0.74, rowPt: 14 },
+  // Still too long: fewer partner rows before every list is cut (the rest are in partners.csv).
+  { scale: 0.74, rowPt: 14, caps: { maxPartners: 20 } },
+  { scale: 0.74, rowPt: 14, caps: { maxPartners: 16 } },
 ];
 const SHORT_LISTS: SheetModelOptions = { maxPartners: 12, maxDeclared: 6, maxSpots: 6, maxPodcasts: 3, maxHooks: 3, maxLimits: 6 };
 

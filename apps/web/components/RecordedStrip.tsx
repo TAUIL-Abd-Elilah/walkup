@@ -1,16 +1,15 @@
 import type { RuntimeMode } from "@/lib/mode";
 
 /**
- * Recorded mode, said once at the very top of every page (from the layout): Qloo is
- * unavailable since when, new plans are off, and a sheet recorded from a live run shows
- * its date and is not refreshed. The words come from the runtime mode, so /healthz says
- * the same; the first sentence is set in bold.
+ * Recorded mode, said once at the very top of every page (from the layout): when the sheets were recorded from
+ * live Qloo and Ticketmaster runs, that live runs are paused for judging, and that the sheets are what a live run
+ * produced. The words come from the runtime mode, so /healthz says the same; the first sentence is set in bold.
  */
 export function RecordedStrip({ mode }: { mode: RuntimeMode }) {
   const cut = mode.detail.indexOf(". ");
   const [lead, rest] = cut > 0 ? [mode.detail.slice(0, cut + 1), mode.detail.slice(cut + 2)] : [mode.detail, ""];
   return (
-    <div className="sample-strip" role="note" aria-label="Qloo unavailable">
+    <div className="sample-strip" role="note" aria-label="Recorded sheets">
       <p className="wrap-wide">
         <strong className="font-semibold">{lead}</strong>
         {rest ? ` ${rest}` : null}

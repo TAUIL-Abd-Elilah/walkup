@@ -2,7 +2,9 @@
 import type { ReactNode } from "react";
 import type { Envelope } from "@walkup/contracts";
 import { STATUS_WORD } from "../../lib/labels";
-import { sourceLine } from "../../lib/sheet-utils";
+import { plainText, sourceLine } from "../../lib/sheet-utils";
+import { useContext } from "react";
+import { FoldBody, FoldContext } from "./fold";
 import { Refs, useReceipts } from "./receipts";
 
 /**
@@ -38,9 +40,18 @@ export function PlanCard<T>({
   const titleId = `${id}-title`;
   const word = STATUS_WORD[envelope.status];
   // Some reasons repeat the status first ("degraded: tag baseline ..."); the word beside the heading already says it.
-  const reason = envelope.reason?.replace(/^(ok|empty|needs[_ ]input|partial|degraded|error)\s*:\s*/i, "");
+  const raw = envelope.reason?.replace(/^(ok|empty|needs[_ ]input|partial|degraded|error)\s*:\s*/i, "");
+  const reason = raw ? plainText(raw) : raw;
   const source = sourceLine(envelope.provenance, entries, sample);
   const text = summary ?? envelope.summary;
+  // A folded section keeps its summary in view and puts the source line with the rest behind "Show".
+  const folded = useContext(FoldContext);
+  const sourceEl = source ? (
+    <p className="mt-1 max-w-[760px] text-sm text-muted" data-testid="source-line">
+      {source}
+      <Refs ids={envelope.provenance} />
+    </p>
+  ) : null;
   return (
     <section id={id} aria-labelledby={titleId} className="section scroll-mt-4">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -51,18 +62,15 @@ export function PlanCard<T>({
         {word ? <span className={`text-base ${envelope.status === "error" ? "font-semibold text-accent" : "text-muted"}`}>{word}</span> : null}
         {aside ? <div className="ml-auto">{aside}</div> : null}
       </div>
-      {source ? (
-        <p className="mt-1 max-w-[760px] text-sm text-muted" data-testid="source-line">
-          {source}
-          <Refs ids={envelope.provenance} />
-        </p>
-      ) : null}
+      {folded ? null : sourceEl}
       {text ? (
         <p className="mt-2 max-w-[760px]">
           {text}
           {source ? null : <Refs ids={envelope.provenance} />}
         </p>
       ) : null}
+      <FoldBody title={title}>
+      {folded ? sourceEl : null}
       {reason ? (
         envelope.status === "needs_input" ? (
           <p className="note-warn mt-3 max-w-[760px]">{reason}</p>
@@ -81,6 +89,7 @@ export function PlanCard<T>({
           {envelope.limits.length === 1 ? envelope.limits[0] : envelope.limits.join(" ")}
         </p>
       ) : null}
+      </FoldBody>
     </section>
   );
 }

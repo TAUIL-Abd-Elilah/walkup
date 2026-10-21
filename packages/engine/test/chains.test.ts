@@ -147,13 +147,14 @@ describe("chain rule in partner scoring", () => {
 });
 
 describe("chain rule in the step stream", () => {
-  it("says how many chains moved and names the ones off the list, once per brand", () => {
+  it("says how many chains are listed and names the ones left off, once per brand", () => {
     expect(chainsCause(0, [], "places")).toBeNull();
-    expect(chainsCause(1, [], "spots")).toBe("Moved 1 national chain below the local spots");
-    expect(chainsCause(3, ["Panera Bread", "Panera Bread", "Hooters"], "places")).toBe(
-      "Moved 3 national chains below the local places; Panera Bread (2) and Hooters no longer make the list",
+    expect(chainsCause(1, [], "spots")).toBe("Listed 1 national chain last, after the local spots: no local spot filled its slot");
+    expect(chainsCause(0, ["Panera Bread", "Panera Bread", "Applebee's"], "places")).toBe("Left off 3 national chains: Panera Bread (2) and Applebee's");
+    expect(chainsCause(2, ["Applebee's"], "places", 2, 1)).toBe(
+      "Listed 2 national chains last, after the local places: no local place filled their slot; left off 1 national chain, at most 2 per list: Applebee's",
     );
-    expect(chainsCause(2, ["Hooters"], "places")).toBe("Moved 2 national chains below the local places; Hooters no longer makes the list");
+    expect(chainsCause(0, ["A", "B", "C", "D", "E", "F"], "places")).toBe("Left off 6 national chains: A, B, C, D and 2 more");
   });
 });
 

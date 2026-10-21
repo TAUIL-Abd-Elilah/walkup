@@ -11,7 +11,20 @@ import { clientIp } from "@/lib/server/http";
 import { freshRuns } from "@/lib/server/limits";
 import { freshRunsBody, loadPlan, presetPausedInRecording, presetSheet } from "@/lib/server/service";
 import { decodeBbox, unionBbox } from "@/lib/geohash";
-import { allTiles, baselineName, compareBills, comparisonSentence, recordedSheetsSection, topTiles } from "@/lib/sheet-utils";
+import { revisionsOf, type PlanRevisionLink } from "@/lib/server/recorded";
+import {
+  allTiles,
+  baselineName,
+  compareBills,
+  comparisonSentence,
+  missedPick,
+  missedPickLine,
+  ordinal,
+  popularityAreas,
+  recordedSheetsSection,
+  topTiles,
+  type PopularityArea,
+} from "@/lib/sheet-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +37,10 @@ async function sheetFor(id: string): Promise<StreetSheet | null> {
   return v?.kind === "sheet" ? v.sheet : null;
 }
 
-function side(s: StreetSheet, fallbackLabel: string): HeroSide {
+function side(s: StreetSheet, fallbackLabel: string, revisions: readonly PlanRevisionLink[]): HeroSide {
   const headliner = headlinerName(s.bill);
+  // A real pick only: a sample sheet's places are made up, so it names none.
+  const missed = s.mode === "live" ? missedPick(s) : null;
   return {
     planId: s.planId,
     headliner,
@@ -38,7 +53,108 @@ function side(s: StreetSheet, fallbackLabel: string): HeroSide {
     venue: { lat: s.bill.venue.lat, lon: s.bill.venue.lon, name: s.bill.venue.name },
     partners: s.cards.partners.results.length,
     sample: s.mode === "fixture",
+    missed: missed ? { line: `A pick a popularity list would miss: ${missedPickLine(missed)}`, refs: missed.refs } : null,
+    revisions: revisions.map((r) => ({ planId: r.planId, instruction: r.instruction })),
   };
+}
+
+/**
+ * One area side by side: Walkup's picks there with their rank for this crowd and for the room's usual crowd, against
+ * Qloo's popularity-only search of the same area (no bill as the signal). Shown for an area where none of the picks
+ * is in the popularity list's top, so every row can say "No".
+ */
+function PopularityUpClose({ area, planId }: { area: PopularityArea; planId: string }) {
+  const intro = (
+    <p className="mt-1 text-sm text-muted">
+      Qloo ran the same place search for this area twice: once with this bill as the signal, once with no signal, which returns places in
+      popularity order. The popularity-only top {area.k} has none of Walkup&apos;s {area.picks.length} picks here.{" "}
+      <Link href={`/plan/${planId}#receipt-${area.popularRef}`} className="link">
+        Popularity-only search ({area.popularRef})
+      </Link>
+    </p>
+  );
+  // With the names stored on the sheet (`popularTop`): the two lists side by side, row by row.
+  if (area.popular) {
+    const popular = area.popular;
+    const n = Math.max(popular.length, area.picks.length);
+    return (
+      <div className="mt-8 max-w-[760px]" data-testid="popularity-up-close">
+        <h3 className="text-base">Popularity alone against Walkup&apos;s picks, in {area.area}</h3>
+        {intro}
+        <table className="table mt-2">
+          <caption className="sr-only">
+            The {area.k} most popular places in {area.area} by popularity alone, beside Walkup&apos;s picks there with their rank for this crowd
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" className="num w-8">
+                #
+              </th>
+              <th scope="col">Popularity alone</th>
+              <th scope="col">Walkup&apos;s pick</th>
+              <th scope="col" className="num hidden sm:table-cell">
+                Rank for the usual crowd
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: n }, (_, i) => {
+              const pop = popular[i];
+              const pick = area.picks[i];
+              return (
+                <tr key={i}>
+                  <td className="num text-muted">{i + 1}</td>
+                  <td>{pop ? pop.name : ""}</td>
+                  <td>
+                    {pick ? (
+                      <>
+                        <span className="font-semibold">{pick.name}</span>
+                        <span className="block text-sm text-muted">{ordinal(pick.billRank)} for this crowd</span>
+                      </>
+                    ) : null}
+                  </td>
+                  <td className="num hidden sm:table-cell">{pick ? (pick.houseRank === null ? "not ranked" : ordinal(pick.houseRank)) : ""}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-8 max-w-[760px]" data-testid="popularity-up-close">
+      <h3 className="text-base">Popularity alone against Walkup&apos;s picks, in {area.area}</h3>
+      {intro}
+      <table className="table mt-2">
+        <caption className="sr-only">Walkup&apos;s picks in {area.area} with their ranks, and whether the popularity-only list has them</caption>
+        <thead>
+          <tr>
+            <th scope="col">Walkup&apos;s pick</th>
+            <th scope="col" className="num">
+              Rank for this crowd
+            </th>
+            <th scope="col" className="num">
+              Rank for the usual crowd
+            </th>
+            <th scope="col" className="num">
+              In the popularity top {area.k}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {area.picks.map((p) => (
+            <tr key={p.entityId}>
+              <td>{p.name}</td>
+              <td className="num">{ordinal(p.billRank)}</td>
+              <td className="num">{p.houseRank === null ? "not ranked" : ordinal(p.houseRank)}</td>
+              <td className="num">No</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function place(s: StreetSheet): string {
@@ -115,8 +231,22 @@ export default async function Home() {
   // A live (or recorded) sheet beside a sample one would set real numbers against made-up ones: no worked example then.
   const cmp = a && b && a.mode === b.mode ? compareBills(a, b) : null;
   // One frame for both maps: every numbered area of both bills, and the venue(s), so the two scales match.
-  const heroA = a ? side(a, "Bill A") : null;
-  const heroB = b ? side(b, "Bill B") : null;
+  // Stored revisions of each hero sheet ("All ages, no bars"), found by parent id in the plan store.
+  const [revA, revB] = await Promise.all([
+    a ? revisionsOf(a.planId, a.mode === "live" ? "live" : undefined) : Promise.resolve([]),
+    b ? revisionsOf(b.planId, b.mode === "live" ? "live" : undefined) : Promise.resolve([]),
+  ]);
+  const heroA = a ? side(a, "Bill A", revA) : null;
+  const heroB = b ? side(b, "Bill B", revB) : null;
+  // The up-close area: the first hero area where none of Walkup's picks is in the popularity-only top (live sheets only).
+  const upClose = ((): { area: PopularityArea; planId: string } | null => {
+    for (const s of [a, b]) {
+      if (!s || s.mode !== "live") continue;
+      const area = popularityAreas(s).find((x) => x.notInPopularTop >= x.k && x.picks.length === x.k);
+      if (area) return { area, planId: s.planId };
+    }
+    return null;
+  })();
   const extent =
     heroA && heroB ? unionBbox([...heroA.top, ...heroB.top].map((t) => decodeBbox(t.geohash)), [heroA.venue, heroB.venue]) : null;
   const sample = a?.mode === "fixture" || b?.mode === "fixture";
@@ -133,7 +263,7 @@ export default async function Home() {
 
   return (
     <div className="wrap-wide">
-      <section className="pt-8 pb-8" aria-labelledby="intro-title">
+      <section className="pt-6 pb-6" aria-labelledby="intro-title">
         <h1 id="intro-title">Walkup</h1>
         <p className="mt-2 max-w-[760px]">
           For a booked show with seats left, Walkup finds the areas where this bill&apos;s crowd stands out from the room&apos;s usual crowd and the
@@ -145,25 +275,18 @@ export default async function Home() {
         <section className="section" aria-labelledby="split-title">
           <h2 id="split-title">{cmp.sameRoom ? "Same room, two crowds" : "Two bills, two crowds"}</h2>
           <div className="mt-2 max-w-[760px] space-y-2">
-            <p className="text-muted">
-              {cmp.sameRoom
-                ? `Both bills play ${place(a)}. Each map compares one bill's crowd with the crowd for the shows this room usually books.`
-                : `${heroA.headliner} plays ${place(a)} and ${heroB.headliner} plays ${place(b)}. Each map compares one bill's crowd with its room's usual crowd.`}
+            {/* One screen: what the two maps are, the contrast in one sentence, then the maps. The legend names the baseline. */}
+            <p>
+              <span className="text-muted">
+                {cmp.sameRoom
+                  ? `Both bills play ${place(a)}; each map compares one bill's crowd with the crowd for the shows this room usually books. `
+                  : `${heroA.headliner} plays ${place(a)} and ${heroB.headliner} plays ${place(b)}; each map compares one bill's crowd with its room's usual crowd. `}
+              </span>
+              <span data-testid="hero-comparison">{comparisonSentence(cmp, { a: heroA.headliner, b: heroB.headliner, venue: a.bill.venue.name })}</span>
             </p>
-            <p data-testid="hero-comparison">
-              {comparisonSentence(cmp, { a: heroA.headliner, b: heroB.headliner, venue: a.bill.venue.name })}
-            </p>
-            <details className="plain-details text-sm">
-              <summary>How we counted</summary>
-              <p className="mt-1 text-muted">
-                Each sheet numbers up to 5 areas where its crowd is at least 1.3 times the room&apos;s usual crowd, highest first, with no two in the
-                same ZIP or within 3 km. An area counts as shared when the same square is numbered on both sheets. A partner counts as shared when the
-                same place name is on both lists.
-              </p>
-            </details>
             {sample ? <p className="text-sm text-muted">Sample bills: the acts, businesses and numbers are made up; the venue and the area names are real.</p> : null}
           </div>
-          <div className="mt-6">
+          <div className="mt-5">
             <HeroSplit
               a={heroA}
               b={heroB}
@@ -172,6 +295,16 @@ export default async function Home() {
               source={sample ? "Data: made-up sample data in Qloo's format." : mode.kind === "recorded" ? "Data: Qloo, recorded on live runs." : "Data: Qloo."}
             />
           </div>
+          {upClose ? <PopularityUpClose area={upClose.area} planId={upClose.planId} /> : null}
+          <details className="plain-details mt-6 max-w-[760px] text-sm">
+            <summary>How we counted</summary>
+            <p className="mt-1 text-muted">
+              Each sheet numbers up to 5 areas where its crowd is at least 1.3 times the room&apos;s usual crowd, highest first, with no two in the
+              same ZIP or within 3 km. An area counts as shared when the same square is numbered on both sheets. A partner counts as shared when the
+              same place name is on both lists. A popularity list is Qloo&apos;s same place search with no bill as the signal, cut to as many places
+              as the area has partners.
+            </p>
+          </details>
         </section>
       ) : null}
 

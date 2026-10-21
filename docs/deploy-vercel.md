@@ -4,7 +4,7 @@ The hosted site, https://walkup-eight.vercel.app, runs the real Next.js app (`ap
 in **recorded mode**: it serves the hero sheets recorded from live runs, with their receipts, the print view, every
 download (PDF, CSV, ICS, `sheet.json`), `/system-card`, `/eval`, `/healthz` and the MCP tools that read stored sheets.
 New plans, searches and revisions answer with the plain recorded-mode reason (HTTP 503), as described in
-[deploy.md, Recorded mode](deploy.md#recorded-mode-after-the-qloo-key-is-switched-off-nov-2-2026). No API key is set
+[deploy.md, Recorded mode](deploy.md#recorded-mode-live-runs-paused). No API key is set
 on Vercel: recorded mode calls nothing.
 
 Fly.io ([deploy.md](deploy.md)) is still the setup for a live host (an always-on machine and a volume). Nothing in

@@ -22,7 +22,7 @@ describe("popularity check", () => {
     // Near venue: popularity order n1, ... -> top 1 = {n1}.
     const r = popularityCheck(partners, [twin("aaaaaa", ["p1", "a2", "p2", "a1", "a3"], "Q20"), twin(null, ["n1", "x"], "Q21")]);
     expect(r.missing).toEqual([]);
-    expect(r.check).toEqual({
+    expect({ ...r.check, perArea: r.check?.perArea.map(({ popularTop: _top, ...rest }) => rest) }).toEqual({
       partners: 4,
       notInPopularTop: 2,
       perArea: [
@@ -58,6 +58,15 @@ describe("popularity check", () => {
     expect(popularityCheck([], [])).toEqual({ check: null, missing: [] });
   });
 
+  it("keeps the places the partners were compared with, by name, best first", () => {
+    const r = popularityCheck([partner("a1", "aaaaaa"), partner("a2", "aaaaaa")], [twin("aaaaaa", ["p1", "a1", "p2"], "Q20")]);
+    expect(r.check?.perArea[0]?.popularTop?.map((x) => [x.entityId, x.rank, x.onSheet])).toEqual([
+      ["p1", 1, false],
+      ["a1", 2, true],
+    ]);
+    expect(r.check?.perArea[0]?.popularTop?.every((x) => typeof x.name === "string")).toBe(true);
+  });
+
   it("is deterministic and ignores twins of areas without partners", () => {
     const run = () => popularityCheck([partner("a1", "aaaaaa")], [twin("aaaaaa", ["p1", "a1"], "Q20"), twin("zzzzzz", ["z"], "Q22")]);
     expect(run()).toEqual(run());
@@ -66,18 +75,25 @@ describe("popularity check", () => {
 
   it("says it in one plain sentence", () => {
     const areas = (n: number, nearVenue = false) => Array.from({ length: n }, (_, i) => ({ tileGeohash: nearVenue ? null : `t${i}`, partners: 1, notInPopularTop: 0, ledgerRef: "Q20" }));
-    expect(popularitySentence({ partners: 11, notInPopularTop: 8, perArea: areas(3) })).toBe("8 of the 11 partners would not make a list of the most popular places in their areas.");
-    expect(popularitySentence({ partners: 11, notInPopularTop: 11, perArea: areas(3) })).toBe("None of the 11 partners would make a list of the most popular places in their areas.");
-    expect(popularitySentence({ partners: 11, notInPopularTop: 0, perArea: areas(3) })).toBe("All 11 partners would also make a list of the most popular places in their areas.");
-    expect(popularitySentence({ partners: 6, notInPopularTop: 5, perArea: areas(1, true) })).toBe("5 of the 6 partners would not make a list of the most popular places near the venue.");
-    expect(popularitySentence({ partners: 4, notInPopularTop: 1, perArea: areas(1) })).toBe("1 of the 4 partners would not make a list of the most popular places in their area.");
-    expect(popularitySentence({ partners: 1, notInPopularTop: 1, perArea: areas(1) })).toBe("The one partner would not make a list of the most popular places in its area.");
+    expect(popularitySentence({ partners: 11, notInPopularTop: 8, perArea: areas(3) })).toBe(
+      "8 of the 11 partners aren't among the most popular places in their areas: a list by popularity alone would miss them.",
+    );
+    expect(popularitySentence({ partners: 11, notInPopularTop: 11, perArea: areas(3) })).toBe(
+      "None of the 11 partners is among the most popular places in their areas: a list by popularity alone would miss them all.",
+    );
+    expect(popularitySentence({ partners: 11, notInPopularTop: 0, perArea: areas(3) })).toBe("All 11 partners are also among the most popular places in their areas.");
+    expect(popularitySentence({ partners: 6, notInPopularTop: 5, perArea: areas(1, true) })).toBe(
+      "5 of the 6 partners aren't among the most popular places near the venue: a list by popularity alone would miss them.",
+    );
+    expect(popularitySentence({ partners: 1, notInPopularTop: 1, perArea: areas(1) })).toBe(
+      "The one partner isn't among the most popular places in its area: a list by popularity alone would miss it.",
+    );
   });
 
   it("the step says the number with the method, or why there is none", () => {
     const ok = popularityStep({ partners: 11, notInPopularTop: 8, areas: 3, failed: [], ledgerRefs: ["Q20", "Q21", "Q22"] });
     expect(ok).toMatchObject({ id: "partners-popular", kind: "partners", status: "ok", ledgerRefs: ["Q20", "Q21", "Q22"] });
-    expect(ok.decision).toBe("Checked against popularity alone: 8 of the 11 partners wouldn't make a list of the most popular places in their areas.");
+    expect(ok.decision).toBe("Popularity alone would miss 8 of the 11 partners: they aren't among the most popular places in their areas.");
     expect(ok.cause).toMatch(/without the bill as the signal returns places in popularity order/);
     expect(ok.cause).toMatch(/It says nothing about ticket sales\.$/);
     const near = popularityStep({ partners: 6, notInPopularTop: 5, areas: 1, nearVenueOnly: true, failed: [], ledgerRefs: ["Q20"] });

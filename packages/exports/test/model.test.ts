@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
-import { buildSheetModel, HOURS_NOT_LISTED, PHONE_NOT_LISTED, sheetModelText, THIN_SIGNAL_NOTE } from "../src/sheet-model";
-import { formatHours, ledgerRanges, receiptGroup, tMinusDays, tMinusLabel } from "../src/format";
-import { makeExplainedSheet, makeSheet, PARTNERS } from "./helpers";
+import { AREA_BLURB_CHARS, buildSheetModel, HOURS_NOT_LISTED, PAGE_SECTIONS, PHONE_NOT_LISTED, sheetModelText, THIN_SIGNAL_NOTE } from "../src/sheet-model";
+import { formatHours, formatKm, isCartOrStand, ledgerRanges, receiptGroup, sentencesUpTo, sheetSpots, spotSharesDiffer, tMinusDays, tMinusLabel } from "../src/format";
+import { fanFacingSpots, isFanFacing, partnerIsFanFacing, spotIsFanFacing } from "../src/audience";
+import { addressState, areaLabel, formatPhone } from "../src/format";
+import { makeExplainedSheet, makeMultiStateSheet, makeSheet, PARTNERS, place, SPOTS } from "./helpers";
 
 describe("header", () => {
   it("reads like a day sheet: who on the left (headliner, then the rest), date, room and counts on the right", () => {
@@ -60,20 +62,28 @@ describe("header", () => {
     const capOnly = makeSheet();
     capOnly.operator = { ...capOnly.operator, seatsLeft: null };
     expect(buildSheetModel(capOnly).seatsLine).toBe("Capacity 1,200");
-    const hyp = buildSheetModel(makeSheet({ hypothetical: true }));
-    expect(hyp.watermarks).toEqual(["What-if counts"]);
+    // A live sheet's counts are the operator's own: an older stored sheet flagged hypothetical gets no what-if
+    // watermark, label, "(assumed)" or planning-tool note.
+    const oldLive = buildSheetModel(makeSheet({ hypothetical: true }));
+    expect(oldLive.watermarks).toEqual([]);
+    expect(oldLive.labels).toEqual([]);
+    expect(oldLive.seatsLine).toBe("640 of 1,200 seats left");
+    expect(oldLive.notes.some((n) => /^Planning tool/.test(n))).toBe(false);
+    // What-if counts are a sample sheet's.
+    const hyp = buildSheetModel(makeSheet({ mode: "fixture", hypothetical: true }));
     // The seats line already says "(assumed)", so no extra label.
-    expect(hyp.labels).toEqual([]);
-    const noCounts = makeSheet({ hypothetical: true });
+    expect(hyp.labels).toEqual(["Sample data"]);
+    const noCounts = makeSheet({ mode: "fixture", hypothetical: true });
     noCounts.operator = { ...noCounts.operator, seatsLeft: null, capacity: null };
-    expect(buildSheetModel(noCounts).labels).toEqual(["Counts are what-ifs"]);
+    expect(buildSheetModel(noCounts).labels).toEqual(["Sample data", "Counts are what-ifs"]);
     expect(hyp.seatsLine).toBe("640 of 1,200 seats left (assumed)");
     expect(hyp.notes).toContain("Planning tool: Walkup has no sales data for this show.");
     const fx = buildSheetModel(makeSheet({ mode: "fixture", hypothetical: true }));
     expect(fx.sampleLabel).toBe("Sample data");
     expect(fx.labels).toEqual(["Sample data"]);
-    // One watermark on a sample sheet, never two.
+    // One watermark on a sample sheet, never two; a live sheet has none.
     expect(fx.watermarks).toEqual(["Sample data"]);
+    expect(buildSheetModel(makeSheet({ mode: "fixture", hypothetical: false })).watermarks).toEqual(["Sample data"]);
     expect(fx.docTitle.startsWith("Sample street sheet:")).toBe(true);
     expect(fx.footer.fixtureNote).toBe("Sample data: made-up places and numbers, not a live run.");
   });
@@ -93,7 +103,7 @@ describe("header", () => {
   it("flags a thin signal in the web sheet's words, and says the planning-tool line once, in the header", () => {
     expect(THIN_SIGNAL_NOTE).toBe("The signal is thin here, so treat this as a starting list.");
     expect(buildSheetModel(makeSheet()).notes).toContain(THIN_SIGNAL_NOTE);
-    const hyp = makeSheet({ hypothetical: true });
+    const hyp = makeSheet({ mode: "fixture", hypothetical: true });
     expect(buildSheetModel(hyp).notes).toContain("Planning tool: Walkup has no sales data for this show.");
     hyp.limits = [...hyp.limits, "Planning tool; no sales data for this show is known or shown."];
     const m = buildSheetModel(hyp);
@@ -138,7 +148,9 @@ describe("panels", () => {
   const m = buildSheetModel(makeSheet());
 
   it("panel 1 lists the top 5 tiles with ZIPs and a why line", () => {
-    expect(m.panel1.tiles.map((t) => t.name)).toEqual(["East Bank", "Edgehill", "Germantown North", "Woodbine", "Inglewood"]);
+    // Each area carries its own state from its own ZIPs: the synthetic Inglewood tile's only valid ZCTA (02134) is a
+    // Massachusetts ZIP, so it says MA; Woodbine has no ZCTA and keeps its bare name.
+    expect(m.panel1.tiles.map((t) => t.name)).toEqual(["East Bank, TN", "Edgehill, TN", "Germantown North, TN", "Woodbine", "Inglewood, MA"]);
     expect(m.panel1.tiles[0]).toMatchObject({ rank: 1, lift: "2.10x", zips: "ZIP 37206" });
     expect(m.panel1.tiles[0]!.why).toContain("Lift 2.10");
     expect(m.panel1.tiles[3]!.zips).toBe("ZIP n/a");
@@ -155,11 +167,13 @@ describe("panels", () => {
       category: "Record store",
       house: "",
       tileRank: 1,
-      tile: "East Bank",
+      tile: "East Bank, TN",
       tileLift: "2.10x",
       // The same receipts as the web sheet's Why cell: the pool's request, not the lift tile's heatmap.
       refs: "Q3",
-      hours: "10 am to 7 pm",
+      // Two street-team days: the day the calendar visits it, and that day's hours.
+      hours: "Thu 10 am to 7 pm",
+      visitDay: "Thu",
       web: "example.com",
       activation: "",
       why: "Ranks 1st here for this crowd.",
@@ -167,10 +181,17 @@ describe("panels", () => {
     });
     expect(m.panel2.explained).toBe(false);
     expect(m.panel2.footer).toBe("Suggested, not affiliated: no partner has agreed to anything.");
-    expect(m.panel2.hoursHeader).toBe("Open Thu");
+    expect(m.panel2.hoursHeader).toBe("Visit day");
     const noHours = makeSheet();
     noHours.cards.partners.results = [{ ...PARTNERS[0]!, hoursOnDay: null }];
-    expect(buildSheetModel(noHours).panel2.rows[0]).toMatchObject({ hours: HOURS_NOT_LISTED, hoursMissing: true });
+    expect(buildSheetModel(noHours).panel2.rows[0]).toMatchObject({ hours: "Thu, hours not listed: call first", hoursMissing: true });
+    // With one street-team day, the column is that day's hours.
+    const oneDay = makeSheet();
+    oneDay.operator = { ...oneDay.operator, streetTeamDays: ["thursday"] };
+    expect(buildSheetModel(oneDay).panel2.hoursHeader).toBe("Open Thu");
+    expect(buildSheetModel(oneDay).panel2.rows[0]).toMatchObject({ hours: "10 am to 7 pm", visitDay: "" });
+    oneDay.cards.partners.results = [{ ...PARTNERS[0]!, hoursOnDay: null }];
+    expect(buildSheetModel(oneDay).panel2.rows[0]).toMatchObject({ hours: HOURS_NOT_LISTED, hoursMissing: true });
     expect(HOURS_NOT_LISTED).toBe("Hours not listed: call first");
     expect(m.panel2.rows[0]!.hoursMissing).toBe(false);
     // Honest blanks: the paper says "Phone not listed" instead of an empty cell.
@@ -253,9 +274,10 @@ describe("panels", () => {
       ["Morning Shift Coffee", false],
     ]);
     expect(m.panel4.rows[1]!.detail).toContain("not for fans");
-    expect(m.panel4.rows[0]!.detail).toBe("Restaurant · 240 m · 3.1% of the crowd · ranks 4 places higher here than for the room's usual crowd");
+    expect(m.panel4.rows[0]!.detail).toBe("Restaurant · 0.2 km · 3.1% of the crowd · ranks 4 places higher here than for the room's usual crowd");
     // The same facts one by one, for the paper's table.
-    expect(m.panel4.rows[0]).toMatchObject({ category: "Restaurant", distance: "240 m", share: "3.1%", vsUsual: "4 places higher", capacity: 80 });
+    expect(m.panel4.rows[0]).toMatchObject({ category: "Restaurant", distance: "0.2 km", share: "3.1%", vsUsual: "4 places higher", capacity: 80 });
+    expect(m.panel4.showShare).toBe(true);
     expect(m.panel4.rows[1]!.category).toBe("Bar, not for fans");
     expect(m.panel4.shareNote).toMatch(/assumed capacity|people fit/);
     expect(m.panel4.ageLine).toBe("Age policy: All ages (Ticketmaster age policy).");
@@ -345,7 +367,8 @@ describe("footer", () => {
 
   it("shows the budget heuristic with dollars", () => {
     expect(m.footer.budgetTitle).toBe("Budget split (a heuristic, not a forecast)");
-    expect(m.footer.budget[0]).toEqual({ name: "East Bank", share: "30%", usd: "$750" });
+    expect(m.footer.budget[0]).toEqual({ rank: 1, name: "East Bank, TN", share: "30%", usd: "$750" });
+    expect(m.footer.budget.map((b) => b.rank)).toEqual([1, 2, 3, 4, 5]);
   });
 
   it("prints the sheet's limits", () => {
@@ -371,7 +394,7 @@ describe("footer", () => {
       "Juniper Wire · Example Hall · Fri Nov 20 · printed Wed Oct 14 2026 · data from Fri Oct 9 2026",
     );
     expect(buildSheetModel(makeSheet({ mode: "fixture" }), { printedAt: "2026-10-14T10:00:00Z" }).footer.printLine).toMatch(/ · data from Fri Oct 9 2026 · Sample$/);
-    expect(buildSheetModel(makeSheet()).footer.elsewhere).toBe("Podcasts, the sponsor pick, copy lines and the budget split are on the web sheet and in sheet.json.");
+    expect(buildSheetModel(makeSheet()).footer.elsewhere).toBe("Street-team days and times are in street-team.ics; ad ZIPs and pins in zips.csv and pins.csv.");
   });
 
   it("collapses receipts into one sorted group", () => {
@@ -405,5 +428,173 @@ describe("sheetModelText", () => {
     expect(text).toContain("Sample data");
     expect(text).toContain("Start with this place");
     expect(text).toContain("Ask to leave flyers at the counter.");
+  });
+});
+
+describe("area labels", () => {
+  it("name each area with its own place and state, not the venue's city: a DC room with MD and VA areas", () => {
+    const sheet = makeMultiStateSheet();
+    const m = buildSheetModel(sheet);
+    expect(m.placeLine).toBe("Example Hall, Washington, DC");
+    expect(m.panel1.tiles.map((t) => t.name)).toEqual(["Silver Spring, MD", "Arlington, VA", "Capitol Hill, DC"]);
+    expect(m.panel2.rows.map((r) => [r.tileRank, r.tile])).toEqual([
+      [1, "Silver Spring, MD"],
+      [2, "Arlington, VA"],
+      [3, "Capitol Hill, DC"],
+      [null, "Takoma Park, MD"],
+    ]);
+    expect(m.footer.budget.map((b) => b.name)).toEqual(["Silver Spring, MD", "Arlington, VA", "Capitol Hill, DC"]);
+    const text = sheetModelText(m).join("\n");
+    expect(text).not.toMatch(/Silver Spring, (Washington|DC)|Arlington, (Washington|DC)/);
+  });
+
+  it("keep a name that already ends with its state, and a geohash-only area bare", () => {
+    expect(areaLabel({ name: "Silver Spring, MD", geohash: "dqcjz5", zctas: ["20910"] })).toBe("Silver Spring, MD");
+    expect(areaLabel({ name: "", geohash: "dqcjz5", zctas: ["20910"] })).toBe("dqcjz5");
+    expect(areaLabel({ name: "Woodbine", geohash: "dn6m00", zctas: [] })).toBe("Woodbine");
+    expect(addressState("14200 Baltimore Ave Laurel, MD 20707")).toBe("MD");
+    expect(addressState("1577 Spring Hill Rd Vienna, VA 22182-1234")).toBe("VA");
+    expect(addressState("100 Example St, Nashville, TN")).toBeNull();
+  });
+});
+
+describe("phones", () => {
+  it("print a US number the way people read it and keep the raw number for dialing", () => {
+    expect(formatPhone("+12027334604")).toBe("(202) 733-4604");
+    expect(formatPhone("2027334604")).toBe("(202) 733-4604");
+    expect(formatPhone("(615) 555-0101")).toBe("(615) 555-0101");
+    expect(formatPhone("+44 20 7946 0958")).toBe("+44 20 7946 0958");
+    expect(formatPhone("555-0101 ext 4")).toBe("555-0101 ext 4");
+    const live = makeSheet();
+    live.cards.partners.results = [{ ...PARTNERS[0]!, phone: "+12027334604" }];
+    expect(buildSheetModel(live).panel2.rows[0]).toMatchObject({ phone: "+12027334604", phoneText: "(202) 733-4604" });
+  });
+});
+
+describe("thin signal", () => {
+  it("is said once: the header note, not again in the limits", () => {
+    const thin = makeSheet({ limits: [...LIMITS_EVERY_SHEET, "Thin signal: treat as a starting list."] });
+    const m = buildSheetModel(thin); // 6 partners: under 15, so the header says it
+    expect(m.notes).toContain(THIN_SIGNAL_NOTE);
+    expect(m.footer.limits.some((l) => /thin signal/i.test(l))).toBe(false);
+  });
+});
+
+describe("fan-facing places: one shared rule", () => {
+  // A restaurant the plan let through (fanFacingAllowed: true) whose name is a drinking word, as recorded live sheets have.
+  const drinkName = { ...SPOTS[0]!, entity: place("syn-place-60", "Whiskey Lantern", { distanceM: 300 }), category: "restaurant", fanFacingAllowed: true };
+
+  it("treats a drinking word in the name like a bar on a show that is not 21+, whatever the plan's flag says", () => {
+    const sheet = makeSheet();
+    expect(spotIsFanFacing(drinkName, sheet)).toBe(false);
+    expect(spotIsFanFacing(SPOTS[0]!, sheet)).toBe(true);
+    expect(spotIsFanFacing(SPOTS[1]!, sheet)).toBe(false);
+    expect(partnerIsFanFacing(PARTNERS[4]!, sheet)).toBe(false); // a bar
+    expect(partnerIsFanFacing(PARTNERS[0]!, sheet)).toBe(true);
+    const adult = makeSheet();
+    adult.bill = { ...adult.bill, legalAgeEnforced: true };
+    expect(spotIsFanFacing(drinkName, adult)).toBe(true);
+    expect(isFanFacing({ name: "Night Owl Taproom", category: "bar" }, adult.bill, { allAges: true })).toBe(false);
+    // The plan's own "no" always holds.
+    expect(isFanFacing({ name: "Front Step Diner", category: "restaurant", fanFacingAllowed: false }, adult.bill, adult.operator)).toBe(false);
+  });
+
+  it("is what both the operator sheet (web and PDF) and the fan version use, for every age policy", () => {
+    for (const legalAgeEnforced of [false, true, null]) {
+      for (const allAges of [undefined, true]) {
+        const sheet = makeSheet();
+        sheet.bill = { ...sheet.bill, legalAgeEnforced };
+        sheet.operator = { ...sheet.operator, ...(allAges ? { allAges } : {}) };
+        sheet.cards.prePost.results = [...SPOTS, drinkName];
+        // The sheet lists spots nearest first.
+        const shared = sheetSpots(fanFacingSpots(sheet.cards.prePost.results, sheet)).map((x) => x.entity.name);
+        const operator = buildSheetModel(sheet);
+        const fan = buildSheetModel(sheet, { audience: "fan" });
+        expect(fan.panel4.rows.map((r) => r.name), `${legalAgeEnforced} ${allAges}`).toEqual(shared);
+        expect(operator.panel4.rows.filter((r) => !r.operatorOnly).map((r) => r.name)).toEqual(shared);
+        expect(operator.panel4.rows.filter((r) => r.operatorOnly).every((r) => r.category.endsWith("not for fans"))).toBe(true);
+        expect(fan.panel2.rows.map((r) => r.name)).toEqual(sheet.cards.partners.results.filter((p) => partnerIsFanFacing(p, sheet)).map((p) => p.entity.name));
+      }
+    }
+  });
+});
+
+describe("one page, the same sections on paper and in print", () => {
+  it("lists every section the PDF and the print view print, in reading order", () => {
+    const m = buildSheetModel(makeSheet());
+    expect(m.sections).toEqual(PAGE_SECTIONS);
+    expect(m.sections).toEqual(["map", "spots", "partners", "media", "hooks", "budget", "declared", "limits", "requests"]);
+    // At most three podcasts and three copy lines, so the page stays one page.
+    expect(m.panel5.podcasts.length).toBeLessThanOrEqual(3);
+    expect(m.panel6.hooks.length).toBeLessThanOrEqual(3);
+  });
+
+  it("cuts an area's blurb at a sentence end, never mid-sentence", () => {
+    expect(sentencesUpTo("One. Two two. Three three three.", 14)).toBe("One. Two two.");
+    expect(sentencesUpTo("About 1.7 times the usual crowd here. More.", 20)).toBe("About 1.7 times the usual crowd here.");
+    expect(sentencesUpTo("Short.", 100)).toBe("Short.");
+    const s = makeSheet();
+    const long = `${"A first sentence about this area that runs on for a while".padEnd(70, ".")} Then a second sentence that would not fit on the paper at all, no matter what. And a third.`;
+    s.narration = { ...s.narration!, tileWhy: [{ geohash: s.cards.liftMap.results.tiles[0]!.geohash, text: long }] };
+    const t = buildSheetModel(s).panel1.tiles[0]!;
+    expect(t.why).toBe(long);
+    expect(t.blurb.startsWith("ZIP 37206. A first sentence")).toBe(true);
+    expect(t.blurb).toMatch(/[.!?]$/);
+    expect(t.blurb.length).toBeLessThanOrEqual(AREA_BLURB_CHARS);
+    expect(t.blurb).not.toContain("Then a second");
+  });
+
+  it("keeps the phone whole for its own line", () => {
+    const s = makeSheet();
+    s.cards.partners.results = [{ ...PARTNERS[0]!, address: "1000 Extremely Long Boulevard Name Northeast, Suite 12, Nashville", phone: "+16155550101" }];
+    expect(buildSheetModel(s).panel2.rows[0]).toMatchObject({ phoneText: "(615) 555-0101" });
+  });
+});
+
+describe("before and after the show", () => {
+  const spot = (id: string, name: string, distanceM: number | null, extra: Partial<(typeof SPOTS)[number]> = {}) => ({
+    ...SPOTS[0]!,
+    entity: place(id, name, distanceM === null ? {} : { distanceM }),
+    ...extra,
+  });
+
+  it("drops food carts, kiosks, stands and food trucks, by category or name", () => {
+    expect(isCartOrStand({ name: "Corner Coffee Cart", category: "cafe" })).toBe(true);
+    expect(isCartOrStand({ name: "Main Street Kiosk" })).toBe(true);
+    expect(isCartOrStand({ name: "Taco Stand" })).toBe(true);
+    expect(isCartOrStand({ name: "Blue Plate", category: "food_truck" })).toBe(true);
+    expect(isCartOrStand({ name: "Grandstand Grill", category: "restaurant" })).toBe(false);
+    expect(isCartOrStand({ name: "Front Step Diner", category: "restaurant" })).toBe(false);
+    const s = makeSheet();
+    s.cards.prePost.results = [...SPOTS, spot("syn-place-70", "Late Night Hot Dog Cart", 30), spot("syn-place-71", "Smokey Wheels", 60, { category: "food_truck" })];
+    const names = buildSheetModel(s).panel4.rows.map((r) => r.name);
+    expect(names).toEqual(["Front Step Diner", "The Ninth Bar", "Morning Shift Coffee"]);
+  });
+
+  it("lists spots nearest to the venue first, those without a distance last", () => {
+    const s = makeSheet();
+    s.cards.prePost.results = [spot("a", "Far Diner", 900), spot("b", "No Distance Diner", null), spot("c", "Near Diner", 120), spot("d", "Mid Diner", 400)];
+    expect(sheetSpots(s.cards.prePost.results).map((x) => x.entity.name)).toEqual(["Near Diner", "Mid Diner", "Far Diner", "No Distance Diner"]);
+    expect(buildSheetModel(s).panel4.rows.map((r) => r.name)).toEqual(["Near Diner", "Mid Diner", "Far Diner", "No Distance Diner"]);
+  });
+
+  it("drops the share column and its note when every spot gets the same share", () => {
+    const s = makeSheet();
+    s.cards.prePost.results = SPOTS.map((x) => ({ ...x, expectedShare: 0.02, assumedCapacity: 120 }));
+    const p = buildSheetModel(s).panel4;
+    expect(p.showShare).toBe(false);
+    expect(p.shareNote).toBeNull();
+    expect(p.rows.every((r) => r.share === "")).toBe(true);
+    expect(p.rows.map((r) => r.detail).join(" ")).not.toMatch(/of the crowd|%/);
+    expect(spotSharesDiffer([0.02, 0.02])).toBe(false);
+    expect(spotSharesDiffer([0.02, 0.031])).toBe(true);
+  });
+
+  it("gives every distance in km", () => {
+    expect(formatKm(240)).toBe("0.2 km");
+    expect(formatKm(1500)).toBe("1.5 km");
+    expect(formatKm(30)).toBe("<0.1 km");
+    expect(formatKm(null)).toBe("");
+    expect(buildSheetModel(makeSheet()).panel4.rows.map((r) => r.distance)).toEqual(["0.2 km", "0.4 km", "1.2 km"]);
   });
 });

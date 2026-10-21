@@ -2,8 +2,9 @@
  * Deterministic formatting and small sheet helpers shared by every export.
  * No locale guessing and no clock: the same sheet always formats the same way.
  */
-import type { Bill, LedgerEntry, LiftTile, OperatorInputs, PartnerExplain, StreetSheet, Weekday } from "@walkup/contracts";
+import type { Bill, LedgerEntry, LiftTile, OperatorInputs, Partner, PartnerExplain, StreetSheet, Weekday } from "@walkup/contracts";
 import { WEEKDAYS } from "@walkup/contracts";
+import { stateFromZctas, stateFromZip } from "@walkup/gazetteer/states";
 
 /** Tiles at or above this lift are "top" tiles (same threshold as the engine's minLift and the web sheet). */
 export const TOP_LIFT = 1.3;
@@ -88,11 +89,7 @@ export function formatHours(s: string): string {
   return s.replace(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*[-–]\s*(\d{1,2}):(\d{2})(?::\d{2})?\b/g, (_m, h1: string, m1: string, h2: string, m2: string) => `${clock12(Number(h1), Number(m1))} to ${clock12(Number(h2), Number(m2))}`);
 }
 
-/**
- * Receipt ids as one compact footnote group: unique, sorted by source (Q, T, P, C, L, A) and number, runs
- * collapsed ("Q6-Q9"), at most `max` groups and then "+N". E.g. ["Q13","Q6","Q14","Q7"] -> "Q6-Q7, Q13-Q14".
- */
-export function receiptGroup(ids: readonly string[], max = 3): string {
+function parseReceipts(ids: readonly string[]): { id: string; p: string; n: number }[] {
   const uniq = [...new Set(ids.map((r) => (r ?? "").trim()).filter((r) => r !== ""))];
   const parsed = uniq.map((id) => {
     const m = /^([A-Za-z]+)(\d+)$/.exec(id);
@@ -102,7 +99,20 @@ export function receiptGroup(ids: readonly string[], max = 3): string {
     const i = LEDGER_ORDER.indexOf(p);
     return i === -1 ? 99 : i;
   };
-  parsed.sort((a, b) => rank(a.p) - rank(b.p) || (a.p < b.p ? -1 : a.p > b.p ? 1 : 0) || a.n - b.n);
+  return parsed.sort((a, b) => rank(a.p) - rank(b.p) || (a.p < b.p ? -1 : a.p > b.p ? 1 : 0) || a.n - b.n);
+}
+
+/** Receipt ids once each, sorted by source (Q, T, P, C, L, A) and number: ["Q15","Q12","Q15"] -> ["Q12","Q15"]. */
+export function sortedReceipts(ids: readonly string[]): string[] {
+  return parseReceipts(ids).map((r) => r.id);
+}
+
+/**
+ * Receipt ids as one compact footnote group: unique, sorted by source (Q, T, P, C, L, A) and number, runs
+ * collapsed ("Q6-Q9"), at most `max` groups and then "+N". E.g. ["Q13","Q6","Q14","Q7"] -> "Q6-Q7, Q13-Q14".
+ */
+export function receiptGroup(ids: readonly string[], max = 3): string {
+  const parsed = parseReceipts(ids);
   const groups: string[] = [];
   let i = 0;
   while (i < parsed.length) {
@@ -290,6 +300,72 @@ export function tileLabel(t: Pick<LiftTile, "name" | "geohash">): string {
   return t.name && t.name.trim() !== "" ? t.name.trim() : t.geohash;
 }
 
+/** The state an area is in ("MD"), from its ZCTAs (nearest first, as the run lists them). Null when none is known. */
+export function areaState(t: Pick<LiftTile, "zctas">): string | null {
+  return stateFromZctas(t.zctas ?? []);
+}
+
+/** Appends ", ST" unless the name already ends with that state. */
+function withState(name: string, st: string | null): string {
+  if (!st || name === "") return name;
+  return name === st || name.endsWith(`, ${st}`) ? name : `${name}, ${st}`;
+}
+
+/**
+ * An area as people name it: its own place name and its own state, "Silver Spring, MD", "Langston, DC",
+ * "Tysons Green, VA". Never the venue's city or state: a metro can span several states. The state comes from the
+ * area's ZCTAs; an area without a known ZCTA, or named only by its geohash, keeps the bare name. The same label on
+ * the web sheet, the PDF, the CSVs and the calendar.
+ */
+export function areaLabel(t: Pick<LiftTile, "name" | "geohash" | "zctas">): string {
+  const name = tileLabel(t);
+  if (!t.name || t.name.trim() === "") return name;
+  return withState(name, areaState(t));
+}
+
+/** The state in a US street address ("... Laurel, MD 20707"), or null. */
+export function addressState(address: string | null | undefined): string | null {
+  const a = (address ?? "").trim();
+  const m = /,\s*([A-Z]{2})\s+(\d{5})(?:-\d{4})?\s*$/.exec(a);
+  if (m) return stateFromZip(m[2]) ?? m[1] ?? null;
+  const zip = /\b(\d{5})(?:-\d{4})?\s*$/.exec(a)?.[1];
+  return zip ? stateFromZip(zip) : null;
+}
+
+/**
+ * A partner's area label: its lift tile's label when the tile is on the sheet (so the numbers and names match the
+ * map), else its tile name with the state of its own address, else its geohash, else "".
+ */
+export function partnerAreaLabel(p: Pick<Partner, "tileGeohash" | "tileName" | "address">, tiles: ReadonlyMap<string, LiftTile>): string {
+  const tile = p.tileGeohash ? tiles.get(p.tileGeohash) : undefined;
+  if (tile && (tile.name ?? "").trim() !== "") return areaLabel(tile);
+  const name = (p.tileName ?? "").trim();
+  if (name !== "") return withState(name, addressState(p.address));
+  return tile ? tileLabel(tile) : (p.tileGeohash ?? "");
+}
+
+/**
+ * The weekday a partner's `hoursOnDay` belongs to: the first street-team day, else the show's weekday (the same
+ * day the plan read the hours for). Null when neither is set.
+ */
+export function hoursWeekday(sheet: Pick<StreetSheet, "operator" | "bill">): Weekday | null {
+  return sheet.operator.streetTeamDays?.[0] ?? sheet.bill.weekday ?? null;
+}
+
+/**
+ * A phone number as people read it: "+12027334604" and "2027334604" become "(202) 733-4604". Anything that is
+ * not a 10-digit US number (with or without +1) is returned as given.
+ */
+export function formatPhone(phone: string | null | undefined): string {
+  const raw = (phone ?? "").trim();
+  // Extensions and vanity letters stay as written.
+  if (/[a-z]/i.test(raw)) return raw;
+  const digits = raw.replace(/\D/g, "");
+  const ten = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits.length === 10 ? digits : null;
+  if (!ten) return raw;
+  return `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}`;
+}
+
 /** "example.com" from "https://www.example.com/a/b". */
 export function shortDomain(url: string): string {
   const host = url
@@ -466,4 +542,70 @@ export function partnerWhyLong(e: Pick<PartnerExplain, "tags" | "confidence" | "
   const conf = `${e.confidence.charAt(0).toUpperCase()}${e.confidence.slice(1)} confidence${e.confidenceWhy?.trim() ? `: ${e.confidenceWhy.trim().replace(/\.$/, "")}` : ""}.`;
   const limits = e.limits?.trim() ? ` ${e.limits.trim().replace(/\.?$/, ".")}` : "";
   return `${tags !== "" ? `${tags}. ` : ""}${conf}${limits}`;
+}
+
+/**
+ * True when the sheet's counts (seats left, capacity) are what-ifs to label as such: on a sample (fixture) sheet
+ * only. A live sheet's counts are the operator's own, so it carries no what-if label, watermark or flag, whatever an
+ * older stored sheet says in `hypothetical`.
+ */
+export function countsAreWhatIf(sheet: Pick<StreetSheet, "mode" | "hypothetical">): boolean {
+  return sheet.mode === "fixture" && sheet.hypothetical === true;
+}
+
+/** "1.5 km", "0.2 km", "<0.1 km"; "" when unknown. Every distance on the sheet and in the files is in km. */
+export function formatKm(metres: number | null | undefined): string {
+  if (metres === null || metres === undefined || !Number.isFinite(metres) || metres < 0) return "";
+  if (metres < 50) return "<0.1 km";
+  return `${(Math.round(metres / 100) / 10).toFixed(1)} km`;
+}
+
+const CART_OR_STAND = /\b(carts?|kiosks?|food trucks?|stands?)\b/i;
+
+/**
+ * True for a food cart, kiosk, stand or food truck (by its category or its name): not a place to meet before or
+ * after a show, and it has no room to count.
+ */
+export function isCartOrStand(place: { name: string; category?: string | null }): boolean {
+  const category = (place.category ?? "").replace(/[_-]+/g, " ");
+  return CART_OR_STAND.test(category) || CART_OR_STAND.test(place.name ?? "");
+}
+
+/**
+ * The before-and-after spots the sheet lists: no carts, kiosks, stands or food trucks, nearest to the venue first
+ * (spots without a distance last, in the sheet's order). The same list on the web, the print view and the PDF.
+ */
+export function sheetSpots<T extends { entity: { name: string; distanceM?: number | null }; category?: string | null }>(spots: readonly T[]): T[] {
+  const far = (s: T) => (typeof s.entity.distanceM === "number" && Number.isFinite(s.entity.distanceM) ? s.entity.distanceM : Number.POSITIVE_INFINITY);
+  return spots
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => !isCartOrStand({ name: s.entity.name, category: s.category }))
+    .sort((a, b) => far(a.s) - far(b.s) || a.i - b.i)
+    .map(({ s }) => s);
+}
+
+/**
+ * True when the spots' shares of the crowd say something: they differ (to one decimal of a percent). When every
+ * spot gets the same share, the share column and its note are left out.
+ */
+export function spotSharesDiffer(shares: readonly number[]): boolean {
+  return new Set(shares.filter((x) => Number.isFinite(x)).map((x) => (x * 100).toFixed(1))).size > 1;
+}
+
+/**
+ * Text cut to about `max` characters at a sentence end, never mid-sentence: whole sentences while they fit, and at
+ * least the first sentence whole.
+ */
+export function sentencesUpTo(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  // A sentence ends at . ! or ? followed by a space ("1.7 times" is not an end).
+  const parts = t.split(/(?<=[.!?])\s+/);
+  let out = "";
+  for (const p of parts) {
+    const next = out === "" ? p : `${out} ${p}`;
+    if (out !== "" && next.length > max) break;
+    out = next;
+  }
+  return out;
 }

@@ -42,7 +42,7 @@ The user message holds a summary of the current sheet inside <sheet> and the ope
 
 Make the change with the tools:
 - set_all_ages: the operator says the show is all ages (or clears that). It leaves out bars and spots led by alcohol. It can only add restrictions, so call it even when the ticketing age policy says 21+: the age policy still holds, and the sheet is planned as all ages too. Do not ask about that.
-- exclude_partner_categories: leave out place types. Use only keys listed in <sheet>. For "no bars", include every bar key listed (bar, pub, sports_bar, night_club and the like).
+- exclude_partner_categories: leave out place types. Use only keys listed in <sheet>. For "no bars", include every bar key listed (bar, pub, sports_bar, wine_bar, lounge, night_club and the like): lounges and clubs count as bars, so do not ask which ones.
 - exclude_areas: skip areas. Use only names or geohashes listed in <sheet>.
 - set_street_team_days: the days the street team works.
 - set_radius: the search radius around the room, 5 to 60 km. Convert miles to km.

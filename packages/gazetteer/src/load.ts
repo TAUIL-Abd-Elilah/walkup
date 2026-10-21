@@ -171,12 +171,13 @@ export function parseMetro(raw: unknown, origin = "gazetteer"): MetroGazetteer {
       landKm2: numOrNull(x.landKm2),
     };
     if (x.kind === "incorporated" || x.kind === "cdp") rec.kind = x.kind;
+    if (typeof x.state === "string" && /^[A-Z]{2}$/.test(x.state)) rec.state = x.state;
     return rec;
   });
 
   const zctas = arrayOf<ZctaRecord>(raw.zctas, "zctas", origin, (x) => {
     if (typeof x.zcta !== "string" || !isNum(x.lat) || !isNum(x.lon)) return null;
-    return {
+    const rec: ZctaRecord = {
       zcta: x.zcta,
       lat: x.lat,
       lon: x.lon,
@@ -186,6 +187,8 @@ export function parseMetro(raw: unknown, origin = "gazetteer"): MetroGazetteer {
       medianAge: numOrNull(x.medianAge),
       medianIncome: numOrNull(x.medianIncome),
     };
+    if (typeof x.state === "string" && /^[A-Z]{2}$/.test(x.state)) rec.state = x.state;
+    return rec;
   });
 
   const attribution = isObj(raw.attribution) ? raw.attribution : {};

@@ -7,7 +7,7 @@ import { NO_LIVE_SHOW, PRESETS, type FixtureDeps, type LivePreset, type PlanResu
 import { WORLD_EVENT_IDS } from "@walkup/qloo-world";
 import { describe, expect, it } from "vitest";
 import { createMcpServices, DEFAULT_FIXTURE_REFUSAL, planShowTool, rankPartnersTool, type FreshRunLimiter, type PlanView } from "../src/index";
-import { caller, connect, services } from "./helpers";
+import { caller, connect, ORIGIN, services } from "./helpers";
 
 describe("run policy", () => {
   it("can refuse free-form fixture runs (as the hosted web app does) while presets and preset what-ifs stay open and uncapped", async () => {
@@ -36,12 +36,13 @@ describe("run policy", () => {
     expect(calls).toEqual([]);
   }, 120_000);
 
-  it("serves recorded sheets only when the host says Qloo is gone: reads still work, anything that would run refuses with 503", async () => {
+  it("serves recorded sheets while live runs are paused: reads still work, anything that would run refuses with 503", async () => {
     const live = services();
     const made = await planShowTool(live, caller(), { event: "Hollis Creek String Band @ The Truth, Nov 20 2026" });
     const planId = made.envelope.planId as string;
     const runs: string[] = [];
-    const reason = "Qloo is no longer available. Recorded sheets still open.";
+    // Whatever reason the host passes in (apps/web passes RECORDED_REASON) is what the refusals carry.
+    const reason = "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a live run produced.";
     const s = createMcpServices({
       deps: live.deps,
       store: live.store,
@@ -65,8 +66,12 @@ describe("run policy", () => {
       ] as const) {
         const r = await c.call(tool, args);
         expect(r.result.isError, tool).toBe(true);
-        expect(r.env).toMatchObject({ status: "error", mode: "recorded", reason, results: null });
-        expect(r.text).toMatch(/Mode: recorded/);
+        expect(r.env).toMatchObject({ status: "error", mode: "recorded", results: null });
+        // revise_plan leads with the note it did not run, then the host's reason.
+        if (tool === "revise_plan") expect(r.env.reason).toBe(`Live runs are paused for judging, so your note "only Saturday" was not run. ${reason}`);
+        else expect(r.env.reason).toBe(reason);
+        expect(r.text).toContain("Mode: recorded (live runs are paused for judging; the recorded sheets are what live Qloo and Ticketmaster runs produced, and get_sheet reads them).");
+        expect(r.text).not.toMatch(/no longer available|unavailable/i);
       }
       expect((await planShowTool(s, caller(), { presetId: "g1-a" })).httpStatus).toBe(503);
       // A stored sheet still reads; a preset with nothing stored is not run.
@@ -86,7 +91,10 @@ describe("run policy", () => {
       expect(recSheet.mode).toBe("live");
       // Served without its Google Places list: the product no longer shows it.
       expect(recSheet.control).toBeUndefined();
-      expect(rec.text).toContain("Mode: recorded (a live run recorded on 2026-10-30; Qloo is no longer available to this server, so it is not refreshed).");
+      expect(rec.text).toContain(
+        "Mode: recorded (recorded from live Qloo and Ticketmaster runs on Oct 30 2026; live runs are paused for judging, and this sheet is what the live run produced).",
+      );
+      expect(rec.text).not.toMatch(/no longer available|unavailable/i);
       // The same sheet on a live server is a live sheet, still without the list.
       const asLive = await connect(services({ store: live.store }));
       try {
@@ -102,6 +110,7 @@ describe("run policy", () => {
       const bvh = await c.call("bill_vs_house", { planId: "rec-live-1" });
       expect(bvh.result.isError).toBeFalsy();
       expect(bvh.env.mode).toBe("recorded");
+      expect(bvh.text).toContain("Mode: recorded (read from a sheet recorded from live Qloo and Ticketmaster runs; live runs are paused for judging).");
       // A revision made while the server was live is named in the refusal, so an agent can read it.
       const revSheet: StreetSheet = {
         ...liveSheet,
@@ -109,11 +118,33 @@ describe("run policy", () => {
         revision: { parentPlanId: "rec-live-1", instruction: "All ages, no bars", interpreter: "rules", toolCalls: [], changes: [] } as unknown as StreetSheet["revision"],
       };
       await live.store.put({ ...from!, planId: "rec-rev-1", mode: "live", sheet: revSheet });
-      const refused = await c.call("revise_plan", { planId: "rec-live-1", instruction: "All ages, no bars" });
-      expect(refused.result.isError).toBe(true);
-      expect(refused.env.mode).toBe("recorded");
-      expect(refused.env.reason).toContain(reason);
-      expect(refused.env.reason).toContain('rec-rev-1 ("All ages, no bars")');
+      // The same note (case and spacing aside): the recorded revision is the recorded run of that note.
+      const same = await c.call("revise_plan", { planId: "rec-live-1", instruction: "  all ages,  NO bars " });
+      expect(same.result.isError).toBe(true);
+      expect(same.env.mode).toBe("recorded");
+      expect(same.env.reason).toBe(
+        `Live runs are paused for judging, so your note "all ages, NO bars" was not run. This plan has a recorded run of that same note (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet. ${reason}`,
+      );
+      expect(same.env.summary).toBe(same.env.reason);
+      expect(same.env.reason).not.toMatch(/different note/);
+      // A different note: the refusal says plainly that the recorded revision was made for another note.
+      const other = await c.call("revise_plan", { planId: "rec-live-1", instruction: "Skip Germantown" });
+      expect(other.result.isError).toBe(true);
+      expect(other.env.reason).toBe(
+        `Live runs are paused for judging, so your note "Skip Germantown" was not run. This plan has a recorded revision for a different note: "All ages, no bars" (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet. That is not your note. ${reason}`,
+      );
+      expect(other.text).toContain('your note "Skip Germantown" was not run');
+      expect(other.text).toContain('a different note: "All ages, no bars"');
+      // A second recorded revision for the asked note: the same-note one is named first, the other as a different note.
+      await live.store.put({
+        ...from!,
+        planId: "rec-rev-2",
+        mode: "live",
+        sheet: { ...revSheet, planId: "rec-rev-2", revision: { ...revSheet.revision!, instruction: "Skip Germantown" } },
+      });
+      const both = await c.call("revise_plan", { planId: "rec-live-1", instruction: "skip germantown" });
+      expect(both.env.reason).toContain("This plan has a recorded run of that same note (plan rec-rev-2");
+      expect(both.env.reason).toContain('It also has a recorded revision for a different note: "All ages, no bars" (plan rec-rev-1');
       expect(runs).toEqual([]);
     } finally {
       await c.close();

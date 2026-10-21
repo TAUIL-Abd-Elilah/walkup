@@ -71,6 +71,13 @@ for (const dir of skillDirs()) {
     assert.ok(text.split("\n").length < 500, "SKILL.md should stay under 500 lines");
   });
 
+  test(`${dirName}: promises no partner count and never says the product or Qloo is gone`, () => {
+    const { text, body } = readSkill(dir);
+    assert.doesNotMatch(text, /15\s*(-|–|to)\s*25/, "no partner-count promise");
+    const sources = [text, ...[...body.matchAll(/\{baseDir\}\/(scripts\/[\w./-]+)/g)].map((m) => readFileSync(join(dir, m[1]), "utf8"))];
+    for (const src of sources) assert.doesNotMatch(src, /no longer available|Qloo (is )?unavailable|new plans are off/i);
+  });
+
   test(`${dirName}: referenced scripts exist and are safe`, () => {
     const { body } = readSkill(dir);
     const refs = [...body.matchAll(/\{baseDir\}\/(scripts\/[\w./-]+)/g)].map((m) => m[1]);
