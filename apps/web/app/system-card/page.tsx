@@ -296,8 +296,10 @@ export default function SystemCardPage() {
           </p>
           <p>
             The product eval (20 cases) passes on the sample data. It checks that the pipeline behaves as described, not that Qloo&apos;s picks are better. A
-            second test, the Fan-Bar Test, was designed and its plan sealed, but it was not run, so it has no result. See{" "}
-            <Link href="/eval" className="link">
+            second test, the Fan-Bar Test, ran on Oct 21 2026 under a plan sealed before any data: a football club&apos;s Qloo signal did not rank the
+            club&apos;s official bar above Qloo&apos;s popularity order (top 50 in 25% of 325 club-and-city pairs against 27%; one-sided p = 0.89). So no claim
+            that Walkup&apos;s picks beat popularity is made. See{" "}
+            <Link href="/eval#fanbar" className="link">
               the eval page
             </Link>
             .

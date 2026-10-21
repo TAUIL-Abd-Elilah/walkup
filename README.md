@@ -182,11 +182,18 @@ The same rule and window at an independent room in another city: The Salt Shed's
 - **A change note.** "All ages, no bars" on Greensky Bluegrass's sheet: Claude read it as two tool calls (`set_all_ages`, `exclude_partner_categories`). 7 bar partners came off and one restaurant came on (19 to 13 partners), and all 8 pre- and post-show spots were swapped for restaurants and cafes. With 13 partners the revised sheet is below the 15 the list aims for, so it says "treat it as a starting list".
 - **Read as a promoter would.** Every partner row was checked by hand for type, hours, website and area name. That check dropped a food-truck business whose address reads "RESTAURANT CLOSED" (the closed check now reads the address, and "Food Trucks" counts as a food stand), added two Chicago grocery chains (Mariano's, Jewel-Osco) to the chain list, and added Chicago area names locals use (South Shore, Auburn Gresham, Chatham, Woodlawn) to the new Chicago gazetteer in place of subdivision names from OpenStreetMap.
 
-### On sample data, and a test not run
+### The Fan-Bar Test, run Oct 21 2026: no better than popularity
+
+A held-out test of the one hop Walkup rests on, that a Qloo signal finds where a crowd gathers. Football supporters' clubs list their official bar in each US city. We gave Qloo the club as the signal (Arsenal FC, Liverpool FC, the US men's national team) and asked for the top 50 bars and pubs within 25 km of the city, then asked again with no signal, which Qloo returns in popularity order. The plan, the metric and the pass mark were hashed on Oct 13 before any call ([`docs/preregistration/`](docs/preregistration/)); the changes made before the run (no Google Places arm, no model arm, the `/search` location format) are in its [deviations log](docs/preregistration/p1-deviations.md). 1,146 Qloo calls.
+
+- **Result: the test fails.** In 325 club-and-city pairs across 225 US cities, the club's signal put its official bar in the top 50 for 25% of pairs (95% CI 21% to 30%); popularity alone did for 27% (22% to 32%). Mean reciprocal rank 0.024 against 0.030, a difference of -0.006 (95% CI -0.018 to 0.006), one-sided Wilcoxon p = 0.89. 343 of 426 listed bars were analyzed (72 did not resolve to a Qloo place, 10 were beyond 25 km, 1 had no city point).
+- **Derby Test.** Where two clubs list a bar in the same city, the club's own bar ranked above its rival's in 95 of 182 trials: 52% (95% CI 45% to 60%), p = 0.30. No better than a coin flip.
+- **What it means.** A club's taste signal did not find that club's bar better than popularity. Walkup's signal is a show's acts, not a club, but nothing here shows its picks beat popularity, so every partner table carries the preregistered line "Ranked by Qloo affinity; our test did not show this beats popularity." Not run: the model-with-Google-Places arm (Google billing closed) and the model-only arm; closed bars could not be checked. Full numbers: [`evals/p1/results.md`](evals/p1/results.md).
+
+### On sample data
 
 - **Product eval, 20 cases, on sample data.** Four goldens and sixteen scenario cases (the `needs_input` pause, thin heatmaps, empty compare, closed places, missing hours, the all-ages rule, quota and rate limits and more) run end to end through the orchestrator on the synthetic stand-in, with grounding, ledger, budget and policy checks on every sheet. All 20 pass; CI re-runs them on every push and, on the main branch, commits the score to [`evals/product/out/score.md`](evals/product/out/score.md). This checks that the pipeline behaves as described. It says nothing about whether Qloo's picks are better than another list.
 - **Popularity check, on every sheet.** The partner card states the count in one sentence with its receipts, and `sheet.json` carries it as `popularityCheck`. On the sample sheets the numbers are made up with everything else (G1-A: 18 of 24); the live numbers are above.
-- **The Fan-Bar Test: designed and sealed, not run.** It asks whether a supporters' club, used as a Qloo signal, ranks that club's official home bar in each US metro above a popularity ranking of the same places. The analysis plan was hashed before any data existed ([`docs/preregistration/`](docs/preregistration/)), and the code and its tests on synthetic data are in [`evals/p1/`](evals/p1/). A full run needs up to 1,331 Qloo calls and a Google Places arm, so it was not run and there is no result.
 
 What we tried and dropped is in [docs/what-we-tried.md](docs/what-we-tried.md).
 
@@ -299,14 +306,14 @@ Other public 2026 projects built on Qloo work on nearby problems. Descriptions a
 | [`packages/orchestrator/`](packages/orchestrator/) | The plan graph, presets, `needs_input`, the revise loop and recorded mode |
 | [`packages/narrator/`](packages/narrator/) | Claude through OpenRouter or the Anthropic API: schema-constrained narration, the revise tools, the rules reader and the labelled template fallback |
 | [`packages/tm/`](packages/tm/) | Ticketmaster Discovery: intake, venue roster, age policy |
-| [`packages/places/`](packages/places/) | Google Places (New) client, kept only for the Fan-Bar Test research code; the product never calls it |
+| [`packages/places/`](packages/places/) | Google Places (New) client, kept only for the Fan-Bar Test's Places arm (not run: Google billing closed); the product never calls it |
 | [`packages/acs/`](packages/acs/), [`packages/gazetteer/`](packages/gazetteer/) | Census ACS lookups; neighbourhood and ZCTA naming for tiles |
 | [`packages/mcp/`](packages/mcp/README.md) | MCP server: `plan_show`, `rank_partners`, `bill_vs_house`, `get_sheet`, `revise_plan` |
 | [`apps/web/`](apps/web/) | Next.js app: Street Sheet, map, receipt drawer, confirm dialog, exports |
 | [`config/tags.json`](config/tags.json) | Pinned Qloo tag URNs (see [`config/README.md`](config/README.md)) |
 | [`config/chains.json`](config/chains.json) | The hand-kept list of national chains that partner and pre/post lists put after local places |
 | [`skills/walkup/`](skills/walkup/SKILL.md) | Agent Skill and CLI |
-| [`evals/`](evals/), [`docs/preregistration/`](docs/preregistration/) | The product eval; the sealed Fan-Bar Test plan and its analysis code (designed, not run) |
+| [`evals/`](evals/), [`docs/preregistration/`](docs/preregistration/) | The product eval; the sealed Fan-Bar Test plan, its code and [results](evals/p1/results.md) |
 | [`scripts/`](scripts/) | Probe script, no-raw-bodies check |
 | [`docs/`](docs/) | [Spec and acceptance criteria](docs/spec.md), [System Card](docs/system-card.md), [mapping table](docs/mapping-table.md), [what we tried](docs/what-we-tried.md), [hosting on Vercel](docs/deploy-vercel.md), [deploying on Fly.io](docs/deploy.md) |
 

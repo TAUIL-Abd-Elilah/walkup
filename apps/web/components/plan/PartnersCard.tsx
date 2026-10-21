@@ -344,6 +344,15 @@ export function PartnersCard({
           <Refs ids={popularity.ledgerRefs} />
         </p>
       ) : null}
+      {/* Preregistered banner (docs/preregistration/p1-plan.md §13): the Fan-Bar Test did not support H1. */}
+      {env.results.length > 0 ? (
+        <p className="mt-3 max-w-[760px]" data-testid="p1-banner">
+          Ranked by Qloo affinity; our test did not show this beats popularity.{" "}
+          <a href="/eval#fanbar-title" className="link">
+            The test
+          </a>
+        </p>
+      ) : null}
       {/* One area up close: the popularity-only list beside the picks, by name (live sheets with the names stored). */}
       {withOut && env.results.length > 0 ? (
         <WithWithout data={withOut} className="mt-5" refs={<Refs ids={[withOut.popularRef, ...withOut.pickRefs]} />} />

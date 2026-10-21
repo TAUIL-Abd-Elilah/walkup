@@ -1,0 +1,6 @@
+{
+  "bar": "urn:tag:category:place:bar",
+  "pub": "urn:tag:category:place:pub",
+  "sports bar": "urn:tag:category:place:sports_bar",
+  "irish pub": "urn:tag:category:place:irish_pub"
+}

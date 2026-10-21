@@ -1,0 +1,2164 @@
+{
+  "generated_at": "2026-10-21T23:20:05Z",
+  "plan_sha256": "1bd044de71fb802a9adda45c6150b2f610f5c5a53afb8aced41b217b99bdb763",
+  "plan_sha256_matches_file": true,
+  "settings": {
+    "seed": 20261013,
+    "bootstrap_resamples": 10000,
+    "alpha": 0.05,
+    "top_k": 50,
+    "min_paired_queries": 20,
+    "unit": "query = (club, metro)"
+  },
+  "coverage": {
+    "source": "evals\\out\\private\\p1_bars_status.csv",
+    "by_club": {
+      "american_outlaws": {
+        "listed": 256,
+        "stale_page": 0,
+        "no_metro": 0,
+        "no_brand": 0,
+        "unresolved": 46,
+        "closed": 0,
+        "out_of_radius": 9,
+        "analyzed": 201,
+        "resolution_rate": 0.820312
+      },
+      "arsenal_america": {
+        "listed": 94,
+        "stale_page": 0,
+        "no_metro": 0,
+        "no_brand": 0,
+        "unresolved": 14,
+        "closed": 0,
+        "out_of_radius": 0,
+        "analyzed": 80,
+        "resolution_rate": 0.851064
+      },
+      "lfc_olsc": {
+        "listed": 76,
+        "stale_page": 0,
+        "no_metro": 1,
+        "no_brand": 0,
+        "unresolved": 12,
+        "closed": 0,
+        "out_of_radius": 1,
+        "analyzed": 62,
+        "resolution_rate": 0.84
+      }
+    },
+    "total": {
+      "listed": 426,
+      "stale_page": 0,
+      "no_metro": 1,
+      "no_brand": 0,
+      "unresolved": 72,
+      "closed": 0,
+      "out_of_radius": 10,
+      "analyzed": 343,
+      "resolution_rate": 0.830588
+    }
+  },
+  "arms": {
+    "Q-signal": {
+      "n_queries": 325,
+      "mrr": 0.023631,
+      "mrr_ci95": [
+        0.016036,
+        0.032951
+      ],
+      "recall_at_10": 0.067692,
+      "recall_at_10_ci95": [
+        0.043077,
+        0.095385
+      ],
+      "recall_at_50": 0.251538,
+      "recall_at_50_ci95": [
+        0.206154,
+        0.298462
+      ]
+    },
+    "Q-pop": {
+      "n_queries": 325,
+      "mrr": 0.029852,
+      "mrr_ci95": [
+        0.020006,
+        0.041613
+      ],
+      "recall_at_10": 0.071538,
+      "recall_at_10_ci95": [
+        0.044615,
+        0.101538
+      ],
+      "recall_at_50": 0.27,
+      "recall_at_50_ci95": [
+        0.222308,
+        0.318462
+      ]
+    }
+  },
+  "by_club": {
+    "american_outlaws": {
+      "Q-signal": {
+        "n_queries": 185,
+        "mrr": 0.036384,
+        "mrr_ci95": [
+          0.023635,
+          0.052154
+        ],
+        "recall_at_10": 0.102703,
+        "recall_at_10_ci95": [
+          0.062162,
+          0.148649
+        ],
+        "recall_at_50": 0.341892,
+        "recall_at_50_ci95": [
+          0.274324,
+          0.408108
+        ]
+      },
+      "Q-pop": {
+        "n_queries": 185,
+        "mrr": 0.040169,
+        "mrr_ci95": [
+          0.024281,
+          0.05986
+        ],
+        "recall_at_10": 0.098649,
+        "recall_at_10_ci95": [
+          0.059459,
+          0.141892
+        ],
+        "recall_at_50": 0.325676,
+        "recall_at_50_ci95": [
+          0.259459,
+          0.394595
+        ]
+      }
+    },
+    "arsenal_america": {
+      "Q-signal": {
+        "n_queries": 78,
+        "mrr": 0.006842,
+        "mrr_ci95": [
+          0.002459,
+          0.013325
+        ],
+        "recall_at_10": 0.012821,
+        "recall_at_10_ci95": [
+          0.0,
+          0.038462
+        ],
+        "recall_at_50": 0.147436,
+        "recall_at_50_ci95": [
+          0.076923,
+          0.230769
+        ]
+      },
+      "Q-pop": {
+        "n_queries": 78,
+        "mrr": 0.017335,
+        "mrr_ci95": [
+          0.005872,
+          0.033722
+        ],
+        "recall_at_10": 0.038462,
+        "recall_at_10_ci95": [
+          0.0,
+          0.089744
+        ],
+        "recall_at_50": 0.198718,
+        "recall_at_50_ci95": [
+          0.115385,
+          0.288462
+        ]
+      }
+    },
+    "lfc_olsc": {
+      "Q-signal": {
+        "n_queries": 62,
+        "mrr": 0.0067,
+        "mrr_ci95": [
+          0.001454,
+          0.013626
+        ],
+        "recall_at_10": 0.032258,
+        "recall_at_10_ci95": [
+          0.0,
+          0.080645
+        ],
+        "recall_at_50": 0.112903,
+        "recall_at_50_ci95": [
+          0.048387,
+          0.193548
+        ]
+      },
+      "Q-pop": {
+        "n_queries": 62,
+        "mrr": 0.014811,
+        "mrr_ci95": [
+          0.006107,
+          0.025982
+        ],
+        "recall_at_10": 0.032258,
+        "recall_at_10_ci95": [
+          0.0,
+          0.080645
+        ],
+        "recall_at_50": 0.193548,
+        "recall_at_50_ci95": [
+          0.096774,
+          0.290323
+        ]
+      }
+    }
+  },
+  "tests": {
+    "procedure": "fixed-sequence (H1 then H2), each one-sided at alpha = 0.05",
+    "H1": {
+      "n_pairs": 325,
+      "n_nonzero": 110,
+      "statistic": 2639.5,
+      "p_value": 0.8909729445627553,
+      "method": "scipy.stats.wilcoxon(zero_method='wilcox', alternative='greater', method='auto')",
+      "arms": [
+        "Q-signal",
+        "Q-pop"
+      ],
+      "mrr_a": 0.023631,
+      "mrr_b": 0.029852,
+      "mrr_diff": -0.00622,
+      "mrr_diff_ci95": [
+        -0.018121,
+        0.00554
+      ],
+      "confirmatory": true,
+      "rejected": false
+    },
+    "H2": {
+      "n_pairs": 0,
+      "n_nonzero": 0,
+      "statistic": null,
+      "p_value": 1.0,
+      "arms": [
+        "Q-signal",
+        "F"
+      ],
+      "mrr_a": null,
+      "mrr_b": null,
+      "mrr_diff": null,
+      "mrr_diff_ci95": null,
+      "confirmatory": false,
+      "tested_in_sequence": false,
+      "rejected": false
+    }
+  },
+  "sensitivity": {
+    "official_bars_only": {
+      "n_pairs": 306,
+      "n_nonzero": 104,
+      "statistic": 2237.5,
+      "p_value": 0.9448811541133184,
+      "method": "scipy.stats.wilcoxon(zero_method='wilcox', alternative='greater', method='auto')",
+      "arms": [
+        "Q-signal",
+        "Q-pop"
+      ],
+      "mrr_a": 0.022774,
+      "mrr_b": 0.027875,
+      "mrr_diff": -0.005101,
+      "mrr_diff_ci95": [
+        -0.016761,
+        0.006725
+      ],
+      "confirmatory": true
+    },
+    "primary_resolution_only": {
+      "n_pairs": 278,
+      "n_nonzero": 94,
+      "statistic": 2159.5,
+      "p_value": 0.6084517586849512,
+      "method": "scipy.stats.wilcoxon(zero_method='wilcox', alternative='greater', method='auto')",
+      "arms": [
+        "Q-signal",
+        "Q-pop"
+      ],
+      "mrr_a": 0.025573,
+      "mrr_b": 0.030056,
+      "mrr_diff": -0.004483,
+      "mrr_diff_ci95": [
+        -0.01836,
+        0.009297
+      ],
+      "confirmatory": true
+    }
+  },
+  "derby": {
+    "correct": 95,
+    "trials": 182,
+    "accuracy": 0.521978,
+    "ci95_exact": [
+      0.44682,
+      0.596409
+    ],
+    "p_one_sided_greater": 0.3019853298646145,
+    "source_arm": "Q-derby",
+    "rival_rows_in_source": 250,
+    "ties_excluded": 6,
+    "shared_bar_excluded": 62,
+    "metros": 58,
+    "metro_level": {
+      "correct": 8,
+      "trials": 12,
+      "accuracy": 0.666667,
+      "ci95_exact": [
+        0.348876,
+        0.900754
+      ],
+      "p_one_sided_greater": 0.19384765625
+    },
+    "trials_detail": [
+      {
+        "club": "american_outlaws",
+        "metro": "0107000",
+        "rival_club": "arsenal_america",
+        "own_bar": "3440ed48eb31",
+        "rival_bar": "9d8e74f65009",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0107000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "3440ed48eb31",
+        "rival_bar": "7b60d189874f",
+        "own_rank": 1,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0455000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "4fc02ad6761b",
+        "rival_bar": "82d1ea3b21af",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0541000",
+        "rival_club": "arsenal_america",
+        "own_bar": "d5f4bc6b882b",
+        "rival_bar": "24daaa662041",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0643000",
+        "rival_club": "arsenal_america",
+        "own_bar": "da70c308f8bd",
+        "rival_bar": "72e0e02b9294",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0644000",
+        "rival_club": "arsenal_america",
+        "own_bar": "390014dc8d71",
+        "rival_bar": "76e24f921955",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0644000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "390014dc8d71",
+        "rival_bar": "e9d6edc46312",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0669070",
+        "rival_club": "lfc_olsc",
+        "own_bar": "61c98e0e9d8b",
+        "rival_bar": "65f8e1e6699c",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0816000",
+        "rival_club": "arsenal_america",
+        "own_bar": "40f7737dfec6",
+        "rival_bar": "402865db4f00",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0820000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "f5b2c4f19263",
+        "rival_bar": "f77e3e11d5ac",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "0952000",
+        "rival_club": "arsenal_america",
+        "own_bar": "01cf451dfbd0",
+        "rival_bar": "356916d8bf5c",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "1150000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "18431445629c",
+        "rival_bar": "52d343f62086",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "1253000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "0dd0e877bc26",
+        "rival_bar": "4c49a9ea473c",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "1304000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "0891a5dee205",
+        "rival_bar": "1ced915daf14",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "1714000",
+        "rival_club": "arsenal_america",
+        "own_bar": "1e41d18c3dd9",
+        "rival_bar": "931b48f66d37",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "1921000",
+        "rival_club": "arsenal_america",
+        "own_bar": "85d925f20e10",
+        "rival_bar": "35abf53a4df3",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "1921000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "85d925f20e10",
+        "rival_bar": "2ba505935d68",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2146027",
+        "rival_club": "lfc_olsc",
+        "own_bar": "718e919b24bc",
+        "rival_bar": "1806d7880a83",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2148000",
+        "rival_club": "arsenal_america",
+        "own_bar": "ca8bfd80b10c",
+        "rival_bar": "e277450195c0",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2148000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "ca8bfd80b10c",
+        "rival_bar": "3586cc4aac82",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2255000",
+        "rival_club": "arsenal_america",
+        "own_bar": "6b5248ec7979",
+        "rival_bar": "3d88668a7646",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2360545",
+        "rival_club": "arsenal_america",
+        "own_bar": "d383858e1d84",
+        "rival_bar": "451801ca2a79",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2404000",
+        "rival_club": "arsenal_america",
+        "own_bar": "74cefc092f08",
+        "rival_bar": "20fc9c74cec5",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2404000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "74cefc092f08",
+        "rival_bar": "071ec3e12112",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2507000",
+        "rival_club": "arsenal_america",
+        "own_bar": "ce5f8228c3fb",
+        "rival_bar": "2198c3b31a1a",
+        "own_rank": 2,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2507000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "ce5f8228c3fb",
+        "rival_bar": "3a23c2160fd4",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2622000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "b33390af118f",
+        "rival_bar": "e4fdd41b60a1",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "2938000",
+        "rival_club": "arsenal_america",
+        "own_bar": "d9a8f2c3063e",
+        "rival_bar": "80c66a56f366",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3137000",
+        "rival_club": "arsenal_america",
+        "own_bar": "40a6476ce946",
+        "rival_bar": "7ffc8e1a0fbb",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3240000",
+        "rival_club": "arsenal_america",
+        "own_bar": "17163957b960",
+        "rival_bar": "674100a6a5ef",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3604710022",
+        "rival_club": "lfc_olsc",
+        "own_bar": "e8873a21493f",
+        "rival_bar": "df034c3fd0ef",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3611000",
+        "rival_club": "arsenal_america",
+        "own_bar": "d5880505fe35",
+        "rival_bar": "f39ff6fef092",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3651000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "711ba5dd60e5",
+        "rival_bar": "964bf079447b",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3719000",
+        "rival_club": "arsenal_america",
+        "own_bar": "28b66a05d964",
+        "rival_bar": "4cd553d86639",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3755000",
+        "rival_club": "arsenal_america",
+        "own_bar": "0b15764c9938",
+        "rival_bar": "8498a007158d",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3774440",
+        "rival_club": "arsenal_america",
+        "own_bar": "2005281fbb99",
+        "rival_bar": "61b0cd381bb2",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3915000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "4a89c4afd7d9",
+        "rival_bar": "8bfdc5bb1a00",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3918000",
+        "rival_club": "arsenal_america",
+        "own_bar": "15fa608ff5a6",
+        "rival_bar": "220199905bd9",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "3941664",
+        "rival_club": "arsenal_america",
+        "own_bar": "a99bf468db34",
+        "rival_bar": "70d896d796ce",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4075000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "05c74fc5c397",
+        "rival_bar": "350a2ef29e34",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4260000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "634c625d573c",
+        "rival_bar": "b3b9a123c752",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4261000",
+        "rival_club": "arsenal_america",
+        "own_bar": "5d3178114cf6",
+        "rival_bar": "9bea13affee7",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4459000",
+        "rival_club": "arsenal_america",
+        "own_bar": "4857b601cd6a",
+        "rival_bar": "04a221dc7d9e",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4513330",
+        "rival_club": "arsenal_america",
+        "own_bar": "4bd1fca32a04",
+        "rival_bar": "016ce241c5c7",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4516000",
+        "rival_club": "arsenal_america",
+        "own_bar": "5a77e049465a",
+        "rival_bar": "7ef2e127a48d",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4714000",
+        "rival_club": "arsenal_america",
+        "own_bar": "97fff571feed",
+        "rival_bar": "be3c6c6cb85f",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4740000",
+        "rival_club": "arsenal_america",
+        "own_bar": "fec9de61950f",
+        "rival_bar": "ec28ed5f159f",
+        "own_rank": 1,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4740000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "fec9de61950f",
+        "rival_bar": "93a9aed2df19",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4752006",
+        "rival_club": "lfc_olsc",
+        "own_bar": "e7e959b016d4",
+        "rival_bar": "7fedfd47f824",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4805000",
+        "rival_club": "arsenal_america",
+        "own_bar": "d8cfcb9daab3",
+        "rival_bar": "073af1bdfb18",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4824000",
+        "rival_club": "arsenal_america",
+        "own_bar": "adcb4b52465d",
+        "rival_bar": "b5edcfc31f2b",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4827000",
+        "rival_club": "arsenal_america",
+        "own_bar": "6f4ed47e24fe",
+        "rival_bar": "d9e5143abac4",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4835000",
+        "rival_club": "arsenal_america",
+        "own_bar": "1de2138c9fb3",
+        "rival_bar": "eea6623abdef",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "4835000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "1de2138c9fb3",
+        "rival_bar": "2a86bb7f118f",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5114968",
+        "rival_club": "arsenal_america",
+        "own_bar": "a061a573a824",
+        "rival_bar": "09758064315b",
+        "own_rank": 2,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5114968",
+        "rival_club": "lfc_olsc",
+        "own_bar": "a061a573a824",
+        "rival_bar": "fd2b4992098e",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5167000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "b567b0e021ba",
+        "rival_bar": "e66b62fa8bfb",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5363000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "92b6f0b6bb3c",
+        "rival_bar": "2039e420aedf",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5548000",
+        "rival_club": "arsenal_america",
+        "own_bar": "ec0a37fa704e",
+        "rival_bar": "a41a1c8190d9",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5548000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "ec0a37fa704e",
+        "rival_bar": "0d56d2e2b653",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "american_outlaws",
+        "metro": "5553000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "3cdea86a096f",
+        "rival_bar": "5462338fb3d4",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0107000",
+        "rival_club": "american_outlaws",
+        "own_bar": "9d8e74f65009",
+        "rival_bar": "3440ed48eb31",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0107000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "9d8e74f65009",
+        "rival_bar": "7b60d189874f",
+        "own_rank": 1,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0541000",
+        "rival_club": "american_outlaws",
+        "own_bar": "24daaa662041",
+        "rival_bar": "d5f4bc6b882b",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0643000",
+        "rival_club": "american_outlaws",
+        "own_bar": "72e0e02b9294",
+        "rival_bar": "da70c308f8bd",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0643000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "72e0e02b9294",
+        "rival_bar": "71b2496d1e45",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0644000",
+        "rival_club": "american_outlaws",
+        "own_bar": "76e24f921955",
+        "rival_bar": "390014dc8d71",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0644000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "76e24f921955",
+        "rival_bar": "e9d6edc46312",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0656000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "e7596d6fba56",
+        "rival_bar": "ba51bd4adc55",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0664000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "3dac2cd8fe8c",
+        "rival_bar": "39b8ebff9dc7",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0666000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "b4d1497ecbda",
+        "rival_bar": "29bfefa9d882",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0816000",
+        "rival_club": "american_outlaws",
+        "own_bar": "402865db4f00",
+        "rival_bar": "40f7737dfec6",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0816000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "402865db4f00",
+        "rival_bar": "04098a946059",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0820000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "80687d20f6e3",
+        "rival_bar": "f77e3e11d5ac",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0952000",
+        "rival_club": "american_outlaws",
+        "own_bar": "356916d8bf5c",
+        "rival_bar": "01cf451dfbd0",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "0952000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "356916d8bf5c",
+        "rival_bar": "5ae95c496e28",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "1150000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "9900af71b6bd",
+        "rival_bar": "52d343f62086",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "1714000",
+        "rival_club": "american_outlaws",
+        "own_bar": "931b48f66d37",
+        "rival_bar": "1e41d18c3dd9",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "1714000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "931b48f66d37",
+        "rival_bar": "5dd0464cae98",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "1921000",
+        "rival_club": "american_outlaws",
+        "own_bar": "35abf53a4df3",
+        "rival_bar": "85d925f20e10",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "1921000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "35abf53a4df3",
+        "rival_bar": "2ba505935d68",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2148000",
+        "rival_club": "american_outlaws",
+        "own_bar": "e277450195c0",
+        "rival_bar": "ca8bfd80b10c",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2148000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "e277450195c0",
+        "rival_bar": "3586cc4aac82",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2255000",
+        "rival_club": "american_outlaws",
+        "own_bar": "3d88668a7646",
+        "rival_bar": "6b5248ec7979",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2360545",
+        "rival_club": "american_outlaws",
+        "own_bar": "451801ca2a79",
+        "rival_bar": "d383858e1d84",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2404000",
+        "rival_club": "american_outlaws",
+        "own_bar": "20fc9c74cec5",
+        "rival_bar": "74cefc092f08",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2404000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "20fc9c74cec5",
+        "rival_bar": "071ec3e12112",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2507000",
+        "rival_club": "american_outlaws",
+        "own_bar": "2198c3b31a1a",
+        "rival_bar": "ce5f8228c3fb",
+        "own_rank": 1,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2507000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "2198c3b31a1a",
+        "rival_bar": "3a23c2160fd4",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2622000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "068ed50324d1",
+        "rival_bar": "e4fdd41b60a1",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2743000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "456a2267e023",
+        "rival_bar": "5f58d177293f",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "2938000",
+        "rival_club": "american_outlaws",
+        "own_bar": "80c66a56f366",
+        "rival_bar": "d9a8f2c3063e",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3137000",
+        "rival_club": "american_outlaws",
+        "own_bar": "7ffc8e1a0fbb",
+        "rival_bar": "40a6476ce946",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3240000",
+        "rival_club": "american_outlaws",
+        "own_bar": "674100a6a5ef",
+        "rival_bar": "17163957b960",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3611000",
+        "rival_club": "american_outlaws",
+        "own_bar": "f39ff6fef092",
+        "rival_bar": "d5880505fe35",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3712000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "ebf02cea30af",
+        "rival_bar": "05cc34935302",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3719000",
+        "rival_club": "american_outlaws",
+        "own_bar": "4cd553d86639",
+        "rival_bar": "28b66a05d964",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3755000",
+        "rival_club": "american_outlaws",
+        "own_bar": "8498a007158d",
+        "rival_bar": "0b15764c9938",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3774440",
+        "rival_club": "american_outlaws",
+        "own_bar": "61b0cd381bb2",
+        "rival_bar": "2005281fbb99",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3774440",
+        "rival_club": "lfc_olsc",
+        "own_bar": "61b0cd381bb2",
+        "rival_bar": "f963769d40a7",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3918000",
+        "rival_club": "american_outlaws",
+        "own_bar": "220199905bd9",
+        "rival_bar": "15fa608ff5a6",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3941664",
+        "rival_club": "american_outlaws",
+        "own_bar": "70d896d796ce",
+        "rival_bar": "a99bf468db34",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "3941664",
+        "rival_club": "lfc_olsc",
+        "own_bar": "70d896d796ce",
+        "rival_bar": "fefe93888825",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4261000",
+        "rival_club": "american_outlaws",
+        "own_bar": "9bea13affee7",
+        "rival_bar": "5d3178114cf6",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4459000",
+        "rival_club": "american_outlaws",
+        "own_bar": "04a221dc7d9e",
+        "rival_bar": "4857b601cd6a",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4513330",
+        "rival_club": "american_outlaws",
+        "own_bar": "016ce241c5c7",
+        "rival_bar": "4bd1fca32a04",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4516000",
+        "rival_club": "american_outlaws",
+        "own_bar": "7ef2e127a48d",
+        "rival_bar": "5a77e049465a",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4516000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "7ef2e127a48d",
+        "rival_bar": "1382356be344",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4530850",
+        "rival_club": "lfc_olsc",
+        "own_bar": "c2ce7f9458a5",
+        "rival_bar": "2d95b0dfd199",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4714000",
+        "rival_club": "american_outlaws",
+        "own_bar": "be3c6c6cb85f",
+        "rival_bar": "97fff571feed",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4740000",
+        "rival_club": "american_outlaws",
+        "own_bar": "ec28ed5f159f",
+        "rival_bar": "fec9de61950f",
+        "own_rank": 3,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4740000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "ec28ed5f159f",
+        "rival_bar": "93a9aed2df19",
+        "own_rank": 3,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4805000",
+        "rival_club": "american_outlaws",
+        "own_bar": "073af1bdfb18",
+        "rival_bar": "d8cfcb9daab3",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4824000",
+        "rival_club": "american_outlaws",
+        "own_bar": "b5edcfc31f2b",
+        "rival_bar": "adcb4b52465d",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4827000",
+        "rival_club": "american_outlaws",
+        "own_bar": "d9e5143abac4",
+        "rival_bar": "6f4ed47e24fe",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4835000",
+        "rival_club": "american_outlaws",
+        "own_bar": "eea6623abdef",
+        "rival_bar": "1de2138c9fb3",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "4835000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "eea6623abdef",
+        "rival_bar": "2a86bb7f118f",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5103000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "1894d5eee464",
+        "rival_bar": "7c8e2a26e098",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5114968",
+        "rival_club": "american_outlaws",
+        "own_bar": "09758064315b",
+        "rival_bar": "a061a573a824",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5114968",
+        "rival_club": "lfc_olsc",
+        "own_bar": "09758064315b",
+        "rival_bar": "fd2b4992098e",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5167000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "984ae94602f3",
+        "rival_bar": "e66b62fa8bfb",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5363000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "973e8860b8a7",
+        "rival_bar": "2039e420aedf",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5548000",
+        "rival_club": "american_outlaws",
+        "own_bar": "a41a1c8190d9",
+        "rival_bar": "ec0a37fa704e",
+        "own_rank": null,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5548000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "a41a1c8190d9",
+        "rival_bar": "0d56d2e2b653",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "arsenal_america",
+        "metro": "5553000",
+        "rival_club": "lfc_olsc",
+        "own_bar": "b342f9bb6e49",
+        "rival_bar": "5462338fb3d4",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0107000",
+        "rival_club": "american_outlaws",
+        "own_bar": "7b60d189874f",
+        "rival_bar": "3440ed48eb31",
+        "own_rank": 3,
+        "rival_rank": 2,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0107000",
+        "rival_club": "arsenal_america",
+        "own_bar": "7b60d189874f",
+        "rival_bar": "9d8e74f65009",
+        "own_rank": 3,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0455000",
+        "rival_club": "american_outlaws",
+        "own_bar": "82d1ea3b21af",
+        "rival_bar": "4fc02ad6761b",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0643000",
+        "rival_club": "arsenal_america",
+        "own_bar": "71b2496d1e45",
+        "rival_bar": "72e0e02b9294",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0644000",
+        "rival_club": "american_outlaws",
+        "own_bar": "e9d6edc46312",
+        "rival_bar": "390014dc8d71",
+        "own_rank": 2,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0644000",
+        "rival_club": "arsenal_america",
+        "own_bar": "e9d6edc46312",
+        "rival_bar": "76e24f921955",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0656000",
+        "rival_club": "arsenal_america",
+        "own_bar": "ba51bd4adc55",
+        "rival_bar": "e7596d6fba56",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0664000",
+        "rival_club": "arsenal_america",
+        "own_bar": "39b8ebff9dc7",
+        "rival_bar": "3dac2cd8fe8c",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0666000",
+        "rival_club": "arsenal_america",
+        "own_bar": "29bfefa9d882",
+        "rival_bar": "b4d1497ecbda",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0669070",
+        "rival_club": "american_outlaws",
+        "own_bar": "65f8e1e6699c",
+        "rival_bar": "61c98e0e9d8b",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0816000",
+        "rival_club": "arsenal_america",
+        "own_bar": "04098a946059",
+        "rival_bar": "402865db4f00",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0820000",
+        "rival_club": "american_outlaws",
+        "own_bar": "f77e3e11d5ac",
+        "rival_bar": "f5b2c4f19263",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0820000",
+        "rival_club": "arsenal_america",
+        "own_bar": "f77e3e11d5ac",
+        "rival_bar": "80687d20f6e3",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "0952000",
+        "rival_club": "arsenal_america",
+        "own_bar": "5ae95c496e28",
+        "rival_bar": "356916d8bf5c",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1150000",
+        "rival_club": "american_outlaws",
+        "own_bar": "52d343f62086",
+        "rival_bar": "18431445629c",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1150000",
+        "rival_club": "arsenal_america",
+        "own_bar": "52d343f62086",
+        "rival_bar": "9900af71b6bd",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1253000",
+        "rival_club": "american_outlaws",
+        "own_bar": "4c49a9ea473c",
+        "rival_bar": "0dd0e877bc26",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1304000",
+        "rival_club": "american_outlaws",
+        "own_bar": "1ced915daf14",
+        "rival_bar": "0891a5dee205",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1714000",
+        "rival_club": "arsenal_america",
+        "own_bar": "5dd0464cae98",
+        "rival_bar": "931b48f66d37",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1921000",
+        "rival_club": "american_outlaws",
+        "own_bar": "2ba505935d68",
+        "rival_bar": "85d925f20e10",
+        "own_rank": 2,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "1921000",
+        "rival_club": "arsenal_america",
+        "own_bar": "2ba505935d68",
+        "rival_bar": "35abf53a4df3",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2146027",
+        "rival_club": "american_outlaws",
+        "own_bar": "1806d7880a83",
+        "rival_bar": "718e919b24bc",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2148000",
+        "rival_club": "american_outlaws",
+        "own_bar": "3586cc4aac82",
+        "rival_bar": "ca8bfd80b10c",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2148000",
+        "rival_club": "arsenal_america",
+        "own_bar": "3586cc4aac82",
+        "rival_bar": "e277450195c0",
+        "own_rank": 2,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2404000",
+        "rival_club": "american_outlaws",
+        "own_bar": "071ec3e12112",
+        "rival_bar": "74cefc092f08",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2404000",
+        "rival_club": "arsenal_america",
+        "own_bar": "071ec3e12112",
+        "rival_bar": "20fc9c74cec5",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2507000",
+        "rival_club": "american_outlaws",
+        "own_bar": "3a23c2160fd4",
+        "rival_bar": "ce5f8228c3fb",
+        "own_rank": 2,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2507000",
+        "rival_club": "arsenal_america",
+        "own_bar": "3a23c2160fd4",
+        "rival_bar": "2198c3b31a1a",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2622000",
+        "rival_club": "american_outlaws",
+        "own_bar": "e4fdd41b60a1",
+        "rival_bar": "b33390af118f",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2622000",
+        "rival_club": "arsenal_america",
+        "own_bar": "e4fdd41b60a1",
+        "rival_bar": "068ed50324d1",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "2743000",
+        "rival_club": "arsenal_america",
+        "own_bar": "5f58d177293f",
+        "rival_bar": "456a2267e023",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "3604710022",
+        "rival_club": "american_outlaws",
+        "own_bar": "df034c3fd0ef",
+        "rival_bar": "e8873a21493f",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "3651000",
+        "rival_club": "american_outlaws",
+        "own_bar": "964bf079447b",
+        "rival_bar": "711ba5dd60e5",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "3712000",
+        "rival_club": "arsenal_america",
+        "own_bar": "05cc34935302",
+        "rival_bar": "ebf02cea30af",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "3774440",
+        "rival_club": "arsenal_america",
+        "own_bar": "f963769d40a7",
+        "rival_bar": "61b0cd381bb2",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "3915000",
+        "rival_club": "american_outlaws",
+        "own_bar": "8bfdc5bb1a00",
+        "rival_bar": "4a89c4afd7d9",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "3941664",
+        "rival_club": "arsenal_america",
+        "own_bar": "fefe93888825",
+        "rival_bar": "70d896d796ce",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4075000",
+        "rival_club": "american_outlaws",
+        "own_bar": "350a2ef29e34",
+        "rival_bar": "05c74fc5c397",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4260000",
+        "rival_club": "american_outlaws",
+        "own_bar": "b3b9a123c752",
+        "rival_bar": "634c625d573c",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4516000",
+        "rival_club": "arsenal_america",
+        "own_bar": "1382356be344",
+        "rival_bar": "7ef2e127a48d",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4530850",
+        "rival_club": "arsenal_america",
+        "own_bar": "2d95b0dfd199",
+        "rival_bar": "c2ce7f9458a5",
+        "own_rank": null,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4740000",
+        "rival_club": "american_outlaws",
+        "own_bar": "93a9aed2df19",
+        "rival_bar": "fec9de61950f",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4740000",
+        "rival_club": "arsenal_america",
+        "own_bar": "93a9aed2df19",
+        "rival_bar": "ec28ed5f159f",
+        "own_rank": 1,
+        "rival_rank": 3,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4752006",
+        "rival_club": "american_outlaws",
+        "own_bar": "7fedfd47f824",
+        "rival_bar": "e7e959b016d4",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4835000",
+        "rival_club": "american_outlaws",
+        "own_bar": "2a86bb7f118f",
+        "rival_bar": "1de2138c9fb3",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "4835000",
+        "rival_club": "arsenal_america",
+        "own_bar": "2a86bb7f118f",
+        "rival_bar": "eea6623abdef",
+        "own_rank": 2,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5103000",
+        "rival_club": "arsenal_america",
+        "own_bar": "7c8e2a26e098",
+        "rival_bar": "1894d5eee464",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5114968",
+        "rival_club": "american_outlaws",
+        "own_bar": "fd2b4992098e",
+        "rival_bar": "a061a573a824",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5114968",
+        "rival_club": "arsenal_america",
+        "own_bar": "fd2b4992098e",
+        "rival_bar": "09758064315b",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5167000",
+        "rival_club": "american_outlaws",
+        "own_bar": "e66b62fa8bfb",
+        "rival_bar": "b567b0e021ba",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5167000",
+        "rival_club": "arsenal_america",
+        "own_bar": "e66b62fa8bfb",
+        "rival_bar": "984ae94602f3",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5363000",
+        "rival_club": "american_outlaws",
+        "own_bar": "2039e420aedf",
+        "rival_bar": "92b6f0b6bb3c",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5363000",
+        "rival_club": "arsenal_america",
+        "own_bar": "2039e420aedf",
+        "rival_bar": "973e8860b8a7",
+        "own_rank": 1,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5548000",
+        "rival_club": "american_outlaws",
+        "own_bar": "0d56d2e2b653",
+        "rival_bar": "ec0a37fa704e",
+        "own_rank": 2,
+        "rival_rank": 1,
+        "correct": false
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5548000",
+        "rival_club": "arsenal_america",
+        "own_bar": "0d56d2e2b653",
+        "rival_bar": "a41a1c8190d9",
+        "own_rank": 2,
+        "rival_rank": null,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5553000",
+        "rival_club": "american_outlaws",
+        "own_bar": "5462338fb3d4",
+        "rival_bar": "3cdea86a096f",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      },
+      {
+        "club": "lfc_olsc",
+        "metro": "5553000",
+        "rival_club": "arsenal_america",
+        "own_bar": "5462338fb3d4",
+        "rival_bar": "b342f9bb6e49",
+        "own_rank": 1,
+        "rival_rank": 2,
+        "correct": true
+      }
+    ]
+  },
+  "decision": {
+    "h1_supported": false,
+    "h2_supported": false,
+    "partner_card_banner": "Ranked by Qloo affinity; our test did not show this beats popularity.",
+    "status": "confirmatory"
+  },
+  "info": {
+    "bars_without_row_by_arm": {
+      "Q-signal": 0,
+      "Q-pop": 0,
+      "F": 343,
+      "L": 343
+    },
+    "analyzed_bars_without_any_arm_row": 0,
+    "arm_rows_for_bars_not_analyzed": 0
+  },
+  "warnings": [],
+  "inputs": {
+    "arms_csv_sha256": "4e5e754d7617b6abf83b9e2fe862187a4717bb8022a811e84e6f2405c175bdc7",
+    "bars_csv_sha256": "8fe8f0c0f6dfcc8082e085c5cdba9bf79a13028ed062849751fa6f1b8f66d6f2"
+  }
+}

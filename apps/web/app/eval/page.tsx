@@ -443,7 +443,7 @@ export default function EvalPage() {
           <li>Where buyers live. The map shows where this bill&apos;s fans stand out from the room&apos;s usual crowd.</li>
           <li>That a partner will take part. Partners are suggested, not affiliated.</li>
           <li>
-            How live Qloo data behaves beyond the two live sheets and the one roster check above. The sample data was written from the documentation, not
+            How live Qloo data behaves beyond the live sheets and the roster check above and the Fan-Bar Test below. The sample data was written from the documentation, not
             from real responses.
           </li>
         </ul>
@@ -470,12 +470,37 @@ export default function EvalPage() {
         </p>
       </section>
 
-      <section className="section" aria-labelledby="fanbar-title">
-        <h2 id="fanbar-title">A test designed but not run</h2>
+      <section id="fanbar" className="section scroll-mt-24" aria-labelledby="fanbar-title">
+        <h2 id="fanbar-title">The Fan-Bar Test: no better than popularity</h2>
+        <p className="mt-2 text-sm text-muted">Run Oct 21 2026 on live Qloo calls; plan sealed Oct 13 before any data.</p>
         <p className="mt-3">
-          The Fan-Bar Test asks whether a supporters&apos; club, used as a Qloo signal, ranks that club&apos;s official home bar in each US metro above a
-          popularity ranking of the same places. Its analysis plan was sealed before any data existed, and the code is in the repository with tests on
-          synthetic data. A full run needs up to 1,331 Qloo calls and a Google Places arm, so it was not run and there is no result.
+          Football supporters&apos; clubs list their official bar in each US city. We gave Qloo the club as the taste signal (Arsenal, Liverpool, the US
+          men&apos;s team) and asked for the top 50 bars and pubs within 25 km, then asked again with no signal, which Qloo returns in popularity order.
+          The test, its numbers and its pass mark were written down and hashed before any call.
+        </p>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5">
+          <li>
+            In 325 club-and-city pairs across 225 US cities, the club&apos;s signal put its official bar in the top 50 for 25% of pairs (95% CI 21% to 30%);
+            popularity alone did for 27% (22% to 32%). Mean reciprocal rank 0.024 against 0.030: a difference of &minus;0.006 (95% CI &minus;0.018 to
+            0.006), one-sided p = 0.89. The test fails.
+          </li>
+          <li>
+            In cities where two clubs both list a bar, the club&apos;s own bar ranked above its rival&apos;s in 95 of 182 trials: 52% (95% CI 45% to 60%), no
+            better than a coin flip.
+          </li>
+          <li>
+            Not run: the arm with a language model searching Google Places (the project&apos;s Google billing is closed) and the model-only arm. Closed bars
+            could not be checked. These changes were logged and pushed before the first call.
+          </li>
+        </ul>
+        <p className="mt-3">
+          What it means: a football club&apos;s taste signal did not find that club&apos;s bar better than popularity. Walkup&apos;s signal is a show&apos;s
+          acts, not a club, but this test gives no evidence that its picks beat popularity, so every partner table says &ldquo;Ranked by Qloo affinity; our
+          test did not show this beats popularity.&rdquo;{" "}
+          <a href="https://github.com/TAUIL-Abd-Elilah/walkup/blob/main/evals/p1/results.md" className="link">
+            Full results, coverage and deviations
+          </a>
+          .
         </p>
       </section>
       </div>

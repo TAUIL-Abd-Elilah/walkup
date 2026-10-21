@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-10-21T23:19:51Z",
+  "what": "P1 Fan-Bar Test, arms run (docs/preregistration/p1-plan.md)",
+  "plan_sha256_matches_file": true,
+  "input_is_sealed_table": true,
+  "selection": {
+    "mode": "full",
+    "queries": 393,
+    "bars": 426
+  },
+  "run_date": "2026-10-21",
+  "complete": true,
+  "stopped": null,
+  "coverage": {
+    "byClub": {
+      "american_outlaws": {
+        "listed": 256,
+        "resolution_rate": 0.820313,
+        "stale_page": 0,
+        "no_metro": 0,
+        "no_brand": 0,
+        "unresolved": 46,
+        "closed": 0,
+        "out_of_radius": 9,
+        "analyzed": 201
+      },
+      "arsenal_america": {
+        "listed": 94,
+        "resolution_rate": 0.851064,
+        "stale_page": 0,
+        "no_metro": 0,
+        "no_brand": 0,
+        "unresolved": 14,
+        "closed": 0,
+        "out_of_radius": 0,
+        "analyzed": 80
+      },
+      "lfc_olsc": {
+        "listed": 76,
+        "resolution_rate": 0.84,
+        "stale_page": 0,
+        "no_metro": 1,
+        "no_brand": 0,
+        "unresolved": 12,
+        "closed": 0,
+        "out_of_radius": 1,
+        "analyzed": 62
+      }
+    },
+    "total": {
+      "listed": 426,
+      "resolution_rate": 0.830588,
+      "stale_page": 0,
+      "no_metro": 1,
+      "no_brand": 0,
+      "unresolved": 72,
+      "closed": 0,
+      "out_of_radius": 10,
+      "analyzed": 343
+    }
+  },
+  "coverage_provisional": true,
+  "setup": {
+    "club_entities_resolved": 3,
+    "clubs": 3,
+    "pinned_tags": 4,
+    "tag_words": 4
+  },
+  "arms": {
+    "Q-pop": {
+      "planned": 225,
+      "completed": 225,
+      "failed": 0,
+      "refused": 0,
+      "queries_with_rows": 325,
+      "rows": 343,
+      "extra": {
+        "popularity_non_increasing": 225,
+        "popularity_not_monotone": 0,
+        "popularity_unknown": 0,
+        "places_without_location": 0
+      }
+    },
+    "Q-signal": {
+      "planned": 325,
+      "completed": 325,
+      "failed": 0,
+      "refused": 0,
+      "queries_with_rows": 325,
+      "rows": 611,
+      "extra": {
+        "rival_rows": 268,
+        "places_without_location": 0
+      }
+    },
+    "Q-derby": {
+      "planned": 175,
+      "completed": 175,
+      "failed": 0,
+      "refused": 0,
+      "queries_with_rows": 175,
+      "rows": 425,
+      "extra": {
+        "metros": 75,
+        "shared_primary_pairs": 62
+      }
+    }
+  },
+  "f_subset": null,
+  "viability": null,
+  "calls": {
+    "qloo": {
+      "sent_this_run": 1121,
+      "cached_this_run": 20,
+      "sent_all_runs": 1146,
+      "cap_per_run": 2000
+    },
+    "places": null,
+    "census_geocoder": {
+      "sent_this_run": 379,
+      "cached_this_run": 0
+    },
+    "model": {
+      "calls_this_run": 0,
+      "est_usd_this_run": 0
+    }
+  },
+  "warnings": 1
+}
