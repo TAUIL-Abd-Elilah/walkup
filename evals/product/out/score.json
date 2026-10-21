@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-20T21:42:24.283Z",
+  "generatedAt": "2026-10-21T13:31:02.663Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -323,7 +323,7 @@
         {
           "name": "top five tiles carry gazetteer names",
           "status": "pass",
-          "detail": "Nashville-Davidson, 17 km west, Mount Juliet, Nashville-Davidson, Nashville-Davidson, Mount Juliet",
+          "detail": "Nashville, Mount Juliet, Nashville, Nashville, Mount Juliet",
           "clause": "D1",
           "subject": "g1-a"
         },
@@ -393,7 +393,7 @@
         {
           "name": "renders to a one-page PDF",
           "status": "pass",
-          "detail": "1 page(s), scale 0.92, lists shortened",
+          "detail": "1 page(s), scale 0.8, lists shortened",
           "clause": "D1",
           "subject": "g1-a"
         },
@@ -786,7 +786,7 @@
         {
           "name": "renders to a one-page PDF",
           "status": "pass",
-          "detail": "1 page(s), scale 0.92, lists shortened",
+          "detail": "1 page(s), scale 0.8, lists shortened",
           "clause": "D1",
           "subject": "g1-b"
         },
@@ -1207,7 +1207,7 @@
         {
           "name": "renders to a one-page PDF",
           "status": "pass",
-          "detail": "1 page(s), scale 0.86, lists shortened",
+          "detail": "1 page(s), scale 0.8, lists shortened",
           "clause": "D1",
           "subject": "g2"
         },
@@ -1319,7 +1319,7 @@
         {
           "name": "every cited tile is on this run's lift map",
           "status": "pass",
-          "detail": "14 tiles",
+          "detail": "13 tiles",
           "clause": "D4",
           "subject": "g2"
         },
@@ -1621,7 +1621,7 @@
         {
           "name": "card liftMap status",
           "status": "pass",
-          "detail": "degraded (expected degraded): Qloo has no comedy-wide map to compare with, and fewer than 5 of the room's usual acts matched, so there's no lift map for this bill. Partners are picked near the venue. The search widened to 60 km (fewer than 200 areas came back inside 40 km).",
+          "detail": "degraded (expected degraded): Qloo has no comedy-wide map to compare with, and fewer than 5 of the room's usual acts matched, so there's no lift map for this bill. Partners are picked near the venue. The search widened to 60 km (fewer than 200 map squares came back within 40 km).",
           "clause": "S2",
           "subject": "g3"
         },
@@ -1642,7 +1642,7 @@
         {
           "name": "card prePost status",
           "status": "pass",
-          "detail": "partial (expected partial): Fewer than 6 spots came back inside 1.5 km, so the search widened to 2,500 m.",
+          "detail": "partial (expected partial): Fewer than 6 spots came back within 1.5 km, so the search widened to 2.5 km.",
           "clause": "S2",
           "subject": "g3"
         },
@@ -1698,7 +1698,7 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "37 refs",
+          "detail": "31 refs",
           "clause": "D4",
           "subject": "g3"
         },
@@ -2128,7 +2128,7 @@
         {
           "name": "every cited tile is on this run's lift map",
           "status": "pass",
-          "detail": "14 tiles",
+          "detail": "13 tiles",
           "clause": "D4",
           "subject": "g2 resumed"
         },
@@ -2695,7 +2695,7 @@
         {
           "name": "card liftMap status",
           "status": "pass",
-          "detail": "partial (expected partial): The search widened to 60 km (fewer than 200 areas came back inside 40 km).",
+          "detail": "partial (expected partial): The search widened to 60 km (fewer than 200 map squares came back within 40 km).",
           "clause": "S2",
           "subject": "g1-a, thin heatmap"
         },
@@ -3862,7 +3862,7 @@
         {
           "name": "every cited tile is on this run's lift map",
           "status": "pass",
-          "detail": "14 tiles",
+          "detail": "13 tiles",
           "clause": "D4",
           "subject": "g2, model tries denied words"
         },
@@ -6068,7 +6068,7 @@
         {
           "name": "g1-a: at most 5 tiles, each at least the 0.1 minimum",
           "status": "pass",
-          "detail": "0.339, 0.171, 0.267, 0.223",
+          "detail": "0.339, 0.22, 0.22, 0.221",
           "clause": "S2",
           "subject": "budget split"
         },
@@ -6089,14 +6089,14 @@
         {
           "name": "g2: shares sum to 1",
           "status": "pass",
-          "detail": "5 tiles, sum 1.0000",
+          "detail": "4 tiles, sum 1.0000",
           "clause": "S2",
           "subject": "budget split"
         },
         {
           "name": "g2: at most 5 tiles, each at least the 0.1 minimum",
           "status": "pass",
-          "detail": "0.37, 0.1, 0.226, 0.1, 0.204",
+          "detail": "0.317, 0.317, 0.192, 0.174",
           "clause": "S2",
           "subject": "budget split"
         },
@@ -6390,7 +6390,7 @@
         {
           "name": "every cited tile is on this run's lift map",
           "status": "pass",
-          "detail": "14 tiles",
+          "detail": "13 tiles",
           "clause": "D4",
           "subject": "g2, budget split"
         },
@@ -6537,7 +6537,7 @@
         {
           "name": "every cited ledger ref is in this run's ledger",
           "status": "pass",
-          "detail": "37 refs",
+          "detail": "31 refs",
           "clause": "D4",
           "subject": "g3, budget split"
         },
@@ -7424,14 +7424,14 @@
         {
           "name": "model error: same template text as with no model",
           "status": "pass",
-          "detail": "[\"Hollis Creek String Band, Marla Vane and The Ferry Lights at The Truth, Friday, Nov 20. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Nashville-Davidson, 17 km west, is about 1.8 times the room's usual crowd. The sheet suggests 24 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward country, storytelling and soul.\",[{\"entityId\":\"000006c1-2eec-4beb-a35f-f0ca1a3a0271\",\"text\":\"A bar in Nashville-Davidson, 17 km west, 8th on that area's list for this crowd.\"},{\"entityId\":\"000051e3-fb21-453e-a59b-f0ca1a3b01d1\",\"text\":\"A bar in Nashville-Davidson, 17 km west, 5th on that area's list for this crowd.\"},{\"entityId\":\"00008f8b-1ac6-4158-a40e-f0ca1a3a0281\",\"text\":\"A restaurant in Nashville-Davidson, 17 km west, 13th on that area's list for this crowd.\"},{\"entityId\":\"0000fc1a-9091-4711-a232-f0ca1a3b02d1\",\"text\":\"A restaurant in Nashville-Davidson, 17 km west, 15th on that area's list for this crowd.\"},{\"entityId\":\"00009c32-cfaa-4230-a863-f0ca1a3b02e1\",\"text\":\"A record store in Nashville-Davidson, 17 km west, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000bfa1-58e0-4133-a373-f0ca1a3a00d1\",\"text\":\"A record store in Nashville-Davidson, 17 km west, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00000ae5-506c-4b44-a3b0-f0ca1a3b00e1\",\"text\":\"A clothing store in Nashville-Davidson, 17 km west, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000c9e1-c50c-40b5-a91b-f0ca1a3a01e1\",\"text\":\"A cafe in Nashville-Davidson, 17 km west, 7th on that area's list for this crowd.\"},{\"entityId\":\"00002c0a-1c32-43e8-a685-f0ca1ad40181\",\"text\":\"A bar in Mount Juliet, 2nd on that area's list for this crowd.\"},{\"entityId\":\"0000819c-8049-4139-a38a-f0ca1ad400b1\",\"text\":\"A bar in Mount Juliet, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000fb12-cc29-4849-a29c-f0ca1ad401a1\",\"text\":\"A record store in Mount Juliet, 6th on that area's list for this crowd.\"},{\"entityId\":\"00008214-0eb8-4cc5-a665-f0ca1ad401d1\",\"text\":\"A restaurant in Mount Juliet, 15th on that area's list for this crowd.\"},{\"entityId\":\"00000d86-86b7-4832-aa01-f0ca1ad502e1\",\"text\":\"A cafe in Mount Juliet, 3rd on that area's list for this crowd.\"},{\"entityId\":\"0000807d-def3-4361-a5e3-f0ca1a7e0451\",\"text\":\"A restaurant in Mount Juliet, 14th on that area's list for this crowd.\"},{\"entityId\":\"00003185-fae3-4b93-aec2-f0ca1ad400a1\",\"text\":\"A cafe in Mount Juliet, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000765a-c082-4890-ae16-f0ca1ad40351\",\"text\":\"A record store in Mount Juliet, 16th on that area's list for this crowd.\"},{\"entityId\":\"00002482-96c5-4a57-a64d-f0ca1a7603c1\",\"text\":\"A bar in Nashville-Davidson, 20 km east, 1st on that area's list for this crowd.\"},{\"entityId\":\"00008203-6318-4a7a-a16e-f0ca1a7601e1\",\"text\":\"A bar in Nashville-Davidson, 20 km east, 5th on that area's list for this crowd.\"},{\"entityId\":\"000004c8-913a-4e7c-a445-f0ca1a7602d1\",\"text\":\"A clothing store in Nashville-Davidson, 20 km east, 4th on that area's list for this crowd.\"},{\"entityId\":\"000001ad-16de-49f2-a29c-f0ca1a760141\",\"text\":\"A record store in Nashville-Davidson, 20 km east, 2nd on that area's list for this crowd.\"},{\"entityId\":\"00005052-4817-4220-a0f2-f0ca1a740271\",\"text\":\"A record store in Nashville-Davidson, 20 km east, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00009dc0-9cf4-480b-a932-f0ca1a7601f1\",\"text\":\"A cafe in Nashville-Davidson, 20 km east, 6th on that area's list for this crowd.\"},{\"entityId\":\"0000f426-bba0-4853-aafc-f0ca1a760351\",\"text\":\"A restaurant in Nashville-Davidson, 20 km east, 12th on that area's list for this crowd.\"},{\"entityId\":\"0000da7e-2015-4f60-a365-f0ca1a730231\",\"text\":\"A cafe in Nashville-Davidson, 20 km east, 8th on that area's list for this crowd.\"}],[{\"text\":\"Country and soul at The Truth, Friday, Nov 20.\",\"tagIds\":[\"urn:tag:genre:music:country\",\"urn:tag:genre:music:soul\"]},{\"text\":\"For the roots music crowd: Friday night at The Truth.\",\"tagIds\":[\"urn:tag:audience:qloo:roots_music_fans\"]},{\"text\":\"Bluegrass and americana, live at The Truth.\",\"tagIds\":[\"urn:tag:genre:music:bluegrass\",\"urn:tag:genre:music:americana\"]}]]",
+          "detail": "[\"Hollis Creek String Band, Marla Vane and The Ferry Lights at The Truth, Friday, Nov 20. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Nashville, is about 1.8 times the room's usual crowd. The sheet suggests 24 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward country, storytelling and soul.\",[{\"entityId\":\"000006c1-2eec-4beb-a35f-f0ca1a3a0271\",\"text\":\"A bar in Nashville, 8th on that area's list for this crowd.\"},{\"entityId\":\"000051e3-fb21-453e-a59b-f0ca1a3b01d1\",\"text\":\"A bar in Nashville, 5th on that area's list for this crowd.\"},{\"entityId\":\"00008f8b-1ac6-4158-a40e-f0ca1a3a0281\",\"text\":\"A restaurant in Nashville, 13th on that area's list for this crowd.\"},{\"entityId\":\"0000fc1a-9091-4711-a232-f0ca1a3b02d1\",\"text\":\"A restaurant in Nashville, 15th on that area's list for this crowd.\"},{\"entityId\":\"00009c32-cfaa-4230-a863-f0ca1a3b02e1\",\"text\":\"A record store in Nashville, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000bfa1-58e0-4133-a373-f0ca1a3a00d1\",\"text\":\"A record store in Nashville, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00000ae5-506c-4b44-a3b0-f0ca1a3b00e1\",\"text\":\"A clothing store in Nashville, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000c9e1-c50c-40b5-a91b-f0ca1a3a01e1\",\"text\":\"A cafe in Nashville, 7th on that area's list for this crowd.\"},{\"entityId\":\"00002c0a-1c32-43e8-a685-f0ca1ad40181\",\"text\":\"A bar in Mount Juliet, 2nd on that area's list for this crowd.\"},{\"entityId\":\"0000819c-8049-4139-a38a-f0ca1ad400b1\",\"text\":\"A bar in Mount Juliet, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000fb12-cc29-4849-a29c-f0ca1ad401a1\",\"text\":\"A record store in Mount Juliet, 6th on that area's list for this crowd.\"},{\"entityId\":\"00008214-0eb8-4cc5-a665-f0ca1ad401d1\",\"text\":\"A restaurant in Mount Juliet, 15th on that area's list for this crowd.\"},{\"entityId\":\"00000d86-86b7-4832-aa01-f0ca1ad502e1\",\"text\":\"A cafe in Mount Juliet, 3rd on that area's list for this crowd.\"},{\"entityId\":\"0000807d-def3-4361-a5e3-f0ca1a7e0451\",\"text\":\"A restaurant in Mount Juliet, 14th on that area's list for this crowd.\"},{\"entityId\":\"00003185-fae3-4b93-aec2-f0ca1ad400a1\",\"text\":\"A cafe in Mount Juliet, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000765a-c082-4890-ae16-f0ca1ad40351\",\"text\":\"A record store in Mount Juliet, 16th on that area's list for this crowd.\"},{\"entityId\":\"00002482-96c5-4a57-a64d-f0ca1a7603c1\",\"text\":\"A bar in Hermitage, 1st on that area's list for this crowd.\"},{\"entityId\":\"00008203-6318-4a7a-a16e-f0ca1a7601e1\",\"text\":\"A bar in Hermitage, 5th on that area's list for this crowd.\"},{\"entityId\":\"000004c8-913a-4e7c-a445-f0ca1a7602d1\",\"text\":\"A clothing store in Hermitage, 4th on that area's list for this crowd.\"},{\"entityId\":\"000001ad-16de-49f2-a29c-f0ca1a760141\",\"text\":\"A record store in Hermitage, 2nd on that area's list for this crowd.\"},{\"entityId\":\"00005052-4817-4220-a0f2-f0ca1a740271\",\"text\":\"A record store in Hermitage, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00009dc0-9cf4-480b-a932-f0ca1a7601f1\",\"text\":\"A cafe in Hermitage, 6th on that area's list for this crowd.\"},{\"entityId\":\"0000f426-bba0-4853-aafc-f0ca1a760351\",\"text\":\"A restaurant in Hermitage, 12th on that area's list for this crowd.\"},{\"entityId\":\"0000da7e-2015-4f60-a365-f0ca1a730231\",\"text\":\"A cafe in Hermitage, 8th on that area's list for this crowd.\"}],[{\"text\":\"Hollis Creek String Band: Country and soul at The Truth, Friday, Nov 20.\",\"tagIds\":[\"urn:tag:genre:music:country\",\"urn:tag:genre:music:soul\"]},{\"text\":\"Hollis Creek String Band for the bluegrass crowd: Friday night at The Truth.\",\"tagIds\":[\"urn:tag:genre:music:bluegrass\"]},{\"text\":\"Hollis Creek String Band: Americana and folk, live at The Truth.\",\"tagIds\":[\"urn:tag:genre:music:americana\",\"urn:tag:genre:music:folk\"]}]]",
           "clause": "S2",
           "subject": "template"
         },
         {
           "name": "off-schema draft: same template text as with no model",
           "status": "pass",
-          "detail": "[\"Hollis Creek String Band, Marla Vane and The Ferry Lights at The Truth, Friday, Nov 20. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Nashville-Davidson, 17 km west, is about 1.8 times the room's usual crowd. The sheet suggests 24 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward country, storytelling and soul.\",[{\"entityId\":\"000006c1-2eec-4beb-a35f-f0ca1a3a0271\",\"text\":\"A bar in Nashville-Davidson, 17 km west, 8th on that area's list for this crowd.\"},{\"entityId\":\"000051e3-fb21-453e-a59b-f0ca1a3b01d1\",\"text\":\"A bar in Nashville-Davidson, 17 km west, 5th on that area's list for this crowd.\"},{\"entityId\":\"00008f8b-1ac6-4158-a40e-f0ca1a3a0281\",\"text\":\"A restaurant in Nashville-Davidson, 17 km west, 13th on that area's list for this crowd.\"},{\"entityId\":\"0000fc1a-9091-4711-a232-f0ca1a3b02d1\",\"text\":\"A restaurant in Nashville-Davidson, 17 km west, 15th on that area's list for this crowd.\"},{\"entityId\":\"00009c32-cfaa-4230-a863-f0ca1a3b02e1\",\"text\":\"A record store in Nashville-Davidson, 17 km west, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000bfa1-58e0-4133-a373-f0ca1a3a00d1\",\"text\":\"A record store in Nashville-Davidson, 17 km west, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00000ae5-506c-4b44-a3b0-f0ca1a3b00e1\",\"text\":\"A clothing store in Nashville-Davidson, 17 km west, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000c9e1-c50c-40b5-a91b-f0ca1a3a01e1\",\"text\":\"A cafe in Nashville-Davidson, 17 km west, 7th on that area's list for this crowd.\"},{\"entityId\":\"00002c0a-1c32-43e8-a685-f0ca1ad40181\",\"text\":\"A bar in Mount Juliet, 2nd on that area's list for this crowd.\"},{\"entityId\":\"0000819c-8049-4139-a38a-f0ca1ad400b1\",\"text\":\"A bar in Mount Juliet, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000fb12-cc29-4849-a29c-f0ca1ad401a1\",\"text\":\"A record store in Mount Juliet, 6th on that area's list for this crowd.\"},{\"entityId\":\"00008214-0eb8-4cc5-a665-f0ca1ad401d1\",\"text\":\"A restaurant in Mount Juliet, 15th on that area's list for this crowd.\"},{\"entityId\":\"00000d86-86b7-4832-aa01-f0ca1ad502e1\",\"text\":\"A cafe in Mount Juliet, 3rd on that area's list for this crowd.\"},{\"entityId\":\"0000807d-def3-4361-a5e3-f0ca1a7e0451\",\"text\":\"A restaurant in Mount Juliet, 14th on that area's list for this crowd.\"},{\"entityId\":\"00003185-fae3-4b93-aec2-f0ca1ad400a1\",\"text\":\"A cafe in Mount Juliet, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000765a-c082-4890-ae16-f0ca1ad40351\",\"text\":\"A record store in Mount Juliet, 16th on that area's list for this crowd.\"},{\"entityId\":\"00002482-96c5-4a57-a64d-f0ca1a7603c1\",\"text\":\"A bar in Nashville-Davidson, 20 km east, 1st on that area's list for this crowd.\"},{\"entityId\":\"00008203-6318-4a7a-a16e-f0ca1a7601e1\",\"text\":\"A bar in Nashville-Davidson, 20 km east, 5th on that area's list for this crowd.\"},{\"entityId\":\"000004c8-913a-4e7c-a445-f0ca1a7602d1\",\"text\":\"A clothing store in Nashville-Davidson, 20 km east, 4th on that area's list for this crowd.\"},{\"entityId\":\"000001ad-16de-49f2-a29c-f0ca1a760141\",\"text\":\"A record store in Nashville-Davidson, 20 km east, 2nd on that area's list for this crowd.\"},{\"entityId\":\"00005052-4817-4220-a0f2-f0ca1a740271\",\"text\":\"A record store in Nashville-Davidson, 20 km east, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00009dc0-9cf4-480b-a932-f0ca1a7601f1\",\"text\":\"A cafe in Nashville-Davidson, 20 km east, 6th on that area's list for this crowd.\"},{\"entityId\":\"0000f426-bba0-4853-aafc-f0ca1a760351\",\"text\":\"A restaurant in Nashville-Davidson, 20 km east, 12th on that area's list for this crowd.\"},{\"entityId\":\"0000da7e-2015-4f60-a365-f0ca1a730231\",\"text\":\"A cafe in Nashville-Davidson, 20 km east, 8th on that area's list for this crowd.\"}],[{\"text\":\"Country and soul at The Truth, Friday, Nov 20.\",\"tagIds\":[\"urn:tag:genre:music:country\",\"urn:tag:genre:music:soul\"]},{\"text\":\"For the roots music crowd: Friday night at The Truth.\",\"tagIds\":[\"urn:tag:audience:qloo:roots_music_fans\"]},{\"text\":\"Bluegrass and americana, live at The Truth.\",\"tagIds\":[\"urn:tag:genre:music:bluegrass\",\"urn:tag:genre:music:americana\"]}]]",
+          "detail": "[\"Hollis Creek String Band, Marla Vane and The Ferry Lights at The Truth, Friday, Nov 20. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Nashville, is about 1.8 times the room's usual crowd. The sheet suggests 24 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward country, storytelling and soul.\",[{\"entityId\":\"000006c1-2eec-4beb-a35f-f0ca1a3a0271\",\"text\":\"A bar in Nashville, 8th on that area's list for this crowd.\"},{\"entityId\":\"000051e3-fb21-453e-a59b-f0ca1a3b01d1\",\"text\":\"A bar in Nashville, 5th on that area's list for this crowd.\"},{\"entityId\":\"00008f8b-1ac6-4158-a40e-f0ca1a3a0281\",\"text\":\"A restaurant in Nashville, 13th on that area's list for this crowd.\"},{\"entityId\":\"0000fc1a-9091-4711-a232-f0ca1a3b02d1\",\"text\":\"A restaurant in Nashville, 15th on that area's list for this crowd.\"},{\"entityId\":\"00009c32-cfaa-4230-a863-f0ca1a3b02e1\",\"text\":\"A record store in Nashville, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000bfa1-58e0-4133-a373-f0ca1a3a00d1\",\"text\":\"A record store in Nashville, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00000ae5-506c-4b44-a3b0-f0ca1a3b00e1\",\"text\":\"A clothing store in Nashville, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000c9e1-c50c-40b5-a91b-f0ca1a3a01e1\",\"text\":\"A cafe in Nashville, 7th on that area's list for this crowd.\"},{\"entityId\":\"00002c0a-1c32-43e8-a685-f0ca1ad40181\",\"text\":\"A bar in Mount Juliet, 2nd on that area's list for this crowd.\"},{\"entityId\":\"0000819c-8049-4139-a38a-f0ca1ad400b1\",\"text\":\"A bar in Mount Juliet, 1st on that area's list for this crowd.\"},{\"entityId\":\"0000fb12-cc29-4849-a29c-f0ca1ad401a1\",\"text\":\"A record store in Mount Juliet, 6th on that area's list for this crowd.\"},{\"entityId\":\"00008214-0eb8-4cc5-a665-f0ca1ad401d1\",\"text\":\"A restaurant in Mount Juliet, 15th on that area's list for this crowd.\"},{\"entityId\":\"00000d86-86b7-4832-aa01-f0ca1ad502e1\",\"text\":\"A cafe in Mount Juliet, 3rd on that area's list for this crowd.\"},{\"entityId\":\"0000807d-def3-4361-a5e3-f0ca1a7e0451\",\"text\":\"A restaurant in Mount Juliet, 14th on that area's list for this crowd.\"},{\"entityId\":\"00003185-fae3-4b93-aec2-f0ca1ad400a1\",\"text\":\"A cafe in Mount Juliet, 11th on that area's list for this crowd.\"},{\"entityId\":\"0000765a-c082-4890-ae16-f0ca1ad40351\",\"text\":\"A record store in Mount Juliet, 16th on that area's list for this crowd.\"},{\"entityId\":\"00002482-96c5-4a57-a64d-f0ca1a7603c1\",\"text\":\"A bar in Hermitage, 1st on that area's list for this crowd.\"},{\"entityId\":\"00008203-6318-4a7a-a16e-f0ca1a7601e1\",\"text\":\"A bar in Hermitage, 5th on that area's list for this crowd.\"},{\"entityId\":\"000004c8-913a-4e7c-a445-f0ca1a7602d1\",\"text\":\"A clothing store in Hermitage, 4th on that area's list for this crowd.\"},{\"entityId\":\"000001ad-16de-49f2-a29c-f0ca1a760141\",\"text\":\"A record store in Hermitage, 2nd on that area's list for this crowd.\"},{\"entityId\":\"00005052-4817-4220-a0f2-f0ca1a740271\",\"text\":\"A record store in Hermitage, 3rd on that area's list for this crowd.\"},{\"entityId\":\"00009dc0-9cf4-480b-a932-f0ca1a7601f1\",\"text\":\"A cafe in Hermitage, 6th on that area's list for this crowd.\"},{\"entityId\":\"0000f426-bba0-4853-aafc-f0ca1a760351\",\"text\":\"A restaurant in Hermitage, 12th on that area's list for this crowd.\"},{\"entityId\":\"0000da7e-2015-4f60-a365-f0ca1a730231\",\"text\":\"A cafe in Hermitage, 8th on that area's list for this crowd.\"}],[{\"text\":\"Hollis Creek String Band: Country and soul at The Truth, Friday, Nov 20.\",\"tagIds\":[\"urn:tag:genre:music:country\",\"urn:tag:genre:music:soul\"]},{\"text\":\"Hollis Creek String Band for the bluegrass crowd: Friday night at The Truth.\",\"tagIds\":[\"urn:tag:genre:music:bluegrass\"]},{\"text\":\"Hollis Creek String Band: Americana and folk, live at The Truth.\",\"tagIds\":[\"urn:tag:genre:music:americana\",\"urn:tag:genre:music:folk\"]}]]",
           "clause": "S2",
           "subject": "template"
         },
