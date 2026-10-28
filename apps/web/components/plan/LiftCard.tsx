@@ -157,7 +157,9 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
         {split.length > 0 ? (
           <div className="min-w-0">
             <h3 className="text-base">Budget split</h3>
-            <p className="hint mt-0.5">A rule of thumb from lift and adult counts, not a forecast.</p>
+            <p className="hint mt-0.5">
+              A rule of thumb from lift and adult counts, not a forecast.{budget !== null ? ` The ${formatUsd(budget)} is an assumed budget.` : ""}
+            </p>
             <table className="table mt-2">
               <thead>
                 <tr>

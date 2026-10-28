@@ -245,9 +245,12 @@ describe("the plan page", () => {
     const s = structuredClone(fixture("g1-a"));
     s.narration = { ...s.narration!, templated: false };
     s.guard = { ...s.guard, reasons: ["replaced by the template: summary: superlative \"the most\" not backed by the sheet", "replaced by the template: tileWhy[1]: says three partners"] };
-    const text = visibleText(renderView(s));
-    expect(text).toMatch(/Fixed wording: Claude.s draft of this summary made a claim the sheet doesn.t back/);
-    expect(text).toContain("1 of them replaced with fixed wording");
+    const html = renderView(s);
+    const text = visibleText(html);
+    // Said once, plainly, under Checks in the limits section; the Summary opens with the summary itself.
+    expect(text).toMatch(/Claude.s draft summary made a claim the sheet doesn.t back, so fixed wording replaced it\. 1 of Claude.s area and partner lines was replaced the same way\./);
+    expect(html.indexOf('data-testid="checks-fix"')).toBeGreaterThan(html.indexOf('id="limits"'));
+    expect(visibleText(html.slice(html.indexOf('id="summary"'), html.indexOf('id="lift"')))).not.toMatch(/Fixed wording:|made a claim/);
   });
 
   it("drops the share column when every spot has the same share, and says the share once", () => {

@@ -2,7 +2,7 @@
 import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { shortUrl, telHref } from "../../lib/format";
-import { categoryLabel } from "../../lib/labels";
+import { FANBAR_HREF, PARTNER_RANK_LINE, categoryLabel } from "../../lib/labels";
 import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
 import { WithWithout } from "../WithWithout";
 import { LESS_SURE_NOTE, partnerAreaLabel, partnerLessSure } from "@walkup/exports/format";
@@ -344,11 +344,14 @@ export function PartnersCard({
           <Refs ids={popularity.ledgerRefs} />
         </p>
       ) : null}
-      {/* Preregistered banner (docs/preregistration/p1-plan.md §13): the Fan-Bar Test did not support H1. */}
+      {/*
+        The Fan-Bar Test did not support H1 (docs/preregistration/p1-plan.md §13), so no claim that these picks beat
+        popularity: one short line here; the sheet's limits state the test once, with its scope and numbers.
+      */}
       {env.results.length > 0 ? (
         <p className="mt-3 max-w-[760px]" data-testid="p1-banner">
-          Ranked by Qloo affinity; our test did not show this beats popularity.{" "}
-          <a href="/eval#fanbar-title" className="link">
+          {PARTNER_RANK_LINE}{" "}
+          <a href={FANBAR_HREF} className="link">
             The test
           </a>
         </p>

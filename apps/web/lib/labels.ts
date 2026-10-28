@@ -243,12 +243,20 @@ export const CARD_TITLE: Record<string, string> = {
 };
 
 /** "Music / Country (Americana)" -> "Americana"; "Music / Pop" -> "Pop". */
+/**
+ * The last level of a Ticketmaster classification: "Music / Hip-Hop/Rap" is "Hip-Hop/Rap" (the levels are split by
+ * " / " with spaces; a genre's own name may hold a bare slash), "Music/Country" is "Country".
+ */
+export function lastSegment(classification: string): string {
+  const parts = classification.includes(" / ") ? classification.split(" / ") : classification.split("/");
+  return parts.pop()?.trim() ?? "";
+}
+
 export function genreLabel(classification: string | undefined, fallback: string): string {
   if (!classification) return fallback;
   const paren = /\(([^)]+)\)\s*$/.exec(classification);
   if (paren?.[1]) return paren[1].trim();
-  const last = classification.split("/").pop()?.trim();
-  return last || fallback;
+  return lastSegment(classification) || fallback;
 }
 
 /** The footer's data credit for the runtime mode: sample data, recordings of live runs, or the live services. */
@@ -259,3 +267,19 @@ export function dataSourcesLine(mode: "live" | "fixture" | "recorded"): string {
   }
   return "Affinity data from Qloo. Events and age rules from Ticketmaster.";
 }
+
+/** The Fan-Bar Test's section on the eval page; every place that states the result links there. */
+export const FANBAR_HREF = "/eval#fanbar-title";
+
+/**
+ * The Fan-Bar Test with its scope, said once per sheet (in its limits), on the home page and on the system card.
+ * Numbers from evals/p1/results.md (Q-signal 25.2% vs Q-pop 27.0% in the top 50, 325 pairs).
+ */
+export const FANBAR_RESULT =
+  "Our sealed Fan-Bar Test found no edge for Qloo's taste signal over its popularity order: across 325 US club-and-city pairs, a football club's signal put its supporters' bar in the top 50 for 25% of pairs, popularity alone for 27%.";
+
+/** What the product does not claim, after the test. */
+export const FANBAR_NO_CLAIM = "We don't claim these picks beat popularity.";
+
+/** The one line on each partner table: the exact banner docs/preregistration/p1-plan.md §13 commits to for a null result. */
+export const PARTNER_RANK_LINE = "Ranked by Qloo affinity; our test did not show this beats popularity.";

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DENIED_TAG_KEYWORDS, DENIED_TAG_PREFIXES } from "@walkup/contracts";
+import { FANBAR_HREF, FANBAR_RESULT, PARTNER_RANK_LINE } from "@/lib/labels";
 
 export const metadata: Metadata = {
   title: "System card",
@@ -295,12 +296,15 @@ export default function SystemCardPage() {
             .
           </p>
           <p>
-            The product eval (20 cases) passes on the sample data. It checks that the pipeline behaves as described, not that Qloo&apos;s picks are better. A
-            second test, the Fan-Bar Test, ran on Oct 21 2026 under a plan sealed before any data: a football club&apos;s Qloo signal did not rank the
-            club&apos;s official bar above Qloo&apos;s popularity order (top 50 in 25% of 325 club-and-city pairs against 27%; one-sided p = 0.89). So no claim
-            that Walkup&apos;s picks beat popularity is made. See{" "}
-            <Link href="/eval#fanbar" className="link">
-              the eval page
+            The product eval (20 cases) passes on the sample data. It checks that the pipeline behaves as described, not that Qloo&apos;s picks are better.
+          </p>
+          <p id="fanbar">
+            <strong>Against popularity, Oct 21 2026.</strong> {FANBAR_RESULT} The plan was sealed before any data. The difference in mean reciprocal
+            rank was -0.006 (95% CI -0.018 to 0.006), one-sided p = 0.89. It tested a football club as the signal, not a show&apos;s acts, and it did not
+            test lift. So we don&apos;t claim Walkup&apos;s picks beat popularity. Each sheet says this once, in its limits, and each partner table carries
+            one line: &ldquo;{PARTNER_RANK_LINE}&rdquo;{" "}
+            <Link href={FANBAR_HREF} className="link">
+              The test
             </Link>
             .
           </p>

@@ -150,7 +150,8 @@ describe("plan page helpers", () => {
 
   it("says a narration check's note in plain words", () => {
     expect(utils.guardNoteText("tileWhy[4]: number 1.7 is not in this run")).toBe("Claude's line for area 5 was left out: it had a number (1.7) that isn't from this run.");
-    expect(utils.guardNoteText("summary: banned word \"amazing\"")).toBe("Claude's summary was left out: banned word \"amazing\".");
+    // A summary the checks set aside is always replaced by the template's, never left blank.
+    expect(utils.guardNoteText("summary: banned word \"amazing\"")).toBe("Claude's summary was replaced with fixed wording: banned word \"amazing\".");
     expect(utils.guardNoteText("partnerLines[2]: entityId not in this run")).toBe("One of Claude's partner lines was left out: it named a place that isn't on this sheet.");
     expect(utils.guardNoteText("Something else entirely")).toBe("Something else entirely");
   });
@@ -572,7 +573,10 @@ describe("sheet page patterns from the design research", () => {
     expect(html).toContain('<h1>Hollis Creek String Band<span class="font-normal"> with Marla Vane and The Ferry Lights</span></h1>');
     expect(text).toMatch(/Sample street sheet · Draft, not sent · Planned Oct 30 2026, 15:00 UTC from \d+ requests in \d+ steps/);
     expect(html).toContain('href="#ledger"');
-    for (const k of ["Seats left", "Days to show", "Street-team days", "Partners found"]) expect(text).toContain(k);
+    // A blank seats-left count is left out rather than shown as "Not entered" (this sample sheet has none).
+    expect(sheet.operator.seatsLeft).toBeNull();
+    expect(text).not.toMatch(/Seats left|Not entered/);
+    for (const k of ["Days to show", "Street-team days", "Partners found"]) expect(text).toContain(k);
     // Every section with receipts has a source line, and no penalty sentence survives.
     expect(html.match(/data-testid="source-line"/g)?.length).toBeGreaterThanOrEqual(6);
     expect(text).not.toMatch(/more when the two ranks are close/);

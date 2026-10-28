@@ -201,7 +201,8 @@ export function guardNoteText(note: string): string {
         .replace(/entityId not in this run/, "it named a place that isn't on this sheet")
         .replace(/^duplicate (tile|entity)$/, "it repeated another line");
   const plainReason = reason.replace(/\s*\(dropped\)$/, "");
-  if (swapped && !/\(dropped\)$/.test(reason)) return `${what} was replaced with fixed wording: ${plainReason}.`;
+  // A summary that fails never leaves a gap: the template's summary always stands in (narrator `narrate`).
+  if ((swapped || field === "summary") && !/\(dropped\)$/.test(reason)) return `${what} was replaced with fixed wording: ${plainReason}.`;
   return `${what} was left out: ${plainReason}.`;
 }
 
@@ -799,4 +800,79 @@ export function withWithout(sheet: StreetSheet): WithWithoutArea | null {
 /** "3rd for this crowd · 25th for the room's usual crowd" (or "not in the usual crowd's list"). */
 export function pickRanksLine(p: Pick<RankedPick, "billRank" | "houseRank">): string {
   return `${ordinal(p.billRank)} for this crowd · ${p.houseRank === null ? "not ranked for the room's usual crowd" : `${ordinal(p.houseRank)} for the room's usual crowd`}`;
+}
+
+// ---------------------------------------------------------------------------
+// The run's footprint, counted from the sheet's own ledger
+// ---------------------------------------------------------------------------
+
+/** What one run sent, counted from its ledger: never typed in by hand. */
+export interface RunFootprint {
+  /** Qloo requests. */
+  qloo: number;
+  /** Kinds of Qloo request: the endpoint, and for /v2/insights the entity or output type asked for. */
+  kinds: number;
+  /** Qloo requests answered from Walkup's own cache of earlier live answers. */
+  cached: number;
+  /** Ticketmaster requests. */
+  tm: number;
+  /** Model calls (narration, reading a change note). */
+  model: number;
+}
+
+/** "/v2/insights urn:heatmap", "/search": one Qloo request kind. */
+function requestKind(e: LedgerEntry): string {
+  const path = e.endpoint.split("?")[0] ?? e.endpoint;
+  const type = e.params?.["filter.type"];
+  return typeof type === "string" && type !== "" ? `${path} ${type}` : path;
+}
+
+export function runFootprint(entries: readonly LedgerEntry[]): RunFootprint {
+  const qloo = entries.filter((e) => e.kind === "qloo");
+  return {
+    qloo: qloo.length,
+    kinds: new Set(qloo.map(requestKind)).size,
+    cached: qloo.filter((e) => e.cacheHit).length,
+    tm: entries.filter((e) => e.kind === "tm").length,
+    model: entries.filter((e) => e.kind === "anthropic").length,
+  };
+}
+
+/**
+ * The footprint in one plain line for the top of a live sheet: "Made with 30 Qloo requests of 9 kinds (19 answered
+ * from Walkup's cache of earlier live calls), 2 Ticketmaster requests and 1 Claude call. Keys stay on the server."
+ * Null when the run made no Qloo request.
+ */
+export function footprintLine(f: RunFootprint): string | null {
+  if (f.qloo === 0) return null;
+  const n = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
+  const cache =
+    f.cached === 0
+      ? "none answered from cache"
+      : f.cached === f.qloo
+        ? `${f.qloo === 1 ? "answered" : `all ${f.qloo} answered`} from Walkup's cache of earlier live calls`
+        : `${f.cached} answered from Walkup's cache of earlier live calls`;
+  const others = [f.tm > 0 ? n(f.tm, "Ticketmaster request", "Ticketmaster requests") : null, f.model > 0 ? n(f.model, "Claude call", "Claude calls") : null].filter(
+    (x): x is string => x !== null,
+  );
+  const qloo = `${n(f.qloo, "Qloo request", "Qloo requests")}${f.kinds > 1 ? ` of ${f.kinds} kinds` : ""} (${cache})`;
+  return `Made with ${joinAnd([qloo, ...others])}. Keys stay on the server.`;
+}
+
+// ---------------------------------------------------------------------------
+// The landing's rooms
+// ---------------------------------------------------------------------------
+
+/**
+ * Which room pair the landing opens on and which it shows second, from the pairs in page order (null where either
+ * sheet is not served): the first served pair is the worked example; the next one served as two live recordings is
+ * the second room (a second room is never a sample).
+ */
+export function landingRooms<T extends Pick<StreetSheet, "mode">>(
+  pairs: readonly ({ a: T; b: T } | null)[],
+): { hero: { a: T; b: T } | null; second: { a: T; b: T } | null } {
+  const served = pairs.filter((p): p is { a: T; b: T } => p !== null);
+  const hero = served[0] ?? null;
+  const second = served.slice(1).find((p) => p.a.mode === "live" && p.b.mode === "live") ?? null;
+  return { hero, second };
 }

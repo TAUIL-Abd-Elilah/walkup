@@ -5,7 +5,7 @@ import { HeroSplit, type HeroSide } from "@/components/HeroSplit";
 import { WithWithout } from "@/components/WithWithout";
 import { ShowSearch } from "@/components/ShowSearch";
 import { actsLine, formatShowDate, headlinerName, joinAnd, possessive } from "@/lib/format";
-import { genreLabel } from "@/lib/labels";
+import { FANBAR_HREF, FANBAR_NO_CLAIM, FANBAR_RESULT, genreLabel } from "@/lib/labels";
 import { runtimeMode } from "@/lib/mode";
 import { ALL_PRESET_IDS } from "@/lib/plans";
 import { clientIp } from "@/lib/server/http";
@@ -19,6 +19,7 @@ import {
   compareBills,
   comparisonSentence,
   areaName,
+  landingRooms,
   missedPick,
   missedPickLine,
   popularityLine,
@@ -30,12 +31,30 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** The worked example opens on this preset and the bill it is paired with. */
-const HERO_PLAN_ID = "g1-a";
-const HERO_PAIR_FALLBACK = "g1-b";
-/** The second example: another room, the same rule. */
-const SECOND_PLAN_ID = "g4-a";
-const SECOND_PAIR_FALLBACK = "g4-b";
+/**
+ * Room pairs in the order the landing shows them. The first pair whose two sheets are served is the worked example;
+ * the next one served as two live recordings is the second room. The Salt Shed goes first (neither bill's signal is
+ * thin); The Anthem second. A sample server has no Salt Shed sheets, so its worked example is the sample pair.
+ */
+const PAIRS: readonly (readonly [string, string])[] = [
+  ["g4-a", "g4-b"],
+  ["g1-a", "g1-b"],
+];
+/** The sheet the primary button opens when its live recording is served: The Roots at The Salt Shed. */
+const FEATURED_PLAN_ID = "g4-b";
+/** A real screenshot of that sheet (apps/web/public, captured from its recording), shown only when that recording is served. */
+const FEATURED_IMAGE = {
+  src: "/roots-sheet.png",
+  width: 1424,
+  height: 1335,
+  alt: "Screenshot of The Roots' street sheet: the header with the requests behind it, then the first two rows of the partner table, each with its area, type, hours on the street-team day, address, phone and why it was picked.",
+  caption: "The top of The Roots' sheet and its first two partners, recorded from a live run. Every footnote opens the request behind the claim.",
+};
+/**
+ * One area per sheet for "With Qloo and without", live recordings only: The Roots' (South Shore) and Rhiannon
+ * Giddens' (H Street NE). Each sheet's own area is chosen by `withWithout`; FLO's Laurel table stays on FLO's sheet.
+ */
+const WITH_WITHOUT_IDS = ["g4-b", "g1-a"];
 
 async function sheetFor(id: string): Promise<StreetSheet | null> {
   const v = await loadPlan(id, { view: "api" });
@@ -162,7 +181,8 @@ interface SheetLink {
 
 async function sheetLinks(fixture: boolean): Promise<SheetLink[]> {
   const out = await Promise.all(
-    ALL_PRESET_IDS.map(async (planId): Promise<SheetLink | null> => {
+    // The room pairs in the order the page shows them, then the other presets.
+    [...new Set([...PAIRS.flat(), ...ALL_PRESET_IDS])].map(async (planId): Promise<SheetLink | null> => {
       const sheet = await sheetFor(planId);
       if (!sheet) return null;
       const fx = fixture ? await presetSheet(planId) : null;
@@ -203,15 +223,33 @@ function SheetList({ links }: { links: SheetLink[] }) {
   );
 }
 
+/** Both sheets of a room pair, or null when either is not served. */
+async function pairFor([x, y]: readonly [string, string]): Promise<{ a: StreetSheet; b: StreetSheet } | null> {
+  const a = await sheetFor(x);
+  if (!a) return null;
+  const b = await sheetFor(a.pairedPlanId ?? y);
+  return b ? { a, b } : null;
+}
+
+/** "The Roots at The Salt Shed, Chicago" */
+function billAt(s: StreetSheet): string {
+  return `${headlinerName(s.bill)} at ${place(s)}`;
+}
+
 export default async function Home() {
   const mode = runtimeMode();
   const fixture = mode.kind === "fixture";
-  const a = await sheetFor(HERO_PLAN_ID);
-  const [b, links] = await Promise.all([sheetFor(a?.pairedPlanId ?? HERO_PAIR_FALLBACK), sheetLinks(fixture)]);
+  const [pairs, links, featuredLive] = await Promise.all([
+    Promise.all(PAIRS.map(pairFor)),
+    sheetLinks(fixture),
+    sheetFor(FEATURED_PLAN_ID).then((s) => (s?.mode === "live" ? s : null)),
+  ]);
+  const rooms = landingRooms(pairs);
+  const a = rooms.hero?.a ?? null;
+  const b = rooms.hero?.b ?? null;
   const fresh = mode.kind === "live" ? freshRunsBody(freshRuns().status(clientIp(await headers()))) : null;
   // A live (or recorded) sheet beside a sample one would set real numbers against made-up ones: no worked example then.
   const cmp = a && b && a.mode === b.mode ? compareBills(a, b) : null;
-  // One frame for both maps: every numbered area of both bills, and the venue(s), so the two scales match.
   // Stored revisions of each hero sheet ("All ages, no bars"), found by parent id in the plan store.
   const [revA, revB] = await Promise.all([
     a ? revisionsOf(a.planId, a.mode === "live" ? "live" : undefined) : Promise.resolve([]),
@@ -219,19 +257,18 @@ export default async function Home() {
   ]);
   const heroA = a ? side(a, "Bill A", revA) : null;
   const heroB = b ? side(b, "Bill B", revB) : null;
-  // With Qloo and without: one area per live hero sheet, the popularity-only list beside Walkup's picks.
-  const withOut = [a, b]
+  // The second room: the next pair served as two live recordings (it has no sample sheets).
+  const second = await (async () => {
+    const p = rooms.second;
+    if (!p) return null;
+    const [r1, r2] = await Promise.all([revisionsOf(p.a.planId, "live"), revisionsOf(p.b.planId, "live")]);
+    return { a: p.a, b: p.b, revisions: { [p.a.planId]: r1, [p.b.planId]: r2 } };
+  })();
+  // With Qloo and without: one area per featured live sheet, the popularity-only list beside Walkup's picks.
+  const withOut = (await Promise.all(WITH_WITHOUT_IDS.map(sheetFor)))
     .map((s) => (s && s.mode === "live" ? { sheet: s, data: withWithout(s) } : null))
     .filter((x): x is { sheet: StreetSheet; data: WithWithoutArea } => x !== null && x.data !== null);
-  // The second room (live recordings only; it has no sample sheets).
-  const second = await (async () => {
-    const s1 = await sheetFor(SECOND_PLAN_ID);
-    if (!s1 || s1.mode !== "live") return null;
-    const s2 = await sheetFor(s1.pairedPlanId ?? SECOND_PAIR_FALLBACK);
-    if (!s2 || s2.mode !== "live") return null;
-    const [r1, r2] = await Promise.all([revisionsOf(s1.planId, "live"), revisionsOf(s2.planId, "live")]);
-    return { a: s1, b: s2, revisions: { [s1.planId]: r1, [s2.planId]: r2 } };
-  })();
+  // One frame for both maps: every numbered area of both bills, and the venue(s), so the two scales match.
   const extent =
     heroA && heroB ? unionBbox([...heroA.top, ...heroB.top].map((t) => decodeBbox(t.geohash)), [heroA.venue, heroB.venue]) : null;
   const sample = a?.mode === "fixture" || b?.mode === "fixture";
@@ -245,30 +282,77 @@ export default async function Home() {
   })();
   const recorded = links.some((l) => l.sheet.mode === "live");
   const recordedSection = mode.kind === "recorded" ? recordedSheetsSection(links.map((l) => l.sheet)) : null;
+  // The one button opens The Roots' recorded sheet; without it (a sample server), the worked example's first sheet.
+  const featured = featuredLive ?? a ?? links[0]?.sheet ?? null;
+  const howWeCounted = (
+    <details className="plain-details mt-6 max-w-[760px] text-sm">
+      <summary>How we counted</summary>
+      <p className="mt-1 text-muted">
+        Each sheet numbers up to 5 areas where its crowd is at least 1.3 times the room&apos;s usual crowd, highest first, with no two in the same
+        ZIP or within 3 km. An area counts as shared when the same square is numbered on both sheets. A partner counts as shared when the same place
+        name is on both lists. A popularity list is Qloo&apos;s same place search with no bill as the signal, cut to as many places as the area has
+        partners. Each with-and-without table shows the sheet&apos;s area where the most picks are missing from that list.
+      </p>
+    </details>
+  );
 
   return (
     <div className="wrap-wide">
-      <section className="pt-6 pb-6" aria-labelledby="intro-title">
-        <h1 id="intro-title">Walkup</h1>
-        <p className="mt-2 max-w-[760px]">
-          For a booked show with seats left, Walkup finds the areas where this bill&apos;s crowd stands out from the room&apos;s usual crowd and the
-          local places that crowd already likes, and puts them on one page for your street team.
-        </p>
+      <section className="pt-6 pb-8" aria-labelledby="intro-title" data-testid="pitch">
+        <div className={`grid items-start gap-x-10 gap-y-6 ${featuredLive ? "lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]" : ""}`}>
+          <div className="min-w-0 max-w-[760px]">
+            <h1 id="intro-title">Walkup</h1>
+            <p className="mt-3">For promoters and venue marketers with a booked show and seats left to sell.</p>
+            <p className="mt-2">
+              It gives your street team one page: the areas where this show&apos;s fans stand out, the local places they already like there, and the
+              PDF, call list and calendar file to work from.
+            </p>
+            <p className="mt-2">Each area is compared with the room&apos;s usual crowd, not with everyone, and every claim links to the request behind it.</p>
+            {featured ? (
+              <>
+                <p className="mt-5">
+                  <Link href={`/plan/${featured.planId}`} className="btn btn-primary" data-testid="open-sheet">
+                    Open a street sheet
+                  </Link>
+                </p>
+                <p className="mt-2 text-sm text-muted">
+                  {billAt(featured)}, {formatShowDate(featured.bill.date)}.
+                  {featured.mode === "fixture" ? " A sample sheet with made-up places and numbers." : mode.kind === "recorded" ? " Recorded from a live run." : ""}
+                </p>
+              </>
+            ) : null}
+          </div>
+          {featuredLive ? (
+            <figure className="m-0 min-w-0">
+              <Link href={`/plan/${featuredLive.planId}`} className="block">
+                {/* A fixed screenshot of this very sheet, served as is (no resizing service needed on any host). */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={FEATURED_IMAGE.src}
+                  width={FEATURED_IMAGE.width}
+                  height={FEATURED_IMAGE.height}
+                  alt={FEATURED_IMAGE.alt}
+                  className="block h-auto w-full border border-rule"
+                  decoding="async"
+                />
+              </Link>
+              <figcaption className="mt-2 text-sm text-muted">{FEATURED_IMAGE.caption}</figcaption>
+            </figure>
+          ) : null}
+        </div>
       </section>
 
       {a && b && cmp && heroA && heroB ? (
-        <section className="section" aria-labelledby="split-title">
+        <section className="section" aria-labelledby="split-title" data-testid="hero">
           <h2 id="split-title">{cmp.sameRoom ? "Same room, two crowds" : "Two bills, two crowds"}</h2>
           <div className="mt-2 max-w-[760px] space-y-2">
-            {/* One screen: what the two maps are, the contrast in one sentence, then the maps. The legend names the baseline. */}
-            <p>
-              <span className="text-muted">
-                {cmp.sameRoom
-                  ? `Both bills play ${place(a)}; each map compares one bill's crowd with the crowd for the shows this room usually books. `
-                  : `${heroA.headliner} plays ${place(a)} and ${heroB.headliner} plays ${place(b)}; each map compares one bill's crowd with its room's usual crowd. `}
-              </span>
-              <span data-testid="hero-comparison">{comparisonSentence(cmp, { a: heroA.headliner, b: heroB.headliner, venue: a.bill.venue.name })}</span>
+            {/* One screen: what lift is (said once, in plain words), the contrast in one sentence, then the maps. */}
+            <p className="text-muted" data-testid="lift-explained">
+              {cmp.sameRoom ? `Both bills play ${place(a)}. ` : `${heroA.headliner} plays ${place(a)} and ${heroB.headliner} plays ${place(b)}. `}
+              Each map shows lift: where this show&apos;s fans stand out from the room&apos;s regulars, the crowd for the other shows{" "}
+              {cmp.sameRoom ? "this room books" : "each room books"}. It compares how the two crowds rank each area; it isn&apos;t a head count.
             </p>
+            <p data-testid="hero-comparison">{comparisonSentence(cmp, { a: heroA.headliner, b: heroB.headliner, venue: a.bill.venue.name })}</p>
             {sample ? <p className="text-sm text-muted">Sample bills: the acts, businesses and numbers are made up; the venue and the area names are real.</p> : null}
           </div>
           <div className="mt-5">
@@ -280,37 +364,29 @@ export default async function Home() {
               source={sample ? "Data: made-up sample data in Qloo's format." : mode.kind === "recorded" ? "Data: Qloo, recorded on live runs." : "Data: Qloo."}
             />
           </div>
-          {withOut.length > 0 ? (
-            <div className="mt-10" data-testid="hero-with-without">
-              <h3>With Qloo and without</h3>
-              <p className="mt-1 max-w-[760px]">
-                One area from each sheet, searched twice in Qloo. With no signal, Qloo lists the area&apos;s places by popularity. With the
-                show&apos;s acts as the signal, it ranks them for these fans, and Walkup marks down what the room&apos;s usual crowd likes just as
-                much.
-              </p>
-              <div className="mt-4 grid gap-x-10 gap-y-10 md:grid-cols-2">
-                {withOut.map(({ sheet, data }) => (
-                  <WithWithout
-                    key={sheet.planId}
-                    data={data}
-                    as="h4"
-                    lead={headlinerName(sheet.bill)}
-                    explain={false}
-                    refs={<AreaRefs data={data} planId={sheet.planId} />}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : null}
-          <details className="plain-details mt-6 max-w-[760px] text-sm">
-            <summary>How we counted</summary>
-            <p className="mt-1 text-muted">
-              Each sheet numbers up to 5 areas where its crowd is at least 1.3 times the room&apos;s usual crowd, highest first, with no two in the
-              same ZIP or within 3 km. An area counts as shared when the same square is numbered on both sheets. A partner counts as shared when the
-              same place name is on both lists. A popularity list is Qloo&apos;s same place search with no bill as the signal, cut to as many places
-              as the area has partners. Each with-and-without table shows the sheet&apos;s area where the most picks are missing from that list.
-            </p>
-          </details>
+          {withOut.length === 0 ? howWeCounted : null}
+        </section>
+      ) : null}
+
+      {withOut.length > 0 ? (
+        <section className="section" aria-labelledby="with-without-title" data-testid="hero-with-without">
+          <h2 id="with-without-title">With Qloo and without</h2>
+          <p className="mt-2 max-w-[760px]">
+            One area from each of two sheets, searched twice in Qloo. With no signal, Qloo lists the area&apos;s places by popularity. With the
+            show&apos;s acts as the signal, it ranks them for these fans, and Walkup marks down what the room&apos;s usual crowd likes just as much.
+          </p>
+          <div className="mt-5 grid gap-x-10 gap-y-10 md:grid-cols-2">
+            {withOut.map(({ sheet, data }) => (
+              <WithWithout key={sheet.planId} data={data} as="h3" lead={billAt(sheet)} explain={false} refs={<AreaRefs data={data} planId={sheet.planId} />} />
+            ))}
+          </div>
+          <p className="mt-6 max-w-[760px]" data-testid="fanbar-home">
+            Two lists that differ don&apos;t show which one sells tickets. {FANBAR_RESULT} {FANBAR_NO_CLAIM}{" "}
+            <Link href={FANBAR_HREF} className="link">
+              The test
+            </Link>
+          </p>
+          {howWeCounted}
         </section>
       ) : null}
 

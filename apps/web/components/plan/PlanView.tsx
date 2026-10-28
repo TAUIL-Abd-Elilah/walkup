@@ -7,7 +7,8 @@ import type { ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from 
 import { SampleStrip } from "../SampleStrip";
 import { actsLine, formatDayMonth, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
 import { countsAreWhatIf, streetDaysText } from "@walkup/exports/format";
-import { entityIndex, guardNoteText, isThinSignal, sendStatus, sendSteps, sheetTitle } from "../../lib/sheet-utils";
+import { entityIndex, footprintLine, guardNoteText, isThinSignal, runFootprint, sendStatus, sendSteps, sheetTitle } from "../../lib/sheet-utils";
+import { FANBAR_HREF, FANBAR_NO_CLAIM, FANBAR_RESULT, lastSegment } from "../../lib/labels";
 import { CopyHooksCard, DeclaredCard, DifferentCard, MediaCard, PrePostCard } from "./MoreCards";
 import { LedgerSection } from "./LedgerSection";
 import { LiftCard } from "./LiftCard";
@@ -70,10 +71,60 @@ function summaryFixed(sheet: StreetSheet): boolean {
   return (sheet.guard?.reasons ?? []).some((r) => /^(?:replaced by the template: )?summary:/.test(r));
 }
 
+/** The run's reasons for replacing an area or partner line with the template's line. */
+function lineFixReasons(sheet: StreetSheet): string[] {
+  return (sheet.guard?.reasons ?? []).filter((r) => /^replaced by the template: (?:tileWhy|partnerLines)\[/.test(r));
+}
+
 /** Area and partner lines the run's own checks replaced with the template's line (said with the view-time count). */
 function lineFixes(sheet: StreetSheet): number {
-  return (sheet.guard?.reasons ?? []).filter((r) => /^replaced by the template: (?:tileWhy|partnerLines)\[/.test(r)).length;
+  return lineFixReasons(sheet).length;
 }
+
+/**
+ * A check reason that says the text claimed something the sheet doesn't back (a number, place or superlative), as
+ * opposed to a wording or policy rule (a banned word, an alcohol word on an all-ages show, "house" for the usual crowd).
+ */
+const UNBACKED_CLAIM = /not backed|not in this run|isn't on this sheet|can't back|the sheet has \d+/i;
+
+/**
+ * Who wrote the summary, said in one muted line after it (the summary itself opens the section): the template, Claude,
+ * or the template standing in for Claude's draft. What the checks changed is said under Checks, not here.
+ */
+export function summaryNote(sheet: StreetSheet, narrationReplaced = 0): string {
+  if (sheet.narration?.templated) return "Written from a fixed template; no model was called.";
+  const fixes = lineFixes(sheet) + narrationReplaced;
+  const checks = "under checks that let it cite only names and numbers from this run";
+  if (summaryFixed(sheet)) return `Summary in fixed wording. Claude wrote the area and partner lines ${checks}; what the checks changed is under Checks.`;
+  return `Written by Claude ${checks}.${fixes > 0 ? ` ${fixes} ${fixes === 1 ? "line was" : "lines were"} replaced with fixed wording; see Checks.` : ""}`;
+}
+
+/**
+ * What the checks did to Claude's text, in one plain line for the Checks list: "Claude's draft summary made a claim
+ * the sheet doesn't back, so fixed wording replaced it. 2 of Claude's area and partner lines were replaced the same
+ * way." It says "made a claim the sheet doesn't back" only when every reason on record is one; otherwise "didn't
+ * pass the checks" (each reason is listed right after it). Null when nothing was replaced.
+ */
+export function checksFixLine(sheet: StreetSheet, narrationReplaced = 0): string | null {
+  if (sheet.narration?.templated) return null;
+  const reasons = sheet.guard?.reasons ?? [];
+  const lineReasons = lineFixReasons(sheet);
+  const fixes = lineReasons.length + narrationReplaced;
+  if (summaryFixed(sheet)) {
+    const claim = reasons.filter((r) => /^(?:replaced by the template: )?summary:/.test(r)).every((r) => UNBACKED_CLAIM.test(r));
+    const head = `Claude's draft summary ${claim ? "made a claim the sheet doesn't back" : "didn't pass the checks"}, so fixed wording replaced it.`;
+    return fixes > 0 ? `${head} ${fixes} of Claude's area and partner lines ${fixes === 1 ? "was" : "were"} replaced the same way.` : head;
+  }
+  if (fixes > 0) {
+    // Lines replaced at view time carry no reason here, so only the run's own reasons can name a claim.
+    const claim = narrationReplaced === 0 && lineReasons.every((r) => UNBACKED_CLAIM.test(r));
+    return `${fixes} of Claude's area and partner lines ${claim ? "made a claim the sheet doesn't back" : "didn't pass the checks"}, so fixed wording replaced ${fixes === 1 ? "it" : "them"}.`;
+  }
+  return null;
+}
+
+/** sm-width columns for the key facts row: one per fact, so a left-out blank leaves no empty cell. */
+const FACT_COLS: Record<number, string> = { 1: "sm:grid-cols-1", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-4" };
 
 /** The default revise handler: starts the revision and hands back the new plan id, the question, or why it failed. */
 function apiRevise(planId: string): ReviseHandler {
@@ -127,7 +178,7 @@ function aboutNote(p: PlanPayload, recorded: boolean): string {
 
 /** "Country", "Comedy": the genre from a Ticketmaster classification ("Music / Country", "Arts & Theatre / Comedy"). */
 function genreOnly(classification: string | undefined): string {
-  const g = (classification ?? "").split("/").pop()?.trim() ?? "";
+  const g = lastSegment(classification ?? "");
   return /^(undefined|other|miscellaneous)$/i.test(g) ? "" : g;
 }
 
@@ -270,6 +321,9 @@ export function PlanView({
   const limits = sheet.limits.filter((l) => !ABOUT_LINE.test(l) && !HEADER_LINE.test(l));
   // The denied-tag count is said in the checks line; the "no model key" template line is said under the Summary.
   const guardNotes = sheet.guard.reasons.filter((r) => !/denied by policy/i.test(r) && !(sheet.narration?.templated && TEMPLATE_NO_KEY.test(r)));
+  // What the checks did to Claude's text, said once under Checks (the Summary only says who wrote it).
+  const fixLine = checksFixLine(sheet, narrationReplaced);
+  const note = sheet.narration ? summaryNote(sheet, narrationReplaced) : "";
 
   const status = sendStatus(entries);
   const requestCount = entries.filter((e) => e.kind !== "action").length;
@@ -283,17 +337,21 @@ export function PlanView({
     if (actions.length > 0) document.title = `${sheetTitle(sheet, entries)} · Walkup`;
   }, [actions.length, sheet, entries]);
 
-  // Four key facts, label over value. A number the operator typed says so in its label.
+  // Key facts, label over value. A number the operator typed says so in its label; a blank input is left out rather
+  // than shown as a placeholder ("Seats left: Not entered").
+  const streetDays = streetDaysText(op.streetTeamDays);
   const facts: { k: string; v: string; note?: string }[] = [
-    op.seatsLeft === null ? { k: "Seats left", v: "Not entered" } : { k: "Seats left, your number", v: formatInt(op.seatsLeft) },
+    ...(op.seatsLeft === null ? [] : [{ k: "Seats left, your number", v: formatInt(op.seatsLeft) }]),
     {
       k: "Days to show",
       v: days >= 0 ? String(days) : "Past",
       ...(recorded && !sample ? { note: `Recorded ${formatDayMonth(sheet.createdAt)}` } : {}),
     },
-    { k: op.streetTeamDays.length > 1 ? "Street-team days" : "Street-team day", v: streetDaysText(op.streetTeamDays) || "None set" },
+    ...(streetDays ? [{ k: op.streetTeamDays.length > 1 ? "Street-team days" : "Street-team day", v: streetDays }] : []),
     { k: "Partners found", v: String(partnersFound) },
   ];
+  // What this run sent, counted from its own ledger (live runs only: a sample sheet called nothing).
+  const footprint = sample ? null : footprintLine(runFootprint(entries));
   // The rest of the inputs as one muted line, honest about blanks.
   const inputsLine = inputsSentences(sheet, realShow);
   const genre = genreOnly(sheet.bill.classification);
@@ -322,7 +380,8 @@ export function PlanView({
               {showName ? `${showName}. ` : ""}
               {venue.name}, {venue.city}
               {venue.state ? `, ${venue.state}` : ""}. {formatShowDate(sheet.bill.date)}.
-              {genre ? <span className="text-muted"> {genre}.</span> : null}
+              {/* A live sheet names whose genre it is (Ticketmaster's listing), so it never reads as Walkup's own call. */}
+              {genre ? <span className="text-muted"> {sample ? `${genre}.` : `Listed as ${genre} on Ticketmaster.`}</span> : null}
             </p>
             <p className="mt-1 text-sm text-muted" data-testid="meta-line">
               {sample ? "Sample street sheet" : "Street sheet"} · {status.line} · {recorded && !sample ? "Recorded" : "Planned"} {formatStamp(sheet.createdAt)} from{" "}
@@ -339,6 +398,11 @@ export function PlanView({
                 </>
               ) : null}
             </p>
+            {footprint ? (
+              <p className="mt-1 text-sm text-muted" data-testid="footprint">
+                {footprint}
+              </p>
+            ) : null}
             {revisions.length > 0 ? (
               <p className="mt-2" data-testid="revision-links">
                 {revisions.map((r, i) => (
@@ -366,7 +430,7 @@ export function PlanView({
             {line && !pairLine ? <p className="mt-2 text-muted">{line}</p> : null}
           </div>
 
-          <dl className="mt-5 grid max-w-[760px] grid-cols-2 gap-y-3 border-y border-rule py-3 sm:grid-cols-4">
+          <dl className={`mt-5 grid max-w-[760px] grid-cols-2 gap-y-3 border-y border-rule py-3 ${FACT_COLS[facts.length] ?? "sm:grid-cols-4"}`}>
             {facts.map((x, i) => (
               <div key={x.k} className={`min-w-0 px-3 ${i % 2 === 1 ? "border-l border-rule" : ""} ${i === 0 ? "pl-0" : ""} ${i === 2 ? "max-sm:pl-0 sm:border-l sm:border-rule" : ""}`}>
                 <dt className="text-sm text-muted">{x.k}</dt>
@@ -419,20 +483,19 @@ export function PlanView({
         {sheet.narration ? (
           <section id="summary" aria-labelledby="summary-title" className="section mt-8 scroll-mt-4">
             <h2 id="summary-title">Summary</h2>
-            <p className="mt-1 max-w-[760px] text-sm text-muted">
-              {sheet.narration.templated
-                ? "Written from a fixed template; no model was called."
-                : summaryFixed(sheet)
-                  ? `Fixed wording: Claude's draft of this summary made a claim the sheet doesn't back, so the template's summary stands in. The area and partner lines are Claude's, under checks that let it cite only names and numbers from this run${
-                      lineFixes(sheet) + narrationReplaced > 0 ? `; ${lineFixes(sheet) + narrationReplaced} of them replaced with fixed wording` : ""
-                    }.`
-                : narrationReplaced + lineFixes(sheet) > 0
-                  ? `Written by Claude under checks that let it cite only names and numbers from this run. ${narrationReplaced + lineFixes(sheet)} ${
-                      narrationReplaced + lineFixes(sheet) === 1 ? "line was" : "lines were"
-                    } replaced with fixed wording because the sheet doesn't back ${narrationReplaced + lineFixes(sheet) === 1 ? "it" : "them"}.`
-                  : "Written by Claude under checks that let it cite only names and numbers from this run."}
-            </p>
+            {/* The show and what the sheet found come first; who wrote it follows, and what the checks changed is under Checks. */}
             <p className="mt-2 max-w-[760px]">{sheet.narration.summary}</p>
+            <p className="mt-1 max-w-[760px] text-sm text-muted" data-testid="summary-note">
+              {note.split(/\b(Checks)\b/).map((part, i) =>
+                part === "Checks" ? (
+                  <a key={i} href="#checks" className="underline underline-offset-2 hover:text-ink">
+                    Checks
+                  </a>
+                ) : (
+                  part
+                ),
+              )}
+            </p>
           </section>
         ) : null}
 
@@ -465,7 +528,7 @@ export function PlanView({
           </ul>
         </section>
 
-        {revise ? <ReviseBox onRevise={revise} onOpen={(id) => router.push(`/plan/${id}`)} /> : null}
+        {revise ? <ReviseBox onRevise={revise} onOpen={(id) => router.push(`/plan/${id}`)} /> : recorded && !sample && !sheet.revision ? <ReviseBox recordedPlanId={sheet.planId} onOpen={(id) => router.push(`/plan/${id}`)} /> : null}
         {steps.length > 0 ? <StepList steps={steps} /> : null}
         <PrePostCard sheet={sheet} />
 
@@ -479,6 +542,13 @@ export function PlanView({
 
           <section id="limits" aria-labelledby="limits-title" className="section scroll-mt-4">
             <h2 id="limits-title">What this sheet doesn&apos;t show</h2>
+            {/* The Fan-Bar Test, stated once per sheet with its scope, in view (not behind Show). */}
+            <p className="mt-2 max-w-[760px]" data-testid="fanbar-limit">
+              <span className="font-semibold">Whether these picks beat popularity.</span> {FANBAR_RESULT} {FANBAR_NO_CLAIM}{" "}
+              <a href={FANBAR_HREF} className="link">
+                The test
+              </a>
+            </p>
             <p className="mt-2 max-w-[760px]">Limits, the checks run on every line, and where this sheet came from.</p>
             <FoldBody title="limits, checks and about this sheet">
               <ul className="mt-3 max-w-[760px] list-disc space-y-1 pl-5">
@@ -486,8 +556,15 @@ export function PlanView({
                   <li key={l}>{l}</li>
                 ))}
               </ul>
-              <h3 className="mt-6 text-base">Checks</h3>
+              <h3 id="checks" className="mt-6 scroll-mt-4 text-base">
+                Checks
+              </h3>
               <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard)}</p>
+              {fixLine ? (
+                <p className="mt-1 max-w-[760px]" data-testid="checks-fix">
+                  {fixLine}
+                </p>
+              ) : null}
               {guardNotes.length > 0 ? (
                 <ul className="mt-1 max-w-[760px] list-disc space-y-1 pl-5 text-muted">
                   {guardNotes.map((r) => (

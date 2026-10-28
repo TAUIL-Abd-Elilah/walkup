@@ -34,7 +34,8 @@ export function WithWithout({
       {lead ? <p className="text-sm text-muted">{lead}</p> : null}
       <Heading className="text-base">{data.headline}</Heading>
       {!explain && refs ? (
-        <p className="text-sm text-muted">
+        // A little room above, so the superscript receipt numbers don't ride up into the heading.
+        <p className="mt-1 text-sm text-muted">
           The two searches
           {refs}
         </p>
