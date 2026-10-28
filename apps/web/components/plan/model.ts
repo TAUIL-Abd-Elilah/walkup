@@ -193,9 +193,90 @@ export interface ReviseOutcome {
   question?: string;
   /** Why nothing happened (refused, rate limited, failed). */
   reason?: string;
+  /** Recorded mode: nothing was wrong, but nothing opens (the change was not made ahead, or changes nothing). */
+  notice?: string;
+  /** Recorded mode: how the note was read (who read it, the tools chosen), shown before anything opens. */
+  reading?: ReviseReading;
+  /** Recorded mode: the ready-made change `planId` is, when the reading matched one. */
+  recorded?: { instruction: string; recordedAt: string };
+}
+
+export interface ReviseReading {
+  interpreter: "model" | "rules";
+  toolCalls: readonly { tool: string; summary: string; input?: unknown }[];
 }
 
 export type ReviseHandler = (instruction: string) => Promise<ReviseOutcome>;
+
+/** One change made ahead for a recorded sheet (GET /api/plan/<id>/ready-made), as the revise box lists it. */
+export interface ReadyMadeChange {
+  planId: string;
+  instruction: string;
+  createdAt: string;
+}
+
+/** What the recorded revise box shows: the ready-made changes and who reads notes on this server. */
+export interface ReadyMade {
+  changes: readonly ReadyMadeChange[];
+  reader: "model" | "rules";
+}
+
+/** The GET /api/plan/<id>/ready-made answer as the box uses it, or null when there is nothing to show. */
+export function parseReadyMade(body: unknown): ReadyMade | null {
+  if (!isRecord(body) || body.enabled !== true || !Array.isArray(body.changes)) return null;
+  const changes = body.changes.filter(
+    (c): c is ReadyMadeChange => isRecord(c) && typeof c.planId === "string" && typeof c.instruction === "string" && c.instruction.trim() !== "" && typeof c.createdAt === "string",
+  );
+  if (changes.length === 0) return null;
+  return { changes, reader: body.reader === "model" ? "model" : "rules" };
+}
+
+/** Who read the note, in words. */
+export function readerLine(interpreter: "model" | "rules"): string {
+  return interpreter === "model" ? "Claude read your note." : "Fixed rules read your note; no model was called.";
+}
+
+/**
+ * A recorded-mode revise answer (lib/server/recorded-revise.ts) as the box's outcome: a matched ready-made change to
+ * open, a question, or a notice that nothing opens.
+ */
+export function recordedOutcome(body: unknown): ReviseOutcome {
+  if (!isRecord(body)) return { reason: "The server sent an answer this page can't read." };
+  const rev = isRecord(body.revision) ? body.revision : null;
+  const reading: ReviseReading | undefined = rev
+    ? {
+        interpreter: rev.interpreter === "model" ? "model" : "rules",
+        toolCalls: Array.isArray(rev.toolCalls)
+          ? rev.toolCalls.filter((t): t is { tool: string; summary: string; input?: unknown } => isRecord(t) && typeof t.tool === "string" && typeof t.summary === "string")
+          : [],
+      }
+    : undefined;
+  const withReading = <T extends ReviseOutcome>(o: T): T => (reading ? { ...o, reading } : o);
+  const text = (v: unknown, fallback: string) => (typeof v === "string" && v.trim() ? v : fallback);
+  switch (body.status) {
+    case "recorded": {
+      const rec = isRecord(body.recorded) ? body.recorded : {};
+      if (typeof body.planId !== "string") return { reason: "The server sent an answer this page can't read." };
+      return withReading({
+        planId: body.planId,
+        recorded: { instruction: text(rec.instruction, ""), recordedAt: text(rec.recordedAt, "") },
+      });
+    }
+    case "needs_input":
+      return withReading({ question: text(body.question, "What should change?") });
+    case "not_recorded":
+    case "unchanged":
+      return withReading({ notice: text(body.reason ?? body.summary, "Nothing changed.") });
+    default:
+      return { reason: text(body.reason, "Nothing changed. Try saying it another way.") };
+  }
+}
+
+/** "Opening the version made for “Street team only on Saturday”, recorded Oct 28." */
+export function openingLine(recorded: { instruction: string; recordedAt: string }, formatDay: (iso: string) => string): string {
+  const when = recorded.recordedAt ? `, recorded ${formatDay(recorded.recordedAt)}` : "";
+  return recorded.instruction ? `Opening the version made for “${recorded.instruction}”${when}.` : `Opening the version made for that change${when}.`;
+}
 
 /** Trims and checks a revise instruction; returns the text to send or a message for the field. */
 export function checkInstruction(raw: string): { ok: true; text: string } | { ok: false; message: string } {

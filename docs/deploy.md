@@ -122,6 +122,7 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `WALKUP_DATA_DIR` | `fly.toml` `[env]` and the image | `/data` (the volume). |
 | `WALKUP_MODE` | `fly.toml` `[env]` and the image | `auto`: live while `QLOO_API_KEY` and `TICKETMASTER_API_KEY` are set, the synthetic sample world (fixture) without them. `recorded`: stored live sheets only, no new plans. `fixture`: the sample world whatever else is set. |
 | `WALKUP_QLOO_UNTIL` | secret or `fly.toml` `[env]`, from late October | The time Qloo stops answering, e.g. `2026-11-02` (00:00 UTC). From then on the server is in recorded mode. Unset: no date. |
+| `WALKUP_RECORDED_REVISE` | plain env, optional | `off` makes revisions in recorded mode answer the plain 503 again and hides "Change something" on recorded sheets. Unset: the box opens the sheet's ready-made changes (see [Recorded mode](#recorded-mode-live-runs-paused)). |
 | `QLOO_MONTH_GUARD_FLOOR` | `fly.toml` `[env]` | `1500`: fresh Qloo calls stop below 1,500 calls left this month. |
 | `WALKUP_RECORD` | secret, only while recording | `1` writes Qloo bodies to `/data/fixtures/raw`. Unset it afterwards. |
 | `WALKUP_FIXTURES_DIR` | `fly.toml` `[env]` and the image | `/data/fixtures` (`raw/` recorded on the volume, `synthetic/` from the image). |
@@ -215,10 +216,20 @@ paused, the site serves the sheets it recorded on live runs and makes nothing ne
   paused; sheets recorded from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
   sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
   "Planned <date>", on the page and in the PDF.
-- New plans, the show and title searches, picks and revisions answer with `"mode": "recorded"` and one plain reason
-  (HTTP 503 on the REST routes). Nothing calls Qloo or Ticketmaster. Over MCP, the tools that only read stored sheets
-  still answer (`get_sheet`, `bill_vs_house`, `plan_show` for a preset or a plan id); `rank_partners` and new plans
-  refuse, and `revise_plan` refuses with the ids of any revisions of that plan recorded while the server was live.
+- New plans, the show and title searches and picks answer with `"mode": "recorded"` and one plain reason (HTTP 503 on
+  the REST routes). Nothing calls Qloo or Ticketmaster. Over MCP, the tools that only read stored sheets still answer
+  (`get_sheet`, `bill_vs_house`, `plan_show` for a preset or a plan id); `rank_partners` and new plans refuse, and
+  `revise_plan` refuses with the ids of any revisions of that plan recorded while the server was live.
+- "Change something" stays open on a recorded sheet that has revisions recorded for it (its ready-made changes,
+  listed under the box). The note is read as in live mode: the model with the strict revise tools when a model key is
+  set, the fixed rules otherwise. When the reading gives the same tool calls and arguments as a ready-made change
+  (place types and areas compared as sets), `POST /api/plan/<id>/revise` answers 200 `{"status": "recorded", "planId": <that
+  revision>, "revision": <the reading>}` and the page shows the reading, then opens that revision. Any other change
+  answers 200 `{"status": "not_recorded"}` with a plain reason (it needs new Qloo requests, and live runs are paused)
+  and the ready-made changes; nothing runs and nothing is stored. A sheet with none, a sample sheet, and a revision
+  itself answer the 503 above, as does every revision with `WALKUP_RECORDED_REVISE=off`. The per-network revise cap
+  (12 an hour) applies. While the box answers this way, the header and the landing page link only the revisions
+  recorded with the sheets; later ones open through the box.
 
 The server is in recorded mode when `WALKUP_MODE=recorded`, when the time in `WALKUP_QLOO_UNTIL` has passed, or when
 Qloo has rejected the configured key and the plan store holds a live sheet. A rejected key with no live sheet stored

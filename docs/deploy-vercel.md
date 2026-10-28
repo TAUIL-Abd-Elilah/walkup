@@ -3,9 +3,30 @@
 The hosted site, https://walkup-eight.vercel.app, runs the real Next.js app (`apps/web`) on Vercel's free Hobby plan
 in **recorded mode**: it serves the hero sheets recorded from live runs, with their receipts, the print view, every
 download (PDF, CSV, ICS, `sheet.json`), `/system-card`, `/eval`, `/healthz` and the MCP tools that read stored sheets.
-New plans, searches and revisions answer with the plain recorded-mode reason (HTTP 503), as described in
+New plans and searches answer with the plain recorded-mode reason (HTTP 503), as described in
 [deploy.md, Recorded mode](deploy.md#recorded-mode-live-runs-paused). No API key is set
 on Vercel: recorded mode calls nothing.
+
+"Change something" still works on the four hero sheets, from changes made ahead. Each hero sheet has five revisions
+recorded from live runs (its ready-made changes, listed under the box). The fixed rules read the note on Vercel (no
+model key there, and the page says so) and turn it into revise tool calls; the page shows that reading, then opens the
+ready-made revision whose own calls give the same changes. Any other change gets a plain
+answer that it needs new Qloo requests while live runs are paused, with the ready-made changes to pick from; nothing
+is sent and nothing is stored. `WALKUP_RECORDED_REVISE=off` turns this off (revisions answer 503 again and the box
+hides).
+
+| Sheet | Ready-made changes |
+|---|---|
+| g1-a Rhiannon Giddens, The Anthem | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Within 10 km of the room; Skip H Street NE; No restaurants |
+| g1-b FLO, The Anthem | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Within 10 km of the room; Skip U Street / Shaw; No restaurants |
+| g4-a Greensky Bluegrass, The Salt Shed | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Within 10 km of the room; Skip Schaumburg; No restaurants |
+| g4-b The Roots, The Salt Shed | Street team only on Saturday; Within 10 km of the room; Skip Bronzeville; No restaurants; All ages, no bars |
+
+The changes without a date were recorded on Oct 28 2026 and say so on their sheets. They re-ran each parent's own
+request with the note's overrides, on the parent's own Qloo answers wherever a request did not change (the Qloo cache
+of the records that made the parents) and on the parent's Ticketmaster roster of the room (rebuilt from the parent's
+receipts, so the room's usual crowd is the parent's; that receipt is marked as reused). The parents in `plans.json`
+were not touched.
 
 Fly.io ([deploy.md](deploy.md)) is still the setup for a live host (an always-on machine and a volume). Nothing in
 this file changes it.
@@ -47,7 +68,21 @@ variables (Production and Preview), none of them secret:
 
    A fresh data directory means a cold Qloo cache: about 30 Qloo calls for the first bill, fewer for the second,
    none for the revision. Raw bodies (`WALKUP_RECORD`) stay in the data directory under `.cache/`.
-2. Stop the dev server, then export: `node scripts/export-plans.mjs "$R/plans.sqlite"`.
+2. Stop the dev server, then export: `node scripts/export-plans.mjs "$R/plans.sqlite"`. Then make the ready-made
+   changes for "Change something" (about 90 Qloo calls and 35 model calls for all four sheets; a note the model reads
+   differently from the fixed rules is skipped, since the rules read notes on Vercel; `--reader rules` records it
+   with the rules):
+
+   ```bash
+   D="$PWD/.cache/record-$(date +%F)-revisions"
+   npx tsx scripts/precompute-revisions.ts seed --dir "$D" --from "$R"      # plans.json + the record's Qloo cache
+   npx tsx scripts/precompute-revisions.ts record --dir "$D" --offline     # no call: every unchanged request is cached
+   npx tsx scripts/precompute-revisions.ts record --dir "$D"               # live; stops on drift or past --max-qloo/--max-model
+   npx tsx scripts/precompute-revisions.ts merge --dir "$D"                # backs up plans.json, appends, proves the old plans unchanged
+   ```
+
+   `record` stops if a revision makes a request its note cannot reach (the bill, the room, its usual crowd; the heat
+   calls too unless the note changes the radius). A new room needs its roster in `ROOM_ROSTERS` in the script first.
 3. Check what would be uploaded; no `.env`, `fixtures/raw`, `probe_out` or `.cache` path may appear, and
    `deploy/vercel/plans.json` must:
 

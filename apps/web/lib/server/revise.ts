@@ -2,8 +2,11 @@
  * POST /api/plan/<id>/revise: the operator's note about a finished sheet.
  *
  *   1. Validate the note and the plan (a finished sheet; a paused or running
- *      plan answers 409; a sheet from the other mode answers 409; nothing is
- *      revised in recorded mode: 503). Rate-limited
+ *      plan answers 409; a sheet from the other mode answers 409). In recorded
+ *      mode nothing re-runs: the note is read and answered from the sheet's
+ *      ready-made changes (lib/server/recorded-revise.ts), or with the plain
+ *      recorded-mode refusal (503) when it has none or
+ *      WALKUP_RECORDED_REVISE=off. Rate-limited
  *      per network (lib/server/limits.ts); in live mode a revision that re-runs
  *      also takes a fresh-run unit, refunded when no fresh Qloo call was made.
  *   2. The orchestrator reads the note: the model with strict tools when an
@@ -22,6 +25,8 @@ import { depsFor, publishLiveQuota, sessionChoices, stores } from "./engine";
 import type { RequestContext } from "./http";
 import { parseReviseBody } from "./input";
 import { freshRuns, reviseAllowed } from "./limits";
+import { recordedReviseOn } from "./recorded";
+import { reviseRecorded } from "./recorded-revise";
 import { startRun, type RunState, type WebPlanRequest } from "./runs";
 import { freshRunsBody, loadPlan, recordedRefusal, SYNC_WAIT_MS, type ServiceResponse, type SheetView } from "./service";
 import { addPartnerHouseRanks } from "./twin";
@@ -95,7 +100,7 @@ export async function revisePlanFor(id: string, raw: unknown, ctx: RequestContex
   if (!parsed.ok) return { status: 400, body: { reason: parsed.reason } };
   const { instruction, wait } = parsed.value;
   const mode = runtimeMode().kind;
-  if (mode === "recorded") return recordedRefusal();
+  if (mode === "recorded") return recordedReviseOn() ? reviseRecorded(id, instruction, ctx) : recordedRefusal();
 
   const v = await loadPlan(id, { view: "api", sessionId: ctx.sessionId });
   if (!v) return { status: 404, body: { reason: `No plan with id ${id}.` } };

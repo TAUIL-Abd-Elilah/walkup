@@ -5,6 +5,7 @@
  */
 import type { StreetSheet } from "@walkup/contracts";
 import { presetById, presetShowOf, type StoredPlan } from "@walkup/orchestrator";
+import { runtimeMode } from "../mode";
 import { stores, type Stores } from "./engine";
 import { qlooRefusedKey } from "./key-status";
 import { isCanonicalRequest, type WebPlanRequest } from "./runs";
@@ -73,8 +74,9 @@ export function liveSheetStored(rejectedAt: string): boolean {
 let dayMemo: { stores: Stores; value: string | null } | null = null;
 
 /**
- * The UTC day ("2026-10-21") of the newest complete live sheet in the plan store: the day the recorded sheets
- * were made. Null when none is stored, or while an asynchronous store has not answered yet.
+ * The UTC day ("2026-10-21") of the newest complete live sheet in the plan store that is not a revision: the day the
+ * recorded sheets were made (a ready-made change recorded later says its own day on its sheet). Null when none is
+ * stored, or while an asynchronous store has not answered yet.
  */
 export function recordedOnDay(): string | null {
   let st: Stores;
@@ -84,7 +86,13 @@ export function recordedOnDay(): string | null {
     return null;
   }
   if (dayMemo?.stores === st && dayMemo.value !== null) return dayMemo.value;
-  const pick = (runs: StoredPlan[]) => runs.map((r) => (r.sheet?.createdAt ?? r.createdAt ?? "").slice(0, 10)).filter(Boolean).sort().pop() ?? null;
+  const pick = (runs: StoredPlan[]) =>
+    runs
+      .filter((r) => !r.sheet?.revision)
+      .map((r) => (r.sheet?.createdAt ?? r.createdAt ?? "").slice(0, 10))
+      .filter(Boolean)
+      .sort()
+      .pop() ?? null;
   const found = st.plans.listComplete({ mode: "live" }, 50);
   if (found instanceof Promise) {
     void found.then((runs) => (dayMemo = { stores: st, value: pick(runs) }), () => undefined);
@@ -97,6 +105,21 @@ export function recordedOnDay(): string | null {
 /** Complete plans read to find the revisions of one plan. */
 export const REVISION_LOOKBACK = 200;
 
+/** WALKUP_RECORDED_REVISE=off (or 0, false, no) restores the plain recorded-mode refusal for revisions. */
+export const RECORDED_REVISE_ENV = "WALKUP_RECORDED_REVISE";
+
+export function recordedReviseOn(env: Record<string, string | undefined> = process.env): boolean {
+  return !["off", "0", "false", "no"].includes((env[RECORDED_REVISE_ENV] ?? "").trim().toLowerCase());
+}
+
+/**
+ * True when "Change something" answers from ready-made changes (lib/server/recorded-revise.ts): recorded mode with
+ * the switch on.
+ */
+export function readyMadeActive(): boolean {
+  return recordedReviseOn() && runtimeMode().kind === "recorded";
+}
+
 /** A stored revision of a plan, for the "Revised: All ages, no bars" link. */
 export interface PlanRevisionLink {
   planId: string;
@@ -108,7 +131,9 @@ export interface PlanRevisionLink {
 /**
  * The stored complete revisions of `planId` (sheets whose revision.parentPlanId is it), newest first, one per note.
  * Found through the plan store, never from a list of ids, so any revision recorded or made on this server shows.
- * A live parent lists live revisions only, so a recording never links to a sample.
+ * A live parent lists live revisions only, so a recording never links to a sample. While the revise box answers
+ * from ready-made changes (recorded mode, readyMadeActive), only the revisions recorded with the sheets (up to
+ * recordedOnDay) are linked; changes made ahead later open by typing them in the box (or picking them under it).
  */
 export async function revisionsOf(planId: string, mode?: "live" | "fixture"): Promise<PlanRevisionLink[]> {
   let st: Stores;
@@ -133,6 +158,10 @@ export async function revisionsOf(planId: string, mode?: "live" | "fixture"): Pr
     if (instruction === "" || seen.has(key)) continue;
     seen.add(key);
     out.push({ planId: r.sheet.planId, instruction, createdAt: r.sheet.createdAt });
+  }
+  if (mode === "live" && readyMadeActive()) {
+    const day = recordedOnDay();
+    if (day) return out.filter((r) => r.createdAt.slice(0, 10) <= day);
   }
   return out;
 }

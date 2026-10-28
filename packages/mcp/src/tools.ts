@@ -602,7 +602,8 @@ async function withRecordedRevisions(services: McpServices, caller: Caller, plan
     const parent = await readView(services, planId);
     const parentId = parent?.kind === "sheet" ? parent.sheet.planId : planId;
     const recent = await services.store.listComplete({ mode: "live" }, RECORDED_REVISION_LOOKBACK);
-    revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 3);
+    // Up to six: a hosted hero sheet has five ready-made changes, and an agent should see each one.
+    revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 6);
   } catch {
     revisions = [];
   }
