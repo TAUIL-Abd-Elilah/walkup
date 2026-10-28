@@ -2,7 +2,7 @@
 
 **The Fill-the-Room Agent.** *Fill the room, not the feed.*
 
-For one booked show with seats left, Walkup finds where this bill's crowd stands out from the room's usual crowd, ranks the local places that crowd already likes, and puts them on one page for your street team. Qloo picks the places; Claude writes the sentences and reads your change notes. Every claim links to its request.
+For one booked show with seats left, Walkup finds where this bill's crowd stands out from the room's usual crowd, ranks the local places that crowd already likes, and puts them on one page for your street team. Qloo picks the places; Claude writes the sentences and reads your change notes. Every area and partner links to its request.
 
 ## Judge it in two minutes
 
