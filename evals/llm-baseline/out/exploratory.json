@@ -1,0 +1,53 @@
+{
+  "note": "Exploratory, not in the protocol: never the published count.",
+  "namesWithANote": 32,
+  "areasOneAndAHalfTimesAsWide": {
+    "asked": 74,
+    "returned": 74,
+    "foundInQloo": 27,
+    "foundInArea": 15,
+    "notFound": 47,
+    "outsideArea": 12,
+    "closed": 3,
+    "notOpen": 0,
+    "hoursNotListed": 4,
+    "chain": 1,
+    "repeat": 1,
+    "usable": 11,
+    "onWalkupList": 3,
+    "byOutcome": {
+      "usable": 11,
+      "not_found": 47,
+      "outside_area": 12,
+      "closed": 3,
+      "not_open": 0,
+      "chain": 0,
+      "repeat": 1
+    }
+  },
+  "notesRemovedBeforeSearch": {
+    "asked": 74,
+    "returned": 74,
+    "foundInQloo": 30,
+    "foundInArea": 9,
+    "notFound": 44,
+    "outsideArea": 21,
+    "closed": 4,
+    "notOpen": 0,
+    "hoursNotListed": 5,
+    "chain": 0,
+    "repeat": 1,
+    "usable": 5,
+    "onWalkupList": 3,
+    "byOutcome": {
+      "usable": 5,
+      "not_found": 44,
+      "outside_area": 21,
+      "closed": 4,
+      "not_open": 0,
+      "chain": 0,
+      "repeat": 0
+    }
+  },
+  "qlooNetworkCalls": 31
+}

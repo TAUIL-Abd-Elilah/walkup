@@ -1,0 +1,438 @@
+{
+  "protocolSha256": "a5b9e178ea0cc2e20ec51e8b3c69afa8cb3553cf076aba2677612abc8fb91321",
+  "modelRequested": "anthropic/claude-haiku-5.5",
+  "modelServed": "anthropic/claude-haiku-5.5",
+  "temperature": null,
+  "maxTokens": 2000,
+  "areas": [
+    {
+      "bill": "giddens",
+      "area": 1,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Granville Moore's",
+          "type": "bar",
+          "address": "1238 H St NE, Washington, DC 20002",
+          "reason": "Belgian gastropub with a casual, music-friendly crowd that fits Giddens fans; verify current hours."
+        },
+        {
+          "name": "The Pug",
+          "type": "bar",
+          "address": "1264 H St NE, Washington, DC 20002",
+          "reason": "Neighborhood bar with a loyal local crowd and regular live music; verify current hours."
+        },
+        {
+          "name": "Toki Underground",
+          "type": "restaurant",
+          "address": "1234 H St NE, Washington, DC 20002",
+          "reason": "Popular ramen restaurant on H Street with a steady mix of locals and visitors; verify current hours."
+        },
+        {
+          "name": "Dangerously Delicious Pies",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Well-known pie shop with a relaxed, community-minded following; confirm location and hours before visiting."
+        },
+        {
+          "name": "Peregrine Espresso",
+          "type": "cafe",
+          "address": null,
+          "reason": "Local coffee shop popular with neighborhood regulars and arts-minded customers; confirm the H Street location and hours."
+        },
+        {
+          "name": "Rocket Bar",
+          "type": "cocktail bar",
+          "address": null,
+          "reason": "Long-running H Street cocktail bar with a music-loving crowd; confirm address and hours."
+        },
+        {
+          "name": "Phoenix Vintage",
+          "type": "clothing store",
+          "address": null,
+          "reason": "Vintage clothing shop that appeals to folk and roots-music fans; unverified, so confirm it exists and its hours."
+        }
+      ]
+    },
+    {
+      "bill": "giddens",
+      "area": 2,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Bearded Iris Brewing",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Vienna brewery with food that draws music and craft-beer crowds; I can't confirm it falls within 2 km of the given point."
+        },
+        {
+          "name": "Passage to India",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Long-running Vienna-area restaurant popular with local evening diners; the 2 km distance is unverified."
+        },
+        {
+          "name": "Vienna Tap Room",
+          "type": "lounge",
+          "address": null,
+          "reason": "Local bar that draws a casual, music-friendly crowd; its distance from the point is unverified and may exceed 2 km."
+        },
+        {
+          "name": "Tazza Coffee",
+          "type": "cafe",
+          "address": null,
+          "reason": "Independent coffee shop frequented by local residents; I can't confirm it is within the 2 km radius."
+        }
+      ]
+    },
+    {
+      "bill": "giddens",
+      "area": 3,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "The Dubliner",
+          "type": "pub",
+          "address": null,
+          "reason": "Long-running Irish pub in downtown Bethesda with a steady crowd of folk and roots music fans."
+        },
+        {
+          "name": "Passage to India",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Popular Bethesda restaurant with a relaxed, sit-down crowd that is likely to take flyers."
+        },
+        {
+          "name": "Bethesda Crab House",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Well-known local seafood spot with a busy weekend dinner crowd in Bethesda."
+        },
+        {
+          "name": "Bethesda Bakery",
+          "type": "bakery",
+          "address": null,
+          "reason": "Neighborhood bakery with heavy weekend foot traffic from local residents."
+        },
+        {
+          "name": "Bethesda Coffee House",
+          "type": "cafe",
+          "address": null,
+          "reason": "Independent coffee shop where students, professionals, and music fans gather on weekdays and Saturdays."
+        }
+      ]
+    },
+    {
+      "bill": "flo",
+      "area": 1,
+      "ok": false,
+      "attempts": 2,
+      "error": "answer is not the JSON shape (finish length)",
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": []
+    },
+    {
+      "bill": "flo",
+      "area": 2,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Laurel Pizza Works (unverified)",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Local pizza spot; confirm it exists within 2 km and is open Thu/Sat."
+        },
+        {
+          "name": "Main Street Grill (unverified)",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Downtown Laurel dining; confirm name, location, and weekend hours."
+        },
+        {
+          "name": "Laurel Coffee House (unverified)",
+          "type": "cafe",
+          "address": null,
+          "reason": "Casual café likely popular with younger concertgoers; confirm it exists."
+        },
+        {
+          "name": "Java Junction Laurel (unverified)",
+          "type": "cafe",
+          "address": null,
+          "reason": "Independent coffee shop; confirm it is not a chain and is open Thu/Sat."
+        },
+        {
+          "name": "Laurel Sweet Shop (unverified)",
+          "type": "bakery",
+          "address": null,
+          "reason": "Neighborhood bakery; confirm it exists and is open on both days."
+        },
+        {
+          "name": "Old Town Bread Co. (unverified)",
+          "type": "bakery",
+          "address": null,
+          "reason": "Local bakery; confirm location within 2 km and weekend hours."
+        },
+        {
+          "name": "Laurel Tap House (unverified)",
+          "type": "pub",
+          "address": null,
+          "reason": "Neighborhood pub with a music crowd; confirm it exists and is open Thu/Sat."
+        },
+        {
+          "name": "Downtown Threads (unverified)",
+          "type": "clothing store",
+          "address": null,
+          "reason": "Independent apparel shop; confirm it exists and is open Thu/Sat."
+        }
+      ]
+    },
+    {
+      "bill": "flo",
+      "area": 3,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Ratsie's",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Independent Bowie restaurant and bar popular with young adults; verify its address and Thursday and Saturday hours before visiting."
+        }
+      ]
+    },
+    {
+      "bill": "greensky",
+      "area": 1,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Stadium Sports Bar & Grill",
+          "type": "sports bar",
+          "address": null,
+          "reason": "Unverified from memory: a sports bar in Schaumburg likely to draw live-music fans; confirm it exists, its distance from the point, and Thu/Sat hours before visiting."
+        },
+        {
+          "name": "Trattoria Rosa",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Unverified from memory: a local Italian restaurant with a busy weekend crowd; confirm it exists, its distance from the point, and Thu/Sat hours before visiting."
+        },
+        {
+          "name": "Johnnie's Beef and Italian",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Unverified from memory: a casual counter-service spot suited to flyer drops; confirm it exists, its distance from the point, and Thu/Sat hours before visiting."
+        }
+      ]
+    },
+    {
+      "bill": "greensky",
+      "area": 2,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Vine Street Pub & Brewery",
+          "type": "bar",
+          "address": null,
+          "reason": "Local brewpub popular with live-music fans; verify exact location and hours before visiting."
+        },
+        {
+          "name": "Dinkel's Bakery",
+          "type": "bakery",
+          "address": null,
+          "reason": "Long-running neighborhood bakery in Highland Park; verify it is within 2 km and open Thursday and Saturday."
+        },
+        {
+          "name": "Highwood Brewing Company",
+          "type": "bar",
+          "address": null,
+          "reason": "Independent taproom suited to flyer placement; I could not confirm it exists, so verify before going."
+        },
+        {
+          "name": "Lake Forest Bakery",
+          "type": "bakery",
+          "address": null,
+          "reason": "Independent bakery near the North Shore; I could not confirm it is within 2 km, so verify before going."
+        },
+        {
+          "name": "Gaslight Coffee",
+          "type": "cafe",
+          "address": null,
+          "reason": "Independent coffee spot where music fans gather; I could not confirm its location, so verify before going."
+        },
+        {
+          "name": "Coffee House Highwood",
+          "type": "cafe",
+          "address": null,
+          "reason": "Local cafe that may welcome flyers; I could not confirm it exists, so verify before going."
+        },
+        {
+          "name": "Highwood Pizza House",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Independent casual restaurant with a young crowd; I could not confirm it exists, so verify before going."
+        },
+        {
+          "name": "Sheridan Road Bistro",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Neighborhood bistro on the main commercial strip; I could not confirm it exists, so verify before going."
+        }
+      ]
+    },
+    {
+      "bill": "greensky",
+      "area": 3,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Oak Park Tavern",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Oak Park gastropub with a casual crowd; verify it is open Thursday and Saturday and within 2 km before visiting."
+        },
+        {
+          "name": "Hemingway's Restaurant",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Oak Park dining spot with regular local traffic; verify current location and weekend hours before visiting."
+        },
+        {
+          "name": "Sports bar near Oak Park Ave (name unverified)",
+          "type": "sports bar",
+          "address": null,
+          "reason": "Neighborhood sports bar likely to see weekend crowds; I cannot confirm a specific name or address offline, so verify locally."
+        },
+        {
+          "name": "Lake Street bar (name unverified)",
+          "type": "bar",
+          "address": null,
+          "reason": "Neighborhood bar on Lake Street where music fans may gather; I cannot confirm the name offline, so verify before visiting."
+        },
+        {
+          "name": "Oak Park Brewing (name unverified)",
+          "type": "bar",
+          "address": null,
+          "reason": "Local brewery taproom that could draw Greensky fans; I cannot confirm the exact name or location offline, so verify first."
+        },
+        {
+          "name": "Local bakery on Oak Park Ave (name unverified)",
+          "type": "bakery",
+          "address": null,
+          "reason": "Independent bakery with weekend foot traffic; I cannot confirm the name offline, so verify before visiting."
+        },
+        {
+          "name": "Local bakery near Roosevelt Rd (name unverified)",
+          "type": "bakery",
+          "address": null,
+          "reason": "Independent bakery serving nearby residents; I cannot confirm the name offline, so verify before visiting."
+        },
+        {
+          "name": "Neighborhood cafe near Scoville Park (name unverified)",
+          "type": "cafe",
+          "address": null,
+          "reason": "Independent coffee shop with a steady morning crowd; I cannot confirm the name offline, so verify before visiting."
+        }
+      ]
+    },
+    {
+      "bill": "roots",
+      "area": 1,
+      "ok": false,
+      "attempts": 2,
+      "error": "answer is not the JSON shape (finish length)",
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": []
+    },
+    {
+      "bill": "roots",
+      "area": 2,
+      "ok": true,
+      "attempts": 1,
+      "error": null,
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": [
+        {
+          "name": "Crawford Avenue Grill (verify name and hours)",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Casual dinner spot likely to draw music-minded diners; confirm it is still open and within 2 km."
+        },
+        {
+          "name": "Midlothian Pizza House (verify name and hours)",
+          "type": "restaurant",
+          "address": null,
+          "reason": "Family-friendly pizzeria with weekend traffic; confirm it is open Thursday and Saturday."
+        },
+        {
+          "name": "Cicero Avenue Billiards (verify name and hours)",
+          "type": "pool hall",
+          "address": null,
+          "reason": "Pool hall where younger concertgoers gather; confirm it exists and is open both days."
+        },
+        {
+          "name": "Midlothian Neighborhood Tavern (verify name and hours)",
+          "type": "bar",
+          "address": null,
+          "reason": "Neighborhood bar with a steady crowd of local regulars; confirm it is open and within 2 km."
+        },
+        {
+          "name": "Midlothian Sports Pub (verify name and hours)",
+          "type": "sports bar",
+          "address": null,
+          "reason": "Sports bar with TVs and a weekend crowd; confirm it exists and is open Thursday and Saturday."
+        },
+        {
+          "name": "Midlothian Corner Bakery (verify name and hours)",
+          "type": "bakery",
+          "address": null,
+          "reason": "Neighborhood bakery with steady foot traffic; confirm it is open Thursday and Saturday."
+        }
+      ]
+    },
+    {
+      "bill": "roots",
+      "area": 3,
+      "ok": false,
+      "attempts": 2,
+      "error": "answer is not the JSON shape (finish length)",
+      "extraNamesDropped": 0,
+      "repeatsInAnswer": 0,
+      "places": []
+    }
+  ]
+}

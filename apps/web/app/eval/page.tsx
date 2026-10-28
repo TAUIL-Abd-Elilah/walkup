@@ -2,6 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headlinerName } from "@/lib/format";
 import { getPlan } from "@/lib/plans";
+import {
+  BASELINE,
+  baselineRows,
+  exploratoryLine,
+  missRows,
+  modelName,
+  preregisteredLine,
+  RESULTS_HREF,
+  WHY_LIFT,
+  whyLiftRows,
+  whyLiftSentences,
+} from "@/lib/eval-data/llm-baseline";
 // The product eval writes this file (npx tsx evals/product/run.ts); nothing in the sample-data section is typed in by hand.
 // The live section is typed in from the runs recorded on the hosted site on Oct 21 2026 (no API call at render).
 import scoreFile from "../../../../evals/product/out/score.json";
@@ -136,16 +148,16 @@ export default function EvalPage() {
       <div className="max-w-[760px]">
       <h1>Evaluation</h1>
       <p className="mt-3">
-        What has been checked so far, and what has not. The first section was recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs
-        are paused for judging; the sheets on this site are what a live run produced. The product eval after it ran on sample data: a stand-in for
-        Qloo and Ticketmaster with made-up places and numbers.
+        What has been checked so far, and what has not. The first section was recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and the
+        Claude-alone check after it ran on live Qloo calls on Oct 28 2026. Live runs are paused for judging; the sheets on this site are what a live run
+        produced. The product eval after them ran on sample data: a stand-in for Qloo and Ticketmaster with made-up places and numbers.
       </p>
 
       <section id="live" className="section mt-8 scroll-mt-24" aria-labelledby="live-title">
         <h2 id="live-title">Live runs (Oct 21 2026)</h2>
         <p className="mt-3">
           Two real Ticketmaster bills at The Anthem, Washington DC, an independent room (I.M.P.), run on live Qloo and Ticketmaster calls and recorded for
-          the hosted site, walkup-eight.vercel.app. A fresh run makes about 30 Qloo calls. The hosted home page opens on these two sheets.
+          the hosted site, walkup-eight.vercel.app. A fresh run makes about 30 Qloo calls. The hosted home page shows these two sheets as its second room, after The Salt Shed in Chicago.
         </p>
         <p className="mt-2">
           A fixed rule from the spec picked the two bills: in one independent room, the first Americana, country or folk bill in the window (here Dec 20
@@ -366,6 +378,64 @@ export default function EvalPage() {
         </table>
         <ShowsLine shows="lift is not just foot traffic for that pair of bills, at one room." not="that it holds in other rooms." />
 
+        <h4 className="mt-6">The two live rooms</h4>
+        <p className="mt-2">
+          The same question on the four live bills, from the heatmaps recorded on Oct 21 2026, with no new Qloo call. Raw heat is where a bill&apos;s own
+          crowd is strongest; lift is where it stands out from the room&apos;s usual crowd. Shared areas are counted as the sheets count them: the same
+          map square.
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Room</th>
+              <th scope="col" className="num">
+                Top 5 shared, raw heat
+              </th>
+              <th scope="col" className="num">
+                Top 5 shared, lift
+              </th>
+              <th scope="col" className="num">
+                Raw heat against the usual crowd
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {whyLiftRows().map((r) => (
+              <tr key={r.room}>
+                <td>{r.room}</td>
+                <td className="num">
+                  {r.rawShared} of {r.of}
+                </td>
+                <td className="num">
+                  {r.liftShared} of {r.of}
+                </td>
+                <td className="num">{r.rhos}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="hint mt-1">The last column is Spearman&apos;s rank correlation over the areas both maps cover, one value per bill: 1 would mean the same order.</p>
+        <p className="mt-2">{WHY_LIFT.map((r) => whyLiftSentences(r).join(" ")).join(" ")}</p>
+        <p className="mt-2">
+          Counting areas within 3 km of each other, or sharing a ZIP, as the same place: raw heat shares{" "}
+          {whyLiftRows()
+            .map((r) => `${r.rawSharedPlace} of ${r.of} at ${r.room}`)
+            .join(" and ")}
+          ; lift shares{" "}
+          {whyLiftRows()
+            .map((r) => `${r.liftSharedPlace} at ${r.room}`)
+            .join(" and ")}
+          .
+        </p>
+        <ShowsLine
+          shows="how far each bill's raw heat already follows the room's usual crowd, and how many top areas two bills share with and without lift."
+          not={
+            whyLiftRows().every((r) => r.liftShared < r.rawShared)
+              ? "that lift picks better areas."
+              : "that lift picks better areas. Counted by map square, raw heat kept these bills apart as well as lift did."
+          }
+        />
+
         <h3 className="mt-6">API notes we handled</h3>
         <p className="mt-2">Things the live Qloo responses do that the docs don&apos;t spell out, and what the code does with each.</p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
@@ -380,6 +450,108 @@ export default function EvalPage() {
           </li>
         </ul>
         <ShowsLine shows="response shapes the code expects and labels." not="anything about the picks." />
+      </section>
+
+      <section id="claude-alone" className="section scroll-mt-24" aria-labelledby="claude-alone-title">
+        <h2 id="claude-alone-title">Claude alone, same areas</h2>
+        <p className="mt-2 text-sm text-muted">
+          Run Oct 28 2026 on live Qloo calls; plan written and hashed before any call, but committed only after the run.{" "}
+          {modelName(BASELINE.model)} through OpenRouter, the model Walkup&apos;s narrator uses, with no tools and no web search. One run.
+        </p>
+        <p className="mt-3">
+          For each live bill, we asked Claude for what Walkup&apos;s sheet lists: in each area with partners, the same number of places of the same
+          kinds, for this show&apos;s fans, open on the street-team days, no national chains. Then we checked every name with a Qloo place search: is it
+          there, inside the area, not marked closed, not closed on Thursday, and not a national chain.
+        </p>
+        <p className="mt-3">
+          {BASELINE.sentences[0]} {BASELINE.sentences[1]}
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">Bill</th>
+              <th scope="col" className="num">
+                Asked
+              </th>
+              <th scope="col" className="num">
+                Claude alone
+              </th>
+              <th scope="col" className="num">
+                Walkup
+              </th>
+              <th scope="col" className="num">
+                On both lists
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {baselineRows().map((r) => (
+              <tr key={r.bill}>
+                <td>
+                  {r.bill}
+                  {r.venue ? <span className="block text-sm text-muted">{r.venue}</span> : null}
+                </td>
+                <td className="num">{r.asked}</td>
+                <td className="num">{r.usable}</td>
+                <td className="num">{r.walkupUsable}</td>
+                <td className="num">{r.sameAsWalkup}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="hint mt-1">
+          The Claude alone and Walkup columns count usable places: Qloo finds them in the area, not marked closed, not closed on Thursday, not a
+          national chain. Walkup&apos;s{" "}
+          {BASELINE.total.walkup.chains} misses are the national chains on its lists.
+        </p>
+
+        <h3 className="mt-6">Why Claude&apos;s names missed</h3>
+        <p className="mt-2">
+          {BASELINE.sentences[2]} {BASELINE.sentences[3]}
+        </p>
+        <table className="table mt-2">
+          <thead>
+            <tr>
+              <th scope="col">First check the name failed</th>
+              <th scope="col" className="num">
+                Names
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {missRows(BASELINE.total.claude).map((m) => (
+              <tr key={m.key}>
+                <td>{m.label}</td>
+                <td className="num">{m.count}</td>
+              </tr>
+            ))}
+            <tr>
+              <td>Passed every check</td>
+              <td className="num">{BASELINE.total.claude.usable}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="mt-3">{BASELINE.sentences[4]}</p>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5">
+          <li>{preregisteredLine()}</li>
+          <li>{exploratoryLine()}</li>
+          <li>
+            The name match let through 3 doubtful matches, all in Claude&apos;s favor, and they stay counted as the plan says: &ldquo;Ben&apos;s Chili
+            Bowl&rdquo; matched Qloo&apos;s &ldquo;Ben&apos;s Chili Bowl Foundation&rdquo; and &ldquo;Stony Island Grill&rdquo; matched &ldquo;The Retro
+            Grill Stony Island&rdquo;, both counted usable; &ldquo;Local bakery on Oak Park Ave&rdquo; counted as on Walkup&apos;s list.
+          </li>
+          <li>
+            Walkup&apos;s own picks pass the area, closed and hours checks by construction: Walkup chose them from Qloo place searches inside these
+            areas and dropped places marked closed or closed on Thursday. The chain check is the one its list can fail.
+          </li>
+        </ul>
+        <ShowsLine shows={BASELINE.shows} not={BASELINE.doesNotShow} />
+        <p className="mt-3">
+          <a href={RESULTS_HREF} className="link">
+            Plan, every name and check, and deviations
+          </a>
+          .
+        </p>
       </section>
 
       <section className="section" aria-labelledby="product-title">
@@ -443,8 +615,8 @@ export default function EvalPage() {
           <li>Where buyers live. The map shows where this bill&apos;s fans stand out from the room&apos;s usual crowd.</li>
           <li>That a partner will take part. Partners are suggested, not affiliated.</li>
           <li>
-            How live Qloo data behaves beyond the live sheets and the roster check above and the Fan-Bar Test below. The sample data was written from the documentation, not
-            from real responses.
+            How live Qloo data behaves beyond the live sheets, the checks above and the Fan-Bar Test below. The sample data was written from the
+            documentation, not from real responses.
           </li>
         </ul>
       </section>
@@ -471,7 +643,7 @@ export default function EvalPage() {
       </section>
 
       <section id="fanbar" className="section scroll-mt-24" aria-labelledby="fanbar-title">
-        <h2 id="fanbar-title">The Fan-Bar Test: no better than popularity</h2>
+        <h2 id="fanbar-title">The Fan-Bar Test: no edge over popularity, 25% vs 27% in the top 50 (one-sided p = 0.89)</h2>
         <p className="mt-2 text-sm text-muted">Run Oct 21 2026 on live Qloo calls; plan sealed Oct 13 before any data.</p>
         <p className="mt-3">
           Football supporters&apos; clubs list their official bar in each US city. We gave Qloo the club as the taste signal (Arsenal, Liverpool, the US
@@ -495,8 +667,8 @@ export default function EvalPage() {
         </ul>
         <p className="mt-3">
           What it means: a football club&apos;s taste signal did not find that club&apos;s bar better than popularity. Walkup&apos;s signal is a show&apos;s
-          acts, not a club, but this test gives no evidence that its picks beat popularity, so every partner table says &ldquo;Ranked by Qloo affinity; our
-          test did not show this beats popularity.&rdquo;{" "}
+          acts, not a club, but this test gives no evidence that its picks beat popularity, so Walkup does not claim they do. The Claude-alone check
+          above asks a different question: whether a list is usable, not whether it beats popularity.{" "}
           <a href="https://github.com/TAUIL-Abd-Elilah/walkup/blob/main/evals/p1/results.md" className="link">
             Full results, coverage and deviations
           </a>

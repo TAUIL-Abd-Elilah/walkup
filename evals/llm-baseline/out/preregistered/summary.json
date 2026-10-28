@@ -1,0 +1,313 @@
+{
+  "protocolSha256": "a5b9e178ea0cc2e20ec51e8b3c69afa8cb3553cf076aba2677612abc8fb91321",
+  "scoredAt": "2026-10-28T11:50:34.927Z",
+  "model": "anthropic/claude-haiku-5.5",
+  "checkDays": [
+    "Thursday"
+  ],
+  "bills": [
+    {
+      "key": "giddens",
+      "planId": "1cfdc829-7814-4759-a624-9047a53994b7",
+      "headliner": "Rhiannon Giddens",
+      "venue": "The Anthem",
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "label": "H Street NE, DC",
+          "radiusM": 2000,
+          "asked": 7,
+          "returned": 7,
+          "answered": true
+        },
+        {
+          "area": 2,
+          "label": "Vienna, VA",
+          "radiusM": 2000,
+          "asked": 4,
+          "returned": 4,
+          "answered": true
+        },
+        {
+          "area": 3,
+          "label": "Bethesda, MD",
+          "radiusM": 3500,
+          "asked": 5,
+          "returned": 5,
+          "answered": true
+        }
+      ],
+      "claude": {
+        "asked": 16,
+        "returned": 16,
+        "foundInQloo": 11,
+        "foundInArea": 0,
+        "notFound": 5,
+        "outsideArea": 11,
+        "closed": 0,
+        "notOpen": 0,
+        "hoursNotListed": 0,
+        "chain": 0,
+        "repeat": 1,
+        "usable": 0,
+        "onWalkupList": 0,
+        "byOutcome": {
+          "usable": 0,
+          "not_found": 5,
+          "outside_area": 11,
+          "closed": 0,
+          "not_open": 0,
+          "chain": 0,
+          "repeat": 0
+        }
+      },
+      "walkup": {
+        "listed": 16,
+        "chains": 2,
+        "usable": 14,
+        "calibrationFound": 16,
+        "calibrationInArea": 14
+      }
+    },
+    {
+      "key": "flo",
+      "planId": "afc936c1-21cf-4846-a21e-9f5d39c2a58a",
+      "headliner": "FLO",
+      "venue": "The Anthem",
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "label": "U Street / Shaw, DC",
+          "radiusM": 2000,
+          "asked": 8,
+          "returned": 0,
+          "answered": false
+        },
+        {
+          "area": 2,
+          "label": "Laurel, MD",
+          "radiusM": 2000,
+          "asked": 8,
+          "returned": 8,
+          "answered": true
+        },
+        {
+          "area": 3,
+          "label": "Bowie, MD",
+          "radiusM": 2000,
+          "asked": 1,
+          "returned": 1,
+          "answered": true
+        }
+      ],
+      "claude": {
+        "asked": 17,
+        "returned": 9,
+        "foundInQloo": 1,
+        "foundInArea": 0,
+        "notFound": 8,
+        "outsideArea": 1,
+        "closed": 0,
+        "notOpen": 0,
+        "hoursNotListed": 0,
+        "chain": 0,
+        "repeat": 0,
+        "usable": 0,
+        "onWalkupList": 0,
+        "byOutcome": {
+          "usable": 0,
+          "not_found": 8,
+          "outside_area": 1,
+          "closed": 0,
+          "not_open": 0,
+          "chain": 0,
+          "repeat": 0
+        }
+      },
+      "walkup": {
+        "listed": 17,
+        "chains": 2,
+        "usable": 15,
+        "calibrationFound": 17,
+        "calibrationInArea": 17
+      }
+    },
+    {
+      "key": "greensky",
+      "planId": "455629e6-ec44-4494-a69b-6154e4433c65",
+      "headliner": "Greensky Bluegrass",
+      "venue": "The Salt Shed",
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "label": "Schaumburg, IL",
+          "radiusM": 2000,
+          "asked": 3,
+          "returned": 3,
+          "answered": true
+        },
+        {
+          "area": 2,
+          "label": "Highwood, IL",
+          "radiusM": 2000,
+          "asked": 8,
+          "returned": 8,
+          "answered": true
+        },
+        {
+          "area": 3,
+          "label": "Oak Park, IL",
+          "radiusM": 2000,
+          "asked": 8,
+          "returned": 8,
+          "answered": true
+        }
+      ],
+      "claude": {
+        "asked": 19,
+        "returned": 19,
+        "foundInQloo": 2,
+        "foundInArea": 0,
+        "notFound": 17,
+        "outsideArea": 2,
+        "closed": 0,
+        "notOpen": 0,
+        "hoursNotListed": 0,
+        "chain": 0,
+        "repeat": 0,
+        "usable": 0,
+        "onWalkupList": 1,
+        "byOutcome": {
+          "usable": 0,
+          "not_found": 17,
+          "outside_area": 2,
+          "closed": 0,
+          "not_open": 0,
+          "chain": 0,
+          "repeat": 0
+        }
+      },
+      "walkup": {
+        "listed": 19,
+        "chains": 0,
+        "usable": 19,
+        "calibrationFound": 19,
+        "calibrationInArea": 19
+      }
+    },
+    {
+      "key": "roots",
+      "planId": "fe1ff2bc-9547-4b5c-a69c-f456769afde0",
+      "headliner": "The Roots",
+      "venue": "The Salt Shed",
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "label": "Bronzeville, IL",
+          "radiusM": 2000,
+          "asked": 8,
+          "returned": 0,
+          "answered": false
+        },
+        {
+          "area": 2,
+          "label": "Midlothian, IL",
+          "radiusM": 2000,
+          "asked": 6,
+          "returned": 6,
+          "answered": true
+        },
+        {
+          "area": 3,
+          "label": "South Shore, IL",
+          "radiusM": 2000,
+          "asked": 8,
+          "returned": 0,
+          "answered": false
+        }
+      ],
+      "claude": {
+        "asked": 22,
+        "returned": 6,
+        "foundInQloo": 0,
+        "foundInArea": 0,
+        "notFound": 6,
+        "outsideArea": 0,
+        "closed": 0,
+        "notOpen": 0,
+        "hoursNotListed": 0,
+        "chain": 0,
+        "repeat": 0,
+        "usable": 0,
+        "onWalkupList": 0,
+        "byOutcome": {
+          "usable": 0,
+          "not_found": 6,
+          "outside_area": 0,
+          "closed": 0,
+          "not_open": 0,
+          "chain": 0,
+          "repeat": 0
+        }
+      },
+      "walkup": {
+        "listed": 22,
+        "chains": 0,
+        "usable": 22,
+        "calibrationFound": 22,
+        "calibrationInArea": 22
+      }
+    }
+  ],
+  "total": {
+    "claude": {
+      "asked": 74,
+      "returned": 50,
+      "foundInQloo": 14,
+      "foundInArea": 0,
+      "notFound": 36,
+      "outsideArea": 14,
+      "closed": 0,
+      "notOpen": 0,
+      "hoursNotListed": 0,
+      "chain": 0,
+      "repeat": 1,
+      "usable": 0,
+      "onWalkupList": 1,
+      "byOutcome": {
+        "usable": 0,
+        "not_found": 36,
+        "outside_area": 14,
+        "closed": 0,
+        "not_open": 0,
+        "chain": 0,
+        "repeat": 0
+      }
+    },
+    "walkup": {
+      "listed": 74,
+      "chains": 4,
+      "usable": 70,
+      "calibrationFound": 74,
+      "calibrationInArea": 72
+    }
+  },
+  "sentences": [
+    "Asked for the same 74 places in the same areas, Claude alone named 0 that Qloo finds in the area, not marked closed, not closed on Thursday and not a national chain. Walkup's list has 70 of 74.",
+    "On this check, Claude alone did worse than Walkup.",
+    "The most common miss: not found in Qloo (36 names of 50).",
+    "1 of Claude's 50 names are also on Walkup's list.",
+    "The same name search found 72 of Walkup's 74 picks in their areas, so a name it misses is not proof that the place does not exist."
+  ],
+  "shows": "whether a model with no tools, asked for the same number and kinds of places in the same areas, names places Qloo can find there, not marked closed, open on the street-team day and not national chains.",
+  "doesNotShow": "which list sells more tickets, or that a name Qloo does not find does not exist. Walkup's own picks pass the area, closed and hours checks by construction: they come from the same Qloo place data.",
+  "spent": {
+    "modelCalls": 15,
+    "modelCostUsd": 0.0137,
+    "qlooNetworkCallsThisInvocation": 50
+  }
+}

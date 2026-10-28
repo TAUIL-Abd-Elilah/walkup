@@ -1,0 +1,1383 @@
+{
+  "protocol": "evals/llm-baseline/protocol.md",
+  "preparedAt": "2026-10-28T11:42:48.842Z",
+  "plansFile": "deploy/vercel/plans.json",
+  "plansSha256": "0be92d379928ce3bc180f621db3761bad89e5e77b957233202dc06966621739a",
+  "chainsSha256": "11afdb314b62dfa57d93a9e16e56665ad716ba00940a40dc9e1500f5bc82d60c",
+  "bills": [
+    {
+      "key": "giddens",
+      "planId": "1cfdc829-7814-4759-a624-9047a53994b7",
+      "acts": [
+        "Rhiannon Giddens"
+      ],
+      "headliner": "Rhiannon Giddens",
+      "venue": "The Anthem",
+      "city": "Washington",
+      "state": "DC",
+      "date": "2027-02-28",
+      "weekday": "sunday",
+      "streetTeamDays": [
+        "thursday",
+        "saturday"
+      ],
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "geohash": "dqcm29",
+          "label": "H Street NE, DC",
+          "lat": 38.89984,
+          "lon": -76.96472,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 1
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 2
+            },
+            {
+              "key": "clothing_store",
+              "label": "clothing store",
+              "count": 1
+            },
+            {
+              "key": "cocktail_bar",
+              "label": "cocktail bar",
+              "count": 1
+            }
+          ],
+          "asked": 7,
+          "walkup": [
+            {
+              "name": "Stable DC",
+              "entityId": "D01B5019-B727-44D8-84CF-47BBA79CA8A5",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9004,
+              "lon": -76.987348,
+              "distanceM": 1959,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "The Hill Cafe",
+              "entityId": "117339FA-2C7E-4EC9-B146-A1BA541392D7",
+              "category": "cafe",
+              "chain": false,
+              "lat": 38.8910833,
+              "lon": -76.9833843,
+              "distanceM": 1886,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Jimmy Valentine's Lonely Hearts Club",
+              "entityId": "079CC585-6C28-4DB6-8E65-B26970F704FD",
+              "category": "bar",
+              "chain": false,
+              "lat": 38.9039265,
+              "lon": -76.9806153,
+              "distanceM": 1449,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Capitol Square Bar & Grill",
+              "entityId": "72CD7FE8-BB66-4C50-8619-B86BC07896B8",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.890102999999996,
+              "lon": -76.983453,
+              "distanceM": 1950,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Hush Harbor",
+              "entityId": "9E3F9E46-EDFE-4999-84A0-82BA37512856",
+              "category": "bar",
+              "chain": false,
+              "lat": 38.9000724,
+              "lon": -76.98700509999999,
+              "distanceM": 1929,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Maketto",
+              "entityId": "E48B92E8-D27A-46A3-A36D-E22EED95A0A7",
+              "category": "clothing_store",
+              "chain": false,
+              "lat": 38.9000359,
+              "lon": -76.9866749,
+              "distanceM": 1900,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "LYDIA ON H",
+              "entityId": "419ABC5A-C2BF-4E79-B68D-C5AFBF501D4E",
+              "category": "cocktail_bar",
+              "chain": false,
+              "lat": 38.9000306,
+              "lon": -76.9845082,
+              "distanceM": 1713,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 2,
+          "geohash": "dqcj3z",
+          "label": "Vienna, VA",
+          "lat": 38.9328,
+          "lon": -77.26135,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "lounge",
+              "label": "lounge",
+              "count": 1
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 1
+            }
+          ],
+          "asked": 4,
+          "walkup": [
+            {
+              "name": "Pho Deluxe Tysons",
+              "entityId": "86CCE392-7EEA-4FFB-8749-24AF0BCC9E22",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9273853,
+              "lon": -77.24225369999999,
+              "distanceM": 1758,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Bombay Tandoor Bar and Grill",
+              "entityId": "F90C6AD7-0127-4756-8111-D869DD615454",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.929114299999995,
+              "lon": -77.244332,
+              "distanceM": 1528,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Sir Sandwich Co",
+              "entityId": "E7223756-756F-46D3-A124-BDA6490E3E42",
+              "category": "lounge",
+              "chain": false,
+              "lat": 38.931810399999996,
+              "lon": -77.23838099999999,
+              "distanceM": 1990,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Starbucks Coffee Company",
+              "entityId": "CCC186B0-A1EC-43DA-9D28-D1C072C0F1EF",
+              "category": "cafe",
+              "chain": true,
+              "lat": 38.92832,
+              "lon": -77.23926999999999,
+              "distanceM": 1974,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 3,
+          "geohash": "dqcjst",
+          "label": "Bethesda, MD",
+          "lat": 38.96576,
+          "lon": -77.1405,
+          "radiusM": 3500,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "bakery",
+              "label": "bakery",
+              "count": 1
+            },
+            {
+              "key": "pub",
+              "label": "pub",
+              "count": 1
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 1
+            }
+          ],
+          "asked": 5,
+          "walkup": [
+            {
+              "name": "Sal's Italian Kitchen",
+              "entityId": "B0779D5E-076E-494D-A886-D5268EE6EE3C",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9751032,
+              "lon": -77.16274779999999,
+              "distanceM": 2186,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Praline Bakery & Bistro",
+              "entityId": "6C2251AC-E4E1-49A9-BE26-7629056789D5",
+              "category": "bakery",
+              "chain": false,
+              "lat": 38.9494191,
+              "lon": -77.1192441,
+              "distanceM": 2584,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Wild Tomato",
+              "entityId": "0245F269-5694-4B0E-8592-7EAC34152B47",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9750745,
+              "lon": -77.16259099999999,
+              "distanceM": 2173,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Irish Inn At Glen Echo",
+              "entityId": "F3E80E49-B26F-404C-A4A8-45039E905412",
+              "category": "pub",
+              "chain": false,
+              "lat": 38.9650319,
+              "lon": -77.1369429,
+              "distanceM": 318,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Starbucks Coffee Company",
+              "entityId": "6D774D68-A6DD-4C01-BE6E-A88BAA90F913",
+              "category": "cafe",
+              "chain": true,
+              "lat": 38.9631403,
+              "lon": -77.1071757,
+              "distanceM": 2896,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "flo",
+      "planId": "afc936c1-21cf-4846-a21e-9f5d39c2a58a",
+      "acts": [
+        "FLO"
+      ],
+      "headliner": "FLO",
+      "venue": "The Anthem",
+      "city": "Washington",
+      "state": "DC",
+      "date": "2027-02-17",
+      "weekday": "wednesday",
+      "streetTeamDays": [
+        "thursday",
+        "saturday"
+      ],
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "geohash": "dqcjrm",
+          "label": "U Street / Shaw, DC",
+          "lat": 38.921814,
+          "lon": -77.01965,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "lounge",
+              "label": "lounge",
+              "count": 2
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 1
+            },
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 3
+            },
+            {
+              "key": "book_store",
+              "label": "bookstore",
+              "count": 1
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 1
+            }
+          ],
+          "asked": 8,
+          "walkup": [
+            {
+              "name": "Amsterdam Lounge",
+              "entityId": "D0B63AC2-E3AA-4CFB-B093-D17FA22655B7",
+              "category": "lounge",
+              "chain": false,
+              "lat": 38.9167755,
+              "lon": -77.0284523,
+              "distanceM": 945,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Pure Lounge",
+              "entityId": "B05B3B95-8768-4058-9413-A21D06B3DE13",
+              "category": "bar",
+              "chain": false,
+              "lat": 38.9168123,
+              "lon": -77.0307466,
+              "distanceM": 1109,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Right Spot Restaurant & Bar",
+              "entityId": "175CAE98-DB46-40A1-BDBB-04A548B8D3CA",
+              "category": "lounge",
+              "chain": false,
+              "lat": 38.9162721,
+              "lon": -77.0237135,
+              "distanceM": 709,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Teddy's Roti Shop",
+              "entityId": "CE72FECC-F95A-4BC6-AC36-F6B6537DCB7B",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9287792,
+              "lon": -77.0229591,
+              "distanceM": 826,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Ben's Next Door",
+              "entityId": "6867E71B-9599-4823-99BF-8C2D83222E9E",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9171565,
+              "lon": -77.0286876,
+              "distanceM": 938,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Sankofa Video Books & Café",
+              "entityId": "D2499754-E0BD-45FB-8FBF-CA7E08ED5E5F",
+              "category": "book_store",
+              "chain": false,
+              "lat": 38.925570199999996,
+              "lon": -77.02306899999999,
+              "distanceM": 512,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Harrar Coffee & Roastery",
+              "entityId": "8BF29C2B-B82D-4BCB-B6F2-C317BA6A5DAF",
+              "category": "cafe",
+              "chain": false,
+              "lat": 38.9272778,
+              "lon": -77.0232472,
+              "distanceM": 683,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Thurst Lounge",
+              "entityId": "4D4A5EBD-D3AF-42EF-91A3-5148F76FBC76",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.919447399999996,
+              "lon": -77.0322084,
+              "distanceM": 1118,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 2,
+          "geohash": "dqcq6y",
+          "label": "Laurel, MD",
+          "lat": 39.10309,
+          "lon": -76.865845,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 2
+            },
+            {
+              "key": "bakery",
+              "label": "bakery",
+              "count": 2
+            },
+            {
+              "key": "pub",
+              "label": "pub",
+              "count": 1
+            },
+            {
+              "key": "clothing_store",
+              "label": "clothing store",
+              "count": 1
+            }
+          ],
+          "asked": 8,
+          "walkup": [
+            {
+              "name": "pi's deli",
+              "entityId": "E37EE100-ED71-4CF6-9D89-38B5ED984A0A",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 39.1049799,
+              "lon": -76.8652013,
+              "distanceM": 217,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "China American Inn",
+              "entityId": "EE7A8C2A-28D8-465D-A355-ADD4CE0D1866",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 39.1025966,
+              "lon": -76.8563441,
+              "distanceM": 822,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Ragamuffins Coffee House",
+              "entityId": "CA20F33C-E7CA-4D87-9145-2C8A89F207E6",
+              "category": "cafe",
+              "chain": false,
+              "lat": 39.1059051,
+              "lon": -76.8474933,
+              "distanceM": 1614,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "La Espiga De Oro Bakery",
+              "entityId": "32EC5D3C-F723-4104-A847-A49944A4304B",
+              "category": "bakery",
+              "chain": false,
+              "lat": 39.097161899999996,
+              "lon": -76.84765879999999,
+              "distanceM": 1702,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Laurel Tavern Donuts",
+              "entityId": "7ED0191E-1E0F-49C3-9A11-62901D24C7F3",
+              "category": "bakery",
+              "chain": false,
+              "lat": 39.1035306,
+              "lon": -76.8444027,
+              "distanceM": 1851,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Oliver's Old Town Tavern",
+              "entityId": "3D62AE47-A67A-4F3B-A8A1-D2EB127892EC",
+              "category": "pub",
+              "chain": false,
+              "lat": 39.107946399999996,
+              "lon": -76.8520437,
+              "distanceM": 1308,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Tropical Smoothie Cafe",
+              "entityId": "7A3A4306-5221-49A8-B7AE-3FAB480C4ED9",
+              "category": "cafe",
+              "chain": true,
+              "lat": 39.096483,
+              "lon": -76.85235999999999,
+              "distanceM": 1376,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Ross Dress for Less",
+              "entityId": "4BFEA305-F782-4862-BF02-E9A20AA4E495",
+              "category": "clothing_store",
+              "chain": true,
+              "lat": 39.0852605,
+              "lon": -76.86407849999999,
+              "distanceM": 1988,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 3,
+          "geohash": "dqcmts",
+          "label": "Bowie, MD",
+          "lat": 38.960266,
+          "lon": -76.744995,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 1
+            }
+          ],
+          "asked": 1,
+          "walkup": [
+            {
+              "name": "Jerry's Seafood \"Home of the Crab Bomb\"",
+              "entityId": "30F85216-3151-4973-AE92-8E622477A3A1",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 38.9488693,
+              "lon": -76.7373889,
+              "distanceM": 1428,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "greensky",
+      "planId": "455629e6-ec44-4494-a69b-6154e4433c65",
+      "acts": [
+        "Greensky Bluegrass"
+      ],
+      "headliner": "Greensky Bluegrass",
+      "venue": "The Salt Shed",
+      "city": "Chicago",
+      "state": "IL",
+      "date": "2026-12-30",
+      "weekday": "wednesday",
+      "streetTeamDays": [
+        "thursday",
+        "saturday"
+      ],
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "geohash": "dp3qfu",
+          "label": "Schaumburg, IL",
+          "lat": 41.992493,
+          "lon": -88.115845,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "sports_bar",
+              "label": "sports bar",
+              "count": 1
+            },
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            }
+          ],
+          "asked": 3,
+          "walkup": [
+            {
+              "name": "MT Barrels",
+              "entityId": "8382A1F6-75A1-4271-A9AF-84C8E164A507",
+              "category": "sports_bar",
+              "chain": false,
+              "lat": 42.004393,
+              "lon": -88.1220084,
+              "distanceM": 1418,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Village Tavern & Grill",
+              "entityId": "DBAF56E0-64F4-4098-9268-5C470E91740A",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 42.0041426,
+              "lon": -88.10263069999999,
+              "distanceM": 1694,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Pilot Pete's",
+              "entityId": "DCC878B3-9928-4E51-8CDC-1ECA8D8E65D0",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.9908345,
+              "lon": -88.10241719999999,
+              "distanceM": 1125,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 2,
+          "geohash": "dp981f",
+          "label": "Highwood, IL",
+          "lat": 42.201233,
+          "lon": -87.80823,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "bakery",
+              "label": "bakery",
+              "count": 2
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 2
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 2
+            }
+          ],
+          "asked": 8,
+          "walkup": [
+            {
+              "name": "Pixca Seasonal American Bistro",
+              "entityId": "19D7DAA8-B2FA-4090-812C-33527F52388B",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 42.186666599999995,
+              "lon": -87.79729359999999,
+              "distanceM": 1853,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Maria's Cafe",
+              "entityId": "98EE3349-4C08-46BD-B038-8BB0CE36B3A4",
+              "category": "bakery",
+              "chain": false,
+              "lat": 42.203772,
+              "lon": -87.8098717,
+              "distanceM": 313,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Alex's Washington Gardens",
+              "entityId": "35408F09-43AF-42D2-A294-8748C712B0FC",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 42.201632,
+              "lon": -87.8099304,
+              "distanceM": 147,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "The Toadstool Pub",
+              "entityId": "47E00238-CA50-479E-9F30-202BB34E6279",
+              "category": "bar",
+              "chain": false,
+              "lat": 42.2027722,
+              "lon": -87.8088971,
+              "distanceM": 180,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Wooden Nickel",
+              "entityId": "890AF1D3-4381-4485-AC6A-C76A24E075E3",
+              "category": "bar",
+              "chain": false,
+              "lat": 42.2050872,
+              "lon": -87.8085246,
+              "distanceM": 429,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Once Upon A Bagel",
+              "entityId": "71645A49-F0DA-4043-94A2-642B85F7556D",
+              "category": "bakery",
+              "chain": false,
+              "lat": 42.186659999999996,
+              "lon": -87.80047239999999,
+              "distanceM": 1742,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Tala Coffee Roasters - Highwood Cafe",
+              "entityId": "01F5C099-5E82-47F3-9B38-E2416C9573BA",
+              "category": "cafe",
+              "chain": false,
+              "lat": 42.204052999999995,
+              "lon": -87.8116826,
+              "distanceM": 423,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Madame Zuzu’s",
+              "entityId": "3465E5A9-45C9-44FC-80B4-1814453AB312",
+              "category": "cafe",
+              "chain": false,
+              "lat": 42.1864403,
+              "lon": -87.800578,
+              "distanceM": 1762,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 3,
+          "geohash": "dp3w4m",
+          "label": "Oak Park, IL",
+          "lat": 41.86615,
+          "lon": -87.786255,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "sports_bar",
+              "label": "sports bar",
+              "count": 1
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 2
+            },
+            {
+              "key": "bakery",
+              "label": "bakery",
+              "count": 2
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 1
+            }
+          ],
+          "asked": 8,
+          "walkup": [
+            {
+              "name": "BABYGOLD BARBECUE",
+              "entityId": "6F0D46B5-30A2-433A-9A8F-62668F17B4EC",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.865065699999995,
+              "lon": -87.7894786,
+              "distanceM": 293,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Trattoria 225",
+              "entityId": "B129FC2A-F431-46CA-A27C-B1F45FE0A4C4",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.8725263,
+              "lon": -87.7806081,
+              "distanceM": 849,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Avenue Ale House",
+              "entityId": "7AB9123D-5667-4B87-8B8E-490D3389C4DA",
+              "category": "sports_bar",
+              "chain": false,
+              "lat": 41.8733031,
+              "lon": -87.7941939,
+              "distanceM": 1032,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Kettlestrings Tavern",
+              "entityId": "84B6DBDC-17D0-4EDC-9D2B-8FF181C21184",
+              "category": "bar",
+              "chain": false,
+              "lat": 41.8741647,
+              "lon": -87.7938147,
+              "distanceM": 1089,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "FitzGerald's",
+              "entityId": "6D601BC2-B5AA-471E-A55E-1988B3405D96",
+              "category": "bar",
+              "chain": false,
+              "lat": 41.865044399999995,
+              "lon": -87.7899233,
+              "distanceM": 328,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Turano Baking Company",
+              "entityId": "FDE2583C-AD9D-4664-B465-CF890FA58506",
+              "category": "bakery",
+              "chain": false,
+              "lat": 41.864885,
+              "lon": -87.787003,
+              "distanceM": 154,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Addis Cafe In Oak Park",
+              "entityId": "B58496CB-FD15-4FDC-928B-5B55DDE189C3",
+              "category": "cafe",
+              "chain": false,
+              "lat": 41.8740568,
+              "lon": -87.79442639999999,
+              "distanceM": 1109,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Oak Park Bakery Inc",
+              "entityId": "0DF34A2D-5DB3-4FA3-B46D-63FA01C9429B",
+              "category": "bakery",
+              "chain": false,
+              "lat": 41.871871299999995,
+              "lon": -87.7937778,
+              "distanceM": 890,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "roots",
+      "planId": "fe1ff2bc-9547-4b5c-a69c-f456769afde0",
+      "acts": [
+        "The Roots"
+      ],
+      "headliner": "The Roots",
+      "venue": "The Salt Shed",
+      "city": "Chicago",
+      "state": "IL",
+      "date": "2027-01-15",
+      "weekday": "friday",
+      "streetTeamDays": [
+        "thursday",
+        "saturday"
+      ],
+      "checkDay": "thursday",
+      "areas": [
+        {
+          "area": 1,
+          "geohash": "dp3tyj",
+          "label": "Bronzeville, IL",
+          "lat": 41.822205,
+          "lon": -87.62146,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "wine_bar",
+              "label": "wine bar",
+              "count": 1
+            },
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 2
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 2
+            },
+            {
+              "key": "sports_bar",
+              "label": "sports bar",
+              "count": 1
+            }
+          ],
+          "asked": 8,
+          "walkup": [
+            {
+              "name": "Bronzeville Winery",
+              "entityId": "20ED272D-619A-4665-A2FA-F98627C48B93",
+              "category": "wine_bar",
+              "chain": false,
+              "lat": 41.8142125,
+              "lon": -87.6069522,
+              "distanceM": 1495,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Yassa African Restaurant",
+              "entityId": "3101D776-F012-46FD-A45F-9CEA9F44EBE0",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.8307365,
+              "lon": -87.6166964,
+              "distanceM": 1027,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Peach's Restaurant",
+              "entityId": "884E9A75-4868-468E-A13D-41D4CA831E9E",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.8094714,
+              "lon": -87.61698679999999,
+              "distanceM": 1464,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "The Renaissance Bronzeville",
+              "entityId": "5F1790F1-70BD-42E3-8786-33B179E064E4",
+              "category": "bar",
+              "chain": false,
+              "lat": 41.809903999999996,
+              "lon": -87.6160515,
+              "distanceM": 1439,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Juke Joynt",
+              "entityId": "994AE2D9-77C5-44BA-B883-6EF3130A2C20",
+              "category": "bar",
+              "chain": false,
+              "lat": 41.8093399,
+              "lon": -87.61314519999999,
+              "distanceM": 1588,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "The Stockyard Coffeehouse",
+              "entityId": "9C81BD96-E60E-4CBE-AED9-23E13C8B263C",
+              "category": "cafe",
+              "chain": false,
+              "lat": 41.8272894,
+              "lon": -87.640974,
+              "distanceM": 1713,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "ChiSox Bar & Grill",
+              "entityId": "3DC0E52C-0C88-44C3-AEDE-AE12E1E67383",
+              "category": "sports_bar",
+              "chain": false,
+              "lat": 41.831114299999996,
+              "lon": -87.6339034,
+              "distanceM": 1430,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Sip & Savor | 43rd Street",
+              "entityId": "CAEF2CDC-3118-4DC8-B1A0-5D596D3379B3",
+              "category": "cafe",
+              "chain": false,
+              "lat": 41.816808699999996,
+              "lon": -87.6129349,
+              "distanceM": 927,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 2,
+          "geohash": "dp3sgc",
+          "label": "Midlothian, IL",
+          "lat": 41.62445,
+          "lon": -87.72034,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "pool_hall",
+              "label": "pool hall",
+              "count": 1
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 1
+            },
+            {
+              "key": "sports_bar",
+              "label": "sports bar",
+              "count": 1
+            },
+            {
+              "key": "bakery",
+              "label": "bakery",
+              "count": 1
+            }
+          ],
+          "asked": 6,
+          "walkup": [
+            {
+              "name": "QS TIPS AND WINGS BBQ",
+              "entityId": "401B6E64-810A-4167-B3A4-8D6E2CE2A065",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.6244321,
+              "lon": -87.69768789999999,
+              "distanceM": 1883,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Jack's Place",
+              "entityId": "39AF251B-F3EC-4356-8FA4-9EA3604A3946",
+              "category": "pool_hall",
+              "chain": false,
+              "lat": 41.625302999999995,
+              "lon": -87.715997,
+              "distanceM": 373,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "BerryField Cafe",
+              "entityId": "CBA81314-CA4E-4FBE-B5EE-37E801F0B613",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.6258212,
+              "lon": -87.718724,
+              "distanceM": 203,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "FLANNERY'S",
+              "entityId": "FA8FB2B9-FE5D-4EBA-932F-98D075580EC4",
+              "category": "bar",
+              "chain": false,
+              "lat": 41.6253028,
+              "lon": -87.7186988,
+              "distanceM": 166,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Coaches Sports Bar & Grill",
+              "entityId": "9517BC48-BFB0-49EF-A071-F29DFBC0A06B",
+              "category": "sports_bar",
+              "chain": false,
+              "lat": 41.6261268,
+              "lon": -87.7136021,
+              "distanceM": 590,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "St Jude's Bakery",
+              "entityId": "E269E9B1-37F0-40EA-895C-048F879EC7EE",
+              "category": "bakery",
+              "chain": false,
+              "lat": 41.6259054,
+              "lon": -87.7102973,
+              "distanceM": 850,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        },
+        {
+          "area": 3,
+          "geohash": "dp3tx4",
+          "label": "South Shore, IL",
+          "lat": 41.76178,
+          "lon": -87.577515,
+          "radiusM": 2000,
+          "types": [
+            {
+              "key": "restaurant",
+              "label": "restaurant",
+              "count": 2
+            },
+            {
+              "key": "pub",
+              "label": "pub",
+              "count": 1
+            },
+            {
+              "key": "cocktail_bar",
+              "label": "cocktail bar",
+              "count": 1
+            },
+            {
+              "key": "bar",
+              "label": "bar",
+              "count": 1
+            },
+            {
+              "key": "bakery",
+              "label": "bakery",
+              "count": 2
+            },
+            {
+              "key": "cafe",
+              "label": "cafe",
+              "count": 1
+            }
+          ],
+          "asked": 8,
+          "walkup": [
+            {
+              "name": "Jamaican Tropical Cuisine",
+              "entityId": "7C6513C7-9F58-4B9F-9297-0B85BEC74D75",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.751978199999996,
+              "lon": -87.57066119999999,
+              "distanceM": 1229,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Jeffery Pub",
+              "entityId": "9C15ACCA-B025-4CD6-A08C-60B88C9799F5",
+              "category": "pub",
+              "chain": false,
+              "lat": 41.7667534,
+              "lon": -87.57608239999999,
+              "distanceM": 566,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Leo's Den",
+              "entityId": "654AC8E6-EDB2-4C48-B663-3BDF8CDD1F49",
+              "category": "cocktail_bar",
+              "chain": false,
+              "lat": 41.766135899999995,
+              "lon": -87.5956028,
+              "distanceM": 1576,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "The Woodlawn",
+              "entityId": "F259DDE0-C4D3-4841-A398-AB24EBE14F32",
+              "category": "restaurant",
+              "chain": false,
+              "lat": 41.7515644,
+              "lon": -87.59520599999999,
+              "distanceM": 1856,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Club Escape",
+              "entityId": "7A4A743C-4394-41C3-9FF0-DAA0220F1216",
+              "category": "bar",
+              "chain": false,
+              "lat": 41.7589542,
+              "lon": -87.5871478,
+              "distanceM": 859,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Supreme Bean Pie",
+              "entityId": "B1991076-BED6-46B1-B875-F26A59EDE1B1",
+              "category": "bakery",
+              "chain": false,
+              "lat": 41.760923299999995,
+              "lon": -87.5844633,
+              "distanceM": 584,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Give Me Some Sugah",
+              "entityId": "21039FDF-4F24-4879-88A5-96818C836F5A",
+              "category": "bakery",
+              "chain": false,
+              "lat": 41.766428499999996,
+              "lon": -87.5701306,
+              "distanceM": 801,
+              "isClosed": false,
+              "dayStatus": "open"
+            },
+            {
+              "name": "Chef Sara's Cafe",
+              "entityId": "5E599E3E-18D0-43AF-A673-CB7E0A157D97",
+              "category": "cafe",
+              "chain": false,
+              "lat": 41.764443899999996,
+              "lon": -87.5647443,
+              "distanceM": 1100,
+              "isClosed": false,
+              "dayStatus": "open"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "bill": "giddens",
+      "area": 1,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: Rhiannon Giddens at The Anthem, Washington, DC, on Sunday, February 28, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: H Street NE, DC. Only places within 2 km of latitude 38.89984, longitude -76.96472.\n\nName exactly 7 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- cafe: 1\n- bar: 2\n- clothing store: 1\n- cocktail bar: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, cafe, bar, clothing store, cocktail bar. Real places only."
+    },
+    {
+      "bill": "giddens",
+      "area": 2,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: Rhiannon Giddens at The Anthem, Washington, DC, on Sunday, February 28, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Vienna, VA. Only places within 2 km of latitude 38.9328, longitude -77.26135.\n\nName exactly 4 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- lounge: 1\n- cafe: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, lounge, cafe. Real places only."
+    },
+    {
+      "bill": "giddens",
+      "area": 3,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: Rhiannon Giddens at The Anthem, Washington, DC, on Sunday, February 28, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Bethesda, MD. Only places within 3.5 km of latitude 38.96576, longitude -77.1405.\n\nName exactly 5 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- bakery: 1\n- pub: 1\n- cafe: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, bakery, pub, cafe. Real places only."
+    },
+    {
+      "bill": "flo",
+      "area": 1,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: FLO at The Anthem, Washington, DC, on Wednesday, February 17, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: U Street / Shaw, DC. Only places within 2 km of latitude 38.921814, longitude -77.01965.\n\nName exactly 8 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- lounge: 2\n- bar: 1\n- restaurant: 3\n- bookstore: 1\n- cafe: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: lounge, bar, restaurant, bookstore, cafe. Real places only."
+    },
+    {
+      "bill": "flo",
+      "area": 2,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: FLO at The Anthem, Washington, DC, on Wednesday, February 17, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Laurel, MD. Only places within 2 km of latitude 39.10309, longitude -76.865845.\n\nName exactly 8 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- cafe: 2\n- bakery: 2\n- pub: 1\n- clothing store: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, cafe, bakery, pub, clothing store. Real places only."
+    },
+    {
+      "bill": "flo",
+      "area": 3,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: FLO at The Anthem, Washington, DC, on Wednesday, February 17, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Bowie, MD. Only places within 2 km of latitude 38.960266, longitude -76.744995.\n\nName exactly 1 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant. Real places only."
+    },
+    {
+      "bill": "greensky",
+      "area": 1,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: Greensky Bluegrass at The Salt Shed, Chicago, IL, on Wednesday, December 30, 2026.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Schaumburg, IL. Only places within 2 km of latitude 41.992493, longitude -88.115845.\n\nName exactly 3 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- sports bar: 1\n- restaurant: 2\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: sports bar, restaurant. Real places only."
+    },
+    {
+      "bill": "greensky",
+      "area": 2,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: Greensky Bluegrass at The Salt Shed, Chicago, IL, on Wednesday, December 30, 2026.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Highwood, IL. Only places within 2 km of latitude 42.201233, longitude -87.80823.\n\nName exactly 8 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- bakery: 2\n- bar: 2\n- cafe: 2\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, bakery, bar, cafe. Real places only."
+    },
+    {
+      "bill": "greensky",
+      "area": 3,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: Greensky Bluegrass at The Salt Shed, Chicago, IL, on Wednesday, December 30, 2026.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Oak Park, IL. Only places within 2 km of latitude 41.86615, longitude -87.786255.\n\nName exactly 8 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- sports bar: 1\n- bar: 2\n- bakery: 2\n- cafe: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, sports bar, bar, bakery, cafe. Real places only."
+    },
+    {
+      "bill": "roots",
+      "area": 1,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: The Roots at The Salt Shed, Chicago, IL, on Friday, January 15, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Bronzeville, IL. Only places within 2 km of latitude 41.822205, longitude -87.62146.\n\nName exactly 8 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- wine bar: 1\n- restaurant: 2\n- bar: 2\n- cafe: 2\n- sports bar: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: wine bar, restaurant, bar, cafe, sports bar. Real places only."
+    },
+    {
+      "bill": "roots",
+      "area": 2,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: The Roots at The Salt Shed, Chicago, IL, on Friday, January 15, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: Midlothian, IL. Only places within 2 km of latitude 41.62445, longitude -87.72034.\n\nName exactly 6 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- pool hall: 1\n- bar: 1\n- sports bar: 1\n- bakery: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, pool hall, bar, sports bar, bakery. Real places only."
+    },
+    {
+      "bill": "roots",
+      "area": 3,
+      "system": "You help a concert promoter plan a street team: people who visit local businesses in the weeks before a show and ask to leave flyers or posters. You have no tools and no web access. Answer from what you know.",
+      "user": "Show: The Roots at The Salt Shed, Chicago, IL, on Friday, January 15, 2027.\nThe street team goes out on Thursday and Saturday before the show.\n\nArea: South Shore, IL. Only places within 2 km of latitude 41.76178, longitude -87.577515.\n\nName exactly 8 local businesses in this area where the team could ask to leave flyers: places this show's fans are likely to go, open on Thursday and Saturday. No national chains. Give exactly this many of each type:\n- restaurant: 2\n- pub: 1\n- cocktail bar: 1\n- bar: 1\n- bakery: 2\n- cafe: 1\n\nAnswer with JSON only, in this shape: {\"places\": [{\"name\": \"...\", \"type\": \"...\", \"address\": \"... or null\", \"reason\": \"one short line\"}]}.\n\"type\" is one of: restaurant, pub, cocktail bar, bar, bakery, cafe. Real places only."
+    }
+  ]
+}

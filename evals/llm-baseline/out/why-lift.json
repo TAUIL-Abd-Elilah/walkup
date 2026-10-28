@@ -1,0 +1,100 @@
+{
+  "protocol": "evals/llm-baseline/protocol.md, part 2",
+  "protocolSha256": "a5b9e178ea0cc2e20ec51e8b3c69afa8cb3553cf076aba2677612abc8fb91321",
+  "computedAt": "2026-10-28T12:01:15.437Z",
+  "qlooCalls": 0,
+  "rooms": [
+    {
+      "room": "anthem",
+      "venue": "The Anthem, Washington DC",
+      "bills": [
+        {
+          "bill": "giddens",
+          "radiusKm": 40,
+          "joinedTiles": 410,
+          "rawVsUsualCrowd": {
+            "rho": 0.4546,
+            "n": 410
+          },
+          "liftRecomputeMaxDiff": 0.00005
+        },
+        {
+          "bill": "flo",
+          "radiusKm": 60,
+          "joinedTiles": 159,
+          "rawVsUsualCrowd": {
+            "rho": 0.4252,
+            "n": 159
+          },
+          "liftRecomputeMaxDiff": 0.000047
+        }
+      ],
+      "top5": {
+        "raw": {
+          "sameTile": 0,
+          "samePlace": 2,
+          "of": 5
+        },
+        "lift": {
+          "sameTile": 0,
+          "samePlace": 1,
+          "of": 5
+        },
+        "rawWithin40km": {
+          "sameTile": 0,
+          "samePlace": 3
+        }
+      },
+      "billVsBillRaw": {
+        "rho": 0.4417,
+        "n": 124
+      }
+    },
+    {
+      "room": "saltshed",
+      "venue": "The Salt Shed, Chicago",
+      "bills": [
+        {
+          "bill": "greensky",
+          "radiusKm": 40,
+          "joinedTiles": 347,
+          "rawVsUsualCrowd": {
+            "rho": 0.6637,
+            "n": 347
+          },
+          "liftRecomputeMaxDiff": 0.000045
+        },
+        {
+          "bill": "roots",
+          "radiusKm": 40,
+          "joinedTiles": 896,
+          "rawVsUsualCrowd": {
+            "rho": 0.3075,
+            "n": 896
+          },
+          "liftRecomputeMaxDiff": 0.000049
+        }
+      ],
+      "top5": {
+        "raw": {
+          "sameTile": 0,
+          "samePlace": 2,
+          "of": 5
+        },
+        "lift": {
+          "sameTile": 0,
+          "samePlace": 0,
+          "of": 5
+        },
+        "rawWithin40km": {
+          "sameTile": 0,
+          "samePlace": 2
+        }
+      },
+      "billVsBillRaw": {
+        "rho": 0.498,
+        "n": 347
+      }
+    }
+  ]
+}
