@@ -7,7 +7,7 @@
 import type { RevisionChange, SheetDiscovery, SheetRevision, TraceStep } from "@walkup/contracts";
 import { STEP_STATUS_WORD } from "../../lib/labels";
 import { plainText } from "../../lib/sheet-utils";
-import { changeCountLine, groupChanges, readAsLine } from "./model";
+import { changeCountLine, groupChanges, readAsLine, toolCallsLine } from "./model";
 import { Refs } from "./receipts";
 
 /** A plain section after the Summary: the pick a stated rule calls out, with its receipts and a link to it on the sheet. */
@@ -146,6 +146,7 @@ function ChangeGroup({ title, items, look }: { title: string; items: RevisionCha
 export function RevisionNote({ revision }: { revision: SheetRevision }) {
   const groups = groupChanges(revision.changes);
   const readAs = readAsLine(revision.toolCalls);
+  const tools = toolCallsLine(revision.toolCalls);
   return (
     <section id="revision" aria-labelledby="revision-title" className="mt-6 max-w-[760px] border-y border-rule py-4">
       <h2 id="revision-title" className="text-lg">
@@ -159,6 +160,11 @@ export function RevisionNote({ revision }: { revision: SheetRevision }) {
         .
       </p>
       {readAs ? <p className="mt-1">{readAs}</p> : null}
+      {tools ? (
+        <p className="mt-1 text-sm text-muted" data-testid="revision-tools">
+          {tools}
+        </p>
+      ) : null}
       {revision.question ? (
         <p className="note-warn mt-3">
           <span className="font-semibold">Walkup needs an answer before it changes anything: </span>

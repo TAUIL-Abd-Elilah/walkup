@@ -185,7 +185,7 @@ describe("recorded mode: revisePlanFor answers from ready-made changes", () => {
 
   it("keeps the per-network cap", async () => {
     const who = ctx({ ip: "203.0.113.41" });
-    for (let i = 0; i < REVISES_PER_HOUR.live; i++) expect((await revisePlanFor(PARENT_ID, { instruction: "make it pop" }, who)).status).toBe(200);
+    for (let i = 0; i < REVISES_PER_HOUR.recorded; i++) expect((await revisePlanFor(PARENT_ID, { instruction: "make it pop" }, who)).status).toBe(200);
     const blocked = await revisePlanFor(PARENT_ID, { instruction: "make it pop" }, who);
     expect(blocked.status).toBe(429);
     expect(blocked.body).toMatchObject({ mode: "recorded" });

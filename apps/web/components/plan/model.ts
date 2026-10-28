@@ -96,6 +96,12 @@ export function readAsLine(toolCalls: readonly { tool: string; summary: string; 
   return parts.length > 0 ? `Read as: ${parts.join("; ")}.` : null;
 }
 
+/** The tool calls themselves, by name, once each: "Tool calls: set_all_ages, exclude_partner_categories." Null when none. */
+export function toolCallsLine(toolCalls: readonly { tool: string }[]): string | null {
+  const names = [...new Set(toolCalls.map((t) => t.tool).filter((t) => t !== "ask_operator"))];
+  return names.length > 0 ? `Tool calls: ${names.join(", ")}.` : null;
+}
+
 const STATUSES: readonly EnvelopeStatus[] =["ok", "empty", "needs_input", "partial", "degraded", "error"];
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 

@@ -135,7 +135,7 @@ export async function reviseRecorded(id: string, instruction: string, ctx: Reque
   const ready = await readyMadeRevisions(parent.planId);
   if (ready.length === 0) return recordedRefusal();
 
-  const allowed = reviseAllowed(ctx.ip, "live");
+  const allowed = reviseAllowed(ctx.ip, "recorded");
   if (!allowed.ok) return { status: 429, body: { mode: "recorded", reason: `Changes are capped at ${allowed.limit} per network per hour; try again in ${allowed.retryAfterS} s.` } };
 
   const reading = await readInstruction(parent, instruction, { narrator: recordedNarrator() });

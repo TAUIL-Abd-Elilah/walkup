@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { revisePlan } from "../../lib/api";
 import { formatDayMonth } from "../../lib/format";
-import { checkInstruction, openingLine, parseReadyMade, readAsLine, readerLine, recordedOutcome, type ReadyMade, type ReviseHandler, type ReviseReading } from "./model";
+import { checkInstruction, openingLine, parseReadyMade, readAsLine, readerLine, toolCallsLine, recordedOutcome, type ReadyMade, type ReviseHandler, type ReviseReading } from "./model";
 
 /** How long the reading stays on screen before a ready-made change opens (ms). */
 export const OPEN_DELAY_MS = 1800;
@@ -119,6 +119,7 @@ export function ReviseBox({
   };
 
   const readAs = message?.reading ? readAsLine(message.reading.toolCalls) : null;
+  const tools = message?.reading ? toolCallsLine(message.reading.toolCalls) : null;
   const locked = busy || message?.kind === "opening" || Boolean(disabledReason);
 
   return (
@@ -175,6 +176,7 @@ export function ReviseBox({
                 <p className="text-muted">
                   {readerLine(message.reading.interpreter)}
                   {readAs ? ` ${readAs}` : ""}
+                  {tools ? ` ${tools}` : ""}
                 </p>
               ) : null}
               {message.kind === "question" ? (

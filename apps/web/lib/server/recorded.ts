@@ -102,6 +102,36 @@ export function recordedOnDay(): string | null {
   return dayMemo.value;
 }
 
+let changesMemo: { stores: Stores; value: string | null } | null = null;
+
+/**
+ * The UTC day of the newest stored live revision (a ready-made change recorded ahead), or null when there is none.
+ * The site strip names it when it is later than recordedOnDay(), so a change recorded on Oct 28 is not dated Oct 21.
+ */
+export function changesRecordedOnDay(): string | null {
+  let st: Stores;
+  try {
+    st = stores();
+  } catch {
+    return null;
+  }
+  if (changesMemo?.stores === st && changesMemo.value !== null) return changesMemo.value;
+  const pick = (runs: StoredPlan[]) =>
+    runs
+      .filter((r) => Boolean(r.sheet?.revision))
+      .map((r) => (r.sheet?.createdAt ?? r.createdAt ?? "").slice(0, 10))
+      .filter(Boolean)
+      .sort()
+      .pop() ?? null;
+  const found = st.plans.listComplete({ mode: "live" }, 50);
+  if (found instanceof Promise) {
+    void found.then((runs) => (changesMemo = { stores: st, value: pick(runs) }), () => undefined);
+    return null;
+  }
+  changesMemo = { stores: st, value: pick(found) };
+  return changesMemo.value;
+}
+
 /** Complete plans read to find the revisions of one plan. */
 export const REVISION_LOOKBACK = 200;
 

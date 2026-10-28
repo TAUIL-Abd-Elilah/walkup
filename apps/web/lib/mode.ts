@@ -18,7 +18,7 @@ import { envValue, walkupModeValue } from "@walkup/qloo";
 import { formatStamp } from "./format";
 import { lastQuota } from "./server/engine";
 import { qlooKeyRejection } from "./server/key-status";
-import { liveSheetStored, recordedOnDay } from "./server/recorded";
+import { changesRecordedOnDay, liveSheetStored, recordedOnDay } from "./server/recorded";
 
 export interface RuntimeMode {
   kind: "fixture" | "live" | "recorded";
@@ -44,6 +44,8 @@ export interface ModeOptions {
   liveSheetStored?: (rejectedAt: string) => boolean;
   /** The UTC day ("2026-10-21") the stored live sheets were recorded. Default: the newest in the server's store. */
   recordedOn?: () => string | null;
+  /** The UTC day of the newest stored revision (ready-made changes). Default: the newest in the server's store. */
+  changesRecordedOn?: () => string | null;
 }
 
 export function keysPresent(env: Env = process.env): boolean {
@@ -73,16 +75,19 @@ function dayWords(ymd: string): string {
  * a live run produced. Said so it holds whether or not any live run was recorded (a preset without one shows a
  * sample sheet, marked so).
  */
-export function recordedDetail(day: string | null): string {
-  const when = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? ` on ${dayWords(day)}` : "";
-  return `Recorded from live Qloo and Ticketmaster runs${when}. Live runs are paused for judging; these sheets are what a live run produced.`;
+export function recordedDetail(day: string | null, changesDay: string | null = null): string {
+  const ok = (d: string | null): d is string => Boolean(d && /^\d{4}-\d{2}-\d{2}$/.test(d));
+  const when = ok(day) ? ` on ${dayWords(day)}` : "";
+  // Ready-made changes recorded on a later day say so, so their sheets aren't dated by the earlier runs.
+  const later = ok(day) && ok(changesDay) && changesDay > day ? `; changes recorded ahead on ${dayWords(changesDay)}` : "";
+  return `Recorded from live Qloo and Ticketmaster runs${when}${later}. Live runs are paused for judging; these sheets are what a live run produced.`;
 }
 
-function recordedMode(day: string | null): RuntimeMode {
+function recordedMode(day: string | null, changesDay: string | null = null): RuntimeMode {
   return {
     kind: "recorded",
     label: day ? `RECORDED · live runs of ${dayWords(day)}` : "RECORDED · live runs paused",
-    detail: recordedDetail(day),
+    detail: recordedDetail(day, changesDay),
     liveSearch: false,
   };
 }
@@ -102,7 +107,14 @@ export function runtimeMode(env: Env = process.env, opts: ModeOptions = {}): Run
       } catch {
         day = null;
       }
-      return recordedMode(day);
+      // A caller that fixes the recorded day without a changes day (tests) gets no changes clause.
+      let changesDay: string | null = null;
+      try {
+        changesDay = (opts.changesRecordedOn ?? (opts.recordedOn ? () => null : changesRecordedOnDay))();
+      } catch {
+        changesDay = null;
+      }
+      return recordedMode(day, changesDay);
     }
   }
   const live = ENGINE_CONNECTED && present && requested !== "fixture" && !rejected;

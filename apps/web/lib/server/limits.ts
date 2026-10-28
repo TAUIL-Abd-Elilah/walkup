@@ -208,10 +208,11 @@ export function resetRateWindowsForTests(): void {
  * whose inputs changed are new) and may make one model call, so it does not take a fresh run, but it is
  * capped on its own window. Live is tighter than fixture mode.
  */
-export const REVISES_PER_HOUR = { fixture: 30, live: 12 } as const;
+/** Recorded mode reads the note and opens a stored version: no API call, so judges sharing one network get a higher cap. */
+export const REVISES_PER_HOUR = { fixture: 30, live: 12, recorded: 120 } as const;
 const REVISE_WINDOW_MS = 60 * 60 * 1000;
 
-export function reviseAllowed(ip: string | null, mode: "live" | "fixture", now: number = Date.now()): { ok: boolean; retryAfterS: number; limit: number } {
+export function reviseAllowed(ip: string | null, mode: "live" | "fixture" | "recorded", now: number = Date.now()): { ok: boolean; retryAfterS: number; limit: number } {
   const limit = REVISES_PER_HOUR[mode];
   return { ...rateLimit(`revise-${mode}`, ip, limit, REVISE_WINDOW_MS, now), limit };
 }
