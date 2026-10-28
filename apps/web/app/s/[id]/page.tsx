@@ -315,7 +315,8 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
   // The narration and copy lines as checked at view time, the same as the plan page and the PDF.
   const s = vettedSheet(v.sheet).sheet;
   const preset = presetForPlan(v.presetId ?? id, s.mode, s.bill);
-  const m = buildSheetModel(s, { ...(preset?.showName ? { showName: preset.showName } : {}), recorded: runtimeMode().kind === "recorded" });
+  // Days to the show count from today, as on the plan page.
+  const m = buildSheetModel(s, { ...(preset?.showName ? { showName: preset.showName } : {}), recorded: runtimeMode().kind === "recorded", asOf: new Date().toISOString() });
   const partners = new Map(s.cards.partners.results.map((p) => [p.entity.entityId, p]));
   const d = m.discovery;
   const discoveryId = d?.entityId && partners.has(d.entityId) ? d.entityId : null;

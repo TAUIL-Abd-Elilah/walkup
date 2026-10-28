@@ -63,6 +63,8 @@ export async function exportResponse(sheet: StreetSheet, kind: ExportKind, opts:
       ...(opts.pageSize ? { pageSize: opts.pageSize } : {}),
       ...(opts.recorded ? { recorded: true } : {}),
       ...(opts.showName ? { showName: opts.showName } : {}),
+      // Days to the show count from today, as on the plan page (which shows the recorded date beside them).
+      asOf: new Date().toISOString(),
     },
   });
   if (!file) throw new Error(`export ${kind} produced no file`);
