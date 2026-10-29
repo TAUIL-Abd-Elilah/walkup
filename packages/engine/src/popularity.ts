@@ -98,5 +98,6 @@ export function popularitySentence(c: Pick<PopularityCheck, "partners" | "notInP
   if (c.partners === 1) return n === 1 ? `The one partner isn't among ${most}: a list by popularity alone would miss it.` : `The one partner is also among ${most}.`;
   if (n === 0) return `All ${c.partners} partners are also among ${most}.`;
   if (n === c.partners) return `None of the ${c.partners} partners is among ${most}: a list by popularity alone would miss them all.`;
+  if (n === 1) return `1 of the ${c.partners} partners isn't among ${most}: a list by popularity alone would miss it.`;
   return `${n} of the ${c.partners} partners aren't among ${most}: a list by popularity alone would miss them.`;
 }

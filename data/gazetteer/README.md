@@ -81,6 +81,7 @@ diffs stay readable.
 | `nashville` | 255 (29 housing dropped) | 30 | 51 | 1,041,198 | all ok |
 | `hampton_roads` | 808 (38 housing dropped) | 13 | 76 | 1,159,226 | all ok |
 | `tacoma` | 549 (96 housing dropped) | 106 | 119 | 2,038,347 | all ok |
+| `dc` (built 2026-10-20) | 2,294 (22 housing dropped) | 301 | 298 | 4,696,569 | all ok |
 | `chicago` (built 2026-10-21) | 625 (1 housing dropped) | 181 | 238 | 5,208,560 | all ok |
 
 What did not work first time, and what was done:
@@ -124,7 +125,7 @@ Every output is written even when a source fails (the failure is recorded in its
 
 Requests go out one at a time with a descriptive User-Agent and a pause of at least 1.5 s
 (6 s or more between Overpass queries). Downloads are cached under `data/private/` (git-ignored):
-two Gazetteer zips (~2 MB), three Overpass responses, and the national ZCTA rows of four ACS
+two Gazetteer zips (~2 MB), one Overpass response per metro, and the national ZCTA rows of four ACS
 tables (~3 MB). The Summary File stream itself is ~250 MB the first time.
 
 ## Known limits

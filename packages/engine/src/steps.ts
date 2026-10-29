@@ -500,6 +500,7 @@ export function popularityStep(i: PopularityStepInput): TraceStep {
   const most = `the most popular places ${where}`;
   if (i.partners === 1) decision = i.notInPopularTop === 1 ? `Popularity alone would miss the one partner: it isn't among ${most}` : `The one partner is also among ${most}`;
   else if (i.notInPopularTop === 0) decision = `All ${countOf(i.partners, "partner")} are also among ${most}`;
+  else if (i.notInPopularTop === 1) decision = `Popularity alone would miss 1 of the ${countOf(i.partners, "partner")}: it isn't among ${most}`;
   else decision = `Popularity alone would miss ${i.notInPopularTop} of the ${countOf(i.partners, "partner")}: they aren't among ${most}`;
   return traceStep("partners-popular", "partners", "Popularity check", decision, "ok", i.ledgerRefs, joinSentences([how, "It says nothing about ticket sales"]));
 }

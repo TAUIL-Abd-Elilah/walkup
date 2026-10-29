@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-29T11:17:14.032Z",
+  "generatedAt": "2026-10-29T12:40:48.259Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -4013,7 +4013,7 @@
         {
           "name": "the partners card counts the dropped places",
           "status": "pass",
-          "detail": "24 partners in 3 areas, at most 2 of a kind per area. Dropped 36 places marked closed. 1 list no hours for Thu: call first. 24 of 24 picks also rank for the room's usual crowd, so their scores were marked down (more when the two ranks are close).",
+          "detail": "24 partners in 3 areas, at most 2 of a kind per area. Dropped 36 places marked closed. 1 lists no hours for Thu: call first. 24 of 24 picks also rank for the room's usual crowd, so their scores were marked down (more when the two ranks are close).",
           "clause": "S2",
           "subject": "g1-a, closed places"
         },

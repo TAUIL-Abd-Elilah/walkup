@@ -3,20 +3,16 @@ import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { joinAnd, shortUrl, telHref } from "../../lib/format";
 import { FANBAR_HREF, PARTNER_RANK_LINE, categoryLabel } from "../../lib/labels";
-import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSearchAreas, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
+import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSearchAreas, partnerSummary, popularityLine, tagInSentence, topTiles, withWithout } from "../../lib/sheet-utils";
 import { WithWithout } from "../WithWithout";
-import { LESS_SURE_NOTE, categoryLabel as typeLabel, formatPhone, partnerAreaLabel, partnerLessSure, partnerOtherState } from "@walkup/exports/format";
+import { LESS_SURE_NOTE, PHONE_NOT_LISTED, categoryLabel as typeLabel, formatPhone, partnerAreaLabel, partnerLessSure, partnerOtherState } from "@walkup/exports/format";
 import { partnerHoursColumn } from "@walkup/exports/sheet-model";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
 import { Refs } from "./receipts";
 
-/** Tag names inside a sentence: lower case except acronyms ("R&B"). */
-const tagWord = (name: string) =>
-  name
-    .split(/\s+/)
-    .map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase()))
-    .join(" ");
+/** Tag names inside a sentence: lower case except acronyms ("R&B") and proper adjectives ("Mexican"). */
+const tagWord = tagInSentence;
 
 /**
  * The Type cell: the kind of place, and "national chain" when `partner.chain` is set (any of the four chain signals).
@@ -159,31 +155,33 @@ export function PartnerWhy({ p, area }: { p: Partner; area?: string | undefined 
 /** Phone and website in ink with an underline: they are for calling, not part of the reading. */
 function Contact({ p }: { p: Partner }) {
   const bits = [
+    // No phone is said, as the print view and the PDF say it, so the row never just lacks one.
     p.phone ? (
       <a key="tel" className="tabular underline underline-offset-2" href={telHref(p.phone)}>
         {formatPhone(p.phone)}
       </a>
-    ) : null,
+    ) : (
+      <span key="tel" className="text-muted">
+        {PHONE_NOT_LISTED}
+      </span>
+    ),
     p.website ? (
       <a key="web" className="underline underline-offset-2" href={p.website} target="_blank" rel="noreferrer" title={shortUrl(p.website)}>
         Website<span className="sr-only"> of {p.entity.name} (opens in a new tab)</span>
       </a>
     ) : null,
   ].filter(Boolean);
-  if (!p.address && bits.length === 0) return null;
   return (
     <span className="mt-0.5 block text-sm text-muted">
       {p.address}
-      {bits.length > 0 ? (
-        <span className="block text-ink">
-          {bits.map((b, i) => (
-            <Fragment key={i}>
-              {i > 0 ? <span className="text-muted"> · </span> : null}
-              {b}
-            </Fragment>
-          ))}
-        </span>
-      ) : null}
+      <span className="block text-ink">
+        {bits.map((b, i) => (
+          <Fragment key={i}>
+            {i > 0 ? <span className="text-muted"> · </span> : null}
+            {b}
+          </Fragment>
+        ))}
+      </span>
     </span>
   );
 }

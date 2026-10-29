@@ -154,7 +154,7 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
         ))}
       </ol>
       <table className="table w-full table-fixed border-collapse text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[3px] [&_td]:pr-2 [&_td]:align-top [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em] print:[&_td]:py-[1px]">
-        <caption className="sr-only">Partners, one row each, with a box to tick and a blank column for notes.</caption>
+        <caption className="sr-only">Partners, one row each, with a box to tick and a column for notes.</caption>
         <colgroup>
           <col style={{ width: "3%" }} />
           <col style={{ width: "3%" }} />

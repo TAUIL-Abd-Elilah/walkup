@@ -61,7 +61,7 @@ const VERIFIED: { shape: string; usedFor: string; result: string; status: "verif
   { shape: "urn:demographics", usedFor: "Age mix", result: "One block per signal, 6 age buckets, 2 gender keys.", status: "verified" },
   { shape: "/v2/analysis/compare, bill against usual crowd", usedFor: "How this crowd differs", result: "take has no effect, so each list is cut on our side.", status: "verified, changed" },
   { shape: "Place insights per area: radius, pinned category tags (union), filter.hours, price cap, explainability, take=50", usedFor: "Partners, their usual-crowd rank, spots near the venue", result: "filter.hours honoured: 5 places closed that day without it, 0 with it. Exclusion filters not checked yet.", status: "verified" },
-  { shape: "Pinned category tags", usedFor: "Partner and spot categories", result: "11 of 14 pinned (5 to 10 places within 25 km, each carrying the tag); record store, Irish pub and place of worship dropped.", status: "verified, changed" },
+  { shape: "Pinned category tags", usedFor: "Partner and spot categories", result: "11 of 14 pinned (6 to 10 places within 25 km, each carrying the tag); record store, Irish pub and place of worship dropped.", status: "verified, changed" },
   { shape: "filter.results.entities with the bill as the signal", usedFor: "Call order for your partners", result: "A 10-entity shortlist came back fully scored.", status: "verified" },
   { shape: "Podcasts with signal.location", usedFor: "Podcasts", result: "15 rows with a usable seed; the day-one errors came from a seed Qloo had no taste data for. Location effect not shown, so labelled national.", status: "verified" },
   { shape: "Brands with signal.location", usedFor: "Sponsor", result: "15 rows with a usable seed. No alcohol brand tag found to exclude, so a name and tag filter keeps those brands off shows that aren't 21+ or that the operator marked all ages.", status: "verified, changed" },
@@ -123,7 +123,8 @@ export default function SystemCardPage() {
         partner website links that no longer work (checked Oct 29), showed four places&apos; own websites whose domain shortens the name, made
         &ldquo;and N more&rdquo; in chain lists count places, said a partner chain is listed last in its area (not last on the whole list), had
         the Summary and Checks steps say when fixed wording replaced Claude&apos;s lines, wrote &ldquo;15 partner lines trimmed&rdquo; for
-        &ldquo;15 partner line(s) trimmed&rdquo;, named the shared-website signal in the chain note, and removed a repeated label from 16
+        &ldquo;15 partner line(s) trimmed&rdquo; and &ldquo;1 of 1 act resolved&rdquo; for &ldquo;1 of 1 acts resolved&rdquo;, named the
+        shared-website signal in the chain note, and removed a repeated label from 16
         Ticketmaster roster receipts. No Qloo or Ticketmaster answer, ranking, partner list or ledger number changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
@@ -183,9 +184,10 @@ export default function SystemCardPage() {
 
         <Section id="endpoints" title="Qloo endpoints">
           <p>
-            Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 16 to 32 calls per
-            fresh run on the sample data: the sample bill A at The Truth, Nashville, makes 32 from cold, including the signal check, the 4 map-check heatmaps, 3 usual-crowd
-            partner searches and 3 popularity searches; the Super Funny, Tacoma sample, with no lift map, makes 16. The live runs on Oct 21 2026 made
+            Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 16 to 39 calls per
+            sample preset from a cold cache: the sample bill A at The Truth, Nashville, makes 32, including the signal check, the 4 map-check heatmaps, 3 usual-crowd
+            partner searches and 3 popularity searches; the Hampton Coliseum sample makes 39 across its pause, 8 before the pick and 31 after; the Super
+            Funny, Tacoma sample, with no lift map, makes 16. The live runs on Oct 21 2026 made
             about 30 calls each. From a cold cache, the first runs made 30 and 22 new calls at The Anthem and 29 and 21 at The Salt Shed; the second
             bill at each room reused the room&apos;s cached answers. The sheets served here are same-day re-runs with the final rules, at 29 or 30 requests
             each. Of those, 0 were new at The Anthem and 12 and 11 at The Salt Shed; the rest came from the cache. Each sheet shows its own count. The

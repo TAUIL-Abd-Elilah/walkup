@@ -1,7 +1,7 @@
 {
   "$schema": "./chains.schema.json",
   "version": 1,
-  "about": "National and large regional US chain brands that show up as Qloo places (coffee, fast food, casual dining, sports bars, retail, book stores, barbers and salons). A hand-kept list, reviewed by hand; Qloo's description, a store-locator website and the same name at 3 or more places catch chains it misses. Partner and pre/post lists put chains after local places and keep at most 2 per list. Brands marked adult (servers in revealing uniforms) are never a street-team stop.",
+  "about": "National and large regional US chain brands that show up as Qloo places (coffee, fast food, casual dining, sports bars, retail, book stores, barbers and salons). A hand-kept list, reviewed by hand; Qloo's description, a store-locator website and the same name or website at 3 or more places catch chains it misses. Partner and pre/post lists put chains after local places and keep at most 2 per list. Brands marked adult (servers in revealing uniforms) are never a street-team stop.",
   "reviewedAt": "2026-10-21",
   "chains": [
     {"name":"Starbucks","aliases":["Starbucks Coffee","Starbucks Coffee Company","Starbucks Reserve"],"kind":"coffee"},

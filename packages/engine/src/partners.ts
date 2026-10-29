@@ -132,7 +132,7 @@ export interface PartnerScoringOptions extends CategoryOptions {
   chains?: ChainList | ChainIndex | readonly ChainEntry[] | null;
   /** Most chains kept on the list (with `chains`). Default `MAX_CHAINS_PER_LIST` (2). */
   maxChains?: number;
-  /** Other places the run saw (pre/post spots), for the "same name at 3+ places" chain signal. */
+  /** Other places the run saw (pre/post spots), for the "same name or website at 3+ places" chain signal. */
   chainContext?: readonly QlooEntity[];
 }
 
@@ -385,7 +385,7 @@ export function scorePartnersWithReport(
   const excludedCats = new Set(opts.excludeCategories ?? []);
   const chainRule = !!opts.chains;
   const maxChains = chainRule ? intOpt(opts.maxChains, MAX_CHAINS_PER_LIST) : Number.POSITIVE_INFINITY;
-  // Chain signals over every place the run saw: the list, Qloo's description, the website, the same name at 3+ places.
+  // Chain signals over every place the run saw: the list, Qloo's description, the website, the same name or website at 3+ places.
   const chainOf: ReadonlyMap<string, unknown> = chainRule
     ? chainSignals([...pools.flatMap((p) => p.entities), ...(opts.chainContext ?? [])], opts.chains ?? null)
     : new Map();

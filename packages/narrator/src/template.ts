@@ -92,8 +92,21 @@ function billNames(input: NarrateInput): string {
 }
 
 /**
+ * Proper adjectives a tag name keeps capitalised ("American history", "Irish pub", "Mexican"). The plan page's
+ * `tagInSentence` (apps/web/lib/sheet-utils.ts) keeps the same list.
+ */
+export const PROPER_WORD_RE =
+  /^(?:American|African|Afro|Latin|Latino|Latina|Caribbean|Irish|Italian|Mexican|Asian|British|English|French|Spanish|Cajun|Creole|Appalachian|Celtic|Black|Southern|Ethiopian|Jamaican|Korean|Japanese|Chinese|Indian|Thai|Vietnamese|Cuban|Mediterranean|Greek|German|Polish|Persian|Peruvian|Brazilian|Hawaiian|Filipino|Turkish|Lebanese)$/;
+
+/** "Middle Eastern": two words that are proper only together. */
+export function properPhrases(text: string): string {
+  return text.replace(/\bmiddle eastern\b/gi, "Middle Eastern");
+}
+
+/**
  * A tag name as it reads inside a sentence: lower case except acronyms
- * ("R&B", "EDM"), and without a trailing " fans" ("Comedy fans" -> "comedy").
+ * ("R&B", "EDM") and proper adjectives ("Mexican", "Middle Eastern"), and
+ * without a trailing " fans" ("Comedy fans" -> "comedy").
  */
 export function tagInProse(name: string): string {
   const words = name
@@ -102,8 +115,18 @@ export function tagInProse(name: string): string {
     // "Hip - Hop" (a Qloo tag name) reads "hip hop".
     .replace(/\s+-\s+/g, " ")
     .split(/\s+/)
-    .map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase()));
-  return words.join(" ");
+    .map((w) =>
+      (w.match(/[A-Z]/g)?.length ?? 0) >= 2
+        ? w
+        : w
+            .split("-")
+            .map((part) => {
+              const cap = part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+              return PROPER_WORD_RE.test(cap) ? cap : part.toLowerCase();
+            })
+            .join("-"),
+    );
+  return properPhrases(words.join(" "));
 }
 
 /** Only genre and audience tags fill the copy slots, never adjectives or themes ("Cozy", "Friendship", "City life"). */

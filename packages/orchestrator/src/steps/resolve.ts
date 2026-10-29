@@ -594,7 +594,7 @@ export async function resolveAll(ctx: RunContext, choices: ChoiceStore | undefin
   const resolvedActs = outcomes.filter((o) => o.entity).length;
   const comedy = /comedy/i.test(ctx.bill.classification ?? "");
   const parts: string[] = [];
-  parts.push(`${resolvedActs} of ${acts} acts resolved${pickedCount > 0 ? ` (${plural(pickedCount, "pick")} by the operator)` : ""}.`);
+  parts.push(`${resolvedActs} of ${acts} ${acts === 1 ? "act" : "acts"} resolved${pickedCount > 0 ? ` (${plural(pickedCount, "pick")} by the operator)` : ""}.`);
   parts.push(...swapLines);
   if (pending.length > 0) parts.push(`${plural(pending.length, "name")} waiting for your pick: ${pending.map((p) => p.input).join(", ")}.`);
   if (proxied > 0) parts.push(`${plural(proxied, "act")} Qloo has little on ${proxied === 1 ? "is" : "are"} matched through a film or TV title (see the receipts).`);

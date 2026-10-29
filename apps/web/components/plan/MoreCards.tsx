@@ -4,13 +4,16 @@ import { AGE_BUCKETS } from "@walkup/contracts";
 import type { AgeBucket, CompareTag, DemographicsBlock, QlooEntity, StreetSheet } from "@walkup/contracts";
 import { formatDistance, formatInt, formatPct, formatSigned } from "../../lib/format";
 import { CATEGORY_LABEL, STATUS_WORD, categoryLabel, subtypeLabel } from "../../lib/labels";
-import { baselineName, sourceLine, tagIndex, tagLabel, tagName } from "../../lib/sheet-utils";
+import { baselineName, sourceLine, tagInSentence, tagIndex, tagLabel, tagName } from "../../lib/sheet-utils";
 import { spotIsFanFacing } from "@walkup/exports/audience";
-import { DECLARED_UNRANKED, sheetAgeLabel, sheetSpots, spotSharesDiffer, spotsShareNote } from "@walkup/exports/format";
+import { DECLARED_UNRANKED, SPOT_NOT_IN_USUAL, sheetAgeLabel, sheetSpots, spotSharesDiffer, spotsShareNote } from "@walkup/exports/format";
 import { TrustTable } from "./LiftCard";
 import { PlanCard } from "./PlanCard";
 import { chipText } from "./model";
 import { ClaimList, Refs, useReceipts } from "./receipts";
+
+/** A spot's claim about the room's usual crowd ("ranks 3 places higher here than for the room's usual crowd"). */
+const USUAL_CHIP = /\busual crowd\b|^tonight vs house\b/;
 
 const placeType = (e: QlooEntity, category?: string): string =>
   category ? categoryLabel(category) : (CATEGORY_LABEL[e.tags[0]?.id.split(":").pop() ?? ""] ?? subtypeLabel(e.subtype));
@@ -84,6 +87,14 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
   const showShare = spotSharesDiffer(spots.map((s) => s.expectedShare));
   const uniformShare = !showShare && spots.length > 0 ? spots[0]!.expectedShare : null;
   const showGuests = attendance !== null && showShare;
+  // When the usual crowd's list came back, a spot it left out says so, as the PDF's "Vs usual crowd" column does, with
+  // the receipt of that list. The run gives such a spot no chip of its own.
+  const usualBack = spots.some((s) => s.deltaRank !== null && Number.isFinite(s.deltaRank));
+  const usualRef = spots.flatMap((s) => s.chips).find((c) => USUAL_CHIP.test(c.label))?.ledgerRef ?? "";
+  const claims = (s: (typeof spots)[number]) =>
+    usualBack && (s.deltaRank === null || !Number.isFinite(s.deltaRank)) && !s.chips.some((c) => USUAL_CHIP.test(c.label))
+      ? [...s.chips, { label: SPOT_NOT_IN_USUAL, ledgerRef: usualRef }]
+      : s.chips;
 
   return (
     <PlanCard id="prepost" title="Before and after the show" envelope={env}>
@@ -131,9 +142,9 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
                     {[placeType(s.entity, s.category), s.chain ? "national chain" : null, !spotIsFanFacing(s, sheet) ? "not shown to fans" : null].filter(Boolean).join(" · ")}
                     {formatDistance(s.entity.distanceM) ? <span className="sm:hidden"> · {formatDistance(s.entity.distanceM)} away</span> : null}
                   </span>
-                  {s.chips.length > 0 ? (
+                  {claims(s).length > 0 ? (
                     <span className="mt-0.5 block text-sm">
-                      <ClaimList chips={s.chips} entityId={s.entity.entityId} wording={chipText} />
+                      <ClaimList chips={claims(s)} entityId={s.entity.entityId} wording={chipText} />
                     </span>
                   ) : null}
                 </td>
@@ -334,7 +345,6 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
   const sharedIds = new Set(r.shared.map((t) => t.id));
   const leansA = r.a.filter((t) => !sharedIds.has(t.id));
   const leansB = r.b.filter((t) => !sharedIds.has(t.id));
-  const lower = (n: string) => n.split(/\s+/).map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase())).join(" ");
   return (
     <section id="different" aria-labelledby="different-title" className="section scroll-mt-4">
       <details className="plain-details">
@@ -367,7 +377,7 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
           {r.shared.length > 0 ? (
             <p className="mt-4">
               <span className="text-muted">Both rank high: </span>
-              {r.shared.map((t) => lower(tagLabel(t.name))).join(", ")}.
+              {r.shared.map((t) => tagInSentence(t.name)).join(", ")}.
               {r.fromTagDiff ? <span className="text-muted"> Worked out from two tag lists ranked against each other.</span> : null}
             </p>
           ) : null}

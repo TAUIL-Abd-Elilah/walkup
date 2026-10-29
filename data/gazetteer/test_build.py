@@ -129,15 +129,32 @@ class GazetteerFiles(unittest.TestCase):
 
 
 class ExitCode(unittest.TestCase):
+    def _main(self, errors: list[str], zips_exit: int = 0) -> int:
+        """main() with build() stubbed. main() also runs zips.py from HERE, which writes
+        packages/gazetteer/src/zip-data.ts; a stub zips.py in a temp dir stands in for it,
+        so the test writes nothing in the tree."""
+        real_build, real_here = b.build, b.HERE
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "zips.py").write_text(f"def build(check=False):\n    return {zips_exit}\n", encoding="utf8")
+            try:
+                b.build = lambda metros, refresh, offline: {"metros": {"x": {"errors": errors}}}
+                b.HERE = Path(d)
+                return b.main(["--offline"])
+            finally:
+                b.build, b.HERE = real_build, real_here
+
     def test_source_errors_make_the_build_exit_nonzero(self) -> None:
-        real = b.build
-        try:
-            b.build = lambda metros, refresh, offline: {"metros": {"x": {"errors": ["osm: HTTP 504"]}}}
-            self.assertEqual(b.main(["--offline"]), 1)
-            b.build = lambda metros, refresh, offline: {"metros": {"x": {"errors": []}}}
-            self.assertEqual(b.main(["--offline"]), 0)
-        finally:
-            b.build = real
+        self.assertEqual(self._main(["osm: HTTP 504"]), 1)
+        self.assertEqual(self._main([]), 0)
+
+    def test_a_zip_table_gap_makes_the_build_exit_nonzero(self) -> None:
+        self.assertEqual(self._main([], zips_exit=1), 1)
+
+    def test_writes_nothing_in_the_tree(self) -> None:
+        ts = b.ROOT / "packages" / "gazetteer" / "src" / "zip-data.ts"
+        before = ts.stat().st_mtime_ns
+        self._main([])
+        self.assertEqual(ts.stat().st_mtime_ns, before)
 
 
 class Output(unittest.TestCase):

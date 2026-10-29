@@ -14,6 +14,7 @@ Output: `out/score.json` (`{format, formatVersion, source, worldSeed, recordedPl
 | `known-gaps.ts` | Product gaps this eval found and reported that are still open. They stay failures in the score but are marked as known, so CI can tell them from regressions. |
 | `run.ts` | `runProductEval()`, `writeScore()`, `scoreMarkdown()`, `loadRecordedPlans()` and the CLI. |
 | `product.eval.test.ts` | The vitest wrapper. It runs the cases, then mutation tests showing that each check fails on a sheet broken on purpose, then unit tests and the recorded path (JSON files, fixture wrappers, SQLite). |
+| `docs-numbers.test.ts` | Holds the call counts, brand count, pinned tag counts, sample-world MCP response sizes and gazetteer metros the docs give to `out/score.json`, the fixture sheets and the data they describe. |
 
 ## Run
 
@@ -51,6 +52,6 @@ C01 to C04 are the goldens: G1 bill A, G1 bill B, G2 and G3. C05 is the `needs_i
 - **The ID validator** needs a tapped transport, so it only runs on fixture runs. On recorded runs the ledger checks remain: every reference is in the run's ledger, and every cited entity traces to a Qloo entry that returned results.
 - **The partner open check uses the first street-team day**, which is the day Q9 filters on. Openness on the other street-team days is reported as a number (`openAllStreetDays`) and does not fail a case.
 - **A partner with no hours from Qloo passes when the sheet shows it as "call ahead".** G1 bill A has two such partners on the fixture world; the D3 row of the score names it. `--strict-hours` fails it.
-- **Budget bounds are upper limits.** "About 14-18 calls" is a target, not a floor. G3 reaches 10 coded fallback calls, which is the cap allowed here; C19 uses 7 venue calls because the failed house heatmap is counted.
+- **Budget bounds are upper limits.** "About 14-18 calls" is a target, not a floor: G3 makes 10 core bill-level calls (the cap is 18) and 2 coded fallback calls (the 60 km heatmap and the 2,500 m spots; the cap is 10). C19 uses 7 venue calls because the failed house heatmap is counted.
 - **Recorded plans keep the last complete record per plan id.** The calls a paused run made before it resumed are not in that record, so a recorded G2 understates its budget.
 - **No known gaps today.** The one gap this eval reported (C11 and C12: pre/post spots with unknown hours kept the chip "near the room, open on show night") is fixed in `packages/orchestrator` (`src/steps/prepost.ts`): such spots now say "call ahead" on their chip and the card counts them. `known-gaps.ts` is empty; a new entry must name its own check, so it can never mask a spot that is missing, closed or shut that night.

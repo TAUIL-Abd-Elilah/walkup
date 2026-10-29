@@ -260,6 +260,9 @@ describe("vetNarration", () => {
     expect(house.replaced[0]).toMatch(/^tileWhy\[1\]: "house" instead of the room's usual crowd/);
     const miscount = vetNarration(makeSheet(tileLine(1, "Riverbend shows about 1.8 times the room's usual crowd and has two partner places on the street team's route.")));
     expect(miscount.replaced).toEqual(["tileWhy[1]: says two partners, the sheet has 1 in this area"]);
+    // The reason says "partner" for one, as the line did.
+    const one = vetNarration(makeSheet(tileLine(2, "Oak Park shows about 1.5 times the room's usual crowd and has one partner on the sheet.")));
+    expect(one.replaced).toEqual(["tileWhy[2]: says one partner, the sheet has 0 in this area"]);
     const right = vetNarration(makeSheet(tileLine(1, "Riverbend shows about 1.8 times the room's usual crowd and has one partner on the sheet.")));
     expect(right.replaced).toEqual([]);
     // The summary may not use "house" either.

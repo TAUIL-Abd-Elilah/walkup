@@ -1,5 +1,6 @@
 import type { GuardReport, LedgerEntry, LiftTile, Partner, PopularityCheck, PopularPlace, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
 import { areaState, DISTANCE_SUFFIX, partnerAreaLabel, withState } from "@walkup/exports/format";
+import { tileWhyLine } from "@walkup/exports/sheet-model";
 import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd, possessive } from "./format";
 import { TOP_LIFT } from "./lift";
 import { CATEGORY_LABEL, LEDGER_SOURCE_SHORT, tagFallbackName } from "./labels";
@@ -78,8 +79,13 @@ export function allTiles(sheet: StreetSheet): LiftTile[] {
   return [...sheet.cards.liftMap.results.tiles].sort((a, b) => b.lift - a.lift);
 }
 
+/**
+ * The line under a numbered area, by the downloads' own rule (`tileWhyLine`): the narration's line, else the area's
+ * two percentiles, so an area whose line the checks left out still has one, as on the print view and the PDF.
+ */
 export function tileWhy(sheet: StreetSheet, geohash: string): string | undefined {
-  return sheet.narration?.tileWhy.find((t) => t.geohash === geohash)?.text;
+  const tile = sheet.cards.liftMap.results.tiles.find((t) => t.geohash === geohash);
+  return tile ? tileWhyLine(sheet, tile) : sheet.narration?.tileWhy.find((t) => t.geohash === geohash)?.text;
 }
 
 export function partnerLine(sheet: StreetSheet, entityId: string): string | undefined {
@@ -118,6 +124,36 @@ export function tagLabel(name: string): string {
   const shouted = n.length > 3 && /[A-Z]{3}/.test(n) && n === n.toUpperCase();
   const s = shouted ? n.toLowerCase() : n;
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Proper adjectives a tag name keeps capitalised inside a sentence: the narrator's list (`PROPER_WORD_RE` in
+ * packages/narrator/src/template.ts, kept the same here so no client bundle loads the narrator), so "Tags it shares"
+ * says "Mexican" where the partner line beside it does.
+ */
+const PROPER_TAG_WORD =
+  /^(?:American|African|Afro|Latin|Latino|Latina|Caribbean|Irish|Italian|Mexican|Asian|British|English|French|Spanish|Cajun|Creole|Appalachian|Celtic|Black|Southern|Ethiopian|Jamaican|Korean|Japanese|Chinese|Indian|Thai|Vietnamese|Cuban|Mediterranean|Greek|German|Polish|Persian|Peruvian|Brazilian|Hawaiian|Filipino|Turkish|Lebanese)$/;
+
+/**
+ * A tag name inside a sentence ("shares the cozy and Mexican tags"): lower case, except a word with two capitals
+ * ("R&B", "Hip-Hop") and a proper adjective ("Mexican", "Middle Eastern"), which keep or get their capital.
+ */
+export function tagInSentence(name: string): string {
+  return tagLabel(name)
+    .split(/(\s+)/)
+    .map((w) =>
+      (w.match(/[A-Z]/g)?.length ?? 0) >= 2
+        ? w
+        : w
+            .split("-")
+            .map((part) => {
+              const cap = part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+              return PROPER_TAG_WORD.test(cap) ? cap : part.toLowerCase();
+            })
+            .join("-"),
+    )
+    .join("")
+    .replace(/\bmiddle eastern\b/gi, "Middle Eastern");
 }
 
 /** entityId -> display name across every card (for explainability rows). */
@@ -166,13 +202,16 @@ export function ageLabel(legalAgeEnforced: boolean | null): { short: string; inl
   return { short: "Unknown", inline: "age policy unknown", long: "not on the listing, so treated as all ages" };
 }
 
-/** "comedy fans in general" for a sheet that fell back to a genre tag; "the room's usual crowd" otherwise. */
+/**
+ * "comedy fans in general" for a sheet that fell back to a genre tag ("R&B fans in general": a genre with two capitals
+ * keeps its case, as the run's steps write it); "the room's usual crowd" otherwise.
+ */
 export function baselineName(sheet: StreetSheet): string {
   if (sheet.cards.liftMap.results.diagnostics?.baseline !== "tag") return "the room's usual crowd";
   const raw = sheet.bill.classification ?? "";
   const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
   if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
-  return `${/^[A-Z]{2,}/.test(g) ? g : g.toLowerCase()} fans in general`;
+  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
 }
 
 /** 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st ... */
@@ -193,10 +232,6 @@ function clock(hh: number, mm: number): string {
   return mm === 0 ? `${h12} ${suffix}` : `${h12}:${String(mm).padStart(2, "0")} ${suffix}`;
 }
 
-/**
- * 24-hour times inside a sentence ("open 17:00 to 02:00") in the hours column's style ("open 5 pm to 2 am"). For the
- * narration's partner lines, which quote the run's hours as the data has them.
- */
 /**
  * The numbered area (1-5) of the area line a "replaced by the template: tileWhy[i]" note names, found by that line's
  * geohash, or null when it can't be placed. The index counts the lines the checks were given, and those are the
@@ -262,7 +297,15 @@ export function guardNoteText(note: string, areaOfLine?: (index: number) => numb
   return `${what} was left out: ${plainReason}.`;
 }
 
+/**
+ * 24-hour times inside a sentence ("open 17:00 to 02:00") in the hours column's style ("open 5 pm to 2 am"). For the
+ * narration's partner lines, which quote the run's hours as the data has them. A line that already says am or pm
+ * anywhere ("9:30 pm", "11:30 AM", "7:30 a.m.", "4:30 to 8 pm") is in 12-hour time and is left as written: a range
+ * that shares one suffix has a time with none ("4:30" in "4:30 to 8 pm") that is not 24-hour time.
+ */
 export function humanTimes(text: string): string {
+  // A clock time with am or pm after it: "8 pm", "9:30pm", "11:30 AM", "7:30 a.m.", "9:30:00 pm".
+  if (/\b\d{1,2}(?::\d\d){0,2}\s*[AaPp]\.?[Mm]\b/.test(text)) return text;
   return text.replace(/\b([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\b/g, (_m, h: string, m: string) => clock(Number(h), Number(m)));
 }
 
@@ -450,8 +493,12 @@ export function comparisonSentence(c: BillComparison, names: { a: string; b: str
   const ba = c.a.baseline ?? "house";
   const bb = c.b.baseline ?? "house";
   const liftA = liftPhrase(c.a.lift, ba);
-  // The second phrase drops the baseline when it is the same one ("about 2.5 times").
-  const liftB = ba === bb ? liftPhrase(c.b.lift, bb).replace(/ (the room's usual crowd|the genre baseline|[\w-]+ fans in general)$/, "") : liftPhrase(c.b.lift, bb);
+  // The second phrase drops the baseline when it is the same one ("about 2.5 times"); "below" and "a little above"
+  // keep it, since they don't read without it.
+  const liftB =
+    ba === bb
+      ? liftPhrase(c.b.lift, bb).replace(/^(about [\d.]+ times) (?:the room's usual crowd|the genre baseline|.+ fans in general)$/, "$1")
+      : liftPhrase(c.b.lift, bb);
   return (
     `${shared}: ${possessive(names.a)} crowd stands out most in ${c.a.name}, ${formatKm(c.a.km)} ${c.a.direction} of ${names.venue}, ${liftA}, ` +
     `and ${possessive(names.b)} in ${c.b.name}, ${formatKm(c.b.km)} ${c.b.direction}, ${liftB}.`
@@ -677,6 +724,7 @@ export function popularityLine(c: Pick<PopularityCheck, "partners" | "notInPopul
   }
   if (n === 0) return `All ${c.partners} partners are also among the most popular places ${where}.`;
   if (n === c.partners) return `None of the ${c.partners} partners is among the most popular places ${where}, so a popularity list would miss all of them.`;
+  if (n === 1) return `1 of the ${c.partners} partners isn't among the most popular places ${where}, so a popularity list would miss it.`;
   return `${n} of the ${c.partners} partners aren't among the most popular places ${where}, so a popularity list would miss them.`;
 }
 

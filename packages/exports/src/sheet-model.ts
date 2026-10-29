@@ -470,12 +470,15 @@ function placeOf(venue: StreetSheet["bill"]["venue"]): string {
   return [venue.name, where].filter((x) => x && x.trim() !== "").join(", ");
 }
 
-/** "comedy fans in general" from a Ticketmaster classification ("Comedy", "Music / Country (Americana)"). */
-function genreFans(classification: string | undefined): string {
+/**
+ * "comedy fans in general" from a Ticketmaster classification ("Comedy", "Music / Country (Americana)"); a genre with
+ * two capitals keeps its case ("R&B fans in general"), as the run's steps write it.
+ */
+export function genreFans(classification: string | undefined): string {
   const raw = classification ?? "";
   const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
   if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
-  return `${/^[A-Z]{2,}/.test(g) ? g : g.toLowerCase()} fans in general`;
+  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
 }
 
 function sentence(s: string): string {
@@ -536,6 +539,25 @@ function withoutLeadName(text: string | undefined, name: string): string | undef
   if (!text.startsWith(lead)) return text;
   const rest = text.slice(lead.length).trim();
   return rest ? `${rest.charAt(0).toUpperCase()}${rest.slice(1)}` : text;
+}
+
+/**
+ * An area's line when the narration has none for it (the checks left Claude's line out, or the run wrote none): its
+ * two percentiles, "89th percentile for this crowd, 7th for the room's usual crowd."
+ */
+export function tileFallbackLine(sheet: StreetSheet, t: Pick<LiftTile, "billPct" | "housePct">): string {
+  const against = sheet.cards.liftMap.results.diagnostics.baseline === "tag" ? genreFans(sheet.bill.classification) : "the room's usual crowd";
+  return `${ordinalWord(Math.round(t.billPct * 100))} percentile for this crowd, ${ordinalWord(Math.round(t.housePct * 100))} for ${against}.`;
+}
+
+/**
+ * The line under a numbered area: the narration's line for it (without a lead "Name: ", since the list prints the
+ * name), else `tileFallbackLine`. One rule for the PDF, the print view and the plan page, so an area never has a line
+ * in one and none in another.
+ */
+export function tileWhyLine(sheet: StreetSheet, t: Pick<LiftTile, "geohash" | "name" | "billPct" | "housePct">): string {
+  const stored = sheet.narration?.tileWhy.find((w) => w.geohash === t.geohash)?.text;
+  return withoutLeadName(stored, tileLabel(t)) ?? tileFallbackLine(sheet, t);
 }
 
 /**
@@ -693,14 +715,11 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
 
   // Panel 1 ----------------------------------------------------------------
   const top = topTiles(sheet, { maxTiles: opts.maxTiles ?? 5 });
-  const why = new Map((sheet.narration?.tileWhy ?? []).map((w) => [w.geohash, w.text]));
   const tiles: TileItem[] = top.map((t, i) => {
     // Same rule as zips.csv: residential 5-digit ZIPs only.
     const zips = areaZips(t.zctas);
     const zipLine = zips.length > 0 ? `ZIP ${zips.join(", ")}` : "ZIP n/a";
-    const whyLine =
-      withoutLeadName(why.get(t.geohash), tileLabel(t)) ??
-      `${ordinalWord(Math.round(t.billPct * 100))} percentile for this crowd, ${ordinalWord(Math.round(t.housePct * 100))} for ${baselineIsTag ? genreFans(bill.classification) : "the room's usual crowd"}.`;
+    const whyLine = tileWhyLine(sheet, t);
     return {
       rank: i + 1,
       name: areaLabel(t),

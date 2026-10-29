@@ -94,7 +94,7 @@ export interface PrePostOptions extends CategoryOptions {
   chains?: ChainList | ChainIndex | readonly ChainEntry[] | null;
   /** Most chains kept (with `chains`). Default `MAX_CHAINS_PER_LIST` (2). */
   maxChains?: number;
-  /** Other places the run saw (the partner pools), for the "same name at 3+ places" chain signal. */
+  /** Other places the run saw (the partner pools), for the "same name or website at 3+ places" chain signal. */
   chainContext?: readonly QlooEntity[];
 }
 

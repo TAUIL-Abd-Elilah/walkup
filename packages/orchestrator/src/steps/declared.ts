@@ -66,9 +66,13 @@ export async function runDeclared(ctx: RunContext, seeds: Seed[]): Promise<Decla
     const scored = rows.filter((x) => x.rank !== null).length;
     const unscored = rows.length - scored;
     const summary =
-      unscored > 0
-        ? `${scored} of ${rows.length} of your partners ranked for this bill; ${unscored} ${unscored === 1 ? "is" : "are"} ${DECLARED_NOT_SCORED}.`
-        : `All ${rows.length} of your partners ranked for this bill, in call order.`;
+      rows.length === 1
+        ? unscored > 0
+          ? `Your 1 partner didn't rank for this bill; it is ${DECLARED_NOT_SCORED}.`
+          : "Your 1 partner ranked for this bill."
+        : unscored > 0
+          ? `${scored} of ${rows.length} of your partners ranked for this bill; ${unscored} ${unscored === 1 ? "is" : "are"} ${DECLARED_NOT_SCORED}.`
+          : `All ${rows.length} of your partners ranked for this bill, in call order.`;
     if (drop.share === "some") return envelope("partial", summary, rows, provenance, droppedReason(drop, "Q11") ?? undefined);
     return envelope("ok", summary, rows, provenance);
   } catch (err) {

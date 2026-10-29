@@ -513,8 +513,9 @@ export interface RecheckOptions {
  *    fixed wording replaced Claude's summary), the Checks step (by why each line went and what was replaced, a dropped
  *    summary among the replaced), the guard's "15 partner lines trimmed" (was "line(s)"), the chain limit that now
  *    names the shared-website signal ("the same name or website at 3 or more places"), chain lists whose "and 7
- *    more" counted brands (now places), a ledger note that repeats its node's name, the revise step's reader on a
- *    sheet whose note the rules read on purpose, and a revision's change list against its parent.
+ *    more" counted brands (now places), the acts card's "1 of 1 acts resolved" (now "act"), a ledger note that
+ *    repeats its node's name, the revise step's reader on a sheet whose note the rules read on purpose, and a
+ *    revision's change list against its parent.
  */
 export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { sheet: StreetSheet; report: RecheckReport } {
   const gaz = opts.gazetteer ?? DEFAULT_GAZETTEER;
@@ -661,6 +662,13 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
   if (hooksSummary !== sheet.cards.copyHooks.summary) {
     sheet.cards.copyHooks.summary = hooksSummary;
     report.rewritten.push("copy lines count");
+  }
+
+  // ---- The acts card: "1 of 1 acts resolved" reads "1 of 1 act resolved", as a run now writes it --------------
+  const actsSummary = sheet.cards.resolution.summary.replace(/^(\d+) of 1 acts resolved\b/, "$1 of 1 act resolved");
+  if (actsSummary !== sheet.cards.resolution.summary) {
+    sheet.cards.resolution.summary = actsSummary;
+    report.rewritten.push("acts count");
   }
 
   // ---- Steps: the spots step follows the list; Summary and Checks by what the checks replaced and why each line

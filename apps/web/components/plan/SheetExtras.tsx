@@ -192,11 +192,15 @@ export function RevisionNote({ revision }: { revision: SheetRevision }) {
         Revised plan
       </h2>
       <p className="mt-1">
-        This version: &ldquo;{revision.instruction}&rdquo;.{" "}
-        <a href={`/plan/${encodeURIComponent(revision.parentPlanId)}`} className="link">
-          Open the earlier plan
-        </a>
-        .
+        This version: &ldquo;{revision.instruction}&rdquo;.
+        {/* Paper has no link to follow. */}
+        <span className="no-print">
+          {" "}
+          <a href={`/plan/${encodeURIComponent(revision.parentPlanId)}`} className="link">
+            Open the earlier plan
+          </a>
+          .
+        </span>
       </p>
       {readAs ? <p className="mt-1">{readAs}</p> : null}
       {tools ? (

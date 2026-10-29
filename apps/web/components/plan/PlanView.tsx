@@ -295,7 +295,8 @@ export function checksLine(guard: GuardReport): string {
 
 /**
  * The Checks list: each check note in plain words, the same note once with its count ("13 of Claude's partner lines
- * were left out: each was about a place that isn't a partner on this sheet.") rather than 13 times in a row. With the
+ * were left out: each was about a place that isn't a partner on this sheet.", and "9 of Claude's partner lines were
+ * replaced with fixed wording: each names tags ...") rather than 13 times in a row. With the
  * sheet, a replaced area line names the area its geohash is in (`replacedLineArea`), not its place in the list.
  */
 export function checkNotes(reasons: readonly string[], sheet?: StreetSheet): string[] {
@@ -310,9 +311,14 @@ export function checkNotes(reasons: readonly string[], sheet?: StreetSheet): str
   }
   return [...counts].map(([text, n]) => {
     if (n === 1) return text;
-    const m = /^One of Claude's (partner|copy|area) lines was left out: (.+)$/.exec(text);
-    if (m) return `${n} of Claude's ${m[1]} lines were left out: ${m[2]!.replace(/^it was about a place that isn't/, "each was about a place that isn't").replace(/^it /, "each ")}`;
-    return `${text} (${n} times)`;
+    const m = /^One of Claude's (partner|copy|area) lines was (left out|replaced with fixed wording): (.+)$/.exec(text);
+    if (m)
+      return `${n} of Claude's ${m[1]} lines were ${m[2]}: ${m[3]!
+        .replace(/^it was about a place that isn't/, "each was about a place that isn't")
+        .replace(/^it /, "each ")
+        .replace(/^(names|says|merges) /, "each $1 ")}`;
+    // The count goes inside the sentence: "... ("coffee") (9 times).", never "... ("coffee"). (9 times)".
+    return /[.!?]$/.test(text) ? `${text.slice(0, -1)} (${n} times)${text.slice(-1)}` : `${text} (${n} times)`;
   });
 }
 

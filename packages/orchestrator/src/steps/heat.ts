@@ -316,12 +316,15 @@ export function ownHeatLine(against: string, rho: number | null): string {
   return `This map shows where this bill's crowd is, not where it stands out from ${against}: on this bill the two rank areas almost the same way${r}. Partners are picked near the venue.`;
 }
 
-/** "comedy fans in general" for a genre-tag baseline ("fans of this genre in general" without a genre). */
+/**
+ * "comedy fans in general" for a genre-tag baseline ("fans of this genre in general" without a genre). A genre with
+ * two capitals keeps its case ("R&B fans in general", "EDM").
+ */
 export function genreBaselinePhrase(classification: string | null | undefined): string {
   const raw = classification ?? "";
   const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
   if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
-  return `${/^[A-Z]{2,}/.test(g) ? g : g.toLowerCase()} fans in general`;
+  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
 }
 
 /** "in Nashville-Davidson (3) and Mount Juliet (2)": area names grouped by place, counts only when a place repeats. */
@@ -461,7 +464,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
   const annotate = annotateCache(ctx);
   if (houseCells.length === 0) {
     const why = [
-      ...(house.baseline === "house" ? [] : [`the room's roster resolved ${house.resolved} headliners`]),
+      ...(house.baseline === "house" ? [] : [`the room's roster resolved ${plural(house.resolved, "headliner")}`]),
       ...houseReasons,
       ...(tagHeatProblem ? [tagHeatProblem] : []),
     ];

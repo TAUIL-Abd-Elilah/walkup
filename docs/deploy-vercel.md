@@ -37,7 +37,7 @@ its Qloo tags, left the two "All ages, no bars" revisions at The Salt Shed. No Q
 partner list or ledger number changed. The same pass removed FLO's "Within 10 km of the room" version (below). A second
 pass on Oct 29 gave one FLO partner back its run's kind, dropped four dead partner website links, showed four places'
 own websites, made chain lists count places, said partner chains are last in their area, fixed the Summary and Checks
-steps' wording, wrote "partner lines" for "line(s)", named every chain signal in the chain note and removed a repeated
+steps' wording, wrote "partner lines" for "line(s)" and "1 of 1 act" for "1 of 1 acts", named every chain signal in the chain note and removed a repeated
 label from 16 ledger notes.
 
 FLO has no "Within 10 km of the room" change. Fewer than 200 map squares come back near The Anthem for FLO's crowd,

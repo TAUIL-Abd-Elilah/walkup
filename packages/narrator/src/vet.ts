@@ -501,7 +501,7 @@ function tileProblem(ctx: VetContext, text: string, tile: LiftTile | undefined):
     for (const m of plain.matchAll(PARTNER_COUNT_RE)) {
       const raw = m[1]!.toLowerCase();
       const n = COUNT_WORDS[raw] ?? Number(raw);
-      if (n !== have) return `says ${m[1]} partners, the sheet has ${have} in this area`;
+      if (n !== have) return `says ${m[1]} ${n === 1 ? "partner" : "partners"}, the sheet has ${have} in this area`;
     }
   }
   return null;

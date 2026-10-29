@@ -314,7 +314,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const declared = await safe(() => runDeclared(ctx, seeds), (err) => failure(err, [], "Your list, in call order"));
   emit(ctx, "declared", declared);
   trace.add(quiet(() => declaredTrace(ctx, declared), null));
-  // The partner pools ride along so a name seen at 3+ places reads as a chain on the pre/post list too.
+  // The partner pools ride along so a name or website seen at 3+ places reads as a chain on the pre/post list too.
   const seenPlaces = partners.pools.flatMap((p) => p.entities);
   const prePost = await safe(() => runPrePost(ctx, seeds, resolved.house, resolved.venueEntityId, seenPlaces), (err) => failure(err, [], "Before and after the show"));
   emit(ctx, "prePost", prePost);

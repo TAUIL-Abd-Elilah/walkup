@@ -32,7 +32,7 @@ import { jsonOutputFormat } from "./json-schema";
 import { blankProtected, policyProblem, unlistedNumber } from "./policy";
 import { NARRATOR_SYSTEM_PROMPT } from "./prompts";
 import { buildNarrationSchema, toDraft, type NarrationDraft } from "./schema";
-import { templateNarrate, templateSummary } from "./template";
+import { PROPER_WORD_RE, properPhrases, templateNarrate, templateSummary } from "./template";
 import type { CallUsage, LlmOptions, NarrateInput, NarrationResult, TemplateReason } from "./types";
 import { HOOK_CLAIM_RE, vetGeneratedLines } from "./vet";
 
@@ -93,8 +93,6 @@ export function readableForPromoter(text: string, show: { date?: unknown; dateTe
   return out.replace(/\b(\d{1,3}(?:,\d{3})+|\d+)(?:\s*USD\b|[- ]dollars?\b)/g, (_m, n: string) => `$${Number(n.replace(/,/g, "")).toLocaleString("en-US")}`);
 }
 
-/** Proper adjectives a tag name keeps capitalised ("American history", "Irish pub"). */
-const PROPER_WORD_RE = /^(?:American|African|Afro|Latin|Latino|Latina|Caribbean|Irish|Italian|Mexican|Asian|British|English|French|Spanish|Cajun|Creole|Appalachian|Celtic|Black|Southern|Ethiopian|Jamaican|Korean|Japanese|Chinese|Indian|Thai|Vietnamese|Cuban)$/;
 
 /**
  * Tag names written mid-sentence in sentence case, as the sheet writes them: "an Intimate night of Alt-country" ->
@@ -121,16 +119,18 @@ export function tagNamesInSentenceCase(text: string, names: readonly string[], p
       if (kept.some(([a, b]) => at < b && at + hit.length > a)) return hit;
       const before = out.slice(0, at);
       const sentenceStart = /(?:^|[.!?]\s+)$/.test(before);
-      return hit
-        .split(/(\s+|-)/)
-        .map((w, i) => {
-          if (i === 0 && sentenceStart) return w;
-          const cap = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-          if (PROPER_WORD_RE.test(cap)) return cap;
-          if (!/[A-Z]/.test(w) || (w.match(/[A-Z]/g)?.length ?? 0) >= 2) return w;
-          return w.toLowerCase();
-        })
-        .join("");
+      return properPhrases(
+        hit
+          .split(/(\s+|-)/)
+          .map((w, i) => {
+            if (i === 0 && sentenceStart) return w;
+            const cap = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+            if (PROPER_WORD_RE.test(cap)) return cap;
+            if (!/[A-Z]/.test(w) || (w.match(/[A-Z]/g)?.length ?? 0) >= 2) return w;
+            return w.toLowerCase();
+          })
+          .join(""),
+      );
     });
   }
   return out;

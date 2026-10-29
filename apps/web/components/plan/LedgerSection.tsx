@@ -19,11 +19,15 @@ export function LedgerSection({ entries, exportHref, sample = false }: { entries
           ? `${entries.length} entries, ${qloo.length} of them in Qloo's format (${cached} from cache). Sample data: every answer came from Walkup's made-up stand-in, so nothing was timed.`
           : `${entries.length} entries, ${qloo.length} of them Qloo calls (${cached} from cache).`}{" "}
         Every footnote on this sheet points to one of
-        these. Keys show only as environment variable names.{" "}
-        <a href={exportHref} download className="link">
-          Download sheet.json
-        </a>{" "}
-        to keep the full ledger.
+        these. Keys show only as environment variable names.
+        {/* Paper has no link to follow. */}
+        <span className="no-print">
+          {" "}
+          <a href={exportHref} download className="link">
+            Download sheet.json
+          </a>{" "}
+          to keep the full ledger.
+        </span>
       </p>
       <FoldBody title="the requests">
       <table className="table mt-4">

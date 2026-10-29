@@ -4,7 +4,7 @@ Names lift tiles and counts the adults around them, from local files only. It re
 per-metro JSON built by `data/gazetteer/build.py` (OpenStreetMap neighbourhoods, Census places,
 Census ZCTAs with ACS 5-year estimates) and answers point lookups. No network at run time.
 
-Metros shipped today: `nashville`, `hampton_roads`, `tacoma`, `dc`. See `data/gazetteer/README.md`
+Metros shipped today: `nashville`, `hampton_roads`, `tacoma`, `dc`, `chicago`. See `data/gazetteer/README.md`
 for boxes, sources, ACS variables and the last build.
 
 ## API
@@ -58,7 +58,7 @@ npx tsc -p tsconfig.json --noEmit 2>&1 | grep "packages/gazetteer"
 ```
 
 Tests run on synthetic metros in `test/fixtures` (open ocean coordinates, invented names) and
-need no network. One smoke test loads the built `nashville.json` when it exists.
+need no network. One smoke test loads the built `nashville.json` and two state tests load the built `dc.json`, each when the file exists.
 
 ## Known limits
 

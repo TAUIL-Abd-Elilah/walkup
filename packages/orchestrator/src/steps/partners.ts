@@ -6,7 +6,7 @@
  * penalty and the usual-crowd chip), the probe-gated balance check,
  * and deterministic scoring with the diversity caps. National chains (the
  * hand-kept list in config/chains.json, Qloo's description, a store-locator
- * website, or the same name at 3+ places) are listed after the local places,
+ * website, or the same name or website at 3+ places) are listed after the local places,
  * at most 2; malls, plazas, stations and adult-themed places never are.
  * Last, the popularity twin of each pool that gave partners (the same request
  * with no signal, which Qloo answers in popularity order) for the popularity
@@ -142,6 +142,15 @@ export function partnersCountLine(partners: readonly Pick<Partner, "tileGeohash"
   if (n > 0 && near === n) return `${plural(n, "partner")} near the venue, at most 2 of a kind.`;
   if (near === 0) return `${plural(n, "partner")} in ${plural(areas, "area")}, at most 2 of a kind per area.`;
   return `${plural(n, "partner")}: ${(n - near).toLocaleString("en-US")} in ${plural(areas, "area")} and ${near.toLocaleString("en-US")} near the venue, at most 2 of a kind per area.`;
+}
+
+/**
+ * The card's markdown sentence: "24 of 24 picks also rank for the room's usual crowd, so their scores were marked
+ * down (more when the two ranks are close)."; for one, "1 of 12 picks also ranks ..., so its score was marked down".
+ */
+export function usualCrowdMarkdownLine(penalized: number, picks: number): string {
+  const one = penalized === 1;
+  return `${penalized.toLocaleString("en-US")} of ${plural(picks, "pick")} also ${one ? "ranks" : "rank"} for the room's usual crowd, so ${one ? "its score was" : "their scores were"} marked down (more when the two ranks are close).`;
 }
 
 /** Any opening count `partnersCountLine` writes (and the older "6 partners in 1 area, ..." for a near-venue list). */
@@ -437,10 +446,10 @@ export async function runPartners(
   if (report.droppedNotVenue > 0) summary += ` Left out ${plural(report.droppedNotVenue, "place")} that ${report.droppedNotVenue === 1 ? "isn't a business" : "aren't businesses"} (a mall, plaza, station or park).`;
   if (report.droppedStand > 0) summary += ` Left out ${plural(report.droppedStand, "food cart or kiosk", "food carts or kiosks")}.`;
   if (report.droppedAdult > 0) summary += ` Left out ${plural(report.droppedAdult, "adult-themed place")}: never a street-team stop.`;
-  if (report.hoursUnknown > 0) summary += ` ${report.hoursUnknown.toLocaleString("en-US")} list no hours for ${dayName}: call first.`;
+  if (report.hoursUnknown > 0) summary += ` ${report.hoursUnknown.toLocaleString("en-US")} ${report.hoursUnknown === 1 ? "lists" : "list"} no hours for ${dayName}: call first.`;
   if (widenedRadius > 0) reasons.push(`${plural(widenedRadius, "area")} had fewer than ${MIN_POOL} places within 2 km, so the search widened to 3.5 km.`);
   if (widenedCats > 0) reasons.push(`${plural(widenedCats, "area search", "area searches")} also took in more types of place.`);
-  if (report.belowMinimum) reasons.push(`Found ${cleaned.length} partners; the list aims for 15. The signal is thin, so treat this as a starting list.`);
+  if (report.belowMinimum) reasons.push(`Found ${plural(cleaned.length, "partner")}; the list aims for 15. The signal is thin, so treat this as a starting list.`);
   if (rebalanced) reasons.push("The headliner was dominating the ranking, so the list was rebalanced with the co-bill.");
   if (twinFailures.length > 0) reasons.push(`The usual-crowd search failed for ${twinFailures.join(", ")}, so those places have no usual-crowd rank.`);
   // The sample world pins every kind of place; a kind config/tags.json doesn't pin is said on the sample's card.
@@ -448,9 +457,7 @@ export async function runPartners(
     const sampleOnly = sampleOnlyKindsLine(cleaned, loadTagPins());
     if (sampleOnly) reasons.push(sampleOnly);
   }
-  if (report.penalized > 0) {
-    summary += ` ${report.penalized.toLocaleString("en-US")} of ${plural(cleaned.length, "pick")} also rank for the room's usual crowd, so their scores were marked down (more when the two ranks are close).`;
-  }
+  if (report.penalized > 0) summary += ` ${usualCrowdMarkdownLine(report.penalized, cleaned.length)}`;
   if (report.droppedCategory > 0) {
     summary += ` ${plural(report.droppedCategory, "place")} left out by category (${ctx.operator.allAges === true ? "all-ages show" : "your exclusions"}).`;
   }

@@ -70,8 +70,8 @@ function dropByType(ctx: RunContext, entities: QlooEntity[]): QlooEntity[] {
 }
 
 /**
- * `seen` is every other place the run already has (the partner pools): with it, a name at three or more places
- * reads as a chain.
+ * `seen` is every other place the run already has (the partner pools): with it, a name or website at three or more
+ * places reads as a chain.
  */
 export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet, venueEntityId: string | null, seen: readonly QlooEntity[] = []): Promise<PrePostCard> {
   const empty: PrePostSpot[] = [];
@@ -79,7 +79,7 @@ export async function runPrePost(ctx: RunContext, seeds: Seed[], house: HouseSet
   const exclude = venueEntityId ? [venueEntityId] : [];
   const provenance: string[] = [];
   const reasons: string[] = [];
-  if (cats.skipped.length > 0) reasons.push(`skipped ${plural(cats.skipped.length, "kind", "kinds")} of place that have no Qloo tag set up yet (${cats.skipped.join(", ")})`);
+  if (cats.skipped.length > 0) reasons.push(`skipped ${plural(cats.skipped.length, "kind", "kinds")} of place that ${cats.skipped.length === 1 ? "has" : "have"} no Qloo tag set up yet (${cats.skipped.join(", ")})`);
   const ask = async (radiusM: number, label: string, level: "bill" | "venue", sig: ReturnType<typeof signal>, extra?: Record<string, string[]>) => {
     node(ctx, label, level);
     const r = await ctx.qloo.placeInsights({

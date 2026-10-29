@@ -305,7 +305,7 @@ describe("dry-run plan with key-day inputs filled", () => {
     const result = await plan(base(), [1, 2, 3]);
     expect(result.runs.map((r) => r.def.id)).toEqual([1, 2, 3]);
     // Within the gates' own estimates, which leave room for key day: the-truth's point adds a KG1 room
-    // and filled bars add the KG4 lookups (37 calls as shipped, 51 with both).
+    // and filled bars add the KG4 lookups (42 calls with the committed config, 51 with both).
     const declared = PROBES.filter((p) => p.id <= 3).reduce((n, p) => n + p.maxCalls, 0);
     expect(declared).toBeLessThanOrEqual(55);
     expect(result.calls).toBeLessThanOrEqual(declared);

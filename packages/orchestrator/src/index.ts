@@ -73,7 +73,7 @@ export { createRunLedger } from "./ledger";
 export type { RunLedger, NodeLevel } from "./ledger";
 export { applyReachedZips, disambiguateNames, genreBaselinePhrase, isExcludedArea, mapSearchKm, numberedTiles, spreadTiles } from "./steps/heat";
 export { partnerLinesNearArea, partnerLinesWithinTags, templateLine } from "./steps/copy";
-export { partnersCountLine, sampleOnlyKindsLine, skippedCategoriesReason } from "./steps/partners";
+export { partnersCountLine, sampleOnlyKindsLine, skippedCategoriesReason, usualCrowdMarkdownLine } from "./steps/partners";
 export { kindsOverCap, recheckSheet, refreshSheet } from "./refresh";
 export type { RecheckOptions, RecheckReport, RefreshOptions, RefreshReport } from "./refresh";
 export { nonIncreasing, splitBudget } from "./steps/budget";
