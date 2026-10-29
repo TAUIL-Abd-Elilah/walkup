@@ -21,7 +21,7 @@
  * What it cannot do: fill a slot a dropped place leaves (that needs the Qloo list behind it), or add a numbered
  * area the new ZIP rules would now separate. `report.needsLiveRun` says when a sheet is in that state.
  */
-import type { LedgerEntry, LiftTile, MediaPick, Partner, PrePostSpot, QlooEntity, SheetDiscovery, StreetSheet } from "@walkup/contracts";
+import { aboutTimes, type LedgerEntry, type LiftTile, type MediaPick, type Partner, type PrePostSpot, type QlooEntity, type SheetDiscovery, type StreetSheet } from "@walkup/contracts";
 import { annotateTile, stateFromZctas } from "@walkup/gazetteer";
 import { vetNarration } from "@walkup/narrator";
 import {
@@ -49,6 +49,7 @@ import {
   pickPodcasts,
   propString,
   resolveCategory,
+  roundTo,
   summaryReplaced,
   usualCrowdChipLabel,
   type ExplainContext,
@@ -503,6 +504,9 @@ export interface RecheckOptions {
  *    the counts the sheet states following the list;
  *  - partner lines say "near <area>" (`partnerLinesNearArea`), then the narration guard (`vetNarration`) runs and a
  *    failing line is replaced by the template's, with the reason added to the guard's reasons, as a new run does;
+ *  - "about N times" in the template's area lines and summary and in the heat step's "Put X first" follows the one
+ *    rule (`aboutTimes`: the sheet's 2-decimal lift, half up), so an area never reads two figures; Claude's lines
+ *    are left to the guard (`liftFiguresByRule`);
  *  - at most 2 of a kind per area, as select() picked them: a place whose kind was read again after the run (from
  *    stored tags the data policy had already trimmed) gets back the kind another recorded run of the same show gave
  *    it (`opts.recordedKinds`), with that kind's ask; an area still over the cap is reported in `overCap`;
@@ -657,6 +661,9 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     }
   }
 
+  // ---- "About N times" by the one rule (`aboutTimes`), in the lines the code wrote: template lines and the heat step --
+  report.rewritten.push(...liftFiguresByRule(sheet));
+
   // ---- The copy lines card: one line is not "each" -------------------------------------------------------
   const hooksSummary = sheet.cards.copyHooks.summary.replace(/^1 line, each built only /, "1 line, built only ");
   if (hooksSummary !== sheet.cards.copyHooks.summary) {
@@ -721,6 +728,78 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     sheet.revision = { ...sheet.revision, changes };
   }
   return { sheet, report };
+}
+
+/** The template's figure before the one rule: the 2-decimal lift through toFixed(1), so 2.15 (a float under it) read 2.1. */
+function templateFigureBefore(lift: number): string {
+  return (Math.round(lift * 100) / 100).toFixed(1);
+}
+
+/** The heat step's figure before the one rule: the raw lift to one decimal, so 2.4477 read 2.4 beside the sheet's 2.45x. */
+function stepFigureBefore(lift: number): string {
+  return roundTo(lift, 1).toFixed(1);
+}
+
+/** Percentile on a 0..100 scale, as the template prints it. */
+function pct100(v: number): number {
+  return Math.round(v <= 1 ? v * 100 : v);
+}
+
+/** The template's line for one area: "About 2.1 times <baseline>. 86th percentile for this crowd, 13th for <baseline>." */
+const TEMPLATE_TILE_LINE = /^About (\d+\.\d) times (.+?)\. (\d+)(?:st|nd|rd|th) percentile for this crowd, (\d+)(?:st|nd|rd|th) for (.+)\.$/;
+/** The template summary's strongest area: "...; the strongest, Highwood, is about 2.5 times" or "...: Highwood, about 2.5 times". */
+const TEMPLATE_SUMMARY_TOP = /(This crowd stands out from .+? in \d+ areas?(?:; the strongest(?:, (.+?),)? is|: (.+?),) about )(\d+\.\d)( times )/;
+const HEAT_DECISION = /^(Put (.+) first: about )(\d+\.\d)( times )/;
+
+/**
+ * "About N times" as a run now writes it (`aboutTimes`: the sheet's 2-decimal lift, half up), in the lines the code
+ * wrote from the area's own lift: the template's area lines, the template summary's strongest area and the heat step's
+ * "Put X first". A line is rewritten only when it is the code's own wording with the figure the old rule gave that
+ * area, so a line Claude wrote is never touched (the guard handles those). Returns what changed, for the report.
+ */
+function liftFiguresByRule(sheet: StreetSheet): string[] {
+  const out: string[] = [];
+  const tiles = sheet.cards.liftMap.results.tiles;
+  const byHash = new Map(tiles.map((t) => [t.geohash, t]));
+  const n = sheet.narration;
+  if (n) {
+    let lines = 0;
+    const tileWhy = n.tileWhy.map((w) => {
+      const t = byHash.get(w.geohash);
+      const m = TEMPLATE_TILE_LINE.exec(w.text);
+      if (!t || !m || m[2] !== m[5] || Number(m[3]) !== pct100(t.billPct) || Number(m[4]) !== pct100(t.housePct)) return w;
+      if (m[1] !== templateFigureBefore(t.lift) || m[1] === aboutTimes(t.lift)) return w;
+      lines++;
+      return { ...w, text: w.text.replace(/^About \d+\.\d times /, `About ${aboutTimes(t.lift)} times `) };
+    });
+    if (lines > 0) out.push(`area line figure${lines === 1 ? "" : "s"} (${lines})`);
+    let summary = n.summary;
+    // The template's summary: a templated run, or Claude's summary the guard replaced with it.
+    if (n.templated || summaryReplaced(sheet.guard.reasons)) {
+      // The template names the strongest of the narrated areas (lift, then geohash).
+      const narrated = n.tileWhy.map((w) => byHash.get(w.geohash)).filter((t): t is LiftTile => t !== undefined);
+      const top = [...(narrated.length > 0 ? narrated : numberedTiles(tiles))].sort((a, b) => b.lift - a.lift || a.geohash.localeCompare(b.geohash))[0];
+      const m = TEMPLATE_SUMMARY_TOP.exec(summary);
+      const name = m?.[2] ?? m?.[3];
+      if (top && m && (name === undefined || name === top.name) && m[4] === templateFigureBefore(top.lift) && m[4] !== aboutTimes(top.lift)) {
+        summary = summary.replace(m[0], `${m[1]}${aboutTimes(top.lift)}${m[5]}`);
+        out.push("summary figure");
+      }
+    }
+    if (lines > 0 || summary !== n.summary) sheet.narration = { ...n, summary, tileWhy };
+  }
+  if (sheet.steps) {
+    // The run's "first" area is its highest-lift numbered area.
+    const first = numberedTiles(tiles)[0];
+    sheet.steps = sheet.steps.map((s) => {
+      const m = s.id === "heat" ? HEAT_DECISION.exec(s.decision) : null;
+      if (!first || !m || m[2] !== (first.name ?? "Area 1")) return s;
+      if (m[3] !== stepFigureBefore(first.lift) || m[3] === aboutTimes(first.lift)) return s;
+      out.push("lift map step figure");
+      return { ...s, decision: s.decision.replace(m[0], `${m[1]}${aboutTimes(first.lift)}${m[4]}`) };
+    });
+  }
+  return out;
 }
 
 /**

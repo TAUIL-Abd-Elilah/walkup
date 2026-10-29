@@ -16,7 +16,7 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Found:** `dates.status.code` takes only `onsale`, `offsale`, `canceled`, `postponed` and `rescheduled`. There is no sold-out value and no inventory field.
 
-**Decision:** no public scoreboard of real shows is possible from public data. A public board of slow-selling shows would also be bad for the artists on it, so we would not publish one anyway. Real shows appear only with public listing facts; any count is an operator what-if, marked as one ("What-if counts" on the PDF), and no show is ever labelled "soft" or "tracking".
+**Decision:** no public scoreboard of real shows is possible from public data. A public board of slow-selling shows would also be bad for the artists on it, so we would not publish one anyway. Real shows appear only with public listing facts and the counts the operator types; a sample sheet marks its counts as what-ifs ("(assumed)" on the PDF), and no show is ever labelled "soft" or "tracking".
 
 ## Minting promo codes
 
@@ -24,7 +24,7 @@ Things we looked at, tested or designed, and decided against, with the reason. E
 
 **Found:** codes are created by the box office in the ticketing platform. A code that exists only in our app does nothing at checkout.
 
-**Decision:** we export `offer-codes.csv` in a common ticketing-platform column layout, labelled "suggested codes: create these in your ticketing platform". The operator creates them; redemptions come back as an aggregate report from the operator.
+**Decision:** we export `offer-codes.csv` in a common ticketing-platform column layout, every row labelled "create in your ticketing platform". The operator creates them; redemptions come back as an aggregate report from the operator.
 
 ## Emailing partners
 

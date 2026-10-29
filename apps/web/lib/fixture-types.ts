@@ -15,7 +15,7 @@ export interface SheetFixture {
   title: string;
   /** Why this fixture exists and what is invented in it. */
   note: string;
-  /** Plan id of the other bill in the same room ("Swap the bill"). */
+  /** Plan id of the other bill in the same room (the "The other bill at {venue}" line). */
   pairedWith?: string;
   sheet: StreetSheet;
   /** Arm F's Google Places list on files written before Oct 20 2026. No longer produced or shown. */

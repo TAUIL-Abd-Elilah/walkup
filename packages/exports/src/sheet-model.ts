@@ -26,11 +26,13 @@ import {
   formatPhone,
   formatShowDate,
   formatUsd,
+  genreFans,
   HOURS_NOT_LISTED,
   hoursWeekday,
   isAllAgesForCopy,
   ledgerRanges,
   LESS_SURE_NOTE,
+  liftBaselineWords,
   mapReachKm,
   NEAR_VENUE,
   partnerAreaText,
@@ -340,6 +342,7 @@ export interface SheetModel {
     venue: { lat: number; lon: number; name: string };
     /** The map key's caption, naming what the shading is compared with. */
     legendCaption: string;
+    /** What the map is compared with and how far it holds up; "" when there is no baseline (`status` and `empty` say so). */
     baseline: string;
     empty: string | null;
   };
@@ -470,16 +473,7 @@ function placeOf(venue: StreetSheet["bill"]["venue"]): string {
   return [venue.name, where].filter((x) => x && x.trim() !== "").join(", ");
 }
 
-/**
- * "comedy fans in general" from a Ticketmaster classification ("Comedy", "Music / Country (Americana)"); a genre with
- * two capitals keeps its case ("R&B fans in general"), as the run's steps write it.
- */
-export function genreFans(classification: string | undefined): string {
-  const raw = classification ?? "";
-  const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
-  if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
-  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
-}
+export { genreFans };
 
 function sentence(s: string): string {
   const t = s.trim();
@@ -546,7 +540,7 @@ function withoutLeadName(text: string | undefined, name: string): string | undef
  * two percentiles, "89th percentile for this crowd, 7th for the room's usual crowd."
  */
 export function tileFallbackLine(sheet: StreetSheet, t: Pick<LiftTile, "billPct" | "housePct">): string {
-  const against = sheet.cards.liftMap.results.diagnostics.baseline === "tag" ? genreFans(sheet.bill.classification) : "the room's usual crowd";
+  const against = liftBaselineWords(sheet);
   return `${ordinalWord(Math.round(t.billPct * 100))} percentile for this crowd, ${ordinalWord(Math.round(t.housePct * 100))} for ${against}.`;
 }
 
@@ -738,8 +732,9 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       ? ` The map holds up when the bill is split in two (${checks.splitHalfSpearman.toFixed(2)}; 1 means identical).`
       : "";
   const genre = genreFans(bill.classification);
+  // With no baseline the card's status already gives the reason and `empty` says there is no lift map: no third line.
   const baseline = noBaseline
-    ? "Nothing to compare with: too few of the room's headliners matched Qloo and no genre-wide map stands in, so there is no lift map for this bill."
+    ? ""
     : baselineIsTag
     ? `Compared with ${genre}: too few of the room's headliners matched Qloo.${checkLine} Shading shows where this bill's fans stand out, not where buyers live.`
     : `Compared with the shows this room usually books.${checkLine} Shading shows where this bill's fans stand out, not where buyers live.`;
@@ -1041,7 +1036,8 @@ export function sheetModelText(m: SheetModel): string[] {
   if (m.seatsLine) out.push(m.seatsLine);
   out.push(...m.notes);
   if (m.discovery) out.push(m.discovery.label, m.discovery.text, m.discovery.lessSureNote ?? "", m.discovery.rule, m.discovery.refs);
-  out.push(m.panel1.title, ...m.panel1.tiles.flatMap((t) => [t.name, t.lift, t.blurb]), m.panel1.legendCaption, m.panel1.baseline);
+  out.push(m.panel1.title, ...m.panel1.tiles.flatMap((t) => [t.name, t.lift, t.blurb]), m.panel1.legendCaption);
+  if (m.panel1.baseline) out.push(m.panel1.baseline);
   if (m.panel1.empty) out.push(m.panel1.empty);
   out.push(
     m.panel2.title,

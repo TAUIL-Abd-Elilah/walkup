@@ -323,7 +323,7 @@ export interface GroundingRow {
   openOnDay: boolean | null;
   /** Open on every street-team day (partners only; informational). */
   openAllDays: boolean | null;
-  /** The sheet already says the hours are unknown ("call ahead"). */
+  /** The sheet already says the hours are unknown ("call first" on a partner, "call ahead" on a spot). */
   sheetSaysUnknown: boolean;
   /** Not closed, Qloo lists no hours for the day, yet the sheet presents it as open. */
   shownOpenWithoutHours: boolean;
@@ -335,7 +335,7 @@ export const PARTNERS_OPEN_CHECK = "every partner open on the street-team day pe
 export const SPOTS_OPEN_CHECK = "every pre/post spot open on show night per Qloo's hours";
 
 export interface GroundingOptions {
-  /** Count a place with no hours from Qloo as a failure even when the sheet says "call ahead". Default false. */
+  /** Count a place with no hours from Qloo as a failure even when the sheet says "call first" or "call ahead". Default false. */
   strictHours?: boolean;
 }
 
@@ -350,7 +350,7 @@ function openOn(e: QlooEntity, day: Weekday): boolean | null {
  * returned for it, as stored on the sheet: not marked closed, and open that
  * day per `properties.hours`. A place with no hours for the day passes only
  * when the sheet already says its hours are unknown: a partner row with no
- * hours for the day (shown as "call ahead"), or a pre/post card that says
+ * hours for the day (shown as "call first"), or a pre/post card that says
  * some hours are unknown. With strictHours it never passes.
  *
  * This checks the sheet against its own source, not an independent one: the
@@ -457,7 +457,7 @@ export interface SubjectMetrics {
   grounded: number | null;
   groundingFailures: number | null;
   hoursUnverified: number | null;
-  /** Partners with no hours from Qloo that passed because the sheet shows them as "call ahead". */
+  /** Partners with no hours from Qloo that passed because the sheet shows them as "call first". */
   partnersCallAhead: number | null;
   openAllStreetDays: number | null;
   ledgerEntries: number;
@@ -622,7 +622,7 @@ export async function checkSubject(s: Subject, opts: CheckOptions = {}): Promise
       bad.filter((r) => r.kind === "partner").length === 0,
       bad.some((r) => r.kind === "partner")
         ? list(bad.filter((r) => r.kind === "partner").map((r) => `${r.name}: ${r.why}`))
-        : `${partnerRows.length} partners checked for ${partnerRows[0]?.day ?? "the street-team day"}; ${partnerRows.filter((r) => r.openOnDay === null).length} with no hours from Qloo, shown as call ahead`,
+        : `${partnerRows.length} partners checked for ${partnerRows[0]?.day ?? "the street-team day"}; ${partnerRows.filter((r) => r.openOnDay === null).length} with no hours from Qloo, shown as call first`,
       "D3",
     );
     // Two checks for pre/post spots, so a known gap on spots without hours (known-gaps.ts)

@@ -12,7 +12,7 @@
  * Also here: `ubiquityDrops`, which replays partner scoring without the house
  * twins to name the places the ubiquity penalty pushed off the list.
  */
-import type { EnvelopeStatus, LiftTile, QlooEntity, TraceStep, TraceStepKind, Weekday } from "@walkup/contracts";
+import { liftAgainst, type EnvelopeStatus, type LiftTile, type QlooEntity, type TraceStep, type TraceStepKind, type Weekday } from "@walkup/contracts";
 import { roundTo } from "./num";
 import { scorePartnersWithReport, ubiquityPenalty, type PartnerPool, type PartnerScoringOptions } from "./partners";
 
@@ -34,15 +34,12 @@ export function baselinePhrase(b: BaselineKind): string {
 /**
  * Lift in prose, always naming the baseline: under 0.95 "below", 0.95 to 1.05
  * "about the same as", 1.05 to 1.3 "a little above", 1.3 and up "about 1.8
- * times". The ratio itself ("1.8x") belongs in tables, never here.
+ * times", read from the sheet's 2-decimal lift (`liftAgainst` in
+ * @walkup/contracts, the narrator's and the calendar's rule too). The ratio
+ * itself ("1.8x") belongs in tables, never here.
  */
 export function liftInWords(lift: number, baseline: BaselineKind = "house"): string {
-  const b = baselinePhrase(baseline);
-  if (!Number.isFinite(lift)) return `compared with ${b}`;
-  if (lift < 0.95) return `below ${b}`;
-  if (lift < 1.05) return `about the same as ${b}`;
-  if (lift < 1.3) return `a little above ${b}`;
-  return `about ${roundTo(lift, 1).toFixed(1)} times ${b}`;
+  return liftAgainst(lift, baselinePhrase(baseline));
 }
 
 /** 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st, 22nd ... */

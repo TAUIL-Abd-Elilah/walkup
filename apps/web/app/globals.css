@@ -514,6 +514,25 @@
   tr {
     break-inside: avoid;
   }
+  /*
+   * A heading never ends a page alone: it stays with what follows it. A section's heading row is its first child
+   * (PlanCard puts the h2 in a row with the status word), and "More about this crowd" is a summary.
+   */
+  h2,
+  h3,
+  .section > :first-child,
+  summary {
+    break-after: avoid;
+  }
+  /* A table's header row stays with its first row (Chrome ignores break-after on thead, so the row says it). */
+  tbody > tr:first-child {
+    break-before: avoid;
+  }
+  /* The plan page ends at its last request, so no leftover padding starts a blank last page. */
+  #ledger,
+  .wrap-wide:has(> #ledger) {
+    padding-bottom: 0;
+  }
   /* A lift map stays whole, with its caption and the key printed above it (the column that holds both). */
   .lift-figure,
   div:has(> .lift-figure) {

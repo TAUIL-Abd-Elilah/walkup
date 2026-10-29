@@ -37,7 +37,12 @@ export interface StaticLiftMapProps {
   note?: string | null;
   /** Click or tap on a numbered area or its number. The list beside the map is the keyboard route. */
   onSelect?: (geohash: string) => void;
+  /** The run built no lift map (nothing to compare with). Defaults to "no tiles at all". */
+  noLift?: boolean;
 }
+
+/** The drawing's description when the run built no lift map: no area was measured, so none "fell short" of 1.3. */
+export const NO_LIFT_DESC = "No lift map for this bill.";
 
 /** What the drawing is, said once inside it. */
 export const SIMPLIFIED_NOTE = "Simplified drawing: areas to scale, no streets.";
@@ -86,6 +91,7 @@ export function StaticLiftMap({
   extent = null,
   note,
   onSelect,
+  noLift = tiles.length === 0,
 }: StaticLiftMapProps) {
   const paper = theme === "paper";
   const bg = paper ? PAPER_BG : WEB_BG;
@@ -162,7 +168,10 @@ export function StaticLiftMap({
     { x: vx - venueLabelW / 2, y: vy + 8, w: venueLabelW, h: labelSize + 4 },
     { x: barX, y: barY - 10, w: barPx + 8 + textWidth(barLabel, smallSize), h: 18 },
   ];
-  if (noteText) obstacles.push({ x: 10, y: 8, w: textWidth(noteText, smallSize) + 4, h: smallSize + 8 });
+  // A screen-only note ("... while the street map loads") gives way to SIMPLIFIED_NOTE on paper, where the drawing
+  // is always what prints: the street map never does.
+  const paperNote = noteText && noteText !== SIMPLIFIED_NOTE && !paper ? SIMPLIFIED_NOTE : null;
+  if (noteText) obstacles.push({ x: 10, y: 8, w: Math.max(textWidth(noteText, smallSize), paperNote ? textWidth(paperNote, smallSize) : 0) + 4, h: smallSize + 8 });
 
   // Number markers sit beside their tile (right, then left, above, below) so the tile stays visible, and never
   // on the venue, a label or another marker. Tiles too close to tell apart share one marker ("3, 4").
@@ -218,7 +227,7 @@ export function StaticLiftMap({
     >
       <title id={titleId}>{title}</title>
       <desc id={descId}>
-        {desc ? `Numbered areas: ${desc}.` : "No area reached a lift of 1.3."} {noteText ?? ""}
+        {noLift ? NO_LIFT_DESC : desc ? `Numbered areas: ${desc}.` : "No area reached a lift of 1.3."} {noteText ?? ""}
       </desc>
       <rect x="0" y="0" width={width} height={height} fill={bg} />
       <g>
@@ -274,8 +283,13 @@ export function StaticLiftMap({
         </text>
       </g>
       {noteText ? (
-        <text x={12} y={12 + smallSize} fontSize={smallSize} fill={MUTED} {...halo} aria-hidden="true">
+        <text x={12} y={12 + smallSize} fontSize={smallSize} fill={MUTED} {...halo} aria-hidden="true" className={paperNote ? "print:hidden" : undefined}>
           {noteText}
+        </text>
+      ) : null}
+      {paperNote ? (
+        <text x={12} y={12 + smallSize} fontSize={smallSize} fill={MUTED} {...halo} aria-hidden="true" className="hidden print:inline">
+          {paperNote}
         </text>
       ) : null}
     </svg>

@@ -29,7 +29,7 @@
  *   supported US zone to pin them with a VTIMEZONE instead.
  */
 import type { LiftTile, Partner, StreetSheet, Weekday } from "@walkup/contracts";
-import { WEEKDAYS } from "@walkup/contracts";
+import { liftAgainst, WEEKDAYS } from "@walkup/contracts";
 import { haversineM } from "@walkup/engine";
 import {
   actsLine,
@@ -43,6 +43,7 @@ import {
   hoursWeekday,
   SAMPLE_PREFIX,
   isYmd,
+  liftBaselineWords,
   partnerAreaText,
   receiptGroup,
   streetDaysText,
@@ -1049,13 +1050,13 @@ function geoProp(lat: number | undefined, lon: number | undefined): string | nul
   return `GEO:${lat.toFixed(6)};${lon.toFixed(6)}`;
 }
 
-/** "About 1.8 times the room's usual crowd" (prose never carries a ratio like "1.84x"). */
-function liftWords(lift: number): string {
-  if (!Number.isFinite(lift)) return "Compared with the room's usual crowd";
-  if (lift < 0.95) return "Below the room's usual crowd";
-  if (lift < 1.05) return "About the same as the room's usual crowd";
-  if (lift < 1.3) return "A little above the room's usual crowd";
-  return `About ${(Math.round(lift * 10) / 10).toFixed(1)} times the room's usual crowd`;
+/**
+ * "About 1.8 times the room's usual crowd", or the genre's fans on a tag baseline: the plan page's and the PDF's
+ * figure (`liftAgainst`). Prose never carries a ratio like "1.84x".
+ */
+function liftWords(lift: number, against: string): string {
+  const s = liftAgainst(lift, against);
+  return `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
 }
 
 function placeLine(sheet: StreetSheet): string {
@@ -1109,8 +1110,9 @@ function visitDescription(
   if (holidayNote) lines.push(holidayNote);
   if (v.tile && v.tileRank !== null) {
     const zips = zipText(v.tile);
-    lines.push(`Area ${v.tileRank} of ${tileCount}: ${areaLabel(v.tile)}${zips ? `, ${zips}` : ""}. ${liftWords(v.tile.lift)}.`);
-    lines.push("Where this bill's fans stand out from the room's usual crowd, not where buyers live.");
+    const against = liftBaselineWords(sheet);
+    lines.push(`Area ${v.tileRank} of ${tileCount}: ${areaLabel(v.tile)}${zips ? `, ${zips}` : ""}. ${liftWords(v.tile.lift, against)}.`);
+    lines.push(`Where this bill's fans stand out from ${against}, not where buyers live.`);
   } else if (v.partner && v.tile) {
     lines.push(`${stopArea(sheet, v, tiles)}: outside the ${tileCount} numbered areas.`);
   } else {

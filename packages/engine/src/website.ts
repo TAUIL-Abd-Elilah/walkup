@@ -44,7 +44,8 @@ export function isDeadSite(host: string, pathname = "/"): boolean {
   return DEAD_SITES.some((d) => (h === d.host || h.endsWith(`.${d.host}`)) && (d.path === undefined || path === d.path));
 }
 
-const LISTING_HOSTS = [
+/** Social and listing sites: a link there is kept only when it points at a page. The web client prints these with their path (`webHost`). */
+export const LISTING_HOSTS = [
   "facebook.com",
   "fb.com",
   "instagram.com",

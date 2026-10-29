@@ -12,7 +12,7 @@
  *
  * Exit code 0 when every failure is a known product gap (known-gaps.ts) or there is none,
  * 1 on any other failure, 2 on bad usage. --strict-hours also fails partners Qloo lists
- * without hours (the sheet shows them as "call ahead"). Nothing calls a live API.
+ * without hours (the sheet shows them as "call first"). Nothing calls a live API.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -82,7 +82,7 @@ export interface Score {
   unexpectedFailures: number;
   skipped: number;
   total: number;
-  /** Partners pass only with hours from Qloo for the day (no "call ahead" allowance). */
+  /** Partners pass only with hours from Qloo for the day (no "call first" allowance). */
   strictHours: boolean;
   clauses: ClauseScore[];
   cases: CaseScore[];
@@ -263,9 +263,9 @@ function clauseScores(cases: CaseScore[]): ClauseScore[] {
     if (CI_NOTES[cl.id]) notes.push(CI_NOTES[cl.id] as string);
     if (status === "not verified" && t.skip > 0) notes.push(`${t.skip} check(s) skipped: see the case details`);
     if (cl.id === "D3") {
-      // The default reading passes a partner Qloo lists without hours when the sheet says "call ahead"; say how many.
+      // The default reading passes a partner Qloo lists without hours when the sheet says "call first"; say how many.
       const callAhead = scoped.flatMap((c) => Object.entries(c.metrics).filter(([k, v]) => k.endsWith(".partnersCallAhead") && typeof v === "number" && v > 0).map(([k, v]) => `${k.slice(0, -".partnersCallAhead".length)}: ${String(v)}`));
-      if (callAhead.length > 0) notes.push(`partners with no hours from Qloo, passed as "call ahead" (--strict-hours fails them): ${callAhead.join(", ")}`);
+      if (callAhead.length > 0) notes.push(`partners with no hours from Qloo, passed as "call first" (--strict-hours fails them): ${callAhead.join(", ")}`);
     }
     if (goldensOnly) {
       const other = tally(cases.filter((c) => !c.golden), cl.id);
@@ -346,7 +346,7 @@ export function scoreMarkdown(score: Score): string {
     `**${score.passed} passed, ${score.failed} failed (${score.knownGaps} on known product gaps only, ${score.unexpectedFailures} unexpected), ${score.skipped} skipped, of ${score.total} cases.**`,
     "",
   );
-  if (score.strictHours) lines.push("Strict hours: a partner with no hours from Qloo counts as not shown open, even when the sheet says call ahead.", "");
+  if (score.strictHours) lines.push("Strict hours: a partner with no hours from Qloo counts as not shown open, even when the sheet says call first.", "");
   lines.push("## Definition of done", "", "Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.", "", "| Clause | Status | Cases | Checks (pass / fail / skip) |", "|---|---|---|---|");
   for (const cl of score.clauses) {
     lines.push(`| ${cl.id}. ${cell(cl.text)} | ${cl.status}${cl.note ? ` (${cell(cl.note)})` : ""} | ${cl.cases.join(", ") || "-"} | ${cl.pass} / ${cl.fail} / ${cl.skip} |`);

@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-29T12:40:48.259Z",
+  "generatedAt": "2026-10-29T21:13:02.715Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -65,7 +65,7 @@
       "pass": 12,
       "fail": 0,
       "skip": 0,
-      "note": "partners with no hours from Qloo, passed as \"call ahead\" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail"
+      "note": "partners with no hours from Qloo, passed as \"call first\" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail"
     },
     {
       "id": "D4",
@@ -519,7 +519,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a"
         },
@@ -912,7 +912,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-b"
         },
@@ -1333,7 +1333,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g2"
         },
@@ -1733,7 +1733,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "6 partners checked for wednesday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "6 partners checked for wednesday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g3"
         },
@@ -2142,7 +2142,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g2 resumed"
         },
@@ -2475,7 +2475,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, empty compare"
         },
@@ -2765,7 +2765,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "16 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "16 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, thin heatmap"
         },
@@ -3055,7 +3055,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "8 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "8 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, lift weak"
         },
@@ -3367,7 +3367,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-b all-ages, model"
         },
@@ -3577,7 +3577,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a 21+, model"
         },
@@ -3876,7 +3876,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "22 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g2, model tries denied words"
         },
@@ -4139,7 +4139,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 1 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 1 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, closed places"
         },
@@ -4256,7 +4256,7 @@
     {
       "id": "C12",
       "slug": "unknown-hours",
-      "title": "A place with unknown hours is kept and marked call ahead",
+      "title": "A partner with no listed hours is kept and marked call first",
       "covers": "Hours double-check against properties.hours; grounding",
       "clauses": [
         "D3",
@@ -4274,7 +4274,7 @@
           "subject": "g1-a, unknown hours"
         },
         {
-          "name": "the partners card says call ahead",
+          "name": "the partners card says call first",
           "status": "pass",
           "detail": "matches /list no hours for \\w+: call first/",
           "clause": "S2",
@@ -4409,7 +4409,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 8 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 8 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, unknown hours"
         },
@@ -4777,7 +4777,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a from cache under the guard"
         },
@@ -4980,7 +4980,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "0 partners checked for the street-team day; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "0 partners checked for the street-team day; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-b under the guard"
         },
@@ -5307,7 +5307,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, 429 once"
         },
@@ -5612,7 +5612,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5923,7 +5923,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "16 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "16 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -6685,8 +6685,8 @@
     {
       "id": "C18",
       "slug": "bill-swap-specificity",
-      "title": "Swap the bill: same room, different crowd (top-8 overlap at most 5 of 8)",
-      "covers": "Proof plan P2 specificity; Swap the bill; venue baseline cached",
+      "title": "The other bill in the same room: same room, different crowd (top-8 overlap at most 5 of 8)",
+      "covers": "Proof plan P2 specificity; the other bill in the same room; venue baseline cached",
       "clauses": [
         "S4",
         "S1"
@@ -7210,7 +7210,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "8 partners checked for thursday; 0 with no hours from Qloo, shown as call ahead",
+          "detail": "8 partners checked for thursday; 0 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, house heat fails"
         },
@@ -7613,7 +7613,7 @@
         {
           "name": "every partner open on the street-team day per Qloo's hours",
           "status": "pass",
-          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call ahead",
+          "detail": "24 partners checked for thursday; 2 with no hours from Qloo, shown as call first",
           "clause": "D3",
           "subject": "g1-a, no model"
         },

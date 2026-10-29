@@ -95,6 +95,10 @@ function caseTitle(title: string): string {
     .replace(/\s*\((?:hero sheet|honesty demo|degraded: [^)]*|partial: [^)]*)\)/gi, "")
     .replace(/^needs_input: /, "Pick needed: ")
     .replace(/^Golden /, "Sample sheet ")
+    // The "Swap the bill" link is now the line "The other bill at {venue}".
+    .replace(/^Swap the bill: /, "The other bill in the same room: ")
+    // C12 checks partners, which say "call first"; only spots near the venue say "call ahead".
+    .replace(/^A place with unknown hours is kept and marked call ahead$/, "A partner with no listed hours is kept and marked call first")
     .replace(/deterministic template/, "fixed template")
     .replace(/a tag diff/, "comparing two tag lists")
     .replace(/the genre tag baseline stands in/, "fans of the genre stand in")

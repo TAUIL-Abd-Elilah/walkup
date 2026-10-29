@@ -38,6 +38,8 @@ export interface LiftMapProps {
    * row into view, where it is shaded; the map shows no popup.
    */
   listId?: string;
+  /** The run built no lift map (nothing to compare with), so the drawing's description says that. */
+  noLift?: boolean;
 }
 
 /** "Each square is about 1.0 km by 0.6 km." from the tiles themselves (a geohash cell narrows away from the equator). */
@@ -125,6 +127,7 @@ export function LiftMap({
   source,
   captionLead,
   listId,
+  noLift,
 }: LiftMapProps) {
   const [state, setState] = useState<"loading" | "ready" | "fallback">(interactive ? "loading" : "fallback");
   const [why, setWhy] = useState<string>("");
@@ -173,6 +176,7 @@ export function LiftMap({
           extent={extent}
           note={note}
           onSelect={onSelect ? pick : undefined}
+          noLift={noLift}
         />
         {interactive && state !== "fallback" ? (
           <div className={`absolute inset-0 transition-opacity duration-200 ${state === "ready" ? "opacity-100" : "pointer-events-none opacity-0"}`}>
@@ -196,7 +200,8 @@ export function LiftMap({
       {caption || (interactive && state === "fallback") ? (
         <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {interactive && state === "fallback" ? (
-            <span className="block">
+            // Paper always prints the drawing, never the street map, so this line is for the screen only.
+            <span className="no-print block">
               The street map didn&apos;t load. {why} The list has the same areas.
             </span>
           ) : null}

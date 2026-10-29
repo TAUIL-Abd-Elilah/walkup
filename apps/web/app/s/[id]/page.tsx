@@ -433,6 +433,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                     idBase={`sheet-${s.planId}`}
                     title={`Areas where this crowd stands out, around ${p1.venue.name}`}
                     className="h-auto w-full border border-rule"
+                    noLift={p1.allTiles.length === 0 || s.cards.liftMap.results.diagnostics.baseline === "none"}
                   />
                   <MapKey caption={p1.legendCaption} />
                 </div>
@@ -458,7 +459,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                   <p className="text-muted">{p1.empty}</p>
                 )}
               </div>
-              <p className="mt-1.5 text-[0.92em] text-muted">{p1.baseline}</p>
+              {p1.baseline ? <p className="mt-1.5 text-[0.92em] text-muted">{p1.baseline}</p> : null}
             </SheetSection>
 
             {/* Before and after the show, with the budget split under it (the right column has room there, as in the PDF). */}

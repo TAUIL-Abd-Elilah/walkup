@@ -467,7 +467,7 @@ export interface StreetSheet {
    * 2026); kept optional so older stored sheets still load. Never shown or handed out: see withoutControl.
    */
   control?: ControlArmResult;
-  /** Plan id of another bill on the same date in the same room ("Swap the bill"). */
+  /** Plan id of another bill on the same date in the same room (the sheet's "The other bill at {venue}" line). */
   pairedPlanId?: string;
   /** The one pick the sheet calls out at the top, chosen by a stated rule. */
   discovery?: SheetDiscovery;
@@ -721,6 +721,40 @@ export const LIMITS_EVERY_SHEET = [
   "Where buyers live: the areas show where this bill's fans stand out from the room's usual crowd.",
   "Anything about one person, or whether a partner will move tickets.",
 ] as const;
+
+// ---------------------------------------------------------------------------
+// Lift in words (one rule for every "about 1.8 times" on a sheet)
+// ---------------------------------------------------------------------------
+
+/** A lift in hundredths, read from the 2-decimal figure the sheet prints ("2.15x" -> 215). */
+export function liftHundredths(lift: number): number {
+  return Math.round(Number(lift.toFixed(2)) * 100);
+}
+
+/**
+ * The figure in "about 2.2 times": the sheet's 2-decimal lift to one decimal, half up, in whole numbers so a float
+ * like 2.15 never rounds down. 2.4477 -> "2.5", 2.2491 -> "2.3", 2.1534 -> "2.2", 1.6468 -> "1.7". It is what the
+ * guard's facts and Claude's lines round from.
+ */
+export function aboutTimes(lift: number): string {
+  const tenths = Math.floor((liftHundredths(lift) + 5) / 10);
+  return `${Math.floor(tenths / 10)}.${tenths % 10}`;
+}
+
+/**
+ * A lift in prose against a named baseline ("the room's usual crowd", "comedy fans in general"), from the sheet's
+ * 2-decimal figure: under 0.95 "below", under 1.05 "about the same as", under 1.3 "a little above", else "about 2.2
+ * times" (`aboutTimes`). The narrator's template, the Steps panel, the street-team calendar and the plan page all
+ * use it, so one area never reads two figures. Ratios like "1.84x" belong in tables, never here.
+ */
+export function liftAgainst(lift: number, against: string): string {
+  if (!Number.isFinite(lift)) return `compared with ${against}`;
+  const h = liftHundredths(lift);
+  if (h < 95) return `below ${against}`;
+  if (h < 105) return `about the same as ${against}`;
+  if (h < 130) return `a little above ${against}`;
+  return `about ${aboutTimes(lift)} times ${against}`;
+}
 
 // ---------------------------------------------------------------------------
 // Ledger sink (implemented in @walkup/qloo; external clients accept any sink)

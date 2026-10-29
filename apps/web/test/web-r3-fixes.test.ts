@@ -150,7 +150,6 @@ describe("partner lines keep their own am and pm (outputs-humanTimes-double-meri
     for (const s of [
       "Pub near South Shore, open Thursday 9:30 pm to 4 am, sharing nightlife and burgers tags with this crowd.",
       "open Thursday 7:30 am to 3 pm",
-      "is open Saturday from 11:30 AM to 11 PM.",
       "open 7:30 a.m. to 3 p.m.",
       "open 9:30pm to 4am",
       // A range that shares one suffix: "4:30" is 4:30 pm, not 24-hour time.
@@ -162,6 +161,8 @@ describe("partner lines keep their own am and pm (outputs-humanTimes-double-meri
       "open 07:30 to noon and 9:30 pm",
     ])
       expect(humanTimes(s)).toBe(s);
+    // Round 4: an upper-case suffix reads as the hours column writes it; the times stay (text-integrity-partner-lines-uppercase-AM-PM-1e0da01d).
+    expect(humanTimes("is open Saturday from 11:30 AM to 11 PM.")).toBe("is open Saturday from 11:30 am to 11 pm.");
     expect(humanTimes("17:00-23:00")).toBe("5 pm-11 pm");
     expect(humanTimes("open Thursday 17:00 to 02:00")).toBe("open Thursday 5 pm to 2 am");
     expect(humanTimes("open Thursday 17:00 to midnight")).toBe("open Thursday 5 pm to midnight");
@@ -185,12 +186,12 @@ describe("partner lines keep their own am and pm (outputs-humanTimes-double-meri
     }
   });
 
-  it.skipIf(!HAVE_PLANS || !plan("18aa3a6e") || !plan("1e0da01d"))("18aa3a6e and 1e0da01d: the lines read as stored", () => {
+  it.skipIf(!HAVE_PLANS || !plan("18aa3a6e") || !plan("1e0da01d"))("18aa3a6e and 1e0da01d: the lines keep their stored times", () => {
     const a = flat(renderPlan(plan("18aa3a6e")!.sheet).html);
     expect(a).toContain("Pub near South Shore, open Thursday 9:30 pm to 4 am, sharing nightlife and burgers tags with this crowd.");
     expect(a).toContain("open Thursday 7:30 am to 3 pm");
     expect(a).toContain("open Thursday 4:30 am to 5 pm");
-    expect(flat(renderPlan(plan("1e0da01d")!.sheet).html)).toContain("is open Saturday from 11:30 AM to 11 PM.");
+    expect(flat(renderPlan(plan("1e0da01d")!.sheet).html)).toContain("is open Saturday from 11:30 am to 11 pm.");
   });
 });
 

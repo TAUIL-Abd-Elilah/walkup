@@ -21,7 +21,7 @@ Output: `out/score.json` (`{format, formatVersion, source, worldSeed, recordedPl
 ```sh
 npx tsx evals/product/run.ts                        # all 20 on the fixture world; writes evals/product/out/
 npx tsx evals/product/run.ts --only C01,C18 --out /tmp/pe
-npx tsx evals/product/run.ts --strict-hours         # a partner with no hours from Qloo fails even when the sheet says "call ahead"
+npx tsx evals/product/run.ts --strict-hours         # a partner with no hours from Qloo fails even when the sheet says "call first"
 npx tsx evals/product/run.ts --source recorded --plans <dir of StoredPlan or fixture-wrapper JSON | plans.sqlite>
 ```
 
@@ -44,14 +44,14 @@ The wrapper writes the score to `evals/product/out/` when `CI` or `PRODUCT_EVAL_
 
 ## The cases
 
-C01 to C04 are the goldens: G1 bill A, G1 bill B, G2 and G3. C05 is the `needs_input` pause and resume. C06 is an empty compare, which falls back to a tag diff. C07 is a thin heatmap, which widens to 60 km. C08 is lift that tracks foot traffic, so partners are ranked near the venue. C09 is the all-ages alcohol rule. C10 checks that denied tags never reach copy or stored data. C11 drops closed places. C12 keeps places with unknown hours and marks them "call ahead". C13 is the quota guard, which serves from the store or cache. C14 is a 429 retry. C15 covers declared partners not in the catalog and the pick-list cap. C16 checks the diversity caps. C17 checks that the budget split sums to 1. C18 swaps the bill (specificity). C19 is the degraded house baseline. C20 is the template narration. The clause map is in [docs/definition-of-done.md](../../docs/definition-of-done.md).
+C01 to C04 are the goldens: G1 bill A, G1 bill B, G2 and G3. C05 is the `needs_input` pause and resume. C06 is an empty compare, which falls back to a tag diff. C07 is a thin heatmap, which widens to 60 km. C08 is lift that tracks foot traffic, so partners are ranked near the venue. C09 is the all-ages alcohol rule. C10 checks that denied tags never reach copy or stored data. C11 drops closed places. C12 keeps partners with unknown hours and marks them "call first". C13 is the quota guard, which serves from the store or cache. C14 is a 429 retry. C15 covers declared partners not in the catalog and the pick-list cap. C16 checks the diversity caps. C17 checks that the budget split sums to 1. C18 plans the other bill in the same room (specificity). C19 is the degraded house baseline. C20 is the template narration. The clause map is in [docs/definition-of-done.md](../../docs/definition-of-done.md).
 
 ## Known limits
 
 - **Grounding checks the sheet against its own source.** Each partner and pre/post spot is checked against the closed flag and hours Qloo returned for it, as stored on the sheet. That catches a pipeline that keeps a closed place or presents unknown hours as open; it does not show the place exists or keeps those hours. It runs the same on fixture and recorded runs. Until Oct 20 2026 the check looked each place up in Google Places instead (`--ground-live` on recorded runs); that went with Places, and no independent check replaced it.
 - **The ID validator** needs a tapped transport, so it only runs on fixture runs. On recorded runs the ledger checks remain: every reference is in the run's ledger, and every cited entity traces to a Qloo entry that returned results.
 - **The partner open check uses the first street-team day**, which is the day Q9 filters on. Openness on the other street-team days is reported as a number (`openAllStreetDays`) and does not fail a case.
-- **A partner with no hours from Qloo passes when the sheet shows it as "call ahead".** G1 bill A has two such partners on the fixture world; the D3 row of the score names it. `--strict-hours` fails it.
+- **A partner with no hours from Qloo passes when the sheet shows it as "call first".** G1 bill A has two such partners on the fixture world; the D3 row of the score names it. `--strict-hours` fails it.
 - **Budget bounds are upper limits.** "About 14-18 calls" is a target, not a floor: G3 makes 10 core bill-level calls (the cap is 18) and 2 coded fallback calls (the 60 km heatmap and the 2,500 m spots; the cap is 10). C19 uses 7 venue calls because the failed house heatmap is counted.
 - **Recorded plans keep the last complete record per plan id.** The calls a paused run made before it resumed are not in that record, so a recorded G2 understates its budget.
 - **No known gaps today.** The one gap this eval reported (C11 and C12: pre/post spots with unknown hours kept the chip "near the room, open on show night") is fixed in `packages/orchestrator` (`src/steps/prepost.ts`): such spots now say "call ahead" on their chip and the card counts them. `known-gaps.ts` is empty; a new entry must name its own check, so it can never mask a spot that is missing, closed or shut that night.

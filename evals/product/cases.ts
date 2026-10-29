@@ -607,7 +607,7 @@ export const CASES: readonly ProductCase[] = [
   {
     id: "C12",
     slug: "unknown-hours",
-    title: "A place with unknown hours is kept and marked call ahead",
+    title: "A partner with no listed hours is kept and marked call first",
     covers: "Hours double-check against properties.hours; grounding",
     clauses: ["D3", "S2"],
     async run() {
@@ -617,7 +617,7 @@ export const CASES: readonly ProductCase[] = [
       const s = sheetOf(run.final);
       const unknown = s.cards.partners.results.filter((p) => p.hoursOnDay === null);
       c.ok("some partners have unknown hours", unknown.length > 0, `${unknown.length} of ${s.cards.partners.results.length}`, "S2");
-      c.match("the partners card says call ahead", s.cards.partners.summary, /list no hours for \w+: call first/, "S2");
+      c.match("the partners card says call first", s.cards.partners.summary, /list no hours for \w+: call first/, "S2");
       const known = s.cards.partners.results.filter((p) => p.hoursOnDay !== null);
       c.ok("every other partner shows its hours for the street-team day", known.every((p) => typeof p.hoursOnDay === "string" && p.hoursOnDay.length > 0), `${known.length} with hours`, "D3");
       return {
@@ -831,8 +831,8 @@ export const CASES: readonly ProductCase[] = [
   {
     id: "C18",
     slug: "bill-swap-specificity",
-    title: "Swap the bill: same room, different crowd (top-8 overlap at most 5 of 8)",
-    covers: "Proof plan P2 specificity; Swap the bill; venue baseline cached",
+    title: "The other bill in the same room: same room, different crowd (top-8 overlap at most 5 of 8)",
+    covers: "Proof plan P2 specificity; the other bill in the same room; venue baseline cached",
     clauses: ["S4", "S1"],
     recorded: ["g1-a", "g1-b"],
     async run(env) {

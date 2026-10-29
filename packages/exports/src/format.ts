@@ -146,6 +146,22 @@ export function formatLift(lift: number): string {
   return `${lift.toFixed(2)}x`;
 }
 
+/**
+ * "comedy fans in general" from a Ticketmaster classification ("Comedy", "Music / Country (Americana)"); a genre with
+ * two capitals keeps its case ("R&B fans in general"), as the run's steps write it.
+ */
+export function genreFans(classification: string | undefined): string {
+  const raw = classification ?? "";
+  const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
+  if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
+  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
+}
+
+/** What a sheet's lift is compared with, in words: the room's usual crowd, or the genre's fans on a tag baseline. */
+export function liftBaselineWords(sheet: Pick<StreetSheet, "bill" | "cards">): string {
+  return sheet.cards.liftMap.results.diagnostics?.baseline === "tag" ? genreFans(sheet.bill.classification) : "the room's usual crowd";
+}
+
 /** Round to `dp` decimals and drop float noise (0.1 + 0.2 -> 0.3). */
 export function round(n: number, dp: number): number {
   const f = 10 ** dp;

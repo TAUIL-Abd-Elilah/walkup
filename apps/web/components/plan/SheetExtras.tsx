@@ -72,11 +72,15 @@ export function NoDiscoveryNote({ sheet, revised = false }: { sheet?: StreetShee
     <section id="discovery" aria-labelledby="no-discovery-title" className="section scroll-mt-4" data-testid="no-discovery">
       <h2 id="no-discovery-title">Top pick</h2>
       <p className="mt-2 max-w-[760px]">
-        {text}{" "}
-        <a href="/system-card#pick" className="link">
-          How the top pick is chosen
-        </a>
-        .
+        {text}
+        {/* Paper has no link to follow: it ends at the reason, as the print view does. */}
+        <span className="no-print">
+          {" "}
+          <a href="/system-card#pick" className="link">
+            How the top pick is chosen
+          </a>
+          .
+        </span>
       </p>
     </section>
   );
@@ -169,7 +173,8 @@ function ChangeGroup({ title, items, look, rules = false }: { title: string; ite
       </ul>
       {rest.length > 0 ? (
         <details className="mt-1">
-          <summary className="cursor-pointer text-sm text-muted">{rest.length} more</summary>
+          {/* Paper prints the rest open, so the list just goes on there. */}
+          <summary className="cursor-pointer text-sm text-muted print:hidden">{rest.length} more</summary>
           <ul className="mt-1 space-y-1">
             {rest.map((c, i) => (
               <ChangeItem key={`${c.kind}-${c.label}-${i}`} c={c} look={look} rules={rules} />

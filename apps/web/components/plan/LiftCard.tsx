@@ -135,6 +135,7 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
             idBase={`lift-${sheet.planId}`}
             title={`Areas around ${sheet.bill.venue.name} by lift`}
             listId={listId}
+            noLift={noLift}
             {...(square ? { captionLead: `${square} Walkup shows where this crowd stands out, never where one fan lives.` } : {})}
             source={
               <>

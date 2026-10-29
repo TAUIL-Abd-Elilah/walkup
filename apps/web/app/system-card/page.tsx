@@ -125,7 +125,9 @@ export default function SystemCardPage() {
         the Summary and Checks steps say when fixed wording replaced Claude&apos;s lines, wrote &ldquo;15 partner lines trimmed&rdquo; for
         &ldquo;15 partner line(s) trimmed&rdquo; and &ldquo;1 of 1 act resolved&rdquo; for &ldquo;1 of 1 acts resolved&rdquo;, named the
         shared-website signal in the chain note, and removed a repeated label from 16
-        Ticketmaster roster receipts. No Qloo or Ticketmaster answer, ranking, partner list or ledger number changed.
+        Ticketmaster roster receipts. A third pass on Oct 29 made every &ldquo;about N times&rdquo; follow one rule (the sheet&apos;s 2-decimal lift,
+        rounded half up), so an area reads the same figure on the plan page, the PDF, the Steps panel and street-team.ics; four stored lines changed. No
+        Qloo or Ticketmaster answer, ranking, partner list or ledger number changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>
@@ -148,7 +150,7 @@ export default function SystemCardPage() {
           </p>
           <p>
             It is a planning tool. It does not sell tickets, set prices or rank shows, and it shows no sales data for any show. Seats left and capacity are
-            what-ifs the operator enters, marked as what-ifs. The sample presets use invented bills; the live sheets use two real Ticketmaster bills at
+            numbers the operator enters, and the sheet says so; on a sample sheet they are marked as what-ifs. The sample presets use invented bills; the live sheets use two real Ticketmaster bills at
             The Anthem, Washington DC, and two at The Salt Shed, Chicago. No preset carries a seats-left count.
           </p>
         </Section>
@@ -273,7 +275,10 @@ export default function SystemCardPage() {
           <ul className="list-disc space-y-1.5 pl-5">
             <li>No fan data and no personal data. Inputs are the bill, the venue, the date and counts or lists the operator types.</li>
             <li>No cookies beyond one functional cookie.</li>
-            <li>The optional &quot;send a copy to&quot; address is used once for that send and never stored. The ledger records that a copy was requested, not the address.</li>
+            <li>
+              The optional &quot;Street-team email&quot; address is used for that send only and never stored. The ledger records a keyed hash of it, not the
+              address.
+            </li>
             <li>Already-reached ZIPs, when supplied, are aggregate counts from the operator&apos;s own report. No names.</li>
             <li>Tags about individual people are removed before anything is stored.</li>
             <li>

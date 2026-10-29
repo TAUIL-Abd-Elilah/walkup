@@ -20,7 +20,7 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q1 signal check | | top-level `warnings[]` `{type: "not_found", "signal.interests.entities": [ids]}`; a 400 that blames `signal.interests.entities` drops every id in that call | output | `SignalCheck.dropped`, `.usable`; a dropped pick becomes `Resolution.replaced` (the next usable entry of the same search is used), `needs_input` or `unresolved`; dropped house ids leave the house set | `qloo` |
 | **Q2** resolve venue | `Venue.name` | `GET /search?query=`, `types=urn:entity:place` | lookup | `Resolution` (role `venue`) | `tm` -> `qloo` |
 | Q2 | `Venue.lat`, `Venue.lon` (Ticketmaster) | `filter.location=<lat>,<lon>`, `filter.radius=1` (miles) | filter | n/a | `qloo` |
-| Q2 | | `results[].entity_id` (exact match only) | output | `Venue.qlooEntityId` (null: `POINT(lon lat)` fallback, "venue not in catalog yet") | `qloo` |
+| Q2 | | `results[].entity_id` (exact match only) | output | `Venue.qlooEntityId` (null: `POINT(lon lat)` fallback, "Venue not in the catalog yet, so the run uses the Ticketmaster point.") | `qloo` |
 | **Q3** house set | venue's next 60 Ticketmaster events -> attraction Spotify IDs | `GET /entities?external.spotify.ids=` (batched) | lookup | `Resolution[]` (role `house`) | `tm` -> `qloo` |
 | Q3 | unresolved headliners (at most 6) | typed `GET /search` | lookup | `Resolution[]` (role `house`) | `qloo` |
 | Q3 | | `results[].entity_id` | output | house set: top 12 by recency and frequency | `engine` |

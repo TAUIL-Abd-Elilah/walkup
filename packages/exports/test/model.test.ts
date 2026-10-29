@@ -274,7 +274,10 @@ describe("panels", () => {
       text: "both rules compare this crowd with the room's usual crowd, and this run has no usual crowd to compare with.",
     });
     expect(sheetModelText(m).join(" ")).not.toContain("ranks no partner");
-    expect(m.panel1.baseline).toMatch(/^Nothing to compare with/);
+    // The status line gives the reason and the empty line says there is no lift map: no third line saying it again.
+    expect(m.panel1.baseline).toBe("");
+    expect(m.panel1.empty).toBe("No lift map: there is no usual crowd to compare this bill with.");
+    expect(sheetModelText(m).join(" ")).not.toContain("Nothing to compare with");
   });
 
   it("says when the map search widened past the radius, in the plan page's words", () => {

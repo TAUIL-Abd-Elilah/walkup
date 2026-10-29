@@ -2,9 +2,9 @@
  * Deterministic narration built only from run facts. Runs when the LLM is off,
  * refused, over budget, failed to parse, or in tests. Same input, same output.
  */
-import type { CopyHook, LiftTile, Partner } from "@walkup/contracts";
+import { liftAgainst, type CopyHook, type LiftTile, type Partner } from "@walkup/contracts";
 import { isAudienceTag } from "./audience";
-import { displayDate, headlinerName, prepareRun, round, type AllowTag, type PreparedRun } from "./facts";
+import { displayDate, headlinerName, prepareRun, type AllowTag, type PreparedRun } from "./facts";
 import { MAX_COPY_HOOKS } from "./constants";
 import type { NarrateInput, NarrationResult, TemplateReason } from "./types";
 
@@ -31,20 +31,15 @@ function pct(v: number): number {
 
 /**
  * Lift in words, always naming the baseline ("about 1.8 times the room's usual
- * crowd"); the same thresholds and phrases as `liftInWords` in @walkup/engine.
- * Uses the lift rounded to 2 decimals, as the guard's facts hold it, so the one
- * printed decimal always matches a cited number. Ratios like "1.84x" belong in
- * tables, never in prose. The orchestrator swaps the baseline phrase for "the
- * genre baseline" when the run fell back to a genre tag.
+ * crowd"): `liftAgainst` from @walkup/contracts, the rule `liftInWords` in
+ * @walkup/engine, the calendar and the plan page share. It reads the sheet's
+ * 2-decimal lift, as the guard's facts hold it, so the one printed decimal
+ * always matches a cited number. Ratios like "1.84x" belong in tables, never in
+ * prose. The orchestrator swaps the baseline phrase for "the genre baseline"
+ * when the run fell back to a genre tag.
  */
 export function liftWords(lift: number): string {
-  const b = "the room's usual crowd";
-  const l = round(lift, 2);
-  if (!Number.isFinite(l)) return `compared with ${b}`;
-  if (l < 0.95) return `below ${b}`;
-  if (l < 1.05) return `about the same as ${b}`;
-  if (l < 1.3) return `a little above ${b}`;
-  return `about ${l.toFixed(1)} times ${b}`;
+  return liftAgainst(lift, "the room's usual crowd");
 }
 
 /** "record_store" -> "record store"; "barber_shop" -> "barbershop". */

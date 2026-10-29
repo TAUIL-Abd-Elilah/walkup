@@ -57,8 +57,8 @@ const CARD_LABELS = {
   declared: "Your list",
   prePost: "Before/after",
   media: "Media/sponsor",
-  demographics: "Age/gender",
-  whatsDifferent: "What's different",
+  demographics: "Age mix",
+  whatsDifferent: "Crowd differs",
   copyHooks: "Copy hooks",
 };
 
@@ -71,7 +71,7 @@ Usage:
   walkup health
 
 Plan options (optional what-ifs, never sales data):
-  --seats-left <n>        seats you still want to sell (shown as HYPOTHETICAL)
+  --seats-left <n>        seats you still want to sell (marked HYPOTHETICAL on a sample run)
   --capacity <n>          room capacity
   --radius-km <km>        radius around the venue, 1-100 (server default 40)
   --street-days <days>    street-team days, e.g. thursday,saturday or thu,sat

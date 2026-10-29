@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LiftTile, QlooEntity, TraceStep } from "@walkup/contracts";
-import { TRACE_STEP_KINDS } from "@walkup/contracts";
+import { aboutTimes, liftAgainst, TRACE_STEP_KINDS } from "@walkup/contracts";
 import {
   baselineStep,
   checkStep,
@@ -42,13 +42,26 @@ describe("wording helpers", () => {
   it("names the baseline with the fixed lift phrases", () => {
     expect(liftInWords(0.94)).toBe("below the room's usual crowd");
     expect(liftInWords(0.95)).toBe("about the same as the room's usual crowd");
-    expect(liftInWords(1.049)).toBe("about the same as the room's usual crowd");
+    expect(liftInWords(1.044)).toBe("about the same as the room's usual crowd");
     expect(liftInWords(1.05)).toBe("a little above the room's usual crowd");
     expect(liftInWords(1.29)).toBe("a little above the room's usual crowd");
     expect(liftInWords(1.3)).toBe("about 1.3 times the room's usual crowd");
     expect(liftInWords(1.8374)).toBe("about 1.8 times the room's usual crowd");
     expect(liftInWords(1.5237, "tag")).toBe("about 1.5 times the genre baseline");
     expect(liftInWords(Number.NaN)).toBe("compared with the room's usual crowd");
+  });
+  it("reads the lift as the sheet prints it (2 decimals), then rounds half up: one figure per area everywhere", () => {
+    // 2.45x, 2.25x, 2.15x and 1.65x on the sheet: never 2.4, 2.2, 2.1 or 1.6 beside them.
+    expect(liftInWords(2.4477)).toBe("about 2.5 times the room's usual crowd");
+    expect(liftInWords(2.2491)).toBe("about 2.3 times the room's usual crowd");
+    expect(liftInWords(2.1534)).toBe("about 2.2 times the room's usual crowd");
+    expect(liftInWords(1.6468)).toBe("about 1.7 times the room's usual crowd");
+    // The thresholds read the same figure: 1.2996 prints 1.30x, 1.049 prints 1.05x.
+    expect(liftInWords(1.2996)).toBe("about 1.3 times the room's usual crowd");
+    expect(liftInWords(1.049)).toBe("a little above the room's usual crowd");
+    for (const x of [0.5, 0.97, 1.0, 1.1, 1.29, 1.3, 1.6468, 1.84, 2.1534, 2.2491, 2.4477, 3]) expect(liftInWords(x)).toBe(liftAgainst(x, "the room's usual crowd"));
+    expect(aboutTimes(2.15)).toBe("2.2");
+    expect(aboutTimes(9.96)).toBe("10.0");
   });
   it("writes ordinals, lists, counts and days", () => {
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 101, 111].map(ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "101st", "111th"]);

@@ -3,7 +3,7 @@
  * signal, same pool. For each partner area the caller runs the area's place
  * search again without `signal.interests.entities` (Qloo answers it in
  * popularity order; probe 1 / KG1, Oct 15). With k = the partners picked in
- * that area, a partner "would not make a list of the most popular places" when
+ * that area, a partner is "not among the most popular places" when
  * it is not among the first k places of that list that pass the same
  * eligibility rules as partner scoring (`eligiblePartnerIds`: not the venue,
  * not closed, open on the street-team day, not an excluded category). No caps

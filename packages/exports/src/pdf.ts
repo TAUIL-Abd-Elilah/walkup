@@ -272,7 +272,7 @@ function panel1(m: SheetModel, st: Styles, mapW: number, mapH: number, listW: nu
       // Explicit widths: react-pdf does not shrink flex children that hold text reliably.
       view({ width: listW }, ...list, p.empty ? text(st.small, p.empty) : null),
     ),
-    text([lines(st.small, 3), st.gap(2)], p.baseline),
+    p.baseline ? text([lines(st.small, 3), st.gap(2)], p.baseline) : null,
   );
 }
 
@@ -482,7 +482,7 @@ function mediaRow(m: SheetModel, st: Styles): El | null {
     { width: "58%" },
     head(p6.title),
     p6.status ? text([st.small, { maxLines: 2, textOverflow: "ellipsis" }], p6.status) : null,
-    ...p6.hooks.map((x) => text([st.cell, { marginBottom: st.fs(1) }], `"${x}"`)),
+    ...p6.hooks.map((x) => text([st.cell, { marginBottom: st.fs(1) }], `“${x}”`)),
     p6.hooks.length === 0 ? text(st.small, "No copy lines on this sheet.") : null,
     p6.withheld > 0 ? text(st.small, `${p6.withheld} ${p6.withheld === 1 ? "line" : "lines"} left out: alcohol words on a show that is not 21+.`) : null,
     text(st.small, p6.note),

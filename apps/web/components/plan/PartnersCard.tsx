@@ -1,7 +1,7 @@
 "use client";
 import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
-import { joinAnd, shortUrl, telHref } from "../../lib/format";
+import { joinAnd, shortUrl, telHref, webHost } from "../../lib/format";
 import { FANBAR_HREF, PARTNER_RANK_LINE, categoryLabel } from "../../lib/labels";
 import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSearchAreas, partnerSummary, popularityLine, tagInSentence, topTiles, withWithout } from "../../lib/sheet-utils";
 import { WithWithout } from "../WithWithout";
@@ -167,7 +167,23 @@ function Contact({ p }: { p: Partner }) {
     ),
     p.website ? (
       <a key="web" className="underline underline-offset-2" href={p.website} target="_blank" rel="noreferrer" title={shortUrl(p.website)}>
-        Website<span className="sr-only"> of {p.entity.name} (opens in a new tab)</span>
+        <span className="print:hidden">Website</span>
+        {/* Paper has no link to follow, so it prints where the website is. A long page path wraps after a slash. */}
+        <span className="hidden print:inline">
+          {webHost(p.website)
+            .split("/")
+            .map((part, i) => (
+              <Fragment key={i}>
+                {i > 0 ? (
+                  <>
+                    /<wbr />
+                  </>
+                ) : null}
+                {part}
+              </Fragment>
+            ))}
+        </span>
+        <span className="sr-only"> of {p.entity.name} (opens in a new tab)</span>
       </a>
     ) : null,
   ].filter(Boolean);
@@ -462,10 +478,14 @@ export function PartnersCard({
       */}
       {env.results.length > 0 ? (
         <p className="mt-3 max-w-[760px]" data-testid="p1-banner">
-          {PARTNER_RANK_LINE}{" "}
-          <a href={FANBAR_HREF} className="link">
-            The test
-          </a>
+          {PARTNER_RANK_LINE}
+          {/* Paper has no link to follow; the sheet's limits state the test in words. */}
+          <span className="no-print">
+            {" "}
+            <a href={FANBAR_HREF} className="link">
+              The test
+            </a>
+          </span>
         </p>
       ) : null}
       {/* One area up close: the popularity-only list beside the picks, by name (live sheets with the names stored). */}

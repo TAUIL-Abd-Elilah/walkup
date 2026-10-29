@@ -154,6 +154,64 @@ export function shortUrl(url: string): string {
   return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
+/**
+ * Sites that host many businesses' pages: the host alone ("facebook.com") doesn't say which page. The same list as
+ * the engine's LISTING_HOSTS (website.ts), which keeps these links only when they point at a page; a subdomain
+ * counts too ("order.toasttab.com"). test/web-r4-fixes.test.ts checks the two lists agree.
+ */
+export const SHARED_HOSTS: readonly string[] = [
+  "facebook.com",
+  "fb.com",
+  "instagram.com",
+  "yelp.com",
+  "google.com",
+  "goo.gl",
+  "g.page",
+  "tripadvisor.com",
+  "opentable.com",
+  "resy.com",
+  "toasttab.com",
+  "square.site",
+  "linktr.ee",
+  "x.com",
+  "twitter.com",
+  "tiktok.com",
+  "doordash.com",
+  "ubereats.com",
+  "grubhub.com",
+  "squarespace.com",
+  "wixsite.com",
+];
+
+/** The query parameters that name a place on a listing site ("google.com/maps?cid=123"); the engine keeps these too. */
+const PLACE_PARAMS = ["cid", "place_id", "q"] as const;
+
+/**
+ * "example.com" from "https://www.example.com/menu?x=1": where a website is, said on paper in place of a link. A page
+ * on a shared site keeps its path (and Google's place parameter), so it still names the place:
+ * "facebook.com/cafeaddis", "google.com/maps?cid=123".
+ */
+export function webHost(url: string): string {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    const shared = SHARED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+    if (!shared) return host;
+    let path = u.pathname.replace(/\/+$/, "");
+    try {
+      path = decodeURI(path);
+    } catch {
+      // Keep the path as it is written.
+    }
+    // Google Maps names the place in the query; elsewhere the query only counts when there is no path.
+    const google = host === "google.com" || host.endsWith(".google.com");
+    const param = google || !path ? PLACE_PARAMS.find((k) => u.searchParams.get(k)) : undefined;
+    return host + path + (param ? `?${param}=${u.searchParams.get(param)}` : "");
+  } catch {
+    return shortUrl(url).split(/[/?#]/)[0] ?? url;
+  }
+}
+
 /** "(615) 555-0100" -> "tel:+16155550100"; "+1 555-0101" keeps its own country code. */
 export function telHref(phone: string): string {
   const digits = phone.replace(/\D/g, "");

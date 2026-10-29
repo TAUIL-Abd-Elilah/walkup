@@ -38,7 +38,8 @@ partner list or ledger number changed. The same pass removed FLO's "Within 10 km
 pass on Oct 29 gave one FLO partner back its run's kind, dropped four dead partner website links, showed four places'
 own websites, made chain lists count places, said partner chains are last in their area, fixed the Summary and Checks
 steps' wording, wrote "partner lines" for "line(s)" and "1 of 1 act" for "1 of 1 acts", named every chain signal in the chain note and removed a repeated
-label from 16 ledger notes.
+label from 16 ledger notes. A third pass on Oct 29 made every "about N times" follow one rule (the 2-decimal lift,
+rounded half up); four stored lines changed.
 
 FLO has no "Within 10 km of the room" change. Fewer than 200 map squares come back near The Anthem for FLO's crowd,
 so the map widens to 60 km either way, and the version recorded for that note changed nothing on the sheet. It was

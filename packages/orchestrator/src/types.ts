@@ -78,7 +78,7 @@ export interface PlanRequest {
   categories?: string[];
   /** Reuse a plan id (resuming a paused plan, or fixed ids for fixtures). */
   planId?: string;
-  /** Plan id of another bill in the same room ("Swap the bill"). */
+  /** Plan id of another bill in the same room (the sheet's "The other bill at {venue}" line). */
   pairedPlanId?: string;
   /** Planning date (YYYY-MM-DD) for the roster window; default: the clock's date. */
   asOf?: string;

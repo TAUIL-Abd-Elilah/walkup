@@ -1,8 +1,11 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
+  aboutTimes,
   createMemoryLedger,
   DENIED_TAG_KEYWORDS,
   DENIED_TAG_PREFIXES,
+  liftAgainst,
+  liftHundredths,
   LIMITS_EVERY_SHEET,
   REVISION_CHANGE_KINDS,
   TRACE_STEP_KINDS,
@@ -236,5 +239,25 @@ describe("withoutControl", () => {
   it("returns a sheet with nothing to drop as it is", () => {
     const fresh = { steps: steps.slice(0, 1), limits: [...LIMITS_EVERY_SHEET] };
     expect(withoutControl(fresh)).toBe(fresh);
+  });
+});
+
+describe("lift in words (one rule for every figure)", () => {
+  it("rounds the sheet's 2-decimal lift half up, in whole numbers", () => {
+    // 2.45x, 2.25x, 2.15x, 1.65x on the sheet.
+    expect([2.4477, 2.2491, 2.1534, 1.6468].map(aboutTimes)).toEqual(["2.5", "2.3", "2.2", "1.7"]);
+    // 2.15 is a float just under 2.15: still 2.2. 2.1449 prints 2.14x: 2.1.
+    expect(aboutTimes(2.15)).toBe("2.2");
+    expect(aboutTimes(2.1449)).toBe("2.1");
+    expect(aboutTimes(9.96)).toBe("10.0");
+    expect(liftHundredths(2.1534)).toBe(215);
+  });
+
+  it("names the baseline it is given, with the thresholds read from the same figure", () => {
+    expect(liftAgainst(0.944, "the room's usual crowd")).toBe("below the room's usual crowd");
+    expect(liftAgainst(0.949, "the room's usual crowd")).toBe("about the same as the room's usual crowd");
+    expect(liftAgainst(1.049, "the room's usual crowd")).toBe("a little above the room's usual crowd");
+    expect(liftAgainst(1.2996, "comedy fans in general")).toBe("about 1.3 times comedy fans in general");
+    expect(liftAgainst(Number.NaN, "the room's usual crowd")).toBe("compared with the room's usual crowd");
   });
 });

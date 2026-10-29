@@ -1,7 +1,7 @@
 # Product eval score
 
 Source: fixture world (synthetic stand-in for Qloo and Ticketmaster; seed `houselights-world-v1`). No live API was called.
-Generated: 2026-10-29T12:40:48.259Z
+Generated: 2026-10-29T21:13:02.715Z
 
 **20 passed, 0 failed (0 on known product gaps only, 0 unexpected), 0 skipped, of 20 cases.**
 
@@ -13,7 +13,7 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 |---|---|---|---|
 | D1. For the three goldens, the Street Sheet renders. | verified (outside the goldens: 110 pass, 0 fail) | C01, C02, C03, C04 | 54 / 0 / 0 |
 | D2. Zero guard drops in a citation field. | verified (outside the goldens: 66 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
-| D3. Every partner is open on the street-team day per the hours Qloo returns for it. | verified (partners with no hours from Qloo, passed as "call ahead" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
+| D3. Every partner is open on the street-team day per the hours Qloo returns for it. | verified (partners with no hours from Qloo, passed as "call first" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
 | D4. Every cited ID appears in this run's ledger (ID validator). | verified (outside the goldens: 117 pass, 0 fail) | C01, C02, C03, C04 | 20 / 0 / 0 |
 | D5. The CI job re-runs the 20-case eval on fixtures. | ci (evals/product/product.eval.test.ts runs this eval under vitest; CI runs it once the root vitest include covers evals/product (see evals/product/README.md).) | - | 0 / 0 / 0 |
 | D6. The CI job re-runs the P1 analysis on fixtures. | ci (The P1 analysis tests run in the Python CI job (python evals/p1/test_analyze.py); not part of this eval.) | - | 0 / 0 / 0 |
@@ -38,13 +38,13 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 | C09 All-ages alcohol rule: from Ticketmaster only, enforced on fan-facing copy | passed | 69 / 0 / 0 | D2, S3 |
 | C10 Denied tags and words never reach copy or stored data | passed | 35 / 0 / 0 | D2, S3 |
 | C11 Places marked closed are dropped and counted | passed | 32 / 0 / 0 | D3, S2 |
-| C12 A place with unknown hours is kept and marked call ahead | passed | 33 / 0 / 0 | D3, S2 |
+| C12 A partner with no listed hours is kept and marked call first | passed | 33 / 0 / 0 | D3, S2 |
 | C13 Month quota guard: fresh calls stop, presets come from the store or cache | passed | 74 / 0 / 0 | S1, S2 |
 | C14 HTTP 429 then success: retried, logged, same sheet | passed | 41 / 0 / 0 | S1, S2 |
 | C15 Declared partners: catalog places ranked, the rest kept in your order | passed | 38 / 0 / 0 | S1, S2, S3 |
 | C16 Partner diversity caps hold, even on a bar-heavy category set | passed | 39 / 0 / 0 | S2, S3 |
 | C17 Budget split: shares sum to 1 over spread top tiles, labelled a heuristic | passed | 82 / 0 / 0 | S2, S3 |
-| C18 Swap the bill: same room, different crowd (top-8 overlap at most 5 of 8) | passed | 43 / 0 / 0 | S4, S1 |
+| C18 The other bill in the same room: same room, different crowd (top-8 overlap at most 5 of 8) | passed | 43 / 0 / 0 | S4, S1 |
 | C19 House heatmap fails: the genre tag baseline stands in (degraded: tag baseline) | passed | 37 / 0 / 0 | S1, S2, S3 |
 | C20 Narration falls back to the deterministic template (no model, model error, off-schema draft) | passed | 122 / 0 / 0 | D2, D4, S2 |
 

@@ -1,4 +1,4 @@
-import type { GuardReport, LedgerEntry, LiftTile, Partner, PopularityCheck, PopularPlace, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
+import { liftAgainst, type GuardReport, type LedgerEntry, type LiftTile, type Partner, type PopularityCheck, type PopularPlace, type QlooEntity, type StreetSheet, type TraceStep } from "@walkup/contracts";
 import { areaState, DISTANCE_SUFFIX, partnerAreaLabel, withState } from "@walkup/exports/format";
 import { tileWhyLine } from "@walkup/exports/sheet-model";
 import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd, possessive } from "./format";
@@ -300,12 +300,15 @@ export function guardNoteText(note: string, areaOfLine?: (index: number) => numb
 /**
  * 24-hour times inside a sentence ("open 17:00 to 02:00") in the hours column's style ("open 5 pm to 2 am"). For the
  * narration's partner lines, which quote the run's hours as the data has them. A line that already says am or pm
- * anywhere ("9:30 pm", "11:30 AM", "7:30 a.m.", "4:30 to 8 pm") is in 12-hour time and is left as written: a range
- * that shares one suffix has a time with none ("4:30" in "4:30 to 8 pm") that is not 24-hour time.
+ * anywhere ("9:30 pm", "11:30 AM", "7:30 a.m.", "4:30 to 8 pm") is in 12-hour time and keeps its times: a range
+ * that shares one suffix has a time with none ("4:30" in "4:30 to 8 pm") that is not 24-hour time. Only an upper-case
+ * suffix is lowered, as the hours column writes it ("11:30 AM" reads "11:30 am").
  */
 export function humanTimes(text: string): string {
   // A clock time with am or pm after it: "8 pm", "9:30pm", "11:30 AM", "7:30 a.m.", "9:30:00 pm".
-  if (/\b\d{1,2}(?::\d\d){0,2}\s*[AaPp]\.?[Mm]\b/.test(text)) return text;
+  if (/\b\d{1,2}(?::\d\d){0,2}\s*[AaPp]\.?[Mm]\b/.test(text)) {
+    return text.replace(/\b(\d{1,2}(?::\d\d){0,2}\s*)([AaPp]\.?[Mm]\.?)(?![A-Za-z])/g, (_m, t: string, ap: string) => `${t}${ap.toLowerCase()}`);
+  }
   return text.replace(/\b([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\b/g, (_m, h: string, m: string) => clock(Number(h), Number(m)));
 }
 
@@ -411,18 +414,12 @@ export interface TopArea {
 }
 
 /**
- * Lift in prose, always naming its baseline. Same thresholds and phrases as
- * `liftInWords` in @walkup/engine (steps.ts), kept here so client bundles don't
- * pull in the engine; test/landing.test.ts checks the two agree. Ratios like
+ * Lift in prose, always naming its baseline: `liftAgainst` from @walkup/contracts, the rule `liftInWords` in
+ * @walkup/engine, the narrator and the calendar share (test/landing.test.ts checks the two agree). Ratios like
  * "1.8x" belong in tables only.
  */
 export function liftPhrase(lift: number, baseline: "house" | "tag" = "house", genre?: string): string {
-  const b = baseline === "tag" ? (genre ?? "the genre baseline") : "the room's usual crowd";
-  if (!Number.isFinite(lift)) return `compared with ${b}`;
-  if (lift < 0.95) return `below ${b}`;
-  if (lift < 1.05) return `about the same as ${b}`;
-  if (lift < 1.3) return `a little above ${b}`;
-  return `about ${(Math.round(lift * 10) / 10).toFixed(1)} times ${b}`;
+  return liftAgainst(lift, baseline === "tag" ? (genre ?? "the genre baseline") : "the room's usual crowd");
 }
 
 export interface BillComparison {

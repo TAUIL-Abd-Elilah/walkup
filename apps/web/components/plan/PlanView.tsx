@@ -503,8 +503,9 @@ export function PlanView({
                 {footprint}
               </p>
             ) : null}
+            {/* Links to the revised sheets: paper can't follow them, and "Revised:" there would read as this sheet's own change. */}
             {revisions.length > 0 ? (
-              <p className="mt-2" data-testid="revision-links">
+              <p className="no-print mt-2" data-testid="revision-links">
                 {revisions.map((r, i) => (
                   <span key={r.planId}>
                     {i > 0 ? <span className="text-muted"> · </span> : null}
@@ -649,10 +650,14 @@ export function PlanView({
             <h2 id="limits-title">What this sheet doesn&apos;t show</h2>
             {/* The Fan-Bar Test, stated once per sheet with its scope, in view (not behind Show). */}
             <p className="mt-2 max-w-[760px]" data-testid="fanbar-limit">
-              <span className="font-semibold">Whether these picks beat popularity.</span> {FANBAR_RESULT} {FANBAR_NO_CLAIM}{" "}
-              <a href={FANBAR_HREF} className="link">
-                The test
-              </a>
+              <span className="font-semibold">Whether these picks beat popularity.</span> {FANBAR_RESULT} {FANBAR_NO_CLAIM}
+              {/* Paper has no link to follow; the sentences before it already give the result. */}
+              <span className="no-print">
+                {" "}
+                <a href={FANBAR_HREF} className="link">
+                  The test
+                </a>
+              </span>
             </p>
             <p className="mt-2 max-w-[760px]">Limits, the checks run on every line, and where this sheet came from.</p>
             <FoldBody title="limits, checks and about this sheet">

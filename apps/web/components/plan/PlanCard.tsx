@@ -54,7 +54,8 @@ export function PlanCard<T>({
   ) : null;
   return (
     <section id={id} aria-labelledby={titleId} className="section scroll-mt-4">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      {/* One piece on paper: a long heading wraps the row onto more lines, and a page must not break between them. */}
+      <div className="print-avoid-break flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h2 id={titleId}>
           {title}
           {count !== undefined ? <span className="font-normal text-muted"> ({count})</span> : null}

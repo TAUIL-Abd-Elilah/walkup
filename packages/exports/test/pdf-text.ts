@@ -46,14 +46,17 @@ function decodeHex(hex: string): string {
 export function contentStreams(pdf: Buffer): string[] {
   const s = pdf.toString("latin1");
   const out: string[] = [];
-  const re = /stream\r?\n([\s\S]*?)\r?\nendstream/g;
+  const re = /stream\r?\n([\s\S]*?)(\r?)\nendstream/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(s))) {
-    const raw = Buffer.from(m[1] ?? "", "latin1");
-    try {
-      out.push(inflateSync(raw).toString("latin1"));
-    } catch {
-      // not a deflated stream (fonts, images): skip
+    // A deflated stream whose last byte is 0x0D reads as the "\r" before "\nendstream": try it with that byte too.
+    for (const data of [m[1] ?? "", `${m[1] ?? ""}${m[2] ?? ""}`]) {
+      try {
+        out.push(inflateSync(Buffer.from(data, "latin1")).toString("latin1"));
+        break;
+      } catch {
+        // not a deflated stream (fonts, images), or cut one byte short: skip
+      }
     }
   }
   return out;
