@@ -19,7 +19,7 @@ import {
 } from "../src/ics";
 import { formatHours, hoursWeekday, topTiles, weekdayShort } from "../src/format";
 import { partnerHoursOn } from "../src/hours";
-import { partnerHoursColumn } from "../src/sheet-model";
+import { buildSheetModel, partnerHoursColumn } from "../src/sheet-model";
 import { partnersCsv } from "../src/tables";
 import { parseCsvObjects } from "./csv-parse";
 import { haversineM } from "@walkup/engine";
@@ -256,6 +256,41 @@ describe("street-team dates and visits", () => {
       "Street team: no time left for 1 stop",
       "Show: Juniper Wire, The Lantern Choir, Mesa Static at Example Hall",
     ]);
+  });
+
+  it("says after a partner's hours on the sheet what the calendar says: no time left on the route, or on one pass", () => {
+    // One street-team day, as above: only the first pass has no time for Low Hum Records (the final pass times it).
+    const s = makeSheet();
+    s.operator = { ...s.operator, streetTeamDays: ["saturday"] };
+    s.cards.liftMap.results.tiles = s.cards.liftMap.results.tiles.map((t) => ({ ...t, lift: 1.1 }));
+    const cafe = partner(2, "Day Shift Cafe", null, { hoursOnDay: "Sat 10:00-19:00", entity: place("syn-place-2", "Day Shift Cafe", { properties: { hours: qlooHours({ saturday: [["10:00", "19:00"]] }) } }) });
+    const at = (opens: string) => {
+      const p = partner(1, "Low Hum Records", null, { hoursOnDay: `Sat ${opens}-02:00`, entity: place("syn-place-1", "Low Hum Records", { properties: { hours: qlooHours({ saturday: [[opens, "02:00"]] }) } }) });
+      s.cards.partners.results = [p, cafe];
+      return partnerHoursColumn(s);
+    };
+    const first = at("23:45");
+    expect(first).toMatchObject({ header: "Open Sat", byVisit: false });
+    expect(first.cell(s.cards.partners.results[0]!)).toEqual({
+      hours: "11:45 pm to 2 am; no time left on the first pass: call to arrange",
+      dayHours: "11:45 pm to 2 am",
+      visitDay: "",
+      hoursMissing: false,
+      withDay: "Sat 11:45 pm to 2 am; no time left on the first pass: call to arrange",
+      routeNote: "no time left on the first pass: call to arrange",
+    });
+    // A partner every pass times says nothing more.
+    expect(first.cell(cafe)).toMatchObject({ hours: "10 am to 7 pm", routeNote: "" });
+    // Open from 23:50: neither pass has a whole stop before midnight, so neither times it.
+    const both = at("23:50");
+    const row = parseCsvObjects(partnersCsv(s)).find((r) => r.name === "Low Hum Records")!;
+    expect(row.visit_dates).toBe("2026-10-24 (no time left on the route: call to arrange); 2026-11-14 (no time left on the route: call to arrange)");
+    expect(both.cell(s.cards.partners.results[0]!)).toMatchObject({ hours: "11:50 pm to 2 am; no time left on the route: call to arrange", dayHours: "11:50 pm to 2 am", routeNote: "no time left on the route: call to arrange" });
+    // The paper's row has the same cell.
+    expect(buildSheetModel(s).panel2.rows[0]).toMatchObject({ hours: "11:50 pm to 2 am; no time left on the route: call to arrange", dayHours: "11:50 pm to 2 am", routeNote: "no time left on the route: call to arrange" });
+    // With two street-team days the Visit day cell says it too.
+    s.operator = { ...s.operator, streetTeamDays: ["thursday", "saturday"] };
+    expect(partnerHoursColumn(s).cell(s.cards.partners.results[0]!)).toMatchObject({ hours: "Sat 11:50 pm to 2 am; no time left on the route: call to arrange", visitDay: "Sat" });
   });
 
   it("says a partner outside the numbered areas closed on every street-team day, in each pass", () => {

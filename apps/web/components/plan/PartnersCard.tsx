@@ -1,11 +1,11 @@
 "use client";
 import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
-import { shortUrl, telHref } from "../../lib/format";
+import { joinAnd, shortUrl, telHref } from "../../lib/format";
 import { FANBAR_HREF, PARTNER_RANK_LINE, categoryLabel } from "../../lib/labels";
-import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
+import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSearchAreas, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
 import { WithWithout } from "../WithWithout";
-import { LESS_SURE_NOTE, formatPhone, partnerAreaLabel, partnerLessSure, partnerOtherState } from "@walkup/exports/format";
+import { LESS_SURE_NOTE, categoryLabel as typeLabel, formatPhone, partnerAreaLabel, partnerLessSure, partnerOtherState } from "@walkup/exports/format";
 import { partnerHoursColumn } from "@walkup/exports/sheet-model";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
@@ -18,8 +18,11 @@ const tagWord = (name: string) =>
     .map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase()))
     .join(" ");
 
-/** The Type cell: the kind of place, and "national chain" when `partner.chain` is set (any of the four chain signals). */
-const typeWords = (p: Partner) => (p.chain ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category));
+/**
+ * The Type cell: the kind of place, and "national chain" when `partner.chain` is set (any of the four chain signals).
+ * The label is the print view's, the PDF's and partners.csv's ("Clothing"), so a place is one kind everywhere.
+ */
+const typeWords = (p: Partner) => (p.chain ? `${typeLabel(p.category)}, national chain` : typeLabel(p.category));
 
 /** The state of the place's own address when it differs from its area's (the same rule as the print view and files). */
 export const otherState = partnerOtherState;
@@ -49,7 +52,8 @@ export const AREA_REACH_NOTE =
 
 /**
  * The line under a partner Claude wrote no line for, or whose line the checks left out: what it is, near which area,
- * and the tags it shares, all from the row itself.
+ * and the tags it shares, all from the row itself. A sentence names the kind as a noun ("Clothing store near ..."),
+ * where the Type cell keeps the files' short label.
  */
 export function fixedPartnerLine(p: Pick<Partner, "category" | "tileName" | "tileGeohash" | "explain">): string {
   const tags = (p.explain?.tags ?? []).map((t) => tagWord(t.name)).filter(Boolean).slice(0, 3);
@@ -61,6 +65,29 @@ export function fixedPartnerLine(p: Pick<Partner, "category" | "tileName" | "til
 
 function joinWords(xs: readonly string[]): string {
   return xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+}
+
+const areaNumbers = (ns: readonly number[]) => `${ns.length === 1 ? "area" : "areas"} ${joinAnd(ns.map(String))}`;
+
+/**
+ * Which numbered areas a partner search covered, said after the table's lead: "Walkup searches the top 3 areas for
+ * partners; no place in area 3 made the list, and areas 4 and 5 are for flyering only." `searched` are the area numbers
+ * the search receipts name (an area whose places were all left out still counts), `kept` the ones with a partner on
+ * the list. Empty when every numbered area was searched and kept one, or when none was searched (the partners then
+ * come from near the venue, and the section's reason says so).
+ */
+export function partnerSearchLine(numbered: number, searched: readonly number[], kept: ReadonlySet<number>): string {
+  const s = [...new Set(searched)].sort((a, b) => a - b);
+  if (s.length === 0) return "";
+  const flyer = Array.from({ length: numbered }, (_, i) => i + 1).filter((n) => !s.includes(n));
+  const empty = s.filter((n) => !kept.has(n));
+  if (flyer.length === 0 && empty.length === 0) return "";
+  const which = s.every((n, i) => n === i + 1) ? (s.length === 1 ? "the top area" : `the top ${s.length} areas`) : areaNumbers(s);
+  const parts = [
+    empty.length > 0 ? `no place in ${areaNumbers(empty)} made the list` : null,
+    flyer.length > 0 ? `${areaNumbers(flyer)} ${flyer.length === 1 ? "is" : "are"} for flyering only` : null,
+  ].filter((x): x is string => x !== null);
+  return `Walkup searches ${which} for partners; ${parts.join(", and ")}.`;
 }
 
 /** The "Why this place" detail under a partner row (only when the sheet carries `partner.explain`). */
@@ -207,9 +234,14 @@ export function PartnersCard({
   const allThin = env.results.length > 1 && env.results.every((p) => partnerLessSure(p));
   const thin = (p: Partner) => !allThin && partnerLessSure(p);
   const anyThin = env.results.some(thin);
-  // Numbered areas on the map that no partner search covered: say so, or it reads as a bug.
-  const searchedNumbers = new Set(areas.map((a) => a.marker).filter((n) => n > 0));
-  const flyerOnly = top.map((_, i) => i + 1).filter((n) => !searchedNumbers.has(n));
+  // Numbered areas on the map that no partner search covered, or whose places all left the list: say so, or a number
+  // with no partner reads as a bug. The searched areas come from the search receipts, not from the rows that stayed.
+  const searchedHashes = useMemo(() => partnerSearchAreas(sheet), [sheet]);
+  const searchLine = partnerSearchLine(
+    top.length,
+    top.flatMap((t, i) => (searchedHashes.has(t.geohash) ? [i + 1] : [])),
+    new Set(areas.map((a) => a.marker).filter((n) => n > 0)),
+  );
   const nearVenue = env.results.some((p) => !p.tileGeohash);
   // The header already says the signal is thin, once; the section doesn't repeat it.
   const reason = env.reason && isThinSignal(sheet) ? env.reason.replace(/\s*The signal is thin, so treat this as a starting list\./, "").trim() || undefined : env.reason;
@@ -303,11 +335,7 @@ export function PartnersCard({
         <p className="link-row mb-4 text-muted" {...(areas.length > 1 ? { role: "group", "aria-label": "Show partners in one area" } : {})}>
           <span className="link-row-lead">
             {areas.length > 0 ? `Listed by area as numbered on the map${nearVenue ? ", then near the venue" : ""}, best fit first.` : "Best fit first."}
-            {flyerOnly.length > 0 && searchedNumbers.size > 0
-              ? ` Walkup searches the top ${searchedNumbers.size} ${searchedNumbers.size === 1 ? "area" : "areas"} for partners; ${
-                  flyerOnly.length === 1 ? `area ${flyerOnly[0]} is` : `areas ${flyerOnly.slice(0, -1).join(", ")} and ${flyerOnly[flyerOnly.length - 1]} are`
-                } for flyering only.`
-              : ""}
+            {searchLine ? ` ${searchLine}` : ""}
             {areas.length > 1 ? <span className="no-print"> Show:</span> : null}
             {/* The area buttons don't print, so a filtered list says on paper that it is filtered. */}
             {filteredTo ? (

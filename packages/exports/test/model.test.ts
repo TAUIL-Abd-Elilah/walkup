@@ -313,7 +313,7 @@ describe("panels", () => {
     oneDay.operator = { ...oneDay.operator, streetTeamDays: ["thursday"] };
     const one = partnerHoursColumn(oneDay);
     expect(one).toMatchObject({ header: "Open Thu", byVisit: false });
-    expect(one.cell(PARTNERS[0]!)).toEqual({ hours: "10 am to 7 pm", visitDay: "", hoursMissing: false, withDay: "Thu 10 am to 7 pm" });
+    expect(one.cell(PARTNERS[0]!)).toEqual({ hours: "10 am to 7 pm", dayHours: "10 am to 7 pm", visitDay: "", hoursMissing: false, withDay: "Thu 10 am to 7 pm", routeNote: "" });
     expect(one.cell({ ...PARTNERS[0]!, hoursOnDay: null }).withDay).toBe(HOURS_NOT_LISTED);
   });
 

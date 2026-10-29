@@ -148,7 +148,7 @@ const DOWNLOADS: { file: string; label: string; what: string }[] = [
   { file: "zips.csv", label: "zips.csv", what: "ZIP codes with lift and weight" },
   { file: "pins.csv", label: "pins.csv", what: "map pins with a radius" },
   { file: "offer-codes.csv", label: "offer-codes.csv", what: "codes to create in your ticketing platform" },
-  { file: "sheet.json", label: "sheet.json", what: "the whole sheet with its ledger" },
+  { file: "sheet.json", label: "sheet.json", what: "the whole sheet as recorded, before the view-time checks, with its ledger" },
 ];
 
 /** The "On this sheet" links, in page order. Parts a sheet may not have are left out. */
@@ -249,7 +249,8 @@ const CITATION_DROP = /not in this run|not on the allowlist|cites no (?:allowlis
 export function unbackedDrops(guard: GuardReport): number {
   let n = 0;
   for (const r of guard.reasons) {
-    const many = /^(\d+) partner line\(s\) dropped: /.exec(r);
+    // "2 partner lines dropped: ...", "1 partner line dropped: ..." (older runs wrote "2 partner line(s) dropped").
+    const many = /^(\d+) partner line(?:s|\(s\))? dropped: /.exec(r);
     if (many) n += Number(many[1]);
     else if (DROPPED_LINE.test(r) && CITATION_DROP.test(r)) n++;
   }
@@ -257,32 +258,37 @@ export function unbackedDrops(guard: GuardReport): number {
 }
 
 /**
- * "Checks removed 0 claims. 4 tags were left out under the data policy (ethnicity, inclusivity, credit card)." A line
+ * "Checks left out no line. 4 tags were left out under the data policy (ethnicity, inclusivity, credit card)." A line
  * left out for a wording or policy rule (an alcohol word on an all-ages show, a line about a place that isn't a partner)
- * is not a claim: "Checks left out 15 lines, none for a claim the run didn't back." When nothing was left out but the
- * checks swapped lines for fixed wording (the run's "replaced by the template" notes, plus `viewReplaced` lines swapped
- * at view time), it says "Checks left out no line." and the next line says what was replaced, never "removed 0 claims".
+ * is not a claim: "Checks left out 15 lines, none for a claim the run didn't back." A summary the checks set aside is
+ * not left out: fixed wording stands in for it, and the next line says so with the other replaced lines (the run's
+ * "replaced by the template" notes, plus lines swapped at view time). Never "removed 0 claims".
  */
-export function checksLine(guard: GuardReport, viewReplaced = 0): string {
+export function checksLine(guard: GuardReport): string {
   const by = guard.deniedByNamespace;
   const classes = by ? Object.keys(by).filter((k) => (by[k] ?? 0) > 0).map((k) => k.replace(/_/g, " ")) : [];
   const n = guard.deniedTagCount;
-  const unbacked = unbackedDrops(guard);
-  const other = guard.dropped - unbacked;
-  const swapped = guard.reasons.filter((r) => /^replaced by the template: /.test(r)).length + viewReplaced;
+  // The run counts a set-aside summary as dropped ("summary: number 1.8 is not in this run"); the template replaced it.
+  const summary = guard.reasons.find((r) => /^summary: /.test(r));
+  const dropped = Math.max(guard.dropped - (summary ? 1 : 0), 0);
+  const unbacked = Math.min(Math.max(unbackedDrops(guard) - (summary && CITATION_DROP.test(summary) ? 1 : 0), 0), dropped);
+  const other = dropped - unbacked;
   const lines = (x: number) => `${x} ${x === 1 ? "line" : "lines"}`;
-  // A failed line with no fixed wording for its slot ("... (dropped)") was left out, though `dropped` does not count it.
+  // A failed line with no fixed wording for its slot ("... (dropped)") was left out, though `dropped` does not count it;
+  // its reason is not sorted into claim or wording rule, so the count is said without a split (the Checks step agrees).
   const swapDrops = guard.reasons.filter((r) => /^replaced by the template: .*\(dropped\)$/.test(r)).length;
   const claims =
-    guard.dropped === 0 && swapDrops > 0
-      ? `Checks left out ${lines(swapDrops)}.`
-      : guard.dropped === 0 && swapped > 0
-      ? "Checks left out no line."
-      : other === 0
-        ? `Checks removed ${guard.dropped} ${guard.dropped === 1 ? "claim" : "claims"}.`
-        : unbacked === 0
-          ? `Checks left out ${lines(guard.dropped)}, none for a claim the run didn't back.`
-          : `Checks left out ${lines(guard.dropped)}: ${unbacked} for a claim the run didn't back, ${other} for a wording or policy rule.`;
+    swapDrops > 0
+      ? `Checks left out ${lines(dropped + swapDrops)}.`
+      : dropped === 0
+        ? "Checks left out no line."
+        : other === 0
+          ? `Checks removed ${dropped} ${dropped === 1 ? "claim" : "claims"}.`
+          : unbacked === 0
+            ? dropped === 1
+              ? "Checks left out 1 line, for a wording or policy rule."
+              : `Checks left out ${lines(dropped)}, none for a claim the run didn't back.`
+            : `Checks left out ${lines(dropped)}: ${unbacked} for a claim the run didn't back, ${other} for a wording or policy rule.`;
   if (n === 0) return `${claims} No tag was left out under the data policy.`;
   return `${claims} ${n} ${n === 1 ? "tag was" : "tags were"} left out under the data policy${classes.length > 0 ? ` (${classes.join(", ")})` : ""}.`;
 }
@@ -652,7 +658,7 @@ export function PlanView({
               <h3 id="checks" className="mt-6 scroll-mt-4 text-base">
                 Checks
               </h3>
-              <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard, narrationReplaced)}</p>
+              <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard)}</p>
               {fixLine ? (
                 <p className="mt-1 max-w-[760px]" data-testid="checks-fix">
                   {fixLine}

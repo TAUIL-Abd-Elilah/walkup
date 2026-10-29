@@ -995,7 +995,12 @@ export interface PartnerVisit {
   days: { weekday: Weekday; hours: string | null }[];
   /** Dates of `dates` the day's route had no time left for this partner (the calendar lists it on that day's first event). */
   notTimed: string[];
+  /** The pass of each date in `notTimed`, in the same order. */
+  notTimedPasses: StreetTeamPass[];
 }
+
+/** What partners.csv and the paper say of a partner the day's route had no time left for. */
+export const NO_TIME_ON_ROUTE = "no time left on the route: call to arrange";
 
 /**
  * Each partner's street-team stops (keyed by entity id), from the same plan as street-team.ics, so the call list and
@@ -1006,8 +1011,8 @@ export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<st
   const out = new Map<string, PartnerVisit>();
   const plan = planStreetTeam(sheet, opts);
   const stops = [
-    ...plan.visits.flatMap((v) => [{ ...v, timed: true }, ...v.notTimed.map((x) => ({ ...x, timed: false }))]),
-    ...plan.notes.flatMap((n) => n.notTimed.map((x) => ({ ...x, timed: false }))),
+    ...plan.visits.flatMap((v) => [{ ...v, timed: true }, ...v.notTimed.map((x) => ({ ...x, pass: v.pass, timed: false }))]),
+    ...plan.notes.flatMap((n) => n.notTimed.map((x) => ({ ...x, pass: n.pass, timed: false }))),
   ];
   stops.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   for (const v of stops) {
@@ -1015,7 +1020,7 @@ export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<st
     const id = v.partner.entity.entityId;
     let cur = out.get(id);
     if (!cur) {
-      cur = { weekdays: [], dates: [], hours: v.hours, callFirst: v.callFirst, days: [], notTimed: [] };
+      cur = { weekdays: [], dates: [], hours: v.hours, callFirst: v.callFirst, days: [], notTimed: [], notTimedPasses: [] };
       out.set(id, cur);
     }
     if (!cur.weekdays.includes(v.weekday)) {
@@ -1023,7 +1028,10 @@ export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<st
       cur.days.push({ weekday: v.weekday, hours: v.hours });
     }
     if (!cur.dates.includes(v.date)) cur.dates.push(v.date);
-    if (!v.timed && !cur.notTimed.includes(v.date)) cur.notTimed.push(v.date);
+    if (!v.timed && !cur.notTimed.includes(v.date)) {
+      cur.notTimed.push(v.date);
+      cur.notTimedPasses.push(v.pass);
+    }
   }
   return out;
 }

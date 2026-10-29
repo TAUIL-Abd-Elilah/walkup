@@ -345,10 +345,11 @@ export interface PartnersStepInput {
 export const CHAIN_NAMES_SHOWN = 4;
 
 /**
- * The chain rule's trace line, matching the list: how many chains are listed (last, after the local places), and
- * which eligible chains were left off, and whether the cap of `cap` per list did it.
+ * The chain rule's trace line, matching the list: how many chains are listed (last, after the local places; with
+ * `perArea`, last in their own area, as the partner list is grouped by area), and which eligible chains were left
+ * off, and whether the cap of `cap` per list did it.
  */
-export function chainsCause(kept: number | undefined, offList: readonly string[] | undefined, local: string, cap?: number, capped?: number): string | null {
+export function chainsCause(kept: number | undefined, offList: readonly string[] | undefined, local: string, cap?: number, capped?: number, perArea = false): string | null {
   const k = kept ?? 0;
   const off = offList ?? [];
   if (k <= 0 && off.length === 0) return null;
@@ -360,7 +361,8 @@ export function chainsCause(kept: number | undefined, offList: readonly string[]
   const rest = [...counts.values()].slice(CHAIN_NAMES_SHOWN).reduce((sum, n) => sum + n, 0);
   const shown = named.length > CHAIN_NAMES_SHOWN ? [...named.slice(0, CHAIN_NAMES_SHOWN), `${rest} more`] : named;
   const parts: string[] = [];
-  if (k > 0) parts.push(`Listed ${countOf(k, "national chain")} last, after the local ${local}: no local ${local === "spots" ? "spot" : "place"} filled ${k === 1 ? "its" : "their"} slot`);
+  const where = perArea ? ` in ${k === 1 ? "its" : "their"} area` : `, after the local ${local}`;
+  if (k > 0) parts.push(`Listed ${countOf(k, "national chain")} last${where}: no local ${local === "spots" ? "spot" : "place"} filled ${k === 1 ? "its" : "their"} slot`);
   if (off.length > 0) {
     const why = (capped ?? 0) > 0 && cap !== undefined ? `, at most ${cap} per list` : "";
     parts.push(`${k > 0 ? "left off" : "Left off"} ${countOf(off.length, "national chain")}${why}: ${joinAnd(shown)}`);
@@ -414,7 +416,7 @@ export function partnersStep(i: PartnersStepInput): TraceStep {
           ? "1 kind of place isn't searched yet: Qloo has no tag to find it by"
           : `${i.skippedCategories} kinds of place aren't searched yet: Qloo has no tag to find them by`
       : null,
-    chainsCause(i.chainsKept, i.chainsOffList, "places", i.chainsCap, i.chainsCapped),
+    chainsCause(i.chainsKept, i.chainsOffList, "places", i.chainsCap, i.chainsCapped, i.inAreas > 0),
     i.belowMinimum ? `That's short of the ${i.minTotal} the list aims for, so treat it as a starting list` : null,
   ]);
   return traceStep("partners", "partners", "Partners", decision, i.status, i.ledgerRefs, cause);
@@ -633,6 +635,8 @@ export interface GuardStepInput {
 
 /** A guard reason for a dropped line (not a line the template replaced, not a note). */
 const DROPPED_LINE_RE = /^(?:summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHooks\[\d+\]): /;
+/** The run's count of partner lines dropped at once: "2 partner lines dropped: ...", "1 partner line dropped: ...". */
+const PARTNER_LINES_DROPPED_RE = /^(\d+) partner line(?:s|\(s\))? dropped: /;
 /** A drop for an id, number, tag or line this run did not return (evals/product/checks.ts CITATION_PROBLEM). */
 const CITATION_DROP_RE = /not in this run|not on the allowlist|cites no (?:allowlisted )?tag|not traced to this run's ledger|duplicate (?:tile|entity)/;
 
@@ -640,8 +644,9 @@ const CITATION_DROP_RE = /not in this run|not on the allowlist|cites no (?:allow
 export function guardDropCounts(reasons: readonly string[]): { citation: number; notPartner: number; alcohol: number; other: number } {
   const out = { citation: 0, notPartner: 0, alcohol: 0, other: 0 };
   for (const r of reasons) {
-    // "2 partner line(s) dropped: cited entity not traced to this run's ledger." counts its lines at once.
-    const many = /^(\d+) partner line\(s\) dropped: /.exec(r);
+    // "2 partner lines dropped: cited entity not traced to this run's ledger." counts its lines at once (also the
+    // earlier "2 partner line(s) dropped").
+    const many = PARTNER_LINES_DROPPED_RE.exec(r);
     if (many) {
       out.citation += Number(many[1]);
       continue;
@@ -676,13 +681,27 @@ function droppedDecision(dropped: number, reasons: readonly string[] | undefined
 /** A guard reason for a line the template's line replaced: its slot ("summary", "tileWhy[1]", "partnerLines[4]"). */
 const REPLACED_SLOT_RE = /^replaced by the template: (summary|tileWhy\[\d+\]|partnerLines\[\d+\]): /;
 
+/** A guard reason for Claude's summary dropped by the guard: the template's summary always stands in for it. */
+const SUMMARY_DROPPED_RE = /^summary: /;
+
+/**
+ * A failed line the template had no wording for ("replaced by the template: tileWhy[1]: ... (dropped)"): its slot is
+ * empty, so it was left out, not replaced, though the guard's `dropped` does not count it (the Checks panel agrees).
+ */
+const SWAP_DROPPED_RE = /^replaced by the template: .*\(dropped\)$/;
+
 /**
  * The lines fixed wording replaced (a replaced line is not a dropped one: its slot keeps a checked line), in words:
- * "fixed wording replaced Claude's summary and 1 of its area and partner lines", as the Checks list says it. Null when
- * none was replaced.
+ * "fixed wording replaced Claude's summary and 1 of its area and partner lines", as the Checks list says it. A summary
+ * the guard dropped counts here too: the template's summary took its place. Null when none was replaced.
  */
 export function replacedLines(reasons: readonly string[]): string | null {
-  const slots = new Set(reasons.map((r) => REPLACED_SLOT_RE.exec(r)?.[1]).filter((s): s is string => !!s));
+  const slots = new Set(
+    reasons
+      .filter((r) => !SWAP_DROPPED_RE.test(r))
+      .map((r) => REPLACED_SLOT_RE.exec(r)?.[1] ?? (SUMMARY_DROPPED_RE.test(r) ? "summary" : undefined))
+      .filter((s): s is string => !!s),
+  );
   const summary = slots.has("summary");
   const lines = (slots.size - (summary ? 1 : 0)).toLocaleString("en-US");
   if (summary && lines !== "0") return `fixed wording replaced Claude's summary and ${lines} of its area and partner lines`;
@@ -693,12 +712,18 @@ export function replacedLines(reasons: readonly string[]): string | null {
 
 export function guardStep(i: GuardStepInput): TraceStep {
   const replaced = replacedLines(i.reasons ?? []);
+  // The guard counts a summary it dropped, but the template's summary took its place: said as replaced, not dropped.
+  const summaryDrop = (i.reasons ?? []).some((r) => SUMMARY_DROPPED_RE.test(r));
+  // A failed line with no fixed wording for its slot was left out, though the guard's `dropped` does not count it.
+  const swapDrops = (i.reasons ?? []).filter((r) => SWAP_DROPPED_RE.test(r)).length;
+  const dropped = (summaryDrop ? Math.max(0, i.dropped - 1) : i.dropped) + swapDrops;
+  const lineReasons = i.reasons?.filter((r) => !SUMMARY_DROPPED_RE.test(r));
   const decision =
-    i.dropped === 0
+    dropped === 0
       ? replaced
         ? `Checked every line against this run's requests; none was dropped, and ${replaced}`
         : "Checked every line against this run's requests; nothing had to go"
-      : `${droppedDecision(i.dropped, i.reasons)}${replaced ? `; ${replaced}` : ""}`;
+      : `${droppedDecision(dropped, lineReasons)}${replaced ? `; ${replaced}` : ""}`;
   const cause = joinSentences([
     i.denied > 0 ? `Held back ${countOf(i.denied, "tag")} by policy: none of them appears in copy or on this sheet` : null,
     i.alcoholHeld > 0

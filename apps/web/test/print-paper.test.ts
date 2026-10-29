@@ -52,6 +52,10 @@ describe("print CSS", () => {
     expect(r).toMatch(/-webkit-print-color-adjust:\s*exact/);
   });
 
+  it("prints light in a dark-mode browser, so the page margins carry no dark frame (browser-print-F1)", () => {
+    expect(rule(PRINT, ":root")).toMatch(/(^|[;\s])color-scheme:\s*light\s*;/);
+  });
+
   it("sets the sheet's receipts smaller than its text, inside their own line, on screen and on paper", () => {
     // The plan page's `.fn-flat` has a 12px floor; on the sheet (6.3pt on paper) that printed refs at 9pt over the
     // line above. The sheet's own rule is relative to its text, with no floor and a smaller raise.

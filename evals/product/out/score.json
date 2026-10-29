@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-29T09:16:00.638Z",
+  "generatedAt": "2026-10-29T11:17:14.032Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -358,7 +358,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a"
         },
@@ -751,7 +751,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-b"
         },
@@ -1172,7 +1172,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g2"
         },
@@ -1572,7 +1572,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g3"
         },
@@ -1988,7 +1988,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g2 resumed"
         },
@@ -2321,7 +2321,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, empty compare"
         },
@@ -2660,7 +2660,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, thin heatmap"
         },
@@ -2950,7 +2950,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, lift weak"
         },
@@ -3269,7 +3269,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-b all-ages, model"
         },
@@ -3479,7 +3479,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a 21+, model"
         },
@@ -3785,7 +3785,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g2, model tries denied words"
         },
@@ -4041,7 +4041,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, closed places"
         },
@@ -4311,7 +4311,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, unknown hours"
         },
@@ -4623,7 +4623,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a from cache under the guard"
         },
@@ -4889,7 +4889,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-b under the guard"
         },
@@ -5153,7 +5153,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, 429 once"
         },
@@ -5514,7 +5514,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-b, 23 declared partners"
         },
@@ -5832,7 +5832,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, bar-heavy categories"
         },
@@ -6145,7 +6145,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, budget split"
         },
@@ -6313,7 +6313,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g2, budget split"
         },
@@ -6481,7 +6481,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g3, budget split"
         },
@@ -6775,7 +6775,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-b after g1-a (warm venue)"
         },
@@ -7105,7 +7105,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, house heat fails"
         },
@@ -7459,7 +7459,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, no model"
         },
@@ -7725,7 +7725,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, model error"
         },
@@ -7970,7 +7970,7 @@
         {
           "name": "prints what the sheet does not establish",
           "status": "pass",
-          "detail": "5 limits",
+          "detail": "4 limits",
           "clause": "D1",
           "subject": "g1-a, off-schema draft"
         },

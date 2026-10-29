@@ -123,6 +123,20 @@ describe("print view", () => {
     }
   });
 
+  it.skipIf(!existsSync(PLANS))("puts a day the route had no time for in the Notes column, as the PDF does (1e0da01d)", async () => {
+    const plans = JSON.parse(readFileSync(PLANS, "utf8")) as { planId: string; createdAt: string; sheet: StreetSheet }[];
+    const stored = plans.find((p) => p.planId.startsWith("1e0da01d"))!;
+    await stores().plans.put({ planId: stored.planId, createdAt: stored.createdAt, mode: "fixture", status: "complete", request: { planId: stored.planId }, sheet: stored.sheet });
+    const html = renderToStaticMarkup(await SheetPage(params(stored.planId)));
+    const table = /<tbody[\s\S]*?<\/tbody>/.exec(/<section[^>]*aria-labelledby="sec-partners"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "")?.[0] ?? "";
+    const row = (name: string) => [...table.matchAll(/<tr[\s\S]*?<\/tr>/g)].map((m) => m[0]).find((r) => r.includes(name)) ?? "";
+    const cells = (r: string) => [...r.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) => m[1]!.replace(/<[^>]+>/g, "").trim());
+    // Hours cell, why, Notes: the hours alone, and the note in Notes.
+    expect(cells(row("Pixca Seasonal American Bistro")).slice(-3)[0]).toBe("10 am to 2 pm");
+    expect(cells(row("Pixca Seasonal American Bistro")).at(-1)).toBe("No time left on the route: call to arrange");
+    expect(cells(row("Turano Baking")).at(-1)).toBe("");
+  });
+
   it("prints every cell in full and keeps each partner row and the footer whole on paper", async () => {
     for (const id of ["g1-a", "g2", "g3"]) {
       const html = renderToStaticMarkup(await SheetPage(params(id)));

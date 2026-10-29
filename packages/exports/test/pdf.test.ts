@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { StreetSheet } from "@walkup/contracts";
 import { breakUrl, countPdfPages, FORM_ROW_PT, renderStreetSheetPdf, streetSheetDocument, toPdf } from "../src/pdf";
 import { pdfText, isPdfSafe } from "../src/winansi";
-import { ACTS, makeBusySheet, makeExplainedSheet, makeSheet } from "./helpers";
+import { ACTS, makeBusySheet, makeExplainedSheet, makeSheet, qlooHours } from "./helpers";
 import { countOccurrences, pdfPlainText } from "./pdf-text";
 
 const SLOW = 60_000;
@@ -317,6 +317,23 @@ describe("React tree", () => {
     expect(textOf(cells[6])).toBe("");
     const box = walk(cells[0]).find((n) => (n.props.style as { borderWidth?: number } | undefined)?.borderWidth !== undefined);
     expect(box).toBeDefined();
+  });
+
+  it("prints the calendar's no-time note in the Notes column, the hours cell keeping the hours, and counts one cut row as one partner", () => {
+    // One street-team day; Low Hum Records opens at 23:50, too late for a whole stop on either pass's route.
+    const s = makeSheet();
+    s.operator = { ...s.operator, streetTeamDays: ["saturday"] };
+    s.cards.partners.results = s.cards.partners.results.map((p, i) =>
+      i === 0 ? { ...p, hoursOnDay: "Sat 23:50-02:00", entity: { ...p.entity, properties: { hours: qlooHours({ saturday: [["23:50", "02:00"]] }) } } } : p,
+    );
+    const rows = walk(streetSheetDocument(s)).filter((n) => n.type === "VIEW" && (n.props.style as { minHeight?: number } | undefined)?.minHeight !== undefined);
+    const cells = (r: Node) => (r.props.children as Node[]).filter(isElement).map((c) => textOf(c));
+    expect(cells(rows[0]!).slice(4)).toEqual(["11:50 pm to 2 am", expect.any(String), "No time left on the route: call to arrange"]);
+    expect(rows.slice(1).map((r) => cells(r)[6])).toEqual(["", "", "", "", ""]);
+    // Six partners, five rows: "+1 more partner", not "partners".
+    const cut = textOf(streetSheetDocument(makeSheet(), { maxPartners: 5 }));
+    expect(cut).toContain("+1 more partner in partners.csv.");
+    expect(textOf(streetSheetDocument(makeSheet(), { maxPartners: 4 }))).toContain("+2 more partners in partners.csv.");
   });
 
   it("marks a row with no listed hours in pale yellow, the one thing to act on", () => {

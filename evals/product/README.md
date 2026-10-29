@@ -38,7 +38,7 @@ The wrapper writes the score to `evals/product/out/` when `CI` or `PRODUCT_EVAL_
 ## CI
 
 - The root `vitest.config.ts` includes `evals/product/*.test.ts` and the root `tsconfig.json` includes `evals/product/*.ts`, so `npm test` and `npm run typecheck` (both in the CI `node` job) run and typecheck the eval (D5).
-- The CI job `product-score` (pushes to the default branch only, `contents: write`) runs `npx tsx evals/product/run.ts --quiet` and commits `evals/product/out/score.json` and `score.md` when the result changed, ignoring the timestamp lines (D7). The commit message carries `[skip ci]`. A protected default branch must allow the GitHub Actions bot to push, or the step fails and the score stays as committed.
+- The CI job `product-score` (pushes to the default branch only, `contents: write`) runs `npx tsx evals/product/run.ts --quiet` and commits `evals/product/out/score.json` and `score.md` when anything in them other than the timestamp lines changed (D7). The commit message carries `[skip ci]`. A protected default branch must allow the GitHub Actions bot to push, or the step fails and the score stays as committed.
 - The P1 analysis tests run in the Python job (D6).
 
 ## The cases

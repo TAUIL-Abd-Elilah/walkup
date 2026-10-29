@@ -593,6 +593,31 @@ export function partnerSummary(sheet: StreetSheet): string {
   return s.trim();
 }
 
+/** "POINT(-77.01965 38.921814)", a Qloo location filter: longitude first. */
+const WKT_POINT = /^POINT\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)$/;
+
+/**
+ * The lift-map areas a partner search ran in, read from the partner section's receipts: each search is centred on its
+ * area's point, so an area whose places were all left out later (an exclusion, a closed day) still counts as searched.
+ * The areas that kept a partner are always in it.
+ */
+export function partnerSearchAreas(sheet: StreetSheet): Set<string> {
+  const env = sheet.cards.partners;
+  const out = new Set(env.results.map((p) => p.tileGeohash).filter((g): g is string => !!g));
+  const byId = ledgerMap(sheet.ledger);
+  const tiles = sheet.cards.liftMap.results.tiles;
+  for (const id of env.provenance) {
+    const loc = byId.get(id)?.params["filter.location"];
+    const m = typeof loc === "string" ? WKT_POINT.exec(loc.trim()) : null;
+    if (!m) continue;
+    const lon = Number(m[1]);
+    const lat = Number(m[2]);
+    const t = tiles.find((x) => Math.abs(x.lat - lat) < 1e-6 && Math.abs(x.lon - lon) < 1e-6);
+    if (t) out.add(t.geohash);
+  }
+  return out;
+}
+
 const CARDINALS = ["north", "east", "south", "west"] as const;
 
 /**

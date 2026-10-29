@@ -668,7 +668,7 @@
             "qlooRank": 1,
             "address": "3816 Garrison St, Norfolk, VA",
             "phone": "+1 948-555-0139",
-            "website": null,
+            "website": "https://fulton-s-garrison-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1171,7 +1171,7 @@
             "qlooRank": 9,
             "address": "2882 9th St, Virginia Beach, VA",
             "phone": "+1 948-555-0155",
-            "website": null,
+            "website": "https://rinaldi-s-bar-9th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1841,7 +1841,7 @@
             "qlooRank": 14,
             "address": "3512 9th St, Virginia Beach, VA",
             "phone": "+1 948-555-0170",
-            "website": null,
+            "website": "https://cho-records-9th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2008,7 +2008,7 @@
             "qlooRank": 2,
             "address": "1094 3rd St, Hampton, VA",
             "phone": "+1 948-555-0152",
-            "website": null,
+            "website": "https://mcbride-s-tavern-3rd-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2502,7 +2502,7 @@
             "qlooRank": 5,
             "address": "2948 Pruitt Ave, Hampton, VA",
             "phone": "+1 757-555-0148",
-            "website": null,
+            "website": "https://hagan-s-tavern-pruitt-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3009,7 +3009,7 @@
             "qlooRank": 6,
             "address": "653 Pruitt Ave, Portsmouth, VA",
             "phone": "+1 948-555-0127",
-            "website": null,
+            "website": "https://wren-s-pruitt-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3177,7 +3177,7 @@
             "qlooRank": 5,
             "address": "370 Kimbrough St, Suffolk, VA",
             "phone": "+1 757-555-0183",
-            "website": null,
+            "website": "https://garvey-s-tavern-kimbrough-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",

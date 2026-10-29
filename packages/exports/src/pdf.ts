@@ -7,9 +7,9 @@
  * map tiles), weights regular and bold only. Order: the day-sheet header (who
  * and where on the left; date, room, days to go and seats on the right), where
  * to flyer beside before-and-after spots, the partner table as a form to write
- * on (tick box, place, area, hours, why, a blank Notes column, rows about 7 mm
- * tall), podcasts and a sponsor beside copy lines, the operator's list, what
- * the sheet doesn't show, and one footer line with the print and data dates;
+ * on (tick box, place, area, hours, why, a Notes column left blank but for the
+ * calendar's "no time left on the route", rows about 7 mm tall), podcasts and
+ * a sponsor beside copy lines, the operator's list, what the sheet doesn't show, and one footer line with the print and data dates;
  * the budget split sits under the before-and-after table. The sections are the model's `sections`, the same as
  * the print view's. A sample (fixture) sheet says "Sample data" in its header
  * and footer and carries one light watermark; a live sheet has none.
@@ -296,7 +296,8 @@ export function shortWhy(why: string): string {
 /**
  * The partner table, laid out as a form the street team writes on: a tick box, the row number, the place (name
  * and type, then the address and phone, or "Phone not listed"), the area's map number and name, the hours on the
- * street-team day, the why line with its receipts, and a blank Notes column about a quarter of the width. Rows are
+ * street-team day, the why line with its receipts, and a Notes column about a quarter of the width (blank but for a
+ * partner street-team.ics has no time left for: "No time left on the route: call to arrange"). Rows are
  * about 7 mm tall at full size. Widths are explicit because react-pdf does not shrink text cells reliably.
  */
 function partnerCols(_m: SheetModel, st: Styles): Col[] {
@@ -325,7 +326,7 @@ function partnerCols(_m: SheetModel, st: Styles): Col[] {
   };
   const area: Col = { key: "area", head: () => "Area", width: "12.5%", cell: (r) => areaText(r, st) };
   // Two lines for one visit day; a third when a holiday's move puts the passes on two weekdays (the place column is three).
-  const hours: Col = { key: "hours", head: (mm) => mm.panel2.hoursHeader, width: "9%", cell: (r) => text(lines(st.cell, 3), r.hours) };
+  const hours: Col = { key: "hours", head: (mm) => mm.panel2.hoursHeader, width: "9%", cell: (r) => text(lines(st.cell, 3), r.dayHours) };
   const why: Col = {
     key: "why",
     head: () => "Why",
@@ -333,7 +334,14 @@ function partnerCols(_m: SheetModel, st: Styles): Col[] {
     // Two lines in nearly every row; a long line with its receipts may take a third (the row grows).
     cell: (r) => text(lines(st.cell, 3), r.why, r.refs ? text(st.ref, ` ${r.refs}`) : null),
   };
-  const notes: Col = { key: "notes", head: () => "Notes", width: "22%", cell: () => view({ height: st.fs(6) }) };
+  // Blank to write in, except for a partner street-team.ics has no time left for: the hours cell has no room for that
+  // note, and two lines here never make the row taller than its place cell.
+  const notes: Col = {
+    key: "notes",
+    head: () => "Notes",
+    width: "22%",
+    cell: (r) => (r.routeNote ? text(lines(st.cell, 2), `${r.routeNote.charAt(0).toUpperCase()}${r.routeNote.slice(1)}`) : view({ height: st.fs(6) })),
+  };
   return [box, num, place, area, hours, why, notes];
 }
 
@@ -359,7 +367,9 @@ function panel2(m: SheetModel, st: Styles, rowPt: number): El {
     p.rows.length === 0 ? text([st.small, st.gap(1)], "No partners came back for this sheet.") : null,
     // The dagger's note is said once: for the rows, and for the top pick's headline even when its row is past the cap.
     // It shares the "+N more" line when there is one, so it costs the one-page fit no line of its own.
-    p.omitted > 0 || dagger ? text([st.small, st.gap(1)], [p.omitted > 0 ? `+${p.omitted} more partners in partners.csv.` : "", dagger ? LESS_SURE_NOTE : ""].filter((x) => x !== "").join(" ")) : null,
+    p.omitted > 0 || dagger
+      ? text([st.small, st.gap(1)], [p.omitted > 0 ? `+${p.omitted} more ${p.omitted === 1 ? "partner" : "partners"} in partners.csv.` : "", dagger ? LESS_SURE_NOTE : ""].filter((x) => x !== "").join(" "))
+      : null,
     p.withheld > 0 ? text([st.small, st.gap(1)], `${p.withheld} bar${p.withheld === 1 ? "" : "s"} left out of this fan-facing version (show not 21+).`) : null,
     text([st.small, st.gap(2)], text([st.bold, { color: INK }], p.footer), ` ${p.refsNote}`),
   );

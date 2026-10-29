@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import type { Partner, PrePostSpot, StreetSheet } from "@walkup/contracts";
 import { isChain } from "@walkup/engine";
 import { createWorld, type World } from "@walkup/qloo-world";
-import { CHAINS, chainLine } from "../src/chains";
+import { CHAINS } from "../src/chains";
 import { CHAIN_DETECT_LIMIT as CHAIN_LIMIT } from "../src/steps/partners";
 import { deps, runPreset, sheetOf } from "./helpers";
 
@@ -123,13 +123,5 @@ describe("chain rule on a run", () => {
     }
     expect(chained.cards.prePost.summary).toMatch(/chains? left off|spots? (is a|are) national chains?/);
     expect(step(chained, "prepost")?.cause).toMatch(/national chains?/);
-  });
-
-  it("words the card line plainly", () => {
-    expect(chainLine(0, 0)).toBeNull();
-    expect(chainLine(3, 0)).toBe("National chains are listed after local places (3 moved down).");
-    expect(chainLine(3, 1)).toBe("National chains are listed after local places (3 moved down, 1 of them now off the list).");
-    expect(chainLine(1, 1)).toBe("National chains are listed after local places (1 moved down, now off the list).");
-    expect(chainLine(2, 2)).toBe("National chains are listed after local places (2 moved down, all now off the list).");
   });
 });

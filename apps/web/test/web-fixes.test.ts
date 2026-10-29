@@ -182,8 +182,7 @@ describe("Checks and the Summary note agree with the replacements (N22)", () => 
   it("says no line was left out instead of 'removed 0 claims' when lines were replaced", () => {
     const g = { dropped: 0, reasons: ['replaced by the template: summary: superlative "highest" not backed by the sheet'], deniedTagCount: 0 };
     expect(checksLine(g)).toBe("Checks left out no line. No tag was left out under the data policy.");
-    expect(checksLine({ ...g, reasons: [] }, 1)).toBe("Checks left out no line. No tag was left out under the data policy.");
-    expect(checksLine({ ...g, reasons: [] })).toBe("Checks removed 0 claims. No tag was left out under the data policy.");
+    expect(checksLine({ ...g, reasons: [] })).toBe("Checks left out no line. No tag was left out under the data policy.");
     // A failed line with no fixed wording for its slot was left out, though `dropped` does not count it.
     expect(checksLine({ ...g, reasons: [...g.reasons, "replaced by the template: tileWhy[2]: number (94) not backed by the sheet (dropped)"] })).toBe(
       "Checks left out 1 line. No tag was left out under the data policy.",

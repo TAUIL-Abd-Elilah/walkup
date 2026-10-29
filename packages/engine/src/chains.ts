@@ -410,17 +410,19 @@ export interface ChainCount {
 }
 
 /**
- * The card's chain sentence, matching the list: "2 of 15 partners are national chains, listed last: no local place
- * filled their slot. 4 more chains left off: 3 for local places, 1 by the limit of 2 per list.", "3 national chains
- * left off for local places." Null when no chain was eligible.
+ * The card's chain sentence, matching the list: "2 of 15 partners are national chains, listed last in their area: no
+ * local place filled their slot. 4 more chains left off: 3 for local places, 1 by the limit of 2 per list.", "3
+ * national chains left off for local places." With `perArea` (a list grouped by area, as partners are), a chain is
+ * last in its own area, not on the whole list; spots near the venue are one list. Null when no chain was eligible.
  */
-export function chainSummary(c: ChainCount, noun: readonly [string, string] = ["partner", "partners"]): string | null {
+export function chainSummary(c: ChainCount, noun: readonly [string, string] = ["partner", "partners"], perArea = false): string | null {
   if (c.kept <= 0 && c.leftOut <= 0) return null;
   const n = (x: number) => x.toLocaleString("en-US");
   const parts: string[] = [];
   if (c.kept > 0) {
     const one = c.kept === 1;
-    parts.push(`${n(c.kept)} of ${n(c.listed)} ${c.listed === 1 ? noun[0] : noun[1]} ${one ? "is a national chain" : "are national chains"}, listed last: no local place filled ${one ? "its" : "their"} slot.`);
+    const last = perArea ? `listed last in ${one ? "its" : "their"} area` : "listed last";
+    parts.push(`${n(c.kept)} of ${n(c.listed)} ${c.listed === 1 ? noun[0] : noun[1]} ${one ? "is a national chain" : "are national chains"}, ${last}: no local place filled ${one ? "its" : "their"} slot.`);
   }
   if (c.leftOut > 0) {
     const local = c.leftOut - c.capped;

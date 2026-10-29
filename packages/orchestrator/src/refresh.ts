@@ -56,9 +56,9 @@ import {
 import { diffSheets } from "./revise/diff";
 import { REVISE_STEP_ID, RULES_CHOSEN_READER } from "./revise/step";
 import { splitBudget } from "./steps/budget";
-import { partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
+import { partnerLineReason, partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
 import { guardTrace } from "./steps/trace";
-import { PARTNER_TILES, PARTNERS_COUNT_LINE_RE, partnersCountLine } from "./steps/partners";
+import { CHAIN_DETECT_LIMIT, CHAIN_DETECT_LIMIT_BEFORE, PARTNER_TILES, PARTNERS_COUNT_LINE_RE, partnersCountLine } from "./steps/partners";
 import { disambiguateNames, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, numberedTiles, spreadTiles } from "./steps/heat";
 import { categoryTagMap, loadTagPins, type TagPins } from "./tags";
 import type { GazetteerLike } from "./types";
@@ -508,11 +508,13 @@ export interface RecheckOptions {
  *    it (`opts.recordedKinds`), with that kind's ask; an area still over the cap is reported in `overCap`;
  *  - partner websites by today's rule (`cleanWebsite`): a dead site or page on the checked list goes, and a place's
  *    own site the rule now recognises comes back from its own record;
- *  - the partners card's opening count and "aren't searched yet" line, the spots step's counts (from the list), the
- *    Summary step (when fixed wording replaced Claude's summary), the Checks step (by why each line went and what was
- *    replaced), chain lists whose "and 7 more" counted brands (now places), a ledger note that repeats its node's
- *    name, the revise step's reader on a sheet whose note the rules read on purpose, and a revision's change list
- *    against its parent.
+ *  - the partners card's opening count and "aren't searched yet" line, partner chains "listed last in their area"
+ *    (card and step: the list is grouped by area), the spots step's counts (from the list), the Summary step (when
+ *    fixed wording replaced Claude's summary), the Checks step (by why each line went and what was replaced, a dropped
+ *    summary among the replaced), the guard's "15 partner lines trimmed" (was "line(s)"), the chain limit that now
+ *    names the shared-website signal ("the same name or website at 3 or more places"), chain lists whose "and 7
+ *    more" counted brands (now places), a ledger note that repeats its node's name, the revise step's reader on a
+ *    sheet whose note the rules read on purpose, and a revision's change list against its parent.
  */
 export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { sheet: StreetSheet; report: RecheckReport } {
   const gaz = opts.gazetteer ?? DEFAULT_GAZETTEER;
@@ -530,6 +532,21 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     return { ...e, note };
   });
   if (notes > 0) report.rewritten.push(`ledger note${notes === 1 ? "" : "s"} (${notes})`);
+
+  // ---- Guard reasons: "15 partner line(s) trimmed: ..." counts as a run now writes it ("15 partner lines") ---------
+  const guardReasons = sheet.guard.reasons.map(partnerLineReason);
+  if (guardReasons.some((r, i) => r !== sheet.guard.reasons[i])) {
+    sheet.guard = { ...sheet.guard, reasons: guardReasons };
+    report.rewritten.push("guard reasons");
+  }
+
+  // ---- The chain limit names the shared-website signal too, as a run now writes it --------------------------
+  for (const key of ["partners", "prePost"] as const) {
+    const card = sheet.cards[key];
+    if (!card.limits.includes(CHAIN_DETECT_LIMIT_BEFORE)) continue;
+    card.limits = card.limits.map((l) => (l === CHAIN_DETECT_LIMIT_BEFORE ? CHAIN_DETECT_LIMIT : l));
+    report.rewritten.push(`${key} chain limit`);
+  }
 
   // ---- At most 2 of a kind per area ----------------------------------------------------------------
   const adultsOnly = sheet.bill.legalAgeEnforced === true && op.allAges !== true;
@@ -603,6 +620,16 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     report.rewritten.push("partners count");
   }
 
+  // ---- Partner chains are last in their own area, not on the whole list (the list is grouped by area) -----------
+  const perArea = sheet.cards.partners.results.some((p) => p.tileGeohash);
+  if (perArea) {
+    const chainLine = chainsLastInArea(sheet.cards.partners.summary);
+    if (chainLine !== sheet.cards.partners.summary) {
+      sheet.cards.partners.summary = chainLine;
+      report.rewritten.push("partners chain order");
+    }
+  }
+
   // ---- The partners card's skipped-kinds line -----------------------------------------------------
   const reason = sheet.cards.partners.reason;
   if (reason) {
@@ -656,10 +683,14 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
         return { ...s, decision: step(true).decision };
       }
       if ((s.id === "partners" || s.id === "prepost") && s.cause) {
-        const cause = chainTailInPlaces(s.cause);
-        if (cause === s.cause) return s;
-        report.rewritten.push(`${s.id === "partners" ? "partners" : "spots"} step chain count`);
-        return { ...s, cause };
+        let cause = chainTailInPlaces(s.cause);
+        if (cause !== s.cause) report.rewritten.push(`${s.id === "partners" ? "partners" : "spots"} step chain count`);
+        if (s.id === "partners" && perArea) {
+          const inArea = chainsLastInArea(cause);
+          if (inArea !== cause) report.rewritten.push("partners step chain order");
+          cause = inArea;
+        }
+        return cause === s.cause ? s : { ...s, cause };
       }
       if (s.id === REVISE_STEP_ID && s.cause && sheet.revision?.interpreter === "rules" && sheet.ledger.some((e) => e.kind === "anthropic")) {
         // A model was set up (the sheet's own ledger holds a Claude call): the rules read the note by choice.
@@ -682,6 +713,24 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     sheet.revision = { ...sheet.revision, changes };
   }
   return { sheet, report };
+}
+
+/**
+ * The partner card's and step's chain words, as a run now writes them for a list grouped by area (`chainSummary`,
+ * `chainsCause` with `perArea`): "2 of 11 partners are national chains, listed last: ..." reads "listed last in their
+ * area: ...", and "Listed 2 national chains last, after the local places: ..." reads "Listed 2 national chains last in
+ * their area: ...". Spots are one list near the venue and keep "listed last". Other text is returned as is.
+ */
+export function chainsLastInArea(text: string): string {
+  return text
+    .replace(
+      /\b([\d,]+ of [\d,]+ partners? )(is a national chain|are national chains), listed last: no local place filled (its|their) slot/g,
+      (_m, head: string, verb: string, its: string) => `${head}${verb}, listed last in ${its} area: no local place filled ${its} slot`,
+    )
+    .replace(
+      /\bListed ([\d,]+ national chains?) last, after the local places: no local place filled (its|their) slot/g,
+      (_m, chains: string, its: string) => `Listed ${chains} last in ${its} area: no local place filled ${its} slot`,
+    );
 }
 
 /**

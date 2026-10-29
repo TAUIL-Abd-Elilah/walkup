@@ -2264,7 +2264,7 @@
             "qlooRank": 3,
             "address": "1769 Birchwood Dr, Nashville, TN",
             "phone": "+1 629-555-0158",
-            "website": null,
+            "website": "https://prater-s-cafe-birchwood-dr.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3083,7 +3083,7 @@
             "qlooRank": 18,
             "address": "2044 9th St, Nashville, TN",
             "phone": "+1 615-555-0146",
-            "website": null,
+            "website": "https://womack-s-grill-9th-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4070,7 +4070,7 @@
             "qlooRank": 6,
             "address": "2398 Prescott Ave, Nashville, TN",
             "phone": "+1 629-555-0148",
-            "website": null,
+            "website": "https://shipley-s-grill-prescott-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4401,7 +4401,7 @@
             "qlooRank": 16,
             "address": "2105 Oakhurst Ave, Nashville, TN",
             "phone": "+1 629-555-0117",
-            "website": null,
+            "website": "https://mallory-s-oakhurst-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",

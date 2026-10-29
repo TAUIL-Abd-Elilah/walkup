@@ -35,7 +35,7 @@ import { createRunLedger } from "./ledger";
 import { deniedReceipt } from "./policy";
 import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, presetVenueName, type Preset, type PresetShow } from "./presets";
 import { splitBudget, type BudgetShare } from "./steps/budget";
-import { honestWording, partnerLinesNearArea, partnerLinesWithinTags, runCopy, tidyAreaPhrases } from "./steps/copy";
+import { honestWording, partnerLineCount, partnerLinesNearArea, partnerLinesWithinTags, runCopy, tidyAreaPhrases } from "./steps/copy";
 import { runDeclared } from "./steps/declared";
 import { discoverFor } from "./steps/discovery";
 import { explainPartners } from "./steps/explain";
@@ -391,11 +391,11 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     if (!ok) citationDrops++;
     return ok;
   });
-  if (citationDrops > 0) reasons.push(`${citationDrops} partner line(s) dropped: cited entity not traced to this run's ledger.`);
+  if (citationDrops > 0) reasons.push(`${partnerLineCount(citationDrops)} dropped: cited entity not traced to this run's ledger.`);
   // A partner line names only the tags listed under that partner's shared tags.
   const withinTags = partnerLinesWithinTags(partnerLines, partners.partners);
   if (withinTags.changed + withinTags.dropped > 0) {
-    reasons.push(`${withinTags.changed + withinTags.dropped} partner line(s) trimmed: a tag the place doesn't list as shared was cut.`);
+    reasons.push(`${partnerLineCount(withinTags.changed + withinTags.dropped)} trimmed: a tag the place doesn't list as shared was cut.`);
   }
 
   const sheet: StreetSheet = {

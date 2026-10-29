@@ -31,7 +31,8 @@ export const EXPORT_LINKS: readonly { file: string; label: string; hint: string 
   { file: "zips.csv", label: "zips.csv", hint: "ZIP, lift, weight" },
   { file: "pins.csv", label: "pins.csv", hint: "lat, lon, radius" },
   { file: "offer-codes.csv", label: "offer-codes.csv", hint: "create in your ticketing platform" },
-  { file: "sheet.json", label: "sheet.json", hint: "with the ledger" },
+  // The data files stay as recorded (exportResponse); the page, the print view and the PDF show the checked text.
+  { file: "sheet.json", label: "sheet.json", hint: "the whole sheet as recorded, before the view-time checks, with the ledger" },
 ];
 
 export function exportKind(file: string): ExportKind | null {

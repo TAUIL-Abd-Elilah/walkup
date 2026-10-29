@@ -141,6 +141,22 @@ export function honestWording(n: Narration, o: { tagBaseline: boolean; localSpon
   };
 }
 
+/**
+ * "1 partner line", "15 partner lines": the head of the guard's reasons for partner lines dropped or trimmed at once.
+ * The count stays plain digits: the engine's step, the plan page and the product eval read it back with `(\d+)`.
+ */
+export function partnerLineCount(n: number): string {
+  return `${n} partner ${n === 1 ? "line" : "lines"}`;
+}
+
+/** The earlier form of those reasons, "15 partner line(s) trimmed: ...": its count and the rest after "line(s)". */
+export const PARTNER_LINE_S_RE = /^([\d,]+) partner line\(s\)( (?:trimmed|dropped): )/;
+
+/** A stored "15 partner line(s) trimmed: ..." in the form a run now writes ("15 partner lines trimmed: ..."). */
+export function partnerLineReason(reason: string): string {
+  return reason.replace(PARTNER_LINE_S_RE, (_m, n: string, rest: string) => `${partnerLineCount(Number(n.replace(/,/g, "")))}${rest}`);
+}
+
 /** "tag" or "tags" in a clause: the clause claims a tag the place shares. */
 const TAG_CLAIM_RE = /\btags?\b/i;
 

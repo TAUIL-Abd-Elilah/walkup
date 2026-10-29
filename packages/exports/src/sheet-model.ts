@@ -59,7 +59,7 @@ import {
   weekdayShort,
 } from "./format";
 import { areaZips } from "./area-zips";
-import { partnerVisits, type PartnerVisit } from "./ics";
+import { NO_TIME_ON_ROUTE, partnerVisits, type PartnerVisit } from "./ics";
 import { apportion, areaBudget, declaredInCallOrder } from "./tables";
 
 /**
@@ -148,9 +148,16 @@ export interface PartnerRow {
    * The hours in words. With one street-team day: that day's hours ("4 pm to 2 am"), or "Hours not listed: call
    * first". With more: the day street-team.ics visits the partner and its hours that day ("Sat 10 am to 2 pm",
    * "Sat, hours not listed: call first"; each day, "; "-separated, in the rare case the passes visit on two
-   * weekdays), or "Closed Thu and Sat" when it is closed on every street-team day.
+   * weekdays), or "Closed Thu and Sat" when it is closed on every street-team day. Then `routeNote` when there is one.
    */
   hours: string;
+  /** `hours` without `routeNote` (the PDF, which prints the note in the row's Notes column). */
+  dayHours: string;
+  /**
+   * "no time left on the route: call to arrange" when street-team.ics has no time for the partner on any of its
+   * visits, "no time left on the first pass: call to arrange" when only one pass has none; "" otherwise.
+   */
+  routeNote: string;
   /** The street-team day of the visit, "Sat"; "" with one street-team day or no visit. */
   visitDay: string;
   /** True when the hours are not listed (call first) or the place is closed on every street-team day: the row to act on. */
@@ -544,47 +551,65 @@ export function spotColumnWidths(showShare: boolean, showVsUsual: boolean): { sp
 
 /** One partner's cell in the hours column. */
 export interface PartnerHoursCell {
-  /** As `PartnerRow.hours`: "4 pm to 2 am" with one street-team day, "Sat 10 am to 2 pm" with more. */
+  /** As `PartnerRow.hours`: "4 pm to 2 am" with one street-team day, "Sat 10 am to 2 pm" with more, then `routeNote`. */
   hours: string;
+  /** As `PartnerRow.dayHours`: `hours` without `routeNote`. */
+  dayHours: string;
   /** As `PartnerRow.visitDay`. */
   visitDay: string;
   /** As `PartnerRow.hoursMissing`. */
   hoursMissing: boolean;
   /**
    * The same hours always led by their day, for a line of text (the email, a phone-width list): "Sat noon to
-   * 3 pm", "Thu 10 am to 7 pm", "Hours not listed: call first", "Closed Thu and Sat".
+   * 3 pm", "Thu 10 am to 7 pm", "Hours not listed: call first", "Closed Thu and Sat"; then `routeNote`.
    */
   withDay: string;
+  /** As `PartnerRow.routeNote`: "no time left on the route: call to arrange", or "". */
+  routeNote: string;
+}
+
+/**
+ * What a partner's hours add when street-team.ics has no time left for it, in partners.csv's words: on every visit,
+ * or on one pass only ("no time left on the first pass: call to arrange"). "" when every visit is timed.
+ */
+function routeNoteOf(v: PartnerVisit | undefined): string {
+  if (!v || v.notTimed.length === 0) return "";
+  const passes = [...new Set(v.notTimedPasses)];
+  return v.notTimed.length < v.dates.length && passes.length === 1 ? `no time left on the ${passes[0]} pass: call to arrange` : NO_TIME_ON_ROUTE;
 }
 
 /**
  * The partner hours column, one rule for the PDF, the print view, partners.csv and street-team.ics, and for the plan
  * page and the email when they use it. With more than one street-team day: the day street-team.ics visits each
  * partner and its hours that day (header "Visit day"). With one: the hours the plan read for that day ("Open Thu").
+ * Either way, a partner the calendar has no time left for says so after its hours, as partners.csv does.
  */
 export function partnerHoursColumn(
   sheet: StreetSheet,
   opts: { maxTiles?: number } = {},
 ): { header: string; byVisit: boolean; cell: (p: Pick<Partner, "entity" | "hoursOnDay">) => PartnerHoursCell } {
   const days = sheet.operator.streetTeamDays ?? [];
-  const visits: Map<string, PartnerVisit> = days.length > 1 ? partnerVisits(sheet, { maxTiles: opts.maxTiles ?? 5 }) : new Map();
-  const byVisit = visits.size > 0;
+  const visits: Map<string, PartnerVisit> = days.length > 0 ? partnerVisits(sheet, { maxTiles: opts.maxTiles ?? 5 }) : new Map();
+  const byVisit = days.length > 1 && visits.size > 0;
   // The day the plan read the hours for (first street-team day, else show day).
   const firstDay = hoursWeekday(sheet);
   const cell = (p: Pick<Partner, "entity" | "hoursOnDay">): PartnerHoursCell => {
+    const v = visits.get(p.entity.entityId);
+    const routeNote = routeNoteOf(v);
+    const noted = (s: string) => (routeNote ? `${s}; ${routeNote}` : s);
     if (!byVisit) {
       const body = p.hoursOnDay ? formatHours(p.hoursOnDay.replace(/^[A-Z][a-z]{2} /, "")) : HOURS_NOT_LISTED;
-      return { hours: body, visitDay: "", hoursMissing: !p.hoursOnDay, withDay: p.hoursOnDay && firstDay ? `${weekdayShort(firstDay)} ${body}` : body };
+      const withDay = p.hoursOnDay && firstDay ? `${weekdayShort(firstDay)} ${body}` : body;
+      return { hours: noted(body), dayHours: body, visitDay: "", hoursMissing: !p.hoursOnDay, withDay: noted(withDay), routeNote };
     }
-    const v = visits.get(p.entity.entityId);
     if (!v) {
       const closed = `Closed ${streetDaysText(days)}`;
-      return { hours: closed, visitDay: "", hoursMissing: true, withDay: closed };
+      return { hours: closed, dayHours: closed, visitDay: "", hoursMissing: true, withDay: closed, routeNote };
     }
     // One weekday in every pass (a holiday's stops move to the same weekday when it is free); a holiday's stops moved
     // to another day of its week can visit on a second weekday, and then both are named, each with its own hours.
     const hours = v.days.map((d) => (d.hours ? `${weekdayShort(d.weekday)} ${formatHours(d.hours)}` : `${weekdayShort(d.weekday)}, hours not listed: call first`)).join("; ");
-    return { hours, visitDay: v.days.map((d) => weekdayShort(d.weekday)).join("; "), hoursMissing: v.days.some((d) => d.hours === null), withDay: hours };
+    return { hours: noted(hours), dayHours: hours, visitDay: v.days.map((d) => weekdayShort(d.weekday)).join("; "), hoursMissing: v.days.some((d) => d.hours === null), withDay: noted(hours), routeNote };
   };
   return { header: byVisit ? "Visit day" : firstDay ? `Open ${weekdayShort(firstDay)}` : "Hours", byVisit, cell };
 }
@@ -731,6 +756,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       tileLift: tile ? formatLift(tile.lift) : "",
       address: (p.address ?? (typeof p.entity.properties?.address === "string" ? (p.entity.properties.address as string) : "")).replace(/, [A-Z]{2}$/, ""),
       hours: h.hours,
+      dayHours: h.dayHours,
+      routeNote: h.routeNote,
       visitDay: h.visitDay,
       hoursMissing: h.hoursMissing,
       phone: p.phone ?? "",

@@ -170,7 +170,7 @@ describe("the README's fresh-clone skip count (N15)", () => {
       .filter((f) => /\.test\.tsx?$/.test(f))
       .map((f) => `${d}/${f}`),
   );
-  const PLANS_COND = /!existsSync\(PLANS\)|!HAVE_PLANS\b/;
+  const PLANS_COND = /!existsSync\(PLANS(?:_FILE)?\)|!HAVE_PLANS\b/;
   const counted = files.flatMap((path) => {
     const src = readFileSync(join(ROOT, path), "utf8");
     if (!src.includes("deploy/vercel/plans.json")) return [];

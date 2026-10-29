@@ -155,7 +155,9 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
               {spread ? <p className="mt-3">{spread}</p> : null}
               <p className="hint mt-3">
                 Lift compares where this bill&apos;s crowd ranks each area with where {against} ranks it; it isn&apos;t a count of people. Above 1.0, this
-                crowd ranks the area higher.{top.length > 0 ? " Select an area to find it on the map." : ""}
+                crowd ranks the area higher.
+                {/* Paper has no area to select. */}
+                {top.length > 0 ? <span className="no-print"> Select an area to find it on the map.</span> : null}
               </p>
             </>
           )}

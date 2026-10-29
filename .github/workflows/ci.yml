@@ -111,7 +111,7 @@ jobs:
       - name: Product eval (fixtures)
         run: npx tsx evals/product/run.ts --quiet
 
-      - name: Commit the score file when the result changed
+      - name: Commit the score file when anything but its timestamp changed
         run: |
           if git diff --quiet -I '"generatedAt"' -I '^Generated: ' -- evals/product/out; then
             echo "Score unchanged apart from its timestamp; nothing to commit."

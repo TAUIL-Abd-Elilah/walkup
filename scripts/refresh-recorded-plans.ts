@@ -61,7 +61,7 @@ function summarizeRecheck(id: string, r: RecheckReport): string[] {
   for (const p of r.droppedPartners) out.push(`  partner dropped: ${p.name} (${p.why})`);
   for (const s of r.droppedSpots) out.push(`  spot dropped: ${s.name} (${s.why})`);
   for (const x of r.replaced) out.push(`  replaced by the template: ${x}`);
-  if (r.nearArea > 0) out.push(`  ${r.nearArea} partner line(s) now say "near" the area`);
+  if (r.nearArea > 0) out.push(`  ${r.nearArea} partner ${r.nearArea === 1 ? "line now says" : "lines now say"} "near" the area`);
   for (const k of r.kinds) out.push(`  kind: ${k.name} ${k.from} -> ${k.to} (as another run of this show recorded it)`);
   for (const w of r.websites) out.push(`  website ${w}`);
   for (const w of r.rewritten) out.push(`  rewritten: ${w}`);

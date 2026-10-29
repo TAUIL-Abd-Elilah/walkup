@@ -137,6 +137,17 @@ describe("buildMessage", () => {
     expect(m.text).toContain("What this sheet doesn't show");
   });
 
+  it("says after a partner's hours that the street-team route has no time for it, as partners.csv does", () => {
+    // Saturday only, and Shop 1 opens at 23:50: too late for a whole stop on either pass's route.
+    const sheet = makeSheet();
+    sheet.operator = { ...sheet.operator, streetTeamDays: ["saturday"] };
+    const late = { saturday: [{ opens: "T23:50:00", closed: false, closes: "T02:00:00" }] };
+    sheet.cards.partners.results = sheet.cards.partners.results.map((p, i) => (i === 0 ? { ...p, hoursOnDay: "23:50-02:00", entity: { ...p.entity, properties: { hours: late } } } : p));
+    const m = buildMessage(sheet, [], opts);
+    expect(m.text).toContain("1. Synthetic Shop 1, coffee, 1 Example Ave, Nashville. Sat 11:50 pm to 2 am; no time left on the route: call to arrange. 615-555-0101.");
+    expect(m.text).toContain("2. Synthetic Shop 2, record store, 2 Example Ave, Nashville. Sat 10 am to 8 pm. 615-555-0102.");
+  });
+
   it("marks a national chain partner, as the plan page and the paper do", () => {
     const sheet = makeSheet();
     sheet.cards.partners.results = sheet.cards.partners.results.map((p, i) => (i === 0 ? { ...p, chain: true } : p));

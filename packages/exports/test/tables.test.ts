@@ -82,8 +82,20 @@ describe("partners.csv", () => {
     const p = PARTNERS[0]!;
     s.cards.partners.results = [{ ...p, website: null, entity: { ...p.entity, properties: { website: "https://agency-host.example/sites/low-hum" } } }];
     const r = parseCsvObjects(partnersCsv(s, { includeDeclared: false }))[0]!;
-    expect(r.website).toBe("Website not listed");
+    // The record lists a link, so the cell says why it isn't shown rather than "Website not listed".
+    expect(r.website).toBe("Website not shown: the listed link doesn't match the place's name");
     expect(buildSheetModel(s).panel2.rows[0]).toMatchObject({ web: "", webUrl: null });
+  });
+
+  it("says a dropped dead link doesn't work, and keeps 'Website not listed' when the record has no link", () => {
+    const s = makeSheet();
+    const p = PARTNERS[0]!;
+    s.cards.partners.results = [
+      { ...p, website: null, entity: { ...p.entity, name: "Tortuga", properties: { website: "http://tortugadc.com/" } } },
+      { ...p, website: null, entity: { ...p.entity, entityId: "no-link", properties: {} } },
+    ];
+    const r = parseCsvObjects(partnersCsv(s, { includeDeclared: false }));
+    expect(r.map((x) => x.website)).toEqual(["Website not shown: the listed link doesn't work", "Website not listed"]);
   });
 
   it("escapes names with commas and quotes", () => {

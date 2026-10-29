@@ -281,8 +281,13 @@ describe("spots, media, summary and checks", () => {
     expect(s.cause).toBe("Held back 4 tags by policy: none of them appears in copy or on this sheet. Kept 2 alcohol tags out of fan copy: Ticketmaster doesn't list the show as 21+.");
     expect(guardStep({ dropped: 0, denied: 0, alcoholHeld: 2, allAgesByOperator: true, ledgerRefs: [] }).cause).toBe("Kept 2 alcohol tags out of fan copy: you set the show to all ages.");
     expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] })).toMatchObject({ decision: "Dropped 2 lines that didn't pass the checks." });
-    const cited = ["summary: number 1.8 is not in this run", "tileWhy[2]: geohash not in this run"];
+    const cited = ["tileWhy[0]: number 1.8 is not in this run", "tileWhy[2]: geohash not in this run"];
     expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, reasons: cited, ledgerRefs: [] })).toMatchObject({ decision: "Dropped 2 lines that cited something this run didn't return." });
+    // A summary the guard dropped is replaced by the template's: said as replaced, not as a line left out.
+    const withSummary = ["summary: number 1.8 is not in this run", "tileWhy[2]: geohash not in this run"];
+    expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, reasons: withSummary, ledgerRefs: [] })).toMatchObject({
+      decision: "Dropped 1 line that cited something this run didn't return; fixed wording replaced Claude's summary.",
+    });
     expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] }).cause).toBeUndefined();
     expectPlain(s);
   });

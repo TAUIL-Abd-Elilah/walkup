@@ -52,8 +52,11 @@ export const POPULARITY_TWIN_NODE = "Q9 popularity twin";
 export const POPULARITY_LIMIT =
   "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.";
 
-/** The card limit when any candidate was a national chain. */
+/** The card limit when any candidate was a national chain. Names every signal `chainSignals` reads. */
 export const CHAIN_DETECT_LIMIT =
+  "National chains are spotted from a hand-kept list, Qloo's description of the place, a store-locator website, or the same name or website at 3 or more places; a chain none of these catches is listed like a local place.";
+/** The same limit as runs wrote it before Oct 29 2026, without the shared-website signal; the recheck rewrites it. */
+export const CHAIN_DETECT_LIMIT_BEFORE =
   "National chains are spotted from a hand-kept list, Qloo's description of the place, a store-locator website, or the same name at 3 or more places; a chain none of these catches is listed like a local place.";
 
 type PartnersCard = StreetSheetCards["partners"];
@@ -451,7 +454,12 @@ export async function runPartners(
   if (report.droppedCategory > 0) {
     summary += ` ${plural(report.droppedCategory, "place")} left out by category (${ctx.operator.allAges === true ? "all-ages show" : "your exclusions"}).`;
   }
-  const chains = chainSummary({ kept: cleaned.filter((p) => p.chain).length, listed: cleaned.length, leftOut: report.chainsLeftOut, capped: report.chainsCapped, cap: report.maxChains });
+  // The list is grouped by area, so a chain is last in its area; a list from near the venue alone is one group.
+  const chains = chainSummary(
+    { kept: cleaned.filter((p) => p.chain).length, listed: cleaned.length, leftOut: report.chainsLeftOut, capped: report.chainsCapped, cap: report.maxChains },
+    ["partner", "partners"],
+    cleaned.some((p) => p.tileGeohash),
+  );
   if (chains) summary += ` ${chains}`;
   let status: PartnersCard["status"] = cleaned.length === 0 ? "empty" : "ok";
   if (status === "ok" && (widenedRadius > 0 || widenedCats > 0 || report.belowMinimum || tiles.length < PARTNER_TILES || cats.skipped.length > 0 || rebalanced || worstDrop.share === "some")) status = "partial";

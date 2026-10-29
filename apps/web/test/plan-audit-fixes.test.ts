@@ -39,9 +39,10 @@ describe("Checks", () => {
   it("counts only lines that cited something the run didn't return as claims", () => {
     expect(checksLine(guard(15, roots))).toBe("Checks left out 15 lines, none for a claim the run didn't back. No tag was left out under the data policy.");
     expect(checksLine(guard(2, ["summary: number 1.8 is not in this run", 'partnerLines[6]: alcohol word "Cocktail" on a show that is not 21+']))).toBe(
-      "Checks left out 2 lines: 1 for a claim the run didn't back, 1 for a wording or policy rule. No tag was left out under the data policy.",
+      // The summary the checks set aside was replaced, not left out (outputs-F7).
+      "Checks left out 1 line, for a wording or policy rule. No tag was left out under the data policy.",
     );
-    expect(checksLine(guard(0, []))).toBe("Checks removed 0 claims. No tag was left out under the data policy.");
+    expect(checksLine(guard(0, []))).toBe("Checks left out no line. No tag was left out under the data policy.");
   });
 
   it("lists one note once with its count, in plain words", () => {

@@ -163,7 +163,7 @@ export function topPartnerIds(sheet: StreetSheet, k = 8): string[] {
 // Guard drops by field
 // ---------------------------------------------------------------------------
 
-const DROP_LINE = /^(summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHooks\[\d+\]|summary sentence \d+): |^fan-facing guard: |^\d+ partner line\(s\) dropped/;
+const DROP_LINE = /^(summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHooks\[\d+\]|summary sentence \d+): |^fan-facing guard: |^\d+ partner line(?:s|\(s\))? dropped/;
 // "cites no tag" is the narrator guard's wording, "cites no allowlisted tag" the fan-facing (engine) guard's.
 const CITATION_PROBLEM = /not in this run|not on the allowlist|cites no (allowlisted )?tag|not traced to this run's ledger|duplicate (tile|entity)/;
 
@@ -185,7 +185,7 @@ export function classifyGuardReasons(reasons: readonly string[]): GuardBreakdown
       out.info++;
       continue;
     }
-    const multi = /^(\d+) partner line\(s\) dropped/.exec(r);
+    const multi = /^(\d+) partner line(?:s|\(s\))? dropped/.exec(r);
     const n = multi ? Number(multi[1]) : 1;
     if (multi || CITATION_PROBLEM.test(r)) {
       out.citation += n;
@@ -512,7 +512,7 @@ export async function checkSubject(s: Subject, opts: CheckOptions = {}): Promise
   const unexplained = CARD_ORDER.filter((k) => sheet.cards[k] && sheet.cards[k].status !== "ok" && !sheet.cards[k].reason);
   c.ok("every non-ok card says why", unexplained.length === 0, unexplained.join(", ") || "all explained", "S2");
   const lostLimits = LIMITS_EVERY_SHEET.filter((l) => !sheet.limits.includes(l));
-  c.ok("prints what the sheet does not establish", lostLimits.length === 0, lostLimits.length ? `missing: ${lostLimits.join(" | ")}` : "5 limits", "D1");
+  c.ok("prints what the sheet does not establish", lostLimits.length === 0, lostLimits.length ? `missing: ${lostLimits.join(" | ")}` : `${LIMITS_EVERY_SHEET.length} limits`, "D1");
   const fixtureLine = sheet.limits.some((l) => /^Sample data/.test(l));
   const fixtureNotes = sheet.ledger.filter((x) => /fixture world: synthetic response/.test(x.note ?? "")).length;
   c.ok(
@@ -682,7 +682,7 @@ export async function checkSubject(s: Subject, opts: CheckOptions = {}): Promise
   const statusWords = texts.filter((t) => SHOW_STATUS_WORDS.test(t));
   c.ok("no show-status words (soft, tracking)", statusWords.length === 0, statusWords.length ? list(statusWords) : "none", "S3");
   const deniedWords = texts.filter((t) => findDeniedTerm(t) !== null);
-  c.ok("no denied term in narration, copy or card text", deniedWords.length === 0, deniedWords.length ? `${deniedWords.length} line(s)` : "none", "S3");
+  c.ok("no denied term in narration, copy or card text", deniedWords.length === 0, deniedWords.length ? `${deniedWords.length} line${deniedWords.length === 1 ? "" : "s"}` : "none", "S3");
   c.ok(
     "partners are suggested, not affiliated",
     sheet.cards.partners.limits.some((l) => /^Suggested, not affiliated/.test(l)) || sheet.cards.partners.results.length === 0,

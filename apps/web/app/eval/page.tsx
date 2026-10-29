@@ -567,7 +567,7 @@ export default function EvalPage() {
               ; <span className="tabular">{score.failed}</span> fail
             </>
           ) : null}
-          . Score unchanged since {dateOf(score.generatedAt)}; CI re-runs the cases on every push.
+          . Score file last updated {dateOf(score.generatedAt)}; CI re-runs the cases on every push.
         </p>
         <p className="mt-2 text-muted">
           Each case runs one plan end to end and checks the sheet it produces: every card has a status and says why when it is not ok, every receipt
@@ -590,7 +590,7 @@ export default function EvalPage() {
             );
           })}
           {score.clauses.some((c) => c.status === "ci") ? (
-            <li className="border-b border-rule py-2">CI re-runs these cases on every push, and on the main branch commits the score file when the result changes.</li>
+            <li className="border-b border-rule py-2">CI re-runs these cases on every push, and on the main branch commits the score file when anything in it other than its timestamp changes.</li>
           ) : null}
         </ul>
 

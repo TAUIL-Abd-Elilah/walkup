@@ -36,6 +36,7 @@ export {
   streetTeamDates,
   streetTeamPasses,
   partnerVisits,
+  NO_TIME_ON_ROUTE,
   isStreetTeamBlackout,
   streetTeamBlackout,
   streetTeamHolidays,

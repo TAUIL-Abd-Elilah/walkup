@@ -244,6 +244,11 @@ describe("guard classification", () => {
     expect(g.policy).toBe(2);
     expect(g.info).toBe(2);
   });
+
+  it("reads the plural and singular partner-line drop wording as citation drops", () => {
+    expect(classifyGuardReasons(["2 partner lines dropped: cited entity not traced to this run's ledger."]).citation).toBe(2);
+    expect(classifyGuardReasons(["1 partner line dropped: cited entity not traced to this run's ledger."]).citation).toBe(1);
+  });
 });
 
 describe("budget reading", () => {

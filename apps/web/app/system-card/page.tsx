@@ -24,7 +24,7 @@ const ENDPOINTS: { id: string; shape: string; decides: string; calls: string }[]
     decides: "The room's usual crowd (its top 12 headliners)",
     calls: "Up to 7 per venue a week (1 lookup, then up to 6 searches); 7 on each live sheet",
   },
-  { id: "Heatmap, bill", shape: "GET /v2/insights filter.type=urn:heatmap", decides: "Where this bill's crowd is, per area", calls: "1" },
+  { id: "Heatmap, bill", shape: "GET /v2/insights filter.type=urn:heatmap", decides: "Where this bill's crowd is, per area", calls: "1, or 2 when fewer than 200 map squares come back and the map widens to 60 km" },
   { id: "Heatmap, usual crowd", shape: "The same heatmap with the room's usual acts", decides: "Where the usual crowd is, per area", calls: "0 or 1" },
   { id: "Heatmap, popularity check", shape: "The same heatmap with a generic tag", decides: "A check only: does lift just follow general popularity", calls: "0 or 1" },
   { id: "Map check", shape: "The bill and usual-crowd heatmaps again, each for one half of the acts", decides: "Whether the map holds up when the bill is split in two", calls: "up to 4" },
@@ -38,7 +38,7 @@ const ENDPOINTS: { id: string; shape: string; decides: string; calls: string }[]
     decides: "The popularity check only: how many partners a popularity list of the same length would miss",
     calls: "0 to 3, one per partner area that gave partners; 2 or 3 on the live sheets",
   },
-  { id: "Spots near the venue", shape: "Places within 1.5 km of the venue, and the same for the usual crowd", decides: "Spots for before and after the show, and how the usual crowd ranks them", calls: "1, plus 1 a week" },
+  { id: "Spots near the venue", shape: "Places within 1.5 km of the venue, and the same for the usual crowd", decides: "Spots for before and after the show, and how the usual crowd ranks them", calls: "1, or 2 when fewer than 6 spots come back and the search widens to 2.5 km, plus 1 a week" },
   { id: "Your partners", shape: "filter.results.entities with the operator's list", decides: "Call order for your own partners", calls: "1" },
   { id: "Podcasts", shape: "filter.type=urn:entity:podcast with signal.location", decides: "Podcasts for a host read", calls: "1" },
   { id: "Sponsor", shape: "filter.type=urn:entity:brand with signal.location", decides: "One sponsor", calls: "1" },
@@ -121,9 +121,10 @@ export default function SystemCardPage() {
         removed. A second pass on Oct 29 gave Thurst Lounge on FLO&apos;s sheet back the kind its run picked it under, a bar (a later re-read of its
         stored tags, which the data policy had already trimmed of the bar tags, called it a restaurant, a third in U Street / Shaw), dropped four
         partner website links that no longer work (checked Oct 29), showed four places&apos; own websites whose domain shortens the name, made
-        &ldquo;and N more&rdquo; in chain lists count places, had the Summary and Checks steps say when fixed wording replaced Claude&apos;s lines,
-        and removed a repeated label from 16 Ticketmaster roster receipts. No Qloo or Ticketmaster answer, ranking, partner list or ledger number
-        changed.
+        &ldquo;and N more&rdquo; in chain lists count places, said a partner chain is listed last in its area (not last on the whole list), had
+        the Summary and Checks steps say when fixed wording replaced Claude&apos;s lines, wrote &ldquo;15 partner lines trimmed&rdquo; for
+        &ldquo;15 partner line(s) trimmed&rdquo;, named the shared-website signal in the chain note, and removed a repeated label from 16
+        Ticketmaster roster receipts. No Qloo or Ticketmaster answer, ranking, partner list or ledger number changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>

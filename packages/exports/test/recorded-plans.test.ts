@@ -10,10 +10,12 @@ import type { LiftTile, StreetSheet } from "@walkup/contracts";
 import { haversineM } from "@walkup/engine";
 import { formatUsd, hoursWeekday, isYmd, sheetSpots, topTiles, ymdOf } from "../src/format";
 import { partnerHoursOn } from "../src/hours";
-import { isStreetTeamBlackout, planStreetTeam, planStreetTeamVisits, streetTeamPasses, type StreetTeamVisit } from "../src/ics";
-import { buildSheetModel } from "../src/sheet-model";
+import { isStreetTeamBlackout, NO_TIME_ON_ROUTE, planStreetTeam, planStreetTeamVisits, streetTeamPasses, type StreetTeamVisit } from "../src/ics";
+import { renderStreetSheetPdf } from "../src/pdf";
+import { buildSheetModel, partnerHoursColumn } from "../src/sheet-model";
 import { offerCodeRows, partnersCsv } from "../src/tables";
 import { parseCsvObjects } from "./csv-parse";
+import { pdfPlainText } from "./pdf-text";
 
 const PLANS = fileURLToPath(new URL("../../../deploy/vercel/plans.json", import.meta.url));
 const SAMPLES = ["g1-a", "g1-b", "g2", "g3"].map((id) => ({
@@ -115,6 +117,19 @@ function fileProblems(sheet: StreetSheet): string[] {
   for (const r of m.panel2.rows) if (r.tile.trim() === "") out.push(`paper: no area for ${r.name}`);
   for (const r of parseCsvObjects(partnersCsv(sheet))) if (r.list === "suggested" && r.tile!.trim() === "") out.push(`partners.csv: no area for ${r.name}`);
   for (const r of offerCodeRows(sheet)) if (r.channel !== "your list" && r.tile.trim() === "") out.push(`offer-codes.csv: no area for ${r.assignedTo}`);
+  // A partner street-team.ics or partners.csv has no time left for says so after its hours, on the paper's row and in
+  // the cell the plan page and the email use; no other row does.
+  const { visits, notes } = planStreetTeam(sheet);
+  const inIcs = new Set([...visits, ...notes].flatMap((v) => v.notTimed.flatMap((x) => (x.partner ? [x.partner.entity.entityId] : []))));
+  const inCsv = new Set(parseCsvObjects(partnersCsv(sheet)).flatMap((r) => (r.visit_dates!.includes(`(${NO_TIME_ON_ROUTE})`) ? [r.qloo_entity_id!] : [])));
+  const col = partnerHoursColumn(sheet);
+  for (const r of m.panel2.rows) {
+    const untimed = inIcs.has(r.entityId) || inCsv.has(r.entityId);
+    const cell = col.cell(sheet.cards.partners.results.find((p) => p.entity.entityId === r.entityId)!);
+    const said = r.routeNote !== "" && r.hours === `${r.dayHours}; ${r.routeNote}` && cell.hours === r.hours && cell.withDay.endsWith(`; ${r.routeNote}`);
+    if (untimed !== said) out.push(`paper: ${r.name} ${said ? "says" : "does not say"} the route has no time left for it`);
+    if (!untimed && r.hours !== r.dayHours) out.push(`paper: ${r.name} has more than its hours`);
+  }
   // National chains last, as the spots card says, on the paper and in the stored order.
   for (const [where, list] of [
     ["paper", sheetSpots(sheet.cards.prePost.results)],
@@ -151,4 +166,31 @@ describe("the recorded plans' downloads", () => {
       expect(fileProblems(sheet), id).toEqual([]);
     }
   });
+
+  // A one-day sheet (Saturday only) whose Saturday route has no time for two partners: the calendar and partners.csv
+  // say to call and arrange, and so do the plan page, the print view and the PDF.
+  const oneDay = existsSync(PLANS) ? recorded().find((p) => p.id === "1e0da01d") : undefined;
+  it.skipIf(!existsSync(PLANS) || !oneDay)(
+    "1e0da01d: the rows say which partners the Saturday route has no time for, and the PDF keeps one page",
+    async () => {
+      const sheet = oneDay!.sheet;
+      const rows = buildSheetModel(sheet).panel2.rows;
+      const row = (name: string) => rows.find((r) => r.name === name)!;
+      // No time on either pass's route, then on the first pass only.
+      expect(row("Pixca Seasonal American Bistro")).toMatchObject({ hours: "10 am to 2 pm; no time left on the route: call to arrange", dayHours: "10 am to 2 pm", routeNote: NO_TIME_ON_ROUTE });
+      expect(row("La Parra Restaurant & Bar")).toMatchObject({ hours: "11:30 am to 11 pm; no time left on the first pass: call to arrange", dayHours: "11:30 am to 11 pm" });
+      expect(rows.filter((r) => r.routeNote !== "")).toHaveLength(2);
+      const pixca = sheet.cards.partners.results.find((p) => p.entity.name === "Pixca Seasonal American Bistro")!;
+      expect(partnerHoursColumn(sheet).cell(pixca).withDay).toBe("Sat 10 am to 2 pm; no time left on the route: call to arrange");
+      // The PDF says it in the row's Notes column (its hours cell keeps the hours), on one page, Letter and A4.
+      for (const pageSize of ["LETTER", "A4"] as const) {
+        const res = await renderStreetSheetPdf(sheet, { pageSize });
+        expect(res.pages, pageSize).toBe(1);
+        const text = pdfPlainText(res.buffer);
+        expect(text, pageSize).not.toContain("2 pm; no time left");
+        expect(text, pageSize).toContain("No time left on the route: call to arrange");
+      }
+    },
+    60_000,
+  );
 });

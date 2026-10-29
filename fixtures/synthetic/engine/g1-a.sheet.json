@@ -794,7 +794,7 @@
             "qlooRank": 5,
             "address": "1440 Willard St, Nashville, TN",
             "phone": "+1 629-555-0172",
-            "website": null,
+            "website": "https://hagan-s-tavern-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1133,7 +1133,7 @@
             "qlooRank": 15,
             "address": "4612 Willard St, Nashville, TN",
             "phone": "+1 629-555-0124",
-            "website": null,
+            "website": "https://lomax-s-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -1790,7 +1790,7 @@
             "qlooRank": 7,
             "address": "3629 Hawthorn St, Nashville, TN",
             "phone": "+1 615-555-0168",
-            "website": null,
+            "website": "https://tackett-s-cafe-hawthorn-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2134,7 +2134,7 @@
             "qlooRank": 1,
             "address": "3897 Harlow Rd, Mount Juliet, TN",
             "phone": "+1 629-555-0165",
-            "website": null,
+            "website": "https://delgado-s-tavern-harlow-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2478,7 +2478,7 @@
             "qlooRank": 15,
             "address": "146 Linden Ave, Mount Juliet, TN",
             "phone": "+1 629-555-0167",
-            "website": null,
+            "website": "https://crenshaw-s-kitchen-linden-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -2994,7 +2994,7 @@
             "qlooRank": 11,
             "address": "536 Prescott Ave, Mount Juliet, TN",
             "phone": "+1 615-555-0176",
-            "website": null,
+            "website": "https://odom-s-cafe-prescott-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -3511,7 +3511,7 @@
             "qlooRank": 5,
             "address": "2331 Garrison St, Nashville, TN",
             "phone": "+1 629-555-0150",
-            "website": null,
+            "website": "https://ackerly-s-tavern-garrison-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -4246,7 +4246,7 @@
             "qlooRank": 12,
             "address": "585 Prescott Ave, Nashville, TN",
             "phone": "+1 629-555-0179",
-            "website": null,
+            "website": "https://embry-s-kitchen-prescott-ave.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",

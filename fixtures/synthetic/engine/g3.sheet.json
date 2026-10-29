@@ -269,7 +269,7 @@
             "qlooRank": 1,
             "address": "2883 Willard St, Tacoma, WA",
             "phone": "+1 253-555-0171",
-            "website": null,
+            "website": "https://yoder-s-cafe-willard-st.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",
@@ -861,7 +861,7 @@
             "qlooRank": 5,
             "address": "3710 Hartley Rd, Tacoma, WA",
             "phone": "+1 253-555-0183",
-            "website": null,
+            "website": "https://ramsey-s-tavern-hartley-rd.example",
             "chips": [
               {
                 "label": "over-indexes for this bill",

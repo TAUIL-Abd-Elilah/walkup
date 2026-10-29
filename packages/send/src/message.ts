@@ -152,8 +152,9 @@ function parts(sheet: StreetSheet, files: AttachmentFile[]): Parts {
         const head = [oneLine(p.entity.name, 100), categoryLabel(p.category).toLowerCase(), p.chain === true ? "national chain" : "", p.address ? oneLine(p.address.replace(/, [A-Z]{2}$/, ""), 140) : ""]
           .filter((x) => x !== "")
           .join(", ");
-        // Room for two visit days with their hours ("Thu 5 pm to 9 pm; Sat 11 am to 3 pm") when the passes differ.
-        const bits = [head, oneLine(hoursCol.cell(p).withDay, 100)];
+        // Room for two visit days with their hours ("Thu 5 pm to 9 pm; Sat 11 am to 3 pm") when the passes differ, and
+        // the calendar's "no time left on the route: call to arrange" after them.
+        const bits = [head, oneLine(hoursCol.cell(p).withDay, 160)];
         if (p.phone) bits.push(oneLine(p.phone, 40));
         // A sample sheet's websites are made up (.example), so the email leaves them out.
         if (p.website && sheet.mode !== "fixture") bits.push(oneLine(p.website, 120));

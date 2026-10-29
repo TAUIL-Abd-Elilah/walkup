@@ -3,11 +3,12 @@
  *
  * Kept:
  *  - the place's own domain: a word of its name (4+ letters, not a generic word such as "restaurant" or
- *    "kitchen"), or its words run together, appears in the host ("stabledc.com" for "Stable DC",
- *    "stores.barnesandnoble.com" for "Barnes & Noble"), or the host's name appears in the place's name
- *    run together ("bowlero.com" for "Bowlero Bethesda"); or the site's own name starts with the initials the
- *    name gives in brackets ("alkchicago.com" for "About Last Knife (ALK)"), or is spelled from the start of every
- *    word of the name in order ("avealehouse.com" for "Avenue Ale House", "qtwbbq.com" for "QS Tips and Wings BBQ");
+ *    "kitchen"), or its words run together, appears in the host with its hyphens taken out ("stabledc.com" for
+ *    "Stable DC", "hagan-s-tavern.com" for "Hagan's Tavern", "stores.barnesandnoble.com" for "Barnes & Noble"),
+ *    or the host's name appears in the place's name run together ("bowlero.com" for "Bowlero Bethesda"); or the
+ *    site's own name starts with the initials the name gives in brackets ("alkchicago.com" for "About Last Knife
+ *    (ALK)"), or is spelled from the start of every word of the name in order ("avealehouse.com" for "Avenue Ale
+ *    House", "qtwbbq.com" for "QS Tips and Wings BBQ");
  *  - a page on a social or listing site (Facebook, Instagram, Yelp, Google Maps, Tripadvisor, OpenTable, Resy,
  *    Toast, Linktree and the like) when it points at a page, not the site's front door.
  * Dropped: anything else (an agency's or developer's server with the place in a sub-path, a staging copy, a
@@ -143,7 +144,8 @@ export function hostMatchesName(host: string, name: string): boolean {
   const labels = host.split(".");
   // Every label but the top-level domain ("animaxtechnology.in" -> "animaxtechnology"; "stores.barnesandnoble.com" -> both).
   const parts = labels.length > 1 ? labels.slice(0, -1) : labels;
-  const hostText = parts.join("");
+  // Hyphens out, as the name's apostrophes are: "hagan-s-tavern" for "Hagan's Tavern" reads "haganstavern".
+  const hostText = parts.join("").replace(/-/g, "");
   const w = words(name);
   if (w.length === 0) return false;
   const joined = w.join("");
@@ -218,4 +220,26 @@ export function cleanWebsite(raw: string | null | undefined, name: string | null
   }
   if (!name || !hostMatchesName(host, name)) return null;
   return stripTracking(url, text);
+}
+
+/** What partners.csv says, in place of "Website not listed", when the place's record has a link the sheet doesn't show. */
+export const WEBSITE_NOT_SHOWN_DEAD = "Website not shown: the listed link doesn't work";
+export const WEBSITE_NOT_SHOWN_NOT_OWN = "Website not shown: the listed link doesn't match the place's name";
+
+/**
+ * Why a web link in the place's own record is not shown, in words, so a blank cell doesn't read "not listed" when the
+ * record lists one: the site is on DEAD_SITES, or the link isn't plainly the place's own ("londonhousechicago.com/
+ * rooftop" for "LH Rooftop", a hotel's or a league's page). Null when the record has no web link or the rule keeps it.
+ */
+export function websiteNotShown(raw: string | null | undefined, name: string | null | undefined): string | null {
+  const text = (raw ?? "").trim();
+  if (!text || cleanWebsite(text, name) !== null) return null;
+  if (/^[a-z][a-z0-9+.-]*:(?!\d)/i.test(text) && !/^https?:\/\//i.test(text)) return null;
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(text) ? text : `http://${text}`);
+  } catch {
+    return null;
+  }
+  return isDeadSite(hostOf(url), url.pathname) ? WEBSITE_NOT_SHOWN_DEAD : WEBSITE_NOT_SHOWN_NOT_OWN;
 }

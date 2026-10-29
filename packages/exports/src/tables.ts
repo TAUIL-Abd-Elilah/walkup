@@ -9,7 +9,7 @@
  */
 import type { DeclaredPartnerScore, LiftTile, Partner, QlooEntity, StreetSheet } from "@walkup/contracts";
 import { WEEKDAYS } from "@walkup/contracts";
-import { geohashPolygon, haversineM, isValidGeohash } from "@walkup/engine";
+import { geohashPolygon, haversineM, isValidGeohash, websiteNotShown } from "@walkup/engine";
 import { areaZips } from "./area-zips";
 import { toCsv, type CsvCell, type CsvOptions } from "./csv";
 import {
@@ -35,7 +35,7 @@ import {
   ymdOf,
   type TileSelectOptions,
 } from "./format";
-import { partnerVisits, type IcsOptions } from "./ics";
+import { NO_TIME_ON_ROUTE, partnerVisits, type IcsOptions } from "./ics";
 
 // ---------------------------------------------------------------------------
 // partners.csv
@@ -140,11 +140,12 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
       visit ? visit.weekdays.map(weekdayShort).join("; ") : "",
       visit ? visit.days.map((d) => dayHoursText(d.hours, d.weekday)).join("; ") : closedAll ? `Closed ${streetDaysText(streetDays)}: not on the calendar` : dayHoursText(p.hoursOnDay, day),
       // A date the day's route had no time left for says so, as the calendar's first event that day does.
-      visit ? visit.dates.map((d) => (visit.notTimed.includes(d) ? `${d} (no time left on the route: call to arrange)` : d)).join("; ") : "",
+      visit ? visit.dates.map((d) => (visit.notTimed.includes(d) ? `${d} (${NO_TIME_ON_ROUTE})` : d)).join("; ") : "",
       // A blank is said out loud, as on the paper. The website is the cleaned one only (`Partner.website`), the same
-      // as the plan page and the PDF: a site the engine's rule dropped is not written here either.
+      // as the plan page and the PDF: a site the engine's rule dropped is not written here either, but the cell says
+      // why ("Website not shown: the listed link doesn't work") instead of calling it not listed.
       notListed(p.phone ?? prop(p.entity, "phone"), PHONE_NOT_LISTED),
-      notListed(p.website ?? "", WEBSITE_NOT_LISTED),
+      notListed(p.website ?? "", websiteNotShown(prop(p.entity, "website") || prop(p.entity, "url"), p.entity.name) ?? WEBSITE_NOT_LISTED),
       "",
       // The partner panel's parts, when the run built them: what to do there, why it is listed, how sure.
       p.explain?.activation ?? "",

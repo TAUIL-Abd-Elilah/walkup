@@ -186,12 +186,15 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
 // Podcasts and a sponsor
 // ---------------------------------------------------------------------------
 
+const NO_SPONSOR = "No sponsor brand came back.";
+
 export function MediaCard({ sheet }: { sheet: StreetSheet }) {
   const env = sheet.cards.media;
   const podcasts = env.results.filter((m) => m.kind === "podcast");
   const sponsors = env.results.filter((m) => m.kind === "sponsor");
   // The summary says once that every pick is national; a row says its scope only when some are local.
   const anyLocal = env.results.some((m) => m.scope === "local");
+  const noSponsorSaid = (env.reason ?? "").includes(NO_SPONSOR);
   return (
     <PlanCard id="media" title="Podcasts and a sponsor" envelope={env}>
       <h3 className="text-base">Podcasts for a host read or a giveaway</h3>
@@ -211,9 +214,10 @@ export function MediaCard({ sheet }: { sheet: StreetSheet }) {
           ))}
         </ul>
       )}
-      <h3 className="mt-6 text-base">One sponsor to approach</h3>
+      {/* Said once: when the section's "Why:" line already says no sponsor came back, the sponsor part is left out (as on the PDF). */}
+      {sponsors.length === 0 && noSponsorSaid ? null : <h3 className="mt-6 text-base">One sponsor to approach</h3>}
       {sponsors.length === 0 ? (
-        <p className="mt-1">No sponsor brand came back.</p>
+        noSponsorSaid ? null : <p className="mt-1">{NO_SPONSOR}</p>
       ) : (
         sponsors.map((m) => (
           <p key={m.entity.entityId} className="mt-1">

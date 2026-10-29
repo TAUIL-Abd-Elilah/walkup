@@ -125,7 +125,8 @@ function Phone({ row }: { row: PartnerRow }) {
 /**
  * The partner table, as a form the street team writes on: a tick box, the row number, the place (name and type,
  * then address and phone), the area's map number, the visit day and its hours (as in partners.csv and the calendar), the why line with its
- * receipts, and a blank Notes column about a quarter of the width. Rows with no listed hours are the ones to act
+ * receipts, and a Notes column about a quarter of the width, blank except "No time left on the route: call to
+ * arrange" (as on the PDF) when the street-team route had no time for the place. Rows with no listed hours are the ones to act
  * on (call first) and get the pale yellow row. Under 640px each row is a short block instead, so nothing scrolls
  * sideways.
  */
@@ -202,12 +203,13 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
                 {r.tileRank !== null ? <span className="tabular font-semibold">{r.tileRank} </span> : null}
                 {r.tile}
               </td>
-              <td>{r.hours}</td>
+              <td>{r.dayHours}</td>
               <td>
                 {r.why}
                 <Refs refs={r.refs} planId={m.planId} />
               </td>
-              <td />
+              {/* Blank for the street team, except a day the route had no time for: in Notes, as on the PDF. */}
+              <td>{r.routeNote ? `${r.routeNote.charAt(0).toUpperCase()}${r.routeNote.slice(1)}` : null}</td>
             </tr>
           ))}
         </tbody>
@@ -404,8 +406,9 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
               {d.kind === "none" ? (
                 <>
                   {" "}
+                  {/* The full stop is inside the link: paper, where the link is left off, ends at the reason. */}
                   <a href="/system-card#pick" className="link no-print">
-                    How the top pick is chosen
+                    How the top pick is chosen.
                   </a>
                 </>
               ) : null}
@@ -496,7 +499,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
               ) : (
                 <p className="text-muted">No partners came back for this sheet. Try another street-team day in Change something on the plan page.</p>
               )}
-              {m.panel2.omitted > 0 ? <p className="mt-1 text-muted">+{m.panel2.omitted} more partners in partners.csv.</p> : null}
+              {m.panel2.omitted > 0 ? <p className="mt-1 text-muted">+{m.panel2.omitted} more {m.panel2.omitted === 1 ? "partner" : "partners"} in partners.csv.</p> : null}
               {m.panel2.rows.some((r) => r.lessSure) || d?.lessSureNote ? <p className="mt-1 text-[0.92em] text-muted">{LESS_SURE_NOTE}</p> : null}
               <p className="mt-1.5">
                 {/* On paper the numbers open nothing, so the paper says what they are. */}

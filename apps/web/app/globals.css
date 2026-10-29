@@ -469,6 +469,11 @@
     margin: 9mm;
   }
   :root {
+    /*
+     * Paper is light whatever the viewer's theme. Without this, a dark-mode browser paints its dark page canvas into
+     * the @page margins once print-color-adjust is exact (below), and the sheet prints in a black frame.
+     */
+    color-scheme: light;
     --color-page: #ffffff;
     --color-ink: #111111;
     --color-muted: #555555;

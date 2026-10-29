@@ -62,6 +62,12 @@ interface Rect {
   h: number;
 }
 
+/** `v` to `places` decimals. */
+const round = (v: number, places: number) => {
+  const k = 10 ** places;
+  return Math.round(v * k) / k;
+};
+
 /** Rough width of a line of system-font text, enough to keep marks off it. */
 const textWidth = (s: string, size: number) => s.length * size * 0.55;
 
@@ -95,7 +101,9 @@ export function StaticLiftMap({
     ) ?? { minLat: venue.lat - 0.05, maxLat: venue.lat + 0.05, minLon: venue.lon - 0.05, maxLon: venue.lon + 0.05 };
 
   const lat0 = (ext.minLat + ext.maxLat) / 2;
-  const kmPerDegLon = 111.32 * Math.cos((lat0 * Math.PI) / 180);
+  // Rounded: Node and the browser may differ in the last digit of Math.cos, and the drawing is rendered on both, so an
+  // unrounded value gives the rects different attributes on each side (a hydration mismatch).
+  const kmPerDegLon = round(111.32 * Math.cos((lat0 * Math.PI) / 180), 6);
   const spanX = Math.max((ext.maxLon - ext.minLon) * kmPerDegLon, 2);
   const spanY = Math.max((ext.maxLat - ext.minLat) * KM_PER_DEG_LAT, 2);
   const pad = paper ? { top: 52, right: 52, bottom: 52, left: 52 } : MAP_PAD;
@@ -125,7 +133,8 @@ export function StaticLiftMap({
         y -= (min - h) / 2;
         h = min;
       }
-      return { t, x, y, w, h, rank: ranked.indexOf(t.geohash) + 1 };
+      // Two decimals is far below a pixel, and keeps the markup short.
+      return { t, x: round(x, 2), y: round(y, 2), w: round(w, 2), h: round(h, 2), rank: ranked.indexOf(t.geohash) + 1 };
     })
     // Draw low lift first so the ranked tiles sit on top.
     .sort((a, b) => a.t.lift - b.t.lift);
