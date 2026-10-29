@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import type { LiftTile } from "@walkup/contracts";
 import { cellSizeKm, type Bbox } from "../lib/geohash";
-import { MAP_ATTRIBUTION } from "../lib/webgl";
+import { MAP_ATTRIBUTION, MAP_TIMEOUT_REASON } from "../lib/webgl";
 import { SIMPLIFIED_NOTE, StaticLiftMap } from "./StaticLiftMap";
 
 const MapCanvas = dynamic(() => import("./MapCanvas"), { ssr: false, loading: () => null });
@@ -129,6 +129,18 @@ export function LiftMap({
   const [state, setState] = useState<"loading" | "ready" | "fallback">(interactive ? "loading" : "fallback");
   const [why, setWhy] = useState<string>("");
   const [frameRef, size] = useFrameSize();
+
+  // A street map that ran out of time gets another try the next time the page is shown (a tab opened in the
+  // background, or a window left behind others while it loaded); the drawing stays up meanwhile.
+  const timedOut = interactive && state === "fallback" && why === MAP_TIMEOUT_REASON;
+  useEffect(() => {
+    if (!timedOut) return;
+    const retry = () => {
+      if (document.visibilityState === "visible") setState("loading");
+    };
+    document.addEventListener("visibilitychange", retry);
+    return () => document.removeEventListener("visibilitychange", retry);
+  }, [timedOut]);
 
   // A tap on the map selects the area and brings its row into view; the row is the only place the details live.
   const pick = useCallback(

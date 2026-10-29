@@ -166,6 +166,9 @@ const NODE_WORDS: [RegExp, (m: RegExpExecArray) => string][] = [
   [/^Q8 fallback: house tags$/, () => "The usual crowd's top tags"],
   [/^Q9 house twin, tile (\d+)/, (m) => `Usual-crowd partner search, area ${m[1]}`],
   [/^Q9 house twin, near venue/, () => "Usual-crowd partner search, near the venue"],
+  // The popularity check's search with no bill signal: the area's places by popularity alone.
+  [/^Q9 popularity twin, tile (\d+)/, (m) => `Popularity-only partner search, area ${m[1]}`],
+  [/^Q9 popularity twin, near venue/, () => "Popularity-only partner search, near the venue"],
   [/^Q9 partners, tile (\d+)(.*)$/, (m) => `Partner search, area ${m[1]}${m[2] ? m[2].replace("(3,500 m)", "(widened to 3.5 km)").replace("(more categories)", "(more types of place)") : ""}`],
   [/^Q9 partners, near venue(.*)$/, (m) => `Partner search near the venue${m[1] ?? ""}`],
   [/^Q10 house twin/, () => "Usual-crowd spot search"],

@@ -594,14 +594,55 @@ export interface GuardStepInput {
   alcoholHeld: number;
   /** The operator set the show to all ages (Ticketmaster may still list it as 21+). */
   allAgesByOperator?: boolean;
+  /** The guard's reasons ("partnerLines[22]: not a partner"), so the decision says why each line went. */
+  reasons?: readonly string[];
   ledgerRefs: string[];
 }
 
+/** A guard reason for a dropped line (not a line the template replaced, not a note). */
+const DROPPED_LINE_RE = /^(?:summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHooks\[\d+\]): /;
+/** A drop for an id, number, tag or line this run did not return (evals/product/checks.ts CITATION_PROBLEM). */
+const CITATION_DROP_RE = /not in this run|not on the allowlist|cites no (?:allowlisted )?tag|not traced to this run's ledger|duplicate (?:tile|entity)/;
+
+/** Dropped lines by why they went: a citation the run didn't back, a line about a non-partner, an alcohol word, the rest. */
+export function guardDropCounts(reasons: readonly string[]): { citation: number; notPartner: number; alcohol: number; other: number } {
+  const out = { citation: 0, notPartner: 0, alcohol: 0, other: 0 };
+  for (const r of reasons) {
+    // "2 partner line(s) dropped: cited entity not traced to this run's ledger." counts its lines at once.
+    const many = /^(\d+) partner line\(s\) dropped: /.exec(r);
+    if (many) {
+      out.citation += Number(many[1]);
+      continue;
+    }
+    if (!DROPPED_LINE_RE.test(r)) continue;
+    if (CITATION_DROP_RE.test(r)) out.citation++;
+    else if (/: not a partner$/.test(r)) out.notPartner++;
+    else if (/\balcohol word\b/.test(r)) out.alcohol++;
+    else out.other++;
+  }
+  return out;
+}
+
+function droppedDecision(dropped: number, reasons: readonly string[] | undefined): string {
+  const lines = countOf(dropped, "line");
+  if (!reasons) return `Dropped ${lines} that didn't pass the checks`;
+  const c = guardDropCounts(reasons);
+  const other = Math.max(c.other, dropped - c.citation - c.notPartner - c.alcohol);
+  const parts: [number, string][] = (
+    [
+      [c.citation, "that cited something this run didn't return"],
+      [c.notPartner, c.notPartner === 1 ? "about a place that isn't a partner on this sheet" : "about places that aren't partners on this sheet"],
+      [c.alcohol, c.alcohol === 1 ? "with an alcohol word on a show that isn't 21+" : "with alcohol words on a show that isn't 21+"],
+      [other, "for other checks listed under Checks"],
+    ] as [number, string][]
+  ).filter(([n]) => n > 0);
+  if (parts.length === 0) return `Dropped ${lines} that didn't pass the checks`;
+  if (parts.length === 1) return `Dropped ${lines} ${parts[0]![1]}`;
+  return `Dropped ${lines}: ${joinAnd(parts.map(([n, why]) => `${n.toLocaleString("en-US")} ${why}`))}`;
+}
+
 export function guardStep(i: GuardStepInput): TraceStep {
-  const decision =
-    i.dropped === 0
-      ? "Checked every line against this run's requests; nothing had to go"
-      : `Dropped ${countOf(i.dropped, "line")} that cited something this run didn't return`;
+  const decision = i.dropped === 0 ? "Checked every line against this run's requests; nothing had to go" : droppedDecision(i.dropped, i.reasons);
   const cause = joinSentences([
     i.denied > 0 ? `Held back ${countOf(i.denied, "tag")} by policy: none of them appears in copy or on this sheet` : null,
     i.alcoholHeld > 0

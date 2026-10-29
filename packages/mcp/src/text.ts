@@ -143,9 +143,9 @@ function revisionLines(r: NonNullable<ToolEnvelope["revision"]>): string[] {
 function recordedModeLine(env: ToolEnvelope): string {
   if (isSheet(env.results)) {
     const day = recordedDay(env.results.createdAt);
-    return `Mode: recorded (recorded from live Qloo and Ticketmaster runs${day ? ` on ${day}` : ""}; live runs are paused for judging, and this sheet is what the live run produced).`;
+    return `Mode: recorded (recorded from live Qloo and Ticketmaster runs${day ? ` on ${day}` : ""}; live runs are paused for judging, and this sheet comes from a live run, with any change since made offline and no API call).`;
   }
-  if (env.status === "error") return "Mode: recorded (live runs are paused for judging; the recorded sheets are what live Qloo and Ticketmaster runs produced, and get_sheet reads them).";
+  if (env.status === "error") return "Mode: recorded (live runs are paused for judging; the recorded sheets come from live Qloo and Ticketmaster runs, with any change since made offline, and get_sheet reads them).";
   return "Mode: recorded (read from a sheet recorded from live Qloo and Ticketmaster runs; live runs are paused for judging).";
 }
 

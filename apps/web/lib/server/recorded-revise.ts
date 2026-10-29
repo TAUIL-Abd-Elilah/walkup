@@ -124,6 +124,31 @@ function pending(reading: RevisionReading): SheetRevision {
   };
 }
 
+/** Reads the note on `parent` and finds the ready-made change with the same overrides (null on a question or no match). */
+async function readAndMatch(parent: StreetSheet, instruction: string, ready: StoredPlan[]): Promise<{ reading: RevisionReading; match: StoredPlan | null }> {
+  const reading = await readInstruction(parent, instruction, { narrator: recordedNarrator() });
+  if (reading.question || reading.calls.length === 0) return { reading, match: null };
+  const match = findReadyMade(parent, reading.overrides, [...ready].reverse());
+  return { reading, match: match?.sheet ? match : null };
+}
+
+/**
+ * MCP revise_plan in recorded mode (its `recordedMatch` hook): the note read exactly as this route reads it, so both
+ * front doors open the same recorded version for the same note. {planId} is the ready-made change that makes it
+ * (null when the note was read and none does); null when the note was not read: no ready-made changes, a question
+ * back, the switch off, or the per-network cap reached (the same cap as the route).
+ */
+export async function matchReadyMade(parentPlanId: string, instruction: string, ip: string | null): Promise<{ planId: string | null } | null> {
+  if (!readyMadeActive()) return null;
+  const v = await loadPlan(parentPlanId, { view: "api" });
+  if (v?.kind !== "sheet" || v.sheet.mode !== "live" || v.sheet.revision) return null;
+  const ready = await readyMadeRevisions(v.sheet.planId);
+  if (ready.length === 0 || !reviseAllowed(ip, "recorded").ok) return null;
+  const { reading, match } = await readAndMatch(v.sheet, instruction, ready);
+  if (reading.question || reading.calls.length === 0) return null;
+  return { planId: match?.sheet?.planId ?? null };
+}
+
 /** POST /api/plan/<id>/revise in recorded mode (the caller checked the mode and the switch). */
 export async function reviseRecorded(id: string, instruction: string, ctx: RequestContext): Promise<ServiceResponse> {
   const v = await loadPlan(id, { view: "api", sessionId: ctx.sessionId });
@@ -138,7 +163,7 @@ export async function reviseRecorded(id: string, instruction: string, ctx: Reque
   const allowed = reviseAllowed(ctx.ip, "recorded");
   if (!allowed.ok) return { status: 429, body: { mode: "recorded", reason: `Changes are capped at ${allowed.limit} per network per hour; try again in ${allowed.retryAfterS} s.` } };
 
-  const reading = await readInstruction(parent, instruction, { narrator: recordedNarrator() });
+  const { reading, match } = await readAndMatch(parent, instruction, ready);
   const readyMade = ready.map(changeOf);
   const base = {
     parentPlanId: parent.planId,
@@ -152,7 +177,6 @@ export async function reviseRecorded(id: string, instruction: string, ctx: Reque
     const question = reading.question ?? "What should change?";
     return { status: 200, body: { ...base, status: "needs_input", summary: question, question, planId: parent.planId, reason: "Nothing was changed. Say it another way, or pick one of the ready-made changes." } };
   }
-  const match = findReadyMade(parent, reading.overrides, [...ready].reverse());
   if (match?.sheet) {
     const made = changeOf(match);
     return {

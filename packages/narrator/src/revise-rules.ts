@@ -267,7 +267,10 @@ function readClause(clause: string, summary: ReviseSummary, prevExcluding: boole
   const days = daysIn(c);
   if (days.length > 0) {
     const leftover = c
-      .replace(/\b(only|just|street|team|teams?|works?|working|on|days?|and|or|to|the|out|go|goes|instead|please|us|we|they|be|should|can|is|are|weekdays?)\b/g, " ")
+      // Not "of": "Saturday instead of Thursday" must not read as both days. Not a bare "out", "let" or a closing "go":
+      // "Saturday is out for our crew", "let Saturday go", "Thursday can go" and "Saturday is going out" drop a day, so
+      // they get the question; "go out on Saturday" and "goes Saturday" still read as that day.
+      .replace(/\b(only|just|go(?:es|ing)? out(?=\s+[a-z])|go(?:es)?(?=\s+[a-z])|for|our|crew|have|street|team|teams?|works?|working|on|days?|and|or|to|the|instead|please|us|we|they|be|should|can|is|are|weekdays?)\b/g, " ")
       .split(/[^a-z]+/)
       .filter((w) => w && !dayOf(w));
     if (leftover.length === 0) return { calls: [{ tool: "set_street_team_days", input: { days } }] };

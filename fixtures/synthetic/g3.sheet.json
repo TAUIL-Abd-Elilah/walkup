@@ -5,7 +5,7 @@
   "note": "Synthetic fixture. Acts, partner businesses, ids, scores and ledger timings are invented; neighbourhood names and ZIPs are real places used for layout only. Phone numbers use the reserved 555-01xx range and sites point at example.com.",
   "sheet": {
     "planId": "g3",
-    "createdAt": "2026-11-20T18:00:00.000Z",
+    "createdAt": "2026-10-17T18:00:00.000Z",
     "mode": "fixture",
     "hypothetical": true,
     "bill": {
@@ -1726,7 +1726,7 @@
         "cacheHit": false,
         "resultCount": 0,
         "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/events.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'keyword=Super Funny Comedy Club' --data-urlencode 'city=Tacoma' --data-urlencode 'startDateTime=2026-12-04T00:00:00Z'",
-        "startedAt": "2026-11-20T18:00:00.000Z",
+        "startedAt": "2026-10-17T18:00:00.000Z",
         "note": "The club sells on its own platform: bill and date typed by the operator. Age policy unknown.",
         "id": "T1"
       },
@@ -1746,7 +1746,7 @@
         "cacheHit": false,
         "resultCount": 0,
         "curl": "curl -sG 'https://app.ticketmaster.com/discovery/v2/venues.json' --data-urlencode \"apikey=$TICKETMASTER_API_KEY\" --data-urlencode 'keyword=Super Funny Comedy Club' --data-urlencode 'stateCode=WA'",
-        "startedAt": "2026-11-20T18:00:00.791Z",
+        "startedAt": "2026-10-17T18:00:00.791Z",
         "note": "No Ticketmaster roster for the house baseline.",
         "id": "T2"
       },
@@ -1769,7 +1769,7 @@
         "cacheHit": false,
         "resultCount": 1,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Ada Pell' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
-        "startedAt": "2026-11-20T18:00:01.152Z",
+        "startedAt": "2026-10-17T18:00:01.152Z",
         "note": "Exact match; comedian tag check passed.",
         "id": "Q1"
       },
@@ -1792,7 +1792,7 @@
         "cacheHit": false,
         "resultCount": 2,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Margo Vint' --data-urlencode 'types=urn:entity:artist,urn:entity:person' --data-urlencode 'take=5'",
-        "startedAt": "2026-11-20T18:00:01.502Z",
+        "startedAt": "2026-10-17T18:00:01.502Z",
         "note": "2 near matches, neither exact nor tagged comedian: not used.",
         "id": "Q2"
       },
@@ -1813,7 +1813,7 @@
         "cacheHit": false,
         "resultCount": 0,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/search' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'query=Super Funny Comedy Club' --data-urlencode 'types=urn:entity:place' --data-urlencode 'filter.location=47.244,-122.453' --data-urlencode 'filter.radius=1'",
-        "startedAt": "2026-11-20T18:00:02.223Z",
+        "startedAt": "2026-10-17T18:00:02.223Z",
         "note": "Venue not in catalog: using POINT(-122.453 47.244).",
         "id": "Q3"
       },
@@ -1834,7 +1834,7 @@
         "cacheHit": false,
         "resultCount": 140,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=40000'",
-        "startedAt": "2026-11-20T18:00:03.308Z",
+        "startedAt": "2026-10-17T18:00:03.308Z",
         "note": "Thin: 140 cells within 40 km (floor is 200). Retrying at 60 km.",
         "id": "Q4"
       },
@@ -1855,7 +1855,7 @@
         "cacheHit": false,
         "resultCount": 236,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=60000'",
-        "startedAt": "2026-11-20T18:00:03.629Z",
+        "startedAt": "2026-10-17T18:00:03.629Z",
         "id": "Q5"
       },
       {
@@ -1875,7 +1875,7 @@
         "cacheHit": false,
         "resultCount": 1310,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.tags=urn:tag:genre:media:stand_up_comedy' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=60000'",
-        "startedAt": "2026-11-20T18:00:04.765Z",
+        "startedAt": "2026-10-17T18:00:04.765Z",
         "note": "House baseline degraded to a comedy tag baseline (no roster).",
         "id": "Q6"
       },
@@ -1896,7 +1896,7 @@
         "cacheHit": false,
         "resultCount": 2950,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:heatmap' --data-urlencode 'signal.interests.tags=urn:tag:category:place:restaurant' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=60000'",
-        "startedAt": "2026-11-20T18:00:05.148Z",
+        "startedAt": "2026-10-17T18:00:05.148Z",
         "note": "Generic baseline: diagnostic only.",
         "id": "Q7"
       },
@@ -1915,7 +1915,7 @@
         "cacheHit": false,
         "resultCount": 1,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:demographics' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1'",
-        "startedAt": "2026-11-20T18:00:06.303Z",
+        "startedAt": "2026-10-17T18:00:06.303Z",
         "id": "Q8"
       },
       {
@@ -1934,7 +1934,7 @@
         "cacheHit": false,
         "resultCount": 4,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/analysis/compare' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'a.signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'b.signal.interests.tags=urn:tag:genre:media:stand_up_comedy' --data-urlencode 'take=30'",
-        "startedAt": "2026-11-20T18:00:06.892Z",
+        "startedAt": "2026-10-17T18:00:06.892Z",
         "note": "Only generic shared tags came back; falling back to a tag diff.",
         "id": "Q9"
       },
@@ -1958,7 +1958,7 @@
         "cacheHit": false,
         "resultCount": 30,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media' --data-urlencode 'take=30'",
-        "startedAt": "2026-11-20T18:00:07.215Z",
+        "startedAt": "2026-10-17T18:00:07.215Z",
         "id": "Q10"
       },
       {
@@ -1981,7 +1981,7 @@
         "cacheHit": false,
         "resultCount": 30,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.tags=urn:tag:genre:media:stand_up_comedy' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media' --data-urlencode 'take=30'",
-        "startedAt": "2026-11-20T18:00:07.969Z",
+        "startedAt": "2026-10-17T18:00:07.969Z",
         "note": "Tag-diff baseline side.",
         "id": "Q11"
       },
@@ -2015,7 +2015,7 @@
         "cacheHit": false,
         "resultCount": 6,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.470093 47.254944)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
-        "startedAt": "2026-11-20T18:00:08.907Z",
+        "startedAt": "2026-10-17T18:00:08.907Z",
         "note": "Fewer than 8 results at 2,000 m: widening to 3,500 m.",
         "id": "Q12"
       },
@@ -2049,7 +2049,7 @@
         "cacheHit": false,
         "resultCount": 14,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.470093 47.254944)' --data-urlencode 'filter.location.radius=3500' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
-        "startedAt": "2026-11-20T18:00:09.501Z",
+        "startedAt": "2026-10-17T18:00:09.501Z",
         "note": "Partner pool for tile Sixth Avenue at 3,500 m.",
         "id": "Q13"
       },
@@ -2083,7 +2083,7 @@
         "cacheHit": false,
         "resultCount": 9,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.492065 47.271423)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
-        "startedAt": "2026-11-20T18:00:09.883Z",
+        "startedAt": "2026-10-17T18:00:09.883Z",
         "note": "Partner pool for tile Proctor.",
         "id": "Q14"
       },
@@ -2117,7 +2117,7 @@
         "cacheHit": false,
         "resultCount": 5,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.44812 47.26593)' --data-urlencode 'filter.location.radius=2000' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
-        "startedAt": "2026-11-20T18:00:10.854Z",
+        "startedAt": "2026-10-17T18:00:10.854Z",
         "note": "Fewer than 8 results at 2,000 m: widening to 3,500 m.",
         "id": "Q15"
       },
@@ -2151,7 +2151,7 @@
         "cacheHit": false,
         "resultCount": 10,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.44812 47.26593)' --data-urlencode 'filter.location.radius=3500' --data-urlencode 'filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:barber_shop' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=wednesday' --data-urlencode 'filter.price_level.max=3' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=50'",
-        "startedAt": "2026-11-20T18:00:11.325Z",
+        "startedAt": "2026-10-17T18:00:11.325Z",
         "note": "Partner pool for tile Stadium District at 3,500 m.",
         "id": "Q16"
       },
@@ -2181,7 +2181,7 @@
         "cacheHit": false,
         "resultCount": 4,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=1500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=friday' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=30'",
-        "startedAt": "2026-11-20T18:00:12.456Z",
+        "startedAt": "2026-10-17T18:00:12.456Z",
         "note": "Fewer than 6 spots at 1,500 m: widening to 2,500 m.",
         "id": "Q17"
       },
@@ -2211,7 +2211,7 @@
         "cacheHit": false,
         "resultCount": 9,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:place' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.location=POINT(-122.453 47.244)' --data-urlencode 'filter.location.radius=2500' --data-urlencode 'filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe' --data-urlencode 'operator.filter.tags=union' --data-urlencode 'filter.hours=friday' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=30'",
-        "startedAt": "2026-11-20T18:00:13.161Z",
+        "startedAt": "2026-10-17T18:00:13.161Z",
         "note": "No house twin: the house baseline is a tag, so no delta rank.",
         "id": "Q18"
       },
@@ -2233,7 +2233,7 @@
         "cacheHit": false,
         "resultCount": 15,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:podcast' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'signal.location=POINT(-122.453 47.244)' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
-        "startedAt": "2026-11-20T18:00:14.144Z",
+        "startedAt": "2026-10-17T18:00:14.144Z",
         "note": "signal.location probe pending: labelled national.",
         "id": "Q19"
       },
@@ -2260,7 +2260,7 @@
         "cacheHit": false,
         "resultCount": 0,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:entity:brand' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'signal.location=POINT(-122.453 47.244)' --data-urlencode 'filter.exclude.tags=urn:tag:category:brand:alcohol,urn:tag:category:brand:tobacco,urn:tag:category:brand:gambling' --data-urlencode 'feature.explainability=true' --data-urlencode 'take=15'",
-        "startedAt": "2026-11-20T18:00:14.809Z",
+        "startedAt": "2026-10-17T18:00:14.809Z",
         "note": "No sponsor brand returned: sponsor slot hidden.",
         "id": "Q20"
       },
@@ -2287,7 +2287,7 @@
         "cacheHit": false,
         "resultCount": 30,
         "curl": "curl -sG 'https://hackathon.api.qloo.com/v2/insights' -H \"X-Api-Key: $QLOO_API_KEY\" --data-urlencode 'filter.type=urn:tag' --data-urlencode 'signal.interests.entities=syn-person-4fe11df1' --data-urlencode 'filter.tag.types=urn:tag:keyword:media,urn:tag:genre:media,urn:tag:theme:qloo,urn:tag:audience:qloo' --data-urlencode 'diversify.by=subtype' --data-urlencode 'take=30'",
-        "startedAt": "2026-11-20T18:00:15.984Z",
+        "startedAt": "2026-10-17T18:00:15.984Z",
         "note": "Denylist removed 1 tag (credit_card); 2 bill tags survived the allowlist.",
         "id": "Q21"
       },
@@ -2325,7 +2325,7 @@
         "cacheHit": false,
         "resultCount": 3,
         "curl": "curl -sG 'https://api.census.gov/data/2024/acs/acs5' --data-urlencode 'get=NAME,B01003_001E,B01002_001E,B19013_001E,B01001_001E,B01001_003E,B01001_004E,B01001_005E,B01001_006E,B01001_007E,B01001_008E,B01001_027E,B01001_028E,B01001_029E,B01001_030E,B01001_031E,B01001_032E' --data-urlencode 'for=zip code tabulation area:98406,98407,98403' --data-urlencode \"key=$CENSUS_API_KEY\"",
-        "startedAt": "2026-11-20T18:00:16.761Z",
+        "startedAt": "2026-10-17T18:00:16.761Z",
         "note": "Adults 21+ per ZCTA (B01001 total minus the under-21 bins) for the budget heuristic and the tile floor.",
         "id": "C1"
       }

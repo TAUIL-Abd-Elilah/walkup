@@ -84,9 +84,18 @@ export interface McpServices {
   presetView?: PresetViewLoader;
   /** Called after every orchestrator run (quota display, rejected-key detection). Errors are ignored. */
   afterRun?: (result: PlanResult, deps: PlanDeps) => void | Promise<void>;
+  /** Recorded state only: the host's reading of a revise note (see RecordedMatch). */
+  recordedMatch?: RecordedMatch;
   /** Optional close hook (SQLite). */
   close?: () => void;
 }
+
+/**
+ * Recorded state: reads a revise note the way the host's own revise route does and answers with the recorded
+ * revision of `parentPlanId` that makes that change ({planId: null} when the note was read and none does), or null
+ * when the note was not read (unclear, capped, nothing recorded ahead). Runs nothing and calls no Qloo API.
+ */
+export type RecordedMatch = (parentPlanId: string, instruction: string, ip: string) => Promise<{ planId: string | null } | null>;
 
 export interface ServicesOptions {
   deps: PlanDeps;
@@ -100,6 +109,7 @@ export interface ServicesOptions {
   policy?: Partial<RunPolicy>;
   presetView?: PresetViewLoader;
   afterRun?: McpServices["afterRun"];
+  recordedMatch?: RecordedMatch;
   close?: () => void;
 }
 
@@ -163,6 +173,7 @@ export function createMcpServices(o: ServicesOptions): McpServices {
   };
   if (o.presetView) services.presetView = o.presetView;
   if (o.afterRun) services.afterRun = o.afterRun;
+  if (o.recordedMatch) services.recordedMatch = o.recordedMatch;
   if (o.close) services.close = o.close;
   return services;
 }

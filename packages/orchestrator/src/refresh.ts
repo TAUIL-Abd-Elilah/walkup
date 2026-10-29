@@ -14,13 +14,16 @@
  *  - spots nearest the venue first; podcasts with no recent episodes left out or marked back catalogue; the
  *    sponsor by its short name;
  *  - the discovery picked again ("Start with this place"); a revision's change list rebuilt against its parent;
- *  - a live sheet is never marked hypothetical.
+ *  - a live sheet is never marked hypothetical;
+ *  - last, `recheckSheet`: the checks that change nothing the run found (tile states, "near" the area, the
+ *    narration guard, the Checks step). `scripts/refresh-recorded-plans.ts --recheck` runs that pass alone.
  *
  * What it cannot do: fill a slot a dropped place leaves (that needs the Qloo list behind it), or add a numbered
  * area the new ZIP rules would now separate. `report.needsLiveRun` says when a sheet is in that state.
  */
 import type { LedgerEntry, LiftTile, MediaPick, Partner, PrePostSpot, QlooEntity, SheetDiscovery, StreetSheet } from "@walkup/contracts";
-import { annotateTile } from "@walkup/gazetteer";
+import { annotateTile, stateFromZctas } from "@walkup/gazetteer";
+import { vetNarration } from "@walkup/narrator";
 import {
   backCatalogueLabel,
   barsExcluded,
@@ -45,10 +48,12 @@ import {
   type ExplainContext,
 } from "@walkup/engine";
 import { diffSheets } from "./revise/diff";
+import { REVISE_STEP_ID, RULES_CHOSEN_READER } from "./revise/step";
 import { splitBudget } from "./steps/budget";
-import { partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
+import { partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
+import { guardTrace } from "./steps/trace";
 import { PARTNER_TILES } from "./steps/partners";
-import { disambiguateNames, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, spreadTiles } from "./steps/heat";
+import { disambiguateNames, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, numberedTiles, spreadTiles } from "./steps/heat";
 import { categoryTagMap, loadTagPins, type TagPins } from "./tags";
 import type { GazetteerLike } from "./types";
 
@@ -78,7 +83,7 @@ export interface RefreshReport {
 
 const DEFAULT_GAZETTEER: GazetteerLike = { annotateTile: (t) => annotateTile(t) };
 
-type Annotated = { name?: string; gazetteerName?: string; zctas?: string[]; adultPopulation?: number | null };
+type Annotated = { name?: string; gazetteerName?: string; zctas?: string[]; adultPopulation?: number | null; state?: string | null };
 
 function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -118,16 +123,7 @@ function storedNumbered(sheet: StreetSheet): string[] {
 
 /** The numbered areas the web sheet and the exports draw from the tiles (lift >= 1.3; 3 km apart, no shared ZIP). */
 function drawnNumbered(tiles: readonly LiftTile[]): string[] {
-  const sorted = [...tiles]
-    .filter((t) => Number.isFinite(t.lift) && t.lift >= 1.3)
-    .sort((a, b) => b.lift - a.lift || b.billPct - a.billPct || (a.geohash < b.geohash ? -1 : a.geohash > b.geohash ? 1 : 0));
-  const out: LiftTile[] = [];
-  for (const t of sorted) {
-    if (out.length >= NARRATED_TILES) break;
-    const same = out.some((o) => haversineM(o, t) < 3000 || (o.zctas ?? []).some((z) => (t.zctas ?? []).includes(z)));
-    if (!same) out.push(t);
-  }
-  return out.map((t) => t.geohash);
+  return numberedTiles(tiles).map((t) => t.geohash);
 }
 
 function entryIndex(ledger: readonly LedgerEntry[]): Map<string, LedgerEntry> {
@@ -187,6 +183,7 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
       if (r.gazetteerName !== undefined) a.gazetteerName = r.gazetteerName;
       if (r.zctas !== undefined) a.zctas = r.zctas;
       if (r.adultPopulation !== undefined) a.adultPopulation = r.adultPopulation;
+      if (r.state) a.state = r.state;
       annotations.set(t.geohash, a);
     }
     return a;
@@ -199,6 +196,7 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
     else delete out.name;
     if (a.zctas) out.zctas = a.zctas;
     out.adultPopulation = a.adultPopulation ?? null;
+    if (a.state) out.state = a.state;
     return out;
   });
   const numberedIds = storedNumbered(input);
@@ -337,6 +335,8 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
   sheet.cards.prePost.results = spots;
   const sameBrand = report.droppedSpots.filter((d) => d.why === "a second spot of the same chain").length;
   if (sameBrand > 0) recountSpots(sheet, sameBrand);
+  const drinkSpots = report.droppedSpots.filter((d) => /^a drinking place/.test(d.why)).length;
+  if (drinkSpots > 0) recountDrinkSpots(sheet, drinkSpots, op.allAges === true ? "all-ages show" : "your exclusions");
 
   // ---- Podcasts and the sponsor ------------------------------------------------------------------
   const media = sheet.cards.media.results;
@@ -417,13 +417,167 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
   report.discovery.after = discovery?.headline ?? null;
 
   // ---- A revision's change list --------------------------------------------------------------------
+  if (sheet.revision && !opts.parent) sheet.revision = mapStrings(sheet.revision, rename);
+  // The checks a stored sheet is held to again (tile states, "near" the area, the narration guard, the Checks step,
+  // the change list against the parent): the same pass the recorded plans get on their own.
+  const checked = recheckSheet(sheet, { gazetteer: gaz, parent: opts.parent ?? null });
+  return { sheet: checked.sheet, report };
+}
+
+export interface RecheckReport {
+  /** Tiles whose point lies in another state than their first ZIP ("dqcjq4 Georgetown: DC, first ZIP says VA"). */
+  states: { geohash: string; name: string; state: string; firstZip: string | null }[];
+  droppedSpots: { name: string; why: string }[];
+  droppedPartners: { name: string; why: string }[];
+  /** Narration lines the guard replaced with the template's ("partnerLines[4]: says the place is near the room ..."). */
+  replaced: string[];
+  /** Partner lines that now say "near <area>" instead of "in" or "on" it. */
+  nearArea: number;
+  /** What else changed, in words ("partners reason", "guard step", "revise step", "change list"). */
+  rewritten: string[];
+}
+
+/**
+ * The checks a stored sheet can be held to again without changing what the run found: no rename, no re-scoring and no
+ * re-categorising (that is refreshSheet). Offline and deterministic; what it changes, a run with today's code would
+ * also have written:
+ *
+ *  - each tile's state from its own point ("Georgetown, DC": its nearest ZIP is in VA);
+ *  - on a sheet with bars left out, spots and partners that are drinking places by their name or tags dropped, with
+ *    the counts the sheet states following the list;
+ *  - partner lines say "near <area>" (`partnerLinesNearArea`), then the narration guard (`vetNarration`) runs and a
+ *    failing line is replaced by the template's, with the reason added to the guard's reasons, as a new run does;
+ *  - the partners card's "aren't searched yet" line, the spots step's counts (from the list), the Checks step (by why
+ *    each line went), the revise step's reader on a sheet whose note the rules read on purpose, and a revision's
+ *    change list against its parent.
+ */
+export function recheckSheet(input: StreetSheet, opts: { gazetteer?: GazetteerLike; parent?: StreetSheet | null } = {}): { sheet: StreetSheet; report: RecheckReport } {
+  const gaz = opts.gazetteer ?? DEFAULT_GAZETTEER;
+  const sheet: StreetSheet = structuredClone(input);
+  const report: RecheckReport = { states: [], droppedSpots: [], droppedPartners: [], replaced: [], nearArea: 0, rewritten: [] };
+  const op = sheet.operator;
+
+  // ---- Tile states from their own points ---------------------------------------------------------
+  sheet.cards.liftMap.results.tiles = sheet.cards.liftMap.results.tiles.map((t) => {
+    const state = gaz.annotateTile({ lat: t.lat, lon: t.lon }).state;
+    if (!state) return t;
+    const firstZip = stateFromZctas(t.zctas ?? []);
+    if (firstZip !== state) report.states.push({ geohash: t.geohash, name: t.name ?? "", state, firstZip });
+    return { ...t, state };
+  });
+
+  // ---- Drinking places on a sheet with bars left out ----------------------------------------------
+  const excluded = new Set((op.excludeCategories ?? []).map((k) => k.trim().toLowerCase()));
+  if (op.allAges === true) for (const k of DEFAULT_BAR_CATEGORIES) excluded.add(k);
+  if (barsExcluded(excluded)) {
+    const why = `a drinking place by its name or tags (${op.allAges === true ? "all-ages show" : "your exclusions"})`;
+    const spots = sheet.cards.prePost.results.filter((s) => {
+      if (!isDrinkLed(s.entity)) return true;
+      report.droppedSpots.push({ name: s.entity.name, why });
+      return false;
+    });
+    if (report.droppedSpots.length > 0) {
+      sheet.cards.prePost.results = spots;
+      recountDrinkSpots(sheet, report.droppedSpots.length, op.allAges === true ? "all-ages show" : "your exclusions");
+    }
+    const partners = sheet.cards.partners.results.filter((p) => {
+      if (!isDrinkLed(p.entity)) return true;
+      report.droppedPartners.push({ name: p.entity.name, why });
+      return false;
+    });
+    if (report.droppedPartners.length > 0) {
+      sheet.cards.partners.results = partners;
+      const areas = new Set(partners.map((p) => p.tileGeohash ?? "near")).size;
+      sheet.cards.partners.summary = sheet.cards.partners.summary.replace(
+        /^\d+ partners? in \d+ areas?/,
+        `${partners.length} ${partners.length === 1 ? "partner" : "partners"} in ${areas} ${areas === 1 ? "area" : "areas"}`,
+      );
+      const keep = new Set(partners.map((p) => p.entity.entityId));
+      if (sheet.narration) sheet.narration = { ...sheet.narration, partnerLines: sheet.narration.partnerLines.filter((l) => keep.has(l.entityId)) };
+    }
+  }
+
+  // ---- The partners card's skipped-kinds line -----------------------------------------------------
+  const reason = sheet.cards.partners.reason;
+  if (reason) {
+    // "Record stores isn't searched yet: ... find them by.": the words are plural (skippedCategoriesReason).
+    const fixed = reason.replace(/ isn't searched yet: Qloo has no tag to find them by\./g, " aren't searched yet: Qloo has no tag to find them by.");
+    if (fixed !== reason) {
+      sheet.cards.partners.reason = fixed;
+      report.rewritten.push("partners reason");
+    }
+  }
+
+  // ---- Narration: "near" the area, then the guard ----------------------------------------------------
+  if (sheet.narration) {
+    const near = partnerLinesNearArea(sheet.narration.partnerLines, sheet.cards.partners.results);
+    report.nearArea = near.changed;
+    sheet.narration = { ...sheet.narration, partnerLines: near.lines };
+    if (!sheet.narration.templated) {
+      const v = vetNarration(sheet);
+      if (v.narration && v.replaced.length > 0) {
+        sheet.narration = v.narration;
+        report.replaced = v.replaced;
+        sheet.guard = { ...sheet.guard, reasons: [...sheet.guard.reasons, ...v.replaced.map((r) => `replaced by the template: ${r}`)] };
+      }
+    }
+  }
+
+  // ---- Steps: the spots step follows the list; Checks by why each line went; the reader of a note the rules read
+  // on purpose --------------------------------------------------------------------------------------------
+  if (syncPrePostStep(sheet)) report.rewritten.push("spots step");
+  if (sheet.steps) {
+    const steps = sheet.steps.map((s) => {
+      if (s.id === "guard") {
+        const g = guardTrace(sheet.guard, sheet.guard.reasons, op.allAges === true);
+        if (g.decision === s.decision) return s;
+        report.rewritten.push("guard step");
+        return { ...s, decision: g.decision };
+      }
+      if (s.id === REVISE_STEP_ID && s.cause && sheet.revision?.interpreter === "rules" && sheet.ledger.some((e) => e.kind === "anthropic")) {
+        // A model was set up (the sheet's own ledger holds a Claude call): the rules read the note by choice.
+        // Also the earlier wording with an unclosed aside ("Fixed rules read it, as they do on the hosted site and ...").
+        const cause = s.cause.replace(/^Fixed rules read it(?: \(no model is set up here\)|, as they do on the hosted site,?)(?= and )/, RULES_CHOSEN_READER);
+        if (cause === s.cause) return s;
+        report.rewritten.push("revise step");
+        return { ...s, cause };
+      }
+      return s;
+    });
+    sheet.steps = steps;
+  }
+
+  // ---- A revision's change list --------------------------------------------------------------------
   if (sheet.revision && opts.parent) {
     const settingRefs = sheet.revision.changes.find((c) => c.kind === "setting_changed")?.ledgerRefs ?? [];
-    sheet.revision = { ...sheet.revision, changes: diffSheets(opts.parent, sheet, settingRefs) };
-  } else if (sheet.revision) {
-    sheet.revision = mapStrings(sheet.revision, rename);
+    const changes = diffSheets(opts.parent, sheet, settingRefs);
+    if (JSON.stringify(changes) !== JSON.stringify(sheet.revision.changes)) report.rewritten.push(`change list (${sheet.revision.changes.length} -> ${changes.length} rows)`);
+    sheet.revision = { ...sheet.revision, changes };
   }
   return { sheet, report };
+}
+
+/**
+ * After drinking places are dropped from the spots, the counts the sheet states follow the list: the spots card's
+ * "8 spots ..." (and its chain sentence), the step's "Picked 8 spots", and the summary's "8 spots for before and after
+ * the show". Each spot's share of the crowd stays as the run computed it.
+ */
+function recountDrinkSpots(sheet: StreetSheet, dropped: number, why: string): void {
+  const n = sheet.cards.prePost.results.length;
+  const word = (x: number) => (x === 1 ? "spot" : "spots");
+  const chains = sheet.cards.prePost.results.filter((s) => s.chain === true).length;
+  const left = `Left out ${dropped === 1 ? "1 place that is a bar by its" : `${dropped} places that are bars by their`} name or tags (${why}).`;
+  sheet.cards.prePost.summary = `${sheet.cards.prePost.summary
+    .replace(/^\d+ spots?\b/, `${n} ${word(n)}`)
+    .replace(/\b\d+ of \d+ spots? (is a national chain|are national chains)/, () => `${chains} of ${n} ${word(n)} ${chains === 1 ? "is a national chain" : "are national chains"}`)} ${left}`;
+  if (sheet.steps) {
+    sheet.steps = sheet.steps.map((s) =>
+      s.id === "prepost" ? { ...s, decision: s.decision.replace(/^Picked \d+ spots?\b/, `Picked ${n} ${word(n)}`), cause: `${s.cause ? `${s.cause} ` : ""}${left}` } : s,
+    );
+  }
+  if (sheet.narration?.summary) {
+    sheet.narration = { ...sheet.narration, summary: sheet.narration.summary.replace(/\b\d+ spots? for before and after the show/, `${n} ${word(n)} for before and after the show`) };
+  }
 }
 
 /**
@@ -448,7 +602,41 @@ function recountSpots(sheet: StreetSheet, dropped: number): void {
     summary = summary.replace(left[0], `${total} more ${total === 1 ? "chain" : "chains"} left off: ${detail}.`);
   }
   sheet.cards.prePost.summary = summary;
+  syncPrePostStep(sheet);
   if (sheet.narration?.summary) {
     sheet.narration = { ...sheet.narration, summary: sheet.narration.summary.replace(/\b\d+ spots? for before and after the show/, `${n} ${word(n)} for before and after the show`) };
   }
+}
+
+/**
+ * The spots step follows the list, as the card does: "Picked 6 spots", "Listed 1 national chain last ... its slot",
+ * and a second spot of a brand the card says was left off. True when the step changed.
+ */
+function syncPrePostStep(sheet: StreetSheet): boolean {
+  if (!sheet.steps) return false;
+  const spots = sheet.cards.prePost.results;
+  const n = spots.length;
+  const chains = spots.filter((s) => s.chain === true).length;
+  const word = (x: number) => (x === 1 ? "spot" : "spots");
+  const same = /\b(\d+) as a second spot of a brand already listed\b/.exec(sheet.cards.prePost.summary);
+  let changed = false;
+  sheet.steps = sheet.steps.map((s) => {
+    if (s.id !== "prepost") return s;
+    const decision = s.decision.replace(/^Picked \d+ spots?\b/, `Picked ${n} ${word(n)}`);
+    let cause = s.cause;
+    if (cause) {
+      const listed = /Listed \d+ national chains? last, after the local spots: no local spot filled (?:its|their) slot(; left off|\.)?/;
+      if (chains > 0) {
+        cause = cause.replace(listed, (_m, tail: string | undefined) => `Listed ${chains} national ${chains === 1 ? "chain" : "chains"} last, after the local spots: no local spot filled ${chains === 1 ? "its" : "their"} slot${tail ?? ""}`);
+      } else if (listed.test(cause)) {
+        // No chain is listed any more: the clause goes, and what it led into starts the sentence.
+        cause = cause.replace(listed, (_m, tail: string | undefined) => (tail === "; left off" ? "Left off" : "")).replace(/\s{2,}/g, " ").trim();
+      }
+      if (same && !/second spot of a brand already listed/.test(cause)) cause = `${cause} Left off ${same[1]} more as a second spot of a brand already listed.`;
+    }
+    if (decision === s.decision && cause === s.cause) return s;
+    changed = true;
+    return { ...s, decision, ...(cause !== undefined ? { cause } : {}) };
+  });
+  return changed;
 }

@@ -21,7 +21,7 @@ import { resetEngineForTests, stores } from "../lib/server/engine";
 import type { RequestContext } from "../lib/server/http";
 import { REVISES_PER_HOUR, resetRateWindowsForTests } from "../lib/server/limits";
 import { recordedOnDay, revisionsOf } from "../lib/server/recorded";
-import { NOT_RECORDED_REASON, readyMadeFor, resetRecordedReviseForTests, UNCHANGED_REASON } from "../lib/server/recorded-revise";
+import { matchReadyMade, NOT_RECORDED_REASON, readyMadeFor, resetRecordedReviseForTests, UNCHANGED_REASON } from "../lib/server/recorded-revise";
 import { revisePlanFor } from "../lib/server/revise";
 import { resetRunsForTests } from "../lib/server/runs";
 import { ReviseBox } from "../components/plan/ReviseBox";
@@ -181,6 +181,21 @@ describe("recorded mode: revisePlanFor answers from ready-made changes", () => {
     expect(same.body).toMatchObject({ status: "unchanged", reason: UNCHANGED_REASON });
     const unclear = await revisePlanFor(PARENT_ID, { instruction: "make it pop" }, ctx());
     expect(unclear.body).toMatchObject({ status: "needs_input", mode: "recorded", planId: PARENT_ID });
+  });
+
+  it("gives MCP revise_plan the same reading as the route: the version it opens, none, or not read", async () => {
+    const note = `Only ${oneDay}, please`;
+    const rest = (await revisePlanFor(PARENT_ID, { instruction: note }, ctx())).body as Body;
+    expect(await matchReadyMade(PARENT_ID, note, "203.0.113.42")).toEqual({ planId: rest.planId });
+    expect(await matchReadyMade(PARENT_ID, "No bars. All ages.", "203.0.113.42")).toEqual({ planId: "rec-rev-ages" });
+    // Read, and no ready-made change makes it.
+    expect(await matchReadyMade(PARENT_ID, `skip ${otherArea}`, "203.0.113.42")).toEqual({ planId: null });
+    // Not read: an unclear note, a revision or sample sheet as parent, the switch off.
+    expect(await matchReadyMade(PARENT_ID, "make it pop", "203.0.113.42")).toBeNull();
+    expect(await matchReadyMade("rec-rev-day", note, "203.0.113.42")).toBeNull();
+    expect(await matchReadyMade("g3", note, "203.0.113.42")).toBeNull();
+    process.env.WALKUP_RECORDED_REVISE = "off";
+    expect(await matchReadyMade(PARENT_ID, note, "203.0.113.42")).toBeNull();
   });
 
   it("keeps the per-network cap", async () => {

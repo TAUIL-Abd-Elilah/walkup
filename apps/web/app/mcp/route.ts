@@ -7,8 +7,9 @@
  * same orchestrator deps and plan store (plans made here open at /s/<planId>),
  * the same preset sheets, the same per-IP fresh-run allowance, the same
  * fixture-mode rule (presets only), the same recorded-mode rule (live runs
- * are paused: only the reading tools answer), and the same quota and
- * rejected-key bookkeeping after live runs.
+ * are paused: only the reading tools answer, and revise_plan names the
+ * recorded version the revise route would open for the same note), and the
+ * same quota and rejected-key bookkeeping after live runs.
  *
  * Add it to Claude Code with: claude mcp add --transport http walkup <origin>/mcp
  */
@@ -28,6 +29,7 @@ import { depsFor, publishLiveQuota, stores } from "@/lib/server/engine";
 import { clientIp, requestOrigin } from "@/lib/server/http";
 import { noteQlooRejection } from "@/lib/server/key-status";
 import { freshRuns, utcDay, type FreshRunStatus } from "@/lib/server/limits";
+import { matchReadyMade } from "@/lib/server/recorded-revise";
 import { loadPlan } from "@/lib/server/service";
 
 export const runtime = "nodejs";
@@ -100,6 +102,8 @@ function servicesFor(mode: Mode): McpServices {
       policy: { fixtureEventRuns: false, capFixtureRuns: false, recorded: mode === "recorded" ? RECORDED_REASON : null },
       presetView,
       afterRun: (result, deps) => afterRun(mode, result, deps),
+      // A revise note is read as the revise route reads it, so both doors open the same recorded version.
+      ...(mode === "recorded" ? { recordedMatch: matchReadyMade } : {}),
     });
     cache[mode] = s;
   }

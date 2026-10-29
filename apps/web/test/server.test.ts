@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createMemoryLedger, type LedgerEntry, type StreetSheet } from "@walkup/contracts";
+import { exportFilePrefix } from "@walkup/exports";
 import { CARD_ORDER, createFixtureDeps, PRESETS, type LivePreset } from "@walkup/orchestrator";
 import { createWorld, WORLD_EVENT_IDS } from "@walkup/qloo-world";
 import { createMemorySendStore, resolveSendConfig } from "@walkup/send";
@@ -25,7 +26,7 @@ import { clientIp, operatorAuthorized, parseCookies, sessionCookie } from "../li
 import { parseOperator, parsePlanBody, POLITICAL_REFUSAL, tmEventIdFrom } from "../lib/server/input";
 import { noteQlooRejection, qlooKeyRejection, qlooRefusedKey, resetKeyStatusMemo } from "../lib/server/key-status";
 import { FreshRunLimiter, rateLimit, resetRateWindowsForTests, setFreshRunsForTests } from "../lib/server/limits";
-import { health, limitsFor, proxySearch, showSearch } from "../lib/server/lookups";
+import { health, limitsFor, proxySearch, RECORDED_PRESETS, showSearch } from "../lib/server/lookups";
 import { applyProxyPicks } from "../lib/server/proxy";
 import { recordedPresetRun, usableRecording } from "../lib/server/recorded";
 import { revisePlanFor } from "../lib/server/revise";
@@ -161,7 +162,7 @@ describe("mode", () => {
     expect(words(keys, NOV2 + 2 * DAY, true)).toMatchObject({
       kind: "recorded",
       liveSearch: false,
-      detail: expect.stringMatching(/^Recorded from live Qloo and Ticketmaster runs( on \w{3} \d{1,2} \d{4})?\. Live runs are paused for judging; these sheets are what a live run produced\.$/),
+      detail: expect.stringMatching(/^Recorded from live Qloo and Ticketmaster runs( on \w{3} \d{1,2} \d{4})?\. Live runs are paused for judging; each recorded sheet comes from a live run, and any change since was made offline, with no API call\.$/),
     });
     expect(words(until, NOV2 + 5 * DAY).detail).toMatch(/Live runs are paused for judging/);
     expect(words({ WALKUP_MODE: "recorded" }, NOV2).detail).not.toMatch(/no longer|unavailable|are off/i);
@@ -295,6 +296,9 @@ describe("plans", () => {
     expect((await stores().plans.get(String(body.planId)))?.sheet?.cards.partners.results[0]?.chips.some((c) => isTwinChip(c.label))).toBe(true);
     const snap = await planSnapshot(String(body.planId), ctx());
     expect((snap.body as Body).status).toBe("complete");
+    // sheetUrl is the street-team page, as in every other answer; the JSON envelope has its own field.
+    expect((snap.body as Body).sheetUrl).toBe(`${ctx().origin}/s/${body.planId}`);
+    expect((snap.body as Body).envelopeUrl).toBe(`${ctx().origin}/api/sheet/${body.planId}`);
   });
 
   it("limits fixture runs per network (each one is stored)", async () => {
@@ -415,7 +419,9 @@ describe("send (demo: no mail keys)", () => {
     const p = prep.body as { status: string; confirmToken: string; preview: { mode: string; recipients: { address: string }[]; attachments: { filename: string }[] } };
     expect(p.preview.mode).toBe("demo");
     expect(p.preview.recipients.map((r) => r.address)).toEqual(["delivered@resend.dev"]);
-    expect(p.preview.attachments.map((a) => a.filename)).toEqual(["fixture-street-sheet.pdf", "fixture-street-team.ics", "fixture-partners.csv"]);
+    // The same names as the sheet's downloads.
+    const pre = `fixture-${exportFilePrefix((await stores().plans.get(planId))!.sheet!)}`;
+    expect(p.preview.attachments.map((a) => a.filename)).toEqual([`${pre}street-sheet.pdf`, `${pre}street-team.ics`, `${pre}partners.csv`]);
     expect((await stores().plans.get(planId))?.sheet?.ledger.some((e) => e.kind === "action")).toBe(false);
 
     const conf = await confirmSendFor({ planId, confirmToken: p.confirmToken }, ctx(), seams());
@@ -469,7 +475,8 @@ describe("exports", () => {
     if (v?.kind !== "sheet") throw new Error("g1-a");
     const pdf = await exportResponse(v.sheet, "pdf", { ledgerUrl: "https://walkup.example/plan/g1-a#ledger" });
     expect(pdf.headers.get("content-type")).toBe("application/pdf");
-    expect(pdf.headers.get("content-disposition")).toBe('attachment; filename="fixture-street-sheet.pdf"');
+    // "fixture-" first, then the show, its date and the plan, so two sheets' downloads never share a name.
+    expect(pdf.headers.get("content-disposition")).toMatch(/^attachment; filename="fixture-walkup-[a-z0-9-]+-\d{4}-\d{2}-\d{2}-g1-a-street-sheet\.pdf"$/);
     expect(Buffer.from(await pdf.arrayBuffer()).subarray(0, 5).toString()).toBe("%PDF-");
     const zips = await exportResponse(v.sheet, "zips");
     expect((await zips.text()).split("\r\n")[0]).toMatch(/^zip,(area,area_name,)?lift_score,suggested_weight$/);
@@ -820,7 +827,9 @@ describe("recorded mode (live runs paused; the live-mode harness records the run
       expect(await revisePlanFor(recordedIds["g1-a"]!, { instruction: "only Saturday" }, c)).toEqual(refused);
       expect(await showSearch("Hollis Creek", c)).toEqual(refused);
       expect(await proxySearch("Neon Orchard", null, c)).toEqual(refused);
-      expect(limitsFor(c).body).toMatchObject({ mode: "recorded", freshRunsEnabled: false, reason: RECORDED_REASON });
+      // No fresh-run counts on offer, and presets named by the routes that open them.
+      expect(limitsFor(c).body).toMatchObject({ mode: "recorded", freshRunsEnabled: false, freshRuns: null, presets: RECORDED_PRESETS, reason: RECORDED_REASON });
+      expect(RECORDED_PRESETS).toMatch(/GET \/api\/plan\/<presetId>.*POST \/api\/plan runs nothing/);
       // Nothing was run or stored by any of it.
       expect((await stores().plans.list(1000)).length).toBe(before);
     });
@@ -832,7 +841,8 @@ describe("recorded mode (live runs paused; the live-mode harness records the run
       const v = await loadPlan(id, { view: "api" });
       if (v?.kind !== "sheet") throw new Error("recorded g1-a");
       const ics = await exportResponse(v.sheet, "ics", { recorded: true });
-      expect(ics.headers.get("content-disposition")).toBe('attachment; filename="street-team.ics"');
+      expect(ics.headers.get("content-disposition")).toBe(`attachment; filename="${exportFilePrefix(v.sheet)}street-team.ics"`);
+      expect(exportFilePrefix(v.sheet)).toMatch(new RegExp(`^walkup-[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}-${id.slice(0, 8)}-$`));
       const prepare = { config: resolveSendConfig({ WALKUP_SIGNING_SECRET: "x".repeat(40) }), store: createMemorySendStore() };
       const prep = await prepareSendFor({ planId: id }, ctx(), { prepare });
       expect(prep.status).toBe(200);
@@ -848,6 +858,7 @@ describe("recorded mode (live runs paused; the live-mode harness records the run
       expect(b.recorded?.presets["g1-b"]?.planId).toBe(recordedIds["g1-b"]);
       expect(b.recorded?.presets.g3).toBeNull();
       expect(b.reachability.qloo?.status).toBe("not checked in recorded mode");
+      expect(b).toMatchObject({ freshRunsEnabled: false, freshRunsToday: null });
       expect(JSON.stringify(b)).not.toContain("test-not-a-key");
     });
   });

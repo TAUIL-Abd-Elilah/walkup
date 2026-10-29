@@ -19,6 +19,7 @@ import {
   chainSummary,
   DEFAULT_BAR_CATEGORIES,
   isUsualCrowdChip,
+  joinAnd,
   mergeRankedLists,
   popularityCheck,
   scorePartnersWithReport,
@@ -115,6 +116,15 @@ function houseTwinSignal(house: HouseSet | null): { entities: string[]; tags: st
   if (house.baseline === "house" && house.ids.length > 0) return { entities: [...new Set(house.ids)], tags: [] };
   if (house.tag) return { entities: [], tags: [house.tag] };
   return null;
+}
+
+/**
+ * The card's line for kinds of place Qloo has no tag for ("Record stores aren't searched yet: Qloo has no tag to
+ * find them by."). The words are plural ("record stores"), so the verb is too, as in the partners step.
+ */
+export function skippedCategoriesReason(keys: readonly string[]): string {
+  const words = joinAnd(keys.map((k) => categoryWord(k, true)));
+  return `${words.charAt(0).toUpperCase()}${words.slice(1)} aren't searched yet: Qloo has no tag to find them by.`;
 }
 
 export function partnerCategories(ctx: RunContext): string[] {
@@ -257,10 +267,7 @@ export async function runPartners(
   const base: PartnersResult = { card: envelope("empty", "No partners.", empty, []), partners: [], report: null, pools: [], poolSpecs: [], categories: cats.used };
   const excludeIds = venueEntityId ? [venueEntityId] : [];
   const reasons: string[] = [];
-  if (cats.skipped.length > 0) {
-    const words = cats.skipped.map((k) => categoryWord(k, true));
-    reasons.push(`${words.join(", ").replace(/^./, (c) => c.toUpperCase())} ${words.length === 1 ? "isn't" : "aren't"} searched yet: Qloo has no tag to find ${words.length === 1 && !/s$/.test(words[0] ?? "") ? "it" : "them"} by.`);
-  }
+  if (cats.skipped.length > 0) reasons.push(skippedCategoriesReason(cats.skipped));
   const tiles = liftWeak ? [] : top.slice(0, PARTNER_TILES);
   const specs: PoolSpec[] = tiles.map((t) => ({ tileGeohash: t.geohash, point: { lat: t.lat, lon: t.lon }, radiusM: TILE_RADIUS_M, tags: cats.urns }));
   // Fewer usable tiles than pools: the rest of the list comes from near the room.

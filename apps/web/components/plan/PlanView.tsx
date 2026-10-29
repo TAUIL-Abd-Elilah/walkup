@@ -6,8 +6,8 @@ import { revisePlan } from "../../lib/api";
 import type { ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from "@walkup/contracts";
 import { SampleStrip } from "../SampleStrip";
 import { actsLine, formatDayMonth, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
-import { countsAreWhatIf, streetDaysText } from "@walkup/exports/format";
-import { entityIndex, footprintLine, guardNoteText, isThinSignal, runFootprint, sendStatus, sendSteps, sheetTitle } from "../../lib/sheet-utils";
+import { countsAreWhatIf, partnerLessSure, streetDaysText } from "@walkup/exports/format";
+import { entityIndex, footprintLine, guardNoteText, isThinSignal, runFootprint, sendStatus, sendSteps, sheetTitle, topTiles } from "../../lib/sheet-utils";
 import { FANBAR_HREF, FANBAR_NO_CLAIM, FANBAR_RESULT, lastSegment } from "../../lib/labels";
 import { CopyHooksCard, DeclaredCard, DifferentCard, MediaCard, PrePostCard } from "./MoreCards";
 import { LedgerSection } from "./LedgerSection";
@@ -19,7 +19,7 @@ import { ReceiptDrawer, type DrawerTarget } from "./ReceiptDrawer";
 import { ResolutionCard } from "./ResolutionCard";
 import { ReviseBox } from "./ReviseBox";
 import { SendModal } from "./SendModal";
-import { DiscoveryNote, RevisionNote, StepList } from "./SheetExtras";
+import { DiscoveryNote, NoDiscoveryNote, RevisionNote, StepList } from "./SheetExtras";
 import { FoldBody, FoldContext, openFoldsFor } from "./fold";
 
 /** What the interactive sheet renders: a finished sheet plus where it came from. */
@@ -139,7 +139,7 @@ function apiRevise(planId: string): ReviseHandler {
 const DOWNLOADS: { file: string; label: string; what: string }[] = [
   { file: "pdf", label: "Street sheet PDF", what: "one page to print or forward" },
   { file: "ics", label: "street-team.ics", what: "the street-team days for your calendar" },
-  { file: "partners.csv", label: "partners.csv", what: "the call list" },
+  { file: "partners.csv", label: "partners.csv", what: "the call list; called, outcome and notes are blank for your street team to fill in" },
   { file: "zips.csv", label: "zips.csv", what: "ZIP codes with lift and weight" },
   { file: "pins.csv", label: "pins.csv", what: "map pins with a radius" },
   { file: "offer-codes.csv", label: "offer-codes.csv", what: "codes to create in your ticketing platform" },
@@ -171,7 +171,7 @@ function aboutNote(p: PlanPayload, recorded: boolean): string {
   }
   if (p.source === "preset" && p.note) return p.note;
   if (recorded) {
-    return `Recorded from a live Qloo and Ticketmaster run on ${formatStamp(p.sheet.createdAt)}. Live runs are paused for judging; this is what the live run produced. Every footnote points to the request that produced the claim.`;
+    return `Recorded from a live Qloo and Ticketmaster run on ${formatStamp(p.sheet.createdAt)}. Live runs are paused for judging; this sheet comes from that run, and any change since was made offline, with no API call. Every footnote points to the request that produced the claim.`;
   }
   return "A live run. Every footnote points to the request that produced the claim.";
 }
@@ -180,6 +180,28 @@ function aboutNote(p: PlanPayload, recorded: boolean): string {
 function genreOnly(classification: string | undefined): string {
   const g = lastSegment(classification ?? "");
   return /^(undefined|other|miscellaneous)$/i.test(g) ? "" : g;
+}
+
+/** The "Start with this place" pick is a partner the table marks less certain (the same rule as its dagger there). */
+export function discoveryLessSure(sheet: StreetSheet): boolean {
+  const d = sheet.discovery;
+  if (!d || d.kind !== "partner") return false;
+  const p = sheet.cards.partners.results.find((x) => x.entity.entityId === d.entityId);
+  if (!p) return false;
+  // When every pick is less certain the table draws no dagger (PartnersCard), so neither does the callout.
+  const all = sheet.cards.partners.results;
+  const allThin = all.length > 1 && all.every((x) => partnerLessSure(x));
+  return !allThin && partnerLessSure(p);
+}
+
+/**
+ * The radius the lift map was searched at when it widened past the operator's ("The search widened to 60 km ..." on
+ * the map card, as the orchestrator's `mapSearchKm` reads it), else null.
+ */
+export function mapReachKm(sheet: StreetSheet): number | null {
+  const m = /The search widened to (\d+(?:\.\d+)?) km/.exec(sheet.cards.liftMap.reason ?? "");
+  const km = m ? Number(m[1]) : null;
+  return km !== null && km !== sheet.operator.radiusKm ? km : null;
 }
 
 /** The header's line of assumed inputs, in plain sentences, honest about blanks. */
@@ -192,7 +214,8 @@ function inputsSentences(sheet: StreetSheet, realShow: boolean): string {
   else if (cap) parts.push(`Capacity ${formatInt(op.capacity as number)} is an assumed number; no budget entered.`);
   else if (budget) parts.push(`Budget ${formatUsd(op.mediaBudgetUsd as number)} is an assumed number; no capacity entered.`);
   else parts.push("No capacity or budget entered.");
-  parts.push(`Radius ${op.radiusKm} km.`);
+  const reach = mapReachKm(sheet);
+  parts.push(reach ? `Radius ${op.radiusKm} km; the map search widened to ${reach} km because too few map squares came back within ${op.radiusKm} km.` : `Radius ${op.radiusKm} km.`);
   const tm = sheet.bill.legalAgeEnforced;
   const listed = tm === true ? "Ticketmaster lists the show as 21+" : tm === false ? "Ticketmaster lists the show as all ages" : "Ticketmaster lists no age policy, so the show is treated as all ages";
   parts.push(op.allAges === true && tm === true ? `${listed}; you set it to all ages.` : `${listed}.`);
@@ -212,14 +235,63 @@ const HEADER_LINE = /^Planning tool/;
 /** Said by the Summary note already ("Written from a fixed template"). */
 const TEMPLATE_NO_KEY = /^(The summary came from a fixed template \(no model key\)|Narration by the deterministic template \(llm_off\))/;
 
-/** "Checks removed 0 claims. 4 tags were left out under the data policy (ethnicity, inclusivity, credit card)." */
-function checksLine(guard: GuardReport): string {
+/** A guard reason for a line the checks left out (not one the template replaced, not a note). */
+const DROPPED_LINE = /^(?:summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHooks\[\d+\]): /;
+/** A line left out for an id, number or tag this run did not return (the engine's guard step uses the same test). */
+const CITATION_DROP = /not in this run|not on the allowlist|cites no (?:allowlisted )?tag|not traced to this run's ledger|duplicate (?:tile|entity)/;
+
+/** Of the lines the checks left out, how many made a claim the run didn't back (the rest broke a wording or policy rule). */
+export function unbackedDrops(guard: GuardReport): number {
+  let n = 0;
+  for (const r of guard.reasons) {
+    const many = /^(\d+) partner line\(s\) dropped: /.exec(r);
+    if (many) n += Number(many[1]);
+    else if (DROPPED_LINE.test(r) && CITATION_DROP.test(r)) n++;
+  }
+  return Math.min(n, guard.dropped);
+}
+
+/**
+ * "Checks removed 0 claims. 4 tags were left out under the data policy (ethnicity, inclusivity, credit card)." A line
+ * left out for a wording or policy rule (an alcohol word on an all-ages show, a line about a place that isn't a partner)
+ * is not a claim: "Checks left out 15 lines, none for a claim the run didn't back."
+ */
+export function checksLine(guard: GuardReport): string {
   const by = guard.deniedByNamespace;
   const classes = by ? Object.keys(by).filter((k) => (by[k] ?? 0) > 0).map((k) => k.replace(/_/g, " ")) : [];
   const n = guard.deniedTagCount;
-  const claims = `Checks removed ${guard.dropped} ${guard.dropped === 1 ? "claim" : "claims"}.`;
+  const unbacked = unbackedDrops(guard);
+  const other = guard.dropped - unbacked;
+  const lines = (x: number) => `${x} ${x === 1 ? "line" : "lines"}`;
+  const claims =
+    other === 0
+      ? `Checks removed ${guard.dropped} ${guard.dropped === 1 ? "claim" : "claims"}.`
+      : unbacked === 0
+        ? `Checks left out ${lines(guard.dropped)}, none for a claim the run didn't back.`
+        : `Checks left out ${lines(guard.dropped)}: ${unbacked} for a claim the run didn't back, ${other} for a wording or policy rule.`;
   if (n === 0) return `${claims} No tag was left out under the data policy.`;
   return `${claims} ${n} ${n === 1 ? "tag was" : "tags were"} left out under the data policy${classes.length > 0 ? ` (${classes.join(", ")})` : ""}.`;
+}
+
+/**
+ * The Checks list: each check note in plain words, the same note once with its count ("13 of Claude's partner lines
+ * were left out: each was about a place that isn't a partner on this sheet.") rather than 13 times in a row.
+ */
+export function checkNotes(reasons: readonly string[]): string[] {
+  const counts = new Map<string, number>();
+  for (const r of reasons) {
+    // "partnerLines[22]: not a partner": Claude wrote a line for a spot, a podcast or the sponsor.
+    const text = /^partnerLines\[\d+\]: not a partner$/.test(r)
+      ? "One of Claude's partner lines was left out: it was about a place that isn't a partner on this sheet."
+      : guardNoteText(r);
+    counts.set(text, (counts.get(text) ?? 0) + 1);
+  }
+  return [...counts].map(([text, n]) => {
+    if (n === 1) return text;
+    const m = /^One of Claude's (partner|copy) lines was left out: (.+)$/.exec(text);
+    if (m) return `${n} of Claude's ${m[1]} lines were left out: ${m[2]!.replace(/^it was about a place that isn't/, "each was about a place that isn't").replace(/^it /, "each ")}`;
+    return `${text} (${n} times)`;
+  });
 }
 
 function RerunLink({ presetId }: { presetId: string }) {
@@ -345,7 +417,7 @@ export function PlanView({
     {
       k: "Days to show",
       v: days >= 0 ? String(days) : "Past",
-      ...(recorded && !sample ? { note: `Recorded ${formatDayMonth(sheet.createdAt)}` } : {}),
+      ...(recorded && !sample ? { note: `from today · recorded ${formatDayMonth(sheet.createdAt)}` } : {}),
     },
     ...(streetDays ? [{ k: op.streetTeamDays.length > 1 ? "Street-team days" : "Street-team day", v: streetDays }] : []),
     { k: "Partners found", v: String(partnersFound) },
@@ -503,8 +575,12 @@ export function PlanView({
           <DiscoveryNote
             discovery={sheet.discovery}
             target={target}
+            lessSure={discoveryLessSure(sheet)}
             {...(target?.geohash ? { onGo: () => setTile(target.geohash ?? null) } : {})}
           />
+        ) : (sheet.steps ?? []).length > 0 ? (
+          // A run that went through the pick and found none says so where the callout would be.
+          <NoDiscoveryNote sheet={sheet} />
         ) : null}
 
         {/* The street team's part first: where to go, who to call, the files to hand out. How the plan was made follows. */}
@@ -517,7 +593,8 @@ export function PlanView({
             Built on the server from this sheet.{sample ? " File names start with fixture- so they never pass for a live run." : ""}
           </p>
           <ul className="mt-3 max-w-[760px] space-y-1">
-            {DOWNLOADS.map((x) => (
+            {/* With no areas on the lift map, zips.csv and pins.csv would be headers only: leave them out. */}
+            {DOWNLOADS.filter((x) => topTiles(sheet).length > 0 || (x.file !== "zips.csv" && x.file !== "pins.csv")).map((x) => (
               <li key={x.file}>
                 <a href={`${base}/${x.file}`} download className="link">
                   {x.label}
@@ -567,8 +644,8 @@ export function PlanView({
               ) : null}
               {guardNotes.length > 0 ? (
                 <ul className="mt-1 max-w-[760px] list-disc space-y-1 pl-5 text-muted">
-                  {guardNotes.map((r) => (
-                    <li key={r}>{guardNoteText(r)}</li>
+                  {checkNotes(guardNotes).map((r) => (
+                    <li key={r}>{r}</li>
                   ))}
                 </ul>
               ) : null}

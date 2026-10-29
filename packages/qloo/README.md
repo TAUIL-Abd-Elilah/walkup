@@ -133,7 +133,7 @@ rows missing a required field are skipped and counted (`meta.skipped`).
 ### Live shapes (shape audit, Oct 15)
 
 Checked against recorded live bodies; `test/recorded.test.ts` replays every body in `fixtures/raw/` (git-ignored) through
-these rules and skips when there are none.
+these rules and skips when there are none, so its 9 replay tests skip in a fresh clone.
 
 - `/search` and `/entities` rows: `types[]` (no `subtype`), external ids under `properties.external.<ns> = {id}`
   (spotify, wikidata, imdb, musicbrainz, lastfm `{id, listeners, scrobbles}`, google_place `{id, place_id}`); tag refs

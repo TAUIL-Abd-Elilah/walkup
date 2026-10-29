@@ -62,7 +62,7 @@ describe("tools/list", () => {
   it("describes recorded mode as live runs paused for judging, never as Qloo gone", () => {
     const text = c.client.getInstructions() ?? "";
     expect(text).toMatch(/recorded from live Qloo and Ticketmaster runs, and live runs are paused for judging/);
-    expect(text).toMatch(/what a live run produced/);
+    expect(text).toMatch(/come from live runs, with any change since made offline/);
     expect(text).not.toMatch(/no longer available|unavailable|are off\b/i);
   });
 
@@ -382,7 +382,9 @@ describe("bill_vs_house", () => {
     expect(r.diagnostics.baseline).toBe("none");
     expect(text).toContain("Baseline: none");
     expect(text).not.toMatch(/genre tag \(the roster|a genre baseline/);
-    expect(env.summary).toContain("compared with nothing");
+    expect(env.summary).toContain("there is no usual crowd to compare this bill with");
+    // Said once: the lift card's own summary is not appended to the same words.
+    expect(env.summary).not.toMatch(/compare with.*compare this bill with|compared with nothing/);
     expect(env.status).toBe("degraded");
     expect(env.reason).toMatch(/no comedy-wide map to compare with/);
     expect(text).not.toMatch(/degraded: degraded/);
@@ -392,6 +394,27 @@ describe("bill_vs_house", () => {
     const { result, env } = await c.call("bill_vs_house", { planId: "missing" });
     expect(result.isError).toBe(true);
     expect(env.reason).toBe("No plan with id missing.");
+  });
+
+  it("says mode recorded, without the sample-data limits, on a recorded server's not-found answers", async () => {
+    const rec = await connect(services({ policy: { recorded: "Live runs are paused for judging." } }));
+    try {
+      for (const [tool, args] of [
+        ["get_sheet", { planId: "does-not-exist-123" }],
+        ["bill_vs_house", { planId: "does-not-exist-123" }],
+        ["plan_show", { planId: "does-not-exist-123" }],
+        ["plan_show", { presetId: "zzz" }],
+      ] as const) {
+        const { result, env, text } = await rec.call(tool, args);
+        expect(result.isError, tool).toBe(true);
+        expect(env.mode, tool).toBe("recorded");
+        expect(env.limits.some((l) => l.startsWith("Sample data") || /approximate in sample data/.test(l)), tool).toBe(false);
+        expect(text).toContain("Mode: recorded (");
+        expect(text).not.toContain("Mode: fixture");
+      }
+    } finally {
+      await rec.close();
+    }
   });
 });
 

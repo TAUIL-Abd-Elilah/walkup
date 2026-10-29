@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { guardNarration, isAllowedNumber, policyProblem, prepareRun, templateNarrate } from "../src/index";
+import {
+  guardNarration,
+  isAllowedNumber,
+  NARRATOR_SYSTEM_PROMPT,
+  policyProblem,
+  prepareRun,
+  renderFactsMessage,
+  templateNarrate,
+  templatePartnerLine,
+} from "../src/index";
 import { readableForPromoter, tagNamesInSentenceCase } from "../src/narrate";
 import { makeInput } from "./helpers";
 
@@ -39,6 +48,24 @@ describe("templateNarrate", () => {
     expect(res.summary).not.toMatch(/\d\.\d+x/);
     expect(res.tileWhy[0]!.text).toContain("91st percentile for this crowd, 49th for the room's usual crowd.");
     expect(res.summary).not.toMatch(/\b(soft|tracking)\b/i);
+  });
+
+  it("says near the venue only for a partner from the near-venue search, not one from an unnamed area", () => {
+    const [named, unnamed] = makeInput().partners;
+    expect(templatePartnerLine(named!)).toBe("A record store near North Example, 1st on that area's list for this crowd.");
+    // E-P2 came from the search around area dn6m9r, which has no name.
+    expect(unnamed!.tileGeohash).toBe("dn6m9r");
+    expect(templatePartnerLine(unnamed!)).toBe("A barbershop near an unnamed area, 2nd on that area's list for this crowd.");
+    expect(templatePartnerLine({ ...unnamed!, tileGeohash: null })).toBe("A barbershop near the venue, 2nd on that list for this crowd.");
+  });
+
+  it("tells the model which partners came from the near-venue search by a field the facts carry", () => {
+    expect(NARRATOR_SYSTEM_PROMPT).toContain("A partner with no tileGeohash came from the search within 3.5 km of the venue");
+    expect(NARRATOR_SYSTEM_PROMPT).not.toContain("no tileName");
+    const facts = JSON.parse(/<run_facts>([\s\S]*)<\/run_facts>/.exec(renderFactsMessage(prepareRun(makeInput())))![1]!) as {
+      partners: Array<{ entityId: string; tileGeohash: string | null; tileName: string | null }>;
+    };
+    expect(facts.partners.find((p) => p.entityId === "E-P2")).toMatchObject({ tileGeohash: "dn6m9r", tileName: null });
   });
 
   it("handles an empty run", () => {

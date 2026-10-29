@@ -126,15 +126,15 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `QLOO_MONTH_GUARD_FLOOR` | `fly.toml` `[env]` | `1500`: fresh Qloo calls stop below 1,500 calls left this month. |
 | `WALKUP_RECORD` | secret, only while recording | `1` writes Qloo bodies to `/data/fixtures/raw`. Unset it afterwards. |
 | `WALKUP_FIXTURES_DIR` | `fly.toml` `[env]` and the image | `/data/fixtures` (`raw/` recorded on the volume, `synthetic/` from the image). |
-
-`GOOGLE_PLACES_API_KEY` is no longer read: Google Places was removed from the product on Oct 20 2026. A host that
-still has it set can drop it with `fly secrets unset GOOGLE_PLACES_API_KEY -a walkup-agent`.
 | `WALKUP_GAZETTEER_DIR` | `fly.toml` `[env]` and the image | `/app/data/gazetteer/out`. |
 | `WALKUP_TAGS_FILE` | `fly.toml` `[env]` and the image | `/app/config/tags.json`: the pinned Qloo tag URNs the orchestrator reads. |
 | `WALKUP_FRESH_RUNS_PER_IP`, `WALKUP_FRESH_RUNS_PER_DAY` | optional, `fly.toml` `[env]` | Fresh live runs per network and in total per UTC day; defaults 3 and 15. |
 | `WALKUP_PLAN_STORE` | not on the host | `memory` keeps plans in memory (tests); the host uses `/data/plans.sqlite`. |
 | `QLOO_ALLOW_HOST` | never | Local mock servers only. |
-| `WALKUP_URL` | not on the host | For the agent skill CLI on a user's machine: `https://walkup-agent.fly.dev`. |
+| `WALKUP_URL` | not on the host | For the agent skill CLI on a user's machine: the hosted site `https://walkup-eight.vercel.app`, or your own Fly host (`https://<your-app>.fly.dev`). |
+
+`GOOGLE_PLACES_API_KEY` is no longer read: Google Places was removed from the product on Oct 20 2026. A host that
+still has it set can drop it with `fly secrets unset GOOGLE_PLACES_API_KEY -a walkup-agent`.
 
 ### Variables the send step reads
 
@@ -212,8 +212,10 @@ paused, the site serves the sheets it recorded on live runs and makes nothing ne
   sheets stored earlier stay labelled sample. The send step stays as it is (confirm first, test inbox by default).
   A recorded sheet's envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps
   `"mode": "live"`. A sheet recorded before Oct 20 2026 is served without the Google Places comparison list it carried.
-- A strip on every page says the sheets were recorded from live Qloo and Ticketmaster runs and that live runs are
-  paused; sheets recorded from live runs show the date of the run and are not refreshed. The landing page lists the sheets as recorded, or as
+- A strip on every page says the day the sheets were recorded from live Qloo and Ticketmaster runs, that live runs are
+  paused, and that each recorded sheet comes from a live run, and any change since was made offline, with no API call
+  (`recordedDetail` in `apps/web/lib/mode.ts`). A recorded sheet shows the date of its run and gets no new Qloo or
+  Ticketmaster data. The landing page lists the sheets as recorded, or as
   sample sheets when no live run was recorded. A recorded sheet says "Recorded <date>" where a live one says
   "Planned <date>", on the page and in the PDF.
 - New plans, the show and title searches and picks answer with `"mode": "recorded"` and one plain reason (HTTP 503 on
@@ -228,7 +230,7 @@ paused, the site serves the sheets it recorded on live runs and makes nothing ne
   answers 200 `{"status": "not_recorded"}` with a plain reason (it needs new Qloo requests, and live runs are paused)
   and the ready-made changes; nothing runs and nothing is stored. A sheet with none, a sample sheet, and a revision
   itself answer the 503 above, as does every revision with `WALKUP_RECORDED_REVISE=off`. The per-network revise cap
-  (12 an hour) applies. While the box answers this way, the header and the landing page link only the revisions
+  for recorded mode (120 an hour) applies. While the box answers this way, the header and the landing page link only the revisions
   recorded with the sheets; later ones open through the box.
 
 The server is in recorded mode when `WALKUP_MODE=recorded`, when the time in `WALKUP_QLOO_UNTIL` has passed, or when

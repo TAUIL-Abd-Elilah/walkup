@@ -207,8 +207,11 @@ describe("vetNarration", () => {
       tileLine(1, "Riverbend has the largest adult population on the sheet."),
       tileLine(1, "Riverbend has the highest percentile for this bill of any area on the sheet."),
       tileLine(0, "Hilltop holds the largest share of the rough split of the budget."),
+      // About lift, the metric named first: Hilltop has the most lift, Riverbend the higher percentile.
+      tileLine(0, "Hilltop has the largest lift on the sheet, about 2.2 times the room's usual crowd, at the 91st percentile for this bill."),
     ];
     for (const n of ok) expect(vetNarration(makeSheet(n)).replaced).toEqual([]);
+    expect(vetNarration(makeSheet(tileLine(1, "Riverbend has the largest lift on the sheet, at the 95th percentile for this bill."))).replaced[0]).toMatch(/superlative "largest"/);
     const bad = [
       tileLine(2, "Oak Park has the strongest lift on the sheet."),
       tileLine(0, "Hilltop has the largest adult population on the sheet."),
@@ -298,6 +301,82 @@ describe("vetNarration", () => {
     expect(res.narration!.tileWhy).toEqual([]);
     expect(res.narration!.partnerLines).toEqual([]);
     expect(res.replaced.every((r) => r.endsWith("(dropped)"))).toBe(true);
+  });
+});
+
+describe("vetNarration: nearness, hours and where a crowd is", () => {
+  const withPartner = (over: Partial<Partner>, text: string) => {
+    const sheet = makeSheet(narration({ partnerLines: [{ entityId: "E-P2", text }] }));
+    const p = sheet.cards.partners.results[1]!;
+    Object.assign(p, over);
+    return vetNarration(sheet);
+  };
+  const far = { tags: [CASUAL], activation: "Ask.", confidence: "high" as const, confidenceWhy: "Synthetic.", ledgerRefs: [], distanceKm: 35.1 };
+
+  it("replaces 'close to the room' for a place the sheet puts 35 km away, and keeps it for one 1 km away", () => {
+    const bad = withPartner({ explain: far }, "Restaurant in Riverbend, open Thursday, shares the casual tag and is close to the room.");
+    expect(bad.replaced).toEqual(["partnerLines[0]: says the place is near the room; the sheet puts it 35.1 km away"]);
+    expect(bad.narration!.partnerLines[0]!.text).toBe(templatePartnerLine(partners()[1]!));
+    const ok = withPartner({ explain: { ...far, distanceKm: 1 } }, "Restaurant in Riverbend, shares the casual tag and is close to the room.");
+    expect(ok.replaced).toEqual([]);
+  });
+
+  it("lets a place from the near-venue list (searched within 3.5 km) be near the venue, as the template says", () => {
+    const nearList = (km: number) => {
+      const sheet = makeSheet(narration({ partnerLines: [{ entityId: "E-P2", text: "Restaurant near the venue, shares the casual tag." }] }));
+      const { tileName: _area, ...rest } = sheet.cards.partners.results[1]!;
+      sheet.cards.partners.results[1] = { ...rest, tileGeohash: null, explain: { ...far, distanceKm: km } };
+      return vetNarration(sheet).replaced;
+    };
+    expect(nearList(2.8)).toEqual([]);
+    expect(nearList(3.9)).toEqual(["partnerLines[0]: says the place is near the room; the sheet puts it 3.9 km away"]);
+    // A place from an area's search is held to 2 km.
+    expect(withPartner({ explain: { ...far, distanceKm: 2.8 } }, "Restaurant near the venue, shares the casual tag.").replaced).toEqual([
+      "partnerLines[0]: says the place is near the room; the sheet puts it 2.8 km away",
+    ]);
+  });
+
+  it("replaces a line that merges split opening hours into one span, and keeps one span quoted as listed", () => {
+    const split = { hoursOnDay: "10:00:00-14:00:00, 17:00:00-21:30:00" };
+    expect(withPartner(split, "Restaurant in Riverbend, open Thursday 10:00 to 21:30.").replaced).toEqual(["partnerLines[0]: merges split opening hours into one span"]);
+    expect(withPartner(split, "Restaurant in Riverbend, open Thursday 10:00 to 14:00.").replaced).toEqual([]);
+  });
+
+  it("replaces a summary that says where a crowd comes from, or puts the usual crowd in this crowd's lift areas", () => {
+    const from = vetNarration(makeSheet(narration({ summary: "Test Headliner draws a crowd from outer suburbs, about 2.2 times the room's usual crowd in Hilltop." })));
+    expect(from.replaced).toEqual(["summary: where the crowd lives or comes from is not on the sheet"]);
+    const placed = vetNarration(makeSheet(narration({ summary: "Hilltop leads at about 2.2 times, while the room's usual crowd sits closer to Oak Park." })));
+    expect(placed.replaced).toEqual(["summary: places the room's usual crowd in areas where this crowd stands out"]);
+    const fine = vetNarration(makeSheet(narration({ summary: "This crowd stands out from the room's usual crowd in 3 areas; Hilltop leads at about 2.2 times." })));
+    expect(fine.replaced).toEqual([]);
+  });
+
+  it("keeps a comparison with the usual crowd and a percentile, which place no one", () => {
+    const keep = (summary: string) => vetNarration(makeSheet(narration({ summary }))).replaced;
+    expect(keep("Test Headliner draws a different crowd from the room's usual one; Hilltop leads at about 2.2 times.")).toEqual([]);
+    expect(keep("Test Headliner draws a crowd from the room's usual one in Hilltop, at about 2.2 times.")).toEqual([]);
+    expect(keep("Test Headliner draws its crowd from the suburbs, about 2.2 times in Hilltop.")).toEqual(["summary: where the crowd lives or comes from is not on the sheet"]);
+    expect(keep("Hilltop is in the 91st percentile for this crowd, while the room's usual crowd is in the 40th percentile.")).toEqual([]);
+    const tile = vetNarration(makeSheet(tileLine(0, "Hilltop shows about 2.2 times the room's usual crowd and is in the 91st percentile for this crowd.")));
+    expect(tile.replaced).toEqual([]);
+    // Placed in this crowd's area, the usual crowd still fails.
+    expect(keep("Hilltop leads at about 2.2 times, and the room's usual crowd is in Oak Park.")).toEqual([
+      "summary: places the room's usual crowd in areas where this crowd stands out",
+    ]);
+    // In a relative clause the usual crowd is still the verb's subject.
+    expect(keep("Hilltop leads at about 2.2 times, while the room's usual crowd that sits near Hilltop is smaller.")).toEqual([
+      "summary: places the room's usual crowd in areas where this crowd stands out",
+    ]);
+    expect(keep("Hilltop leads at about 2.2 times; the room's usual crowd which is in Oak Park is smaller.")).toEqual([
+      "summary: places the room's usual crowd in areas where this crowd stands out",
+    ]);
+  });
+
+  it("replaces a summary that puts the areas on a side of the city", () => {
+    // Hilltop lies north, so the direction check passes; the city's side is still not on the map.
+    const sheet = makeSheet(narration({ summary: "This crowd stands out in Hilltop and other areas on the North Side of Sampleton." }));
+    sheet.bill = { ...sheet.bill, venue: { ...sheet.bill.venue, city: "Sampleton" } };
+    expect(vetNarration(sheet).replaced).toEqual(["summary: places the areas on a side of the city, which the map doesn't show"]);
   });
 });
 

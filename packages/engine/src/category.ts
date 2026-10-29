@@ -446,14 +446,23 @@ export function nameSaysDrinking(name: string | null | undefined): boolean {
 const FOOD_SHOP_TAIL_RE = /\b(?:donuts?|doughnuts?|bakery|bake ?shop|creamery|ice cream)$/i;
 
 /**
+ * Qloo tags that say a place is a bar at heart, whatever its category: a dive bar's decor or feel ("Lively Wicker Park
+ * bar with daily food and drink specials" is a bar_grill with both). A bar culinary style alone does not count: a pho
+ * house and a Vietnamese eatery carry it.
+ */
+const DRINK_IDENTITY_TAGS: ReadonlySet<string> = new Set(["urn:tag:decor:qloo:dive_bar", "urn:tag:ambience:qloo:dive_bar_vibe"]);
+
+/**
  * True for a place a "no bars" note should leave out whatever its display category: its name says bar, pub,
- * karaoke, lounge, tavern, saloon, taproom, brewery or cantina (`nameSaysDrinking`), or it carries a specific
- * bar-type place tag (an Irish pub, a lounge bar, a karaoke bar, a gastropub; a bare `bar` tag alone does not
- * count: many restaurants carry it).
+ * karaoke, lounge, tavern, saloon, taproom, brewery or cantina (`nameSaysDrinking`), it carries a specific
+ * bar-type place tag (an Irish pub, a lounge bar, a karaoke bar, a gastropub, a bar and grill; a bare `bar` tag
+ * alone does not count: many restaurants carry it), or a dive-bar tag (DRINK_IDENTITY_TAGS).
  */
 export function isDrinkLed(e: Pick<QlooEntity, "tags" | "name">): boolean {
   if (nameSaysDrinking(e.name)) return true;
+  if ((e.tags ?? []).some((t) => DRINK_IDENTITY_TAGS.has(t?.id))) return true;
   return placeTypeKeys(e).some((key) => {
+    if (key === "bar_grill") return true;
     const kind = kindOf(key);
     return kind !== null && kind.family === "bar" && kind.specific;
   });

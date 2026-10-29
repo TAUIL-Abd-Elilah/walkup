@@ -8,7 +8,7 @@
  */
 import type { Envelope, LiftTile, Partner, PartnerConfidence, StreetSheet } from "@walkup/contracts";
 import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
-import { findAlcoholTerm } from "@walkup/engine";
+import { DISCOVERY_RULES, findAlcoholTerm, LIFT_DEFAULTS } from "@walkup/engine";
 import { partnerIsFanFacing, spotIsFanFacing } from "./audience";
 import {
   actsLine,
@@ -26,13 +26,17 @@ import {
   formatPhone,
   formatShowDate,
   formatUsd,
+  HOURS_NOT_LISTED,
   hoursWeekday,
   isAllAgesForCopy,
   ledgerRanges,
-  partnerAreaLabel,
+  LESS_SURE_NOTE,
+  mapReachKm,
+  partnerAreaText,
   partnerLessSure,
   partnerWhyLine,
   partnerWhyRefs,
+  PHONE_NOT_LISTED,
   realLimits,
   receiptGroup,
   SAMPLE_ATTRIBUTION,
@@ -42,6 +46,7 @@ import {
   sheetSpots,
   shortDomain,
   spotSharesDiffer,
+  SPOT_NOT_IN_USUAL_SHORT,
   spotsShareNote,
   spotVsUsual,
   streetDaysText,
@@ -53,7 +58,7 @@ import {
   weekdayShort,
 } from "./format";
 import { areaZips } from "./area-zips";
-import { partnerVisits } from "./ics";
+import { partnerVisits, type PartnerVisit } from "./ics";
 import { areaBudget, declaredInCallOrder } from "./tables";
 
 /**
@@ -98,10 +103,14 @@ export const PAGE_SECTIONS: readonly SheetSection[] = ["map", "spots", "partners
 
 /** Longest area blurb (ZIPs and why) on paper, in characters, cut at a sentence end. */
 export const AREA_BLURB_CHARS = 130;
+/**
+ * The most of that length a ZIP line takes ("ZIP 20002, 20019, 20020", three ZIPs): a longer list does not cut the
+ * why line shorter, so every area keeps the same sentences whatever its number of ZIPs.
+ */
+export const AREA_BLURB_ZIP_CHARS = 23;
 
-/** Blanks the paper says out loud instead of leaving a cell empty. */
-export const PHONE_NOT_LISTED = "Phone not listed";
-export const HOURS_NOT_LISTED = "Hours not listed: call first";
+/** Blanks the paper says out loud instead of leaving a cell empty (the same words as partners.csv). */
+export { HOURS_NOT_LISTED, PHONE_NOT_LISTED };
 
 export interface TileItem {
   rank: number;
@@ -112,8 +121,8 @@ export interface TileItem {
   /** The full why line (the web sheet). */
   why: string;
   /**
-   * What the paper prints: "ZIP 20002, 20019. <why>", whole sentences only, about 130 characters (more only when the
-   * why's first sentence is longer: it is never cut).
+   * What the paper prints: "ZIP 20002, 20019. <why>", whole sentences only, about 130 characters (more when the ZIP
+   * list is longer than three ZIPs, or when the why's first sentence is longer: it is never cut).
    */
   blurb: string;
 }
@@ -137,7 +146,8 @@ export interface PartnerRow {
   /**
    * The hours in words. With one street-team day: that day's hours ("4 pm to 2 am"), or "Hours not listed: call
    * first". With more: the day street-team.ics visits the partner and its hours that day ("Sat 10 am to 2 pm",
-   * "Sat, hours not listed: call first"), or "Closed Thu and Sat" when it is closed on every street-team day.
+   * "Sat, hours not listed: call first"; each day, "; "-separated, in the rare case the passes visit on two
+   * weekdays), or "Closed Thu and Sat" when it is closed on every street-team day.
    */
   hours: string;
   /** The street-team day of the visit, "Sat"; "" with one street-team day or no visit. */
@@ -145,7 +155,7 @@ export interface PartnerRow {
   /** True when the hours are not listed (call first) or the place is closed on every street-team day: the row to act on. */
   hoursMissing: boolean;
   phone: string;
-  /** The phone, or "Phone not listed" (the paper never leaves the blank silent). */
+  /** The phone, or "Phone not listed" with the website's domain when there is one ("Phone not listed · example.com"). */
   phoneText: string;
   web: string;
   webUrl: string | null;
@@ -174,11 +184,15 @@ export interface SpotRow {
   name: string;
   /** Every fact in one line: "Bar · 1.5 km · 2.7% of the crowd · ranks 3 places higher here than for the room's usual crowd". */
   detail: string;
-  /** The same facts one by one, for a table: "Bar" (", not for fans" on an operator-only spot), "1.5 km", "2.7%", "3 places higher" / "the same" / "". */
+  /** The same facts one by one, for a table: "Bar" (", not for fans" on an operator-only spot), "1.5 km", "2.7%". */
   category: string;
   distance: string;
   /** "" when every spot gets the same share (the column is then left out). */
   share: string;
+  /**
+   * "3 places higher", "the same", or "not in its list" when the usual crowd's list came back without this spot.
+   * "" only when no spot has a usual-crowd rank (`panel4.showVsUsual` is false and the column is left out).
+   */
   vsUsual: string;
   /** The assumed capacity behind the share. */
   capacity: number;
@@ -201,16 +215,70 @@ export interface BudgetRow {
 }
 
 export interface DiscoveryLine {
-  kind: "area" | "partner";
-  /** "Start with this place" or "Start in this area". */
+  /** "none": the run went through the pick and no place or area met the rule; the line says so, as the plan page does. */
+  kind: "area" | "partner" | "none";
+  /** "Start with this place" or "Start in this area"; with no pick, "No top pick on this sheet" (`noTopPick`). */
   label: string;
-  /** Headline and detail as one plain line. */
+  /** Headline and detail as one plain line; a less certain pick has the partner table's dagger after its headline. */
   text: string;
   /** One short muted line: "Why this one: the best fit that isn't a bar ...". The full rule is on the system card. */
   rule: string;
+  /** The picked partner is less certain (its row carries the dagger): `LESS_SURE_NOTE`, said under the line. Else null. */
+  lessSureNote: string | null;
   refs: string;
   entityId: string | null;
   geohash: string | null;
+}
+
+/**
+ * Why a sheet has no top pick, read from the sheet by the rules that pick one (@walkup/engine discovery.ts): both
+ * rules compare this crowd with the room's usual crowd; the partner rule takes a local place in a numbered area that
+ * the usual crowd ranks at least 5 places lower (or not at all); the area rule runs only on a map that passed its
+ * checks. `lead` is "No top pick on this sheet" ("after this change" on a revision), `reason` the rule that found
+ * nothing and why. The plan page, the print view and the PDF all say it in these words.
+ */
+export function noTopPick(sheet: StreetSheet): { lead: string; reason: string } {
+  const lead = sheet.revision ? "No top pick after this change" : "No top pick on this sheet";
+  const lift = sheet.cards.liftMap.results;
+  const baseline = lift.diagnostics.baseline;
+  if (baseline === "none") return { lead, reason: "both rules compare this crowd with the room's usual crowd, and this run has no usual crowd to compare with." };
+  if (baseline === "tag") return { lead, reason: `both rules compare this crowd with the room's usual crowd, and this run compared it with ${genreFans(sheet.bill.classification)} instead.` };
+  return { lead, reason: `${partnerRuleMiss(sheet)}, and ${areaRuleMiss(sheet)}.` };
+}
+
+/** `noTopPick` as one line: "No top pick on this sheet: <reason>". */
+export function noTopPickText(sheet: StreetSheet): string {
+  const { lead, reason } = noTopPick(sheet);
+  return `${lead}: ${reason}`;
+}
+
+/** Why the partner rule picked no place, on a sheet compared with the room's usual crowd. */
+function partnerRuleMiss(sheet: StreetSheet): string {
+  const partners = sheet.cards.partners.results;
+  if (partners.length === 0) return "there are no partners to check";
+  if (partners.every((p) => p.houseRank === undefined)) return "no partner has a rank for the room's usual crowd to compare with";
+  const apart = partners.filter((p) => p.houseRank === null || (typeof p.houseRank === "number" && p.houseRank - p.qlooRank >= DISCOVERY_RULES.minHouseGap));
+  if (apart.length === 0) return "the room's usual crowd ranks no partner here at least 5 places lower than this crowd does";
+  // The rule looks only at the numbered areas (each partner's own area when there are none) and skips national chains.
+  const numbered = new Set(topTiles(sheet, { maxTiles: 5 }).map((t) => t.geohash));
+  const inArea = (p: Partner) => !!p.tileGeohash && (numbered.size === 0 || numbered.has(p.tileGeohash));
+  if (apart.some((p) => inArea(p) && p.chain !== true)) return "no partner met the partner rule";
+  const where = apart.every((p) => p.chain === true) ? "national chains, which the rule skips" : apart.every((p) => !inArea(p)) ? "outside the numbered areas" : "national chains or outside the numbered areas";
+  return `the only partners the room's usual crowd ranks at least 5 places lower are ${where}`;
+}
+
+/** Why the area rule picked no area, on a sheet compared with the room's usual crowd (the map checks it needs). */
+function areaRuleMiss(sheet: StreetSheet): string {
+  const d = sheet.cards.liftMap.results.liftDiagnostics;
+  if (!d) return "the area rule needs map checks this sheet doesn't have";
+  if (d.splitHalfSpearman === null) {
+    return /\bone act\b/.test(d.note ?? "") ? "the area rule needs the map's split-half check, which can't run on a one-act bill" : "the area rule needs the map's split-half check, which couldn't run this time";
+  }
+  if (d.splitHalfSpearman <= LIFT_DEFAULTS.minSplitHalf) {
+    return `the area rule needs the two halves of the bill to agree on the map, and they didn't (${d.splitHalfSpearman.toFixed(2)}; above ${LIFT_DEFAULTS.minSplitHalf} needed)`;
+  }
+  if (d.note || /signal is thin/.test(sheet.cards.liftMap.reason ?? "")) return "the area rule needs a map that passed its checks, and this one didn't";
+  return "no numbered area met the area rule";
 }
 
 export interface SheetModel {
@@ -289,6 +357,11 @@ export interface SheetModel {
     showShare: boolean;
     /** What the share column assumes, said once (`spotsShareNote`, the same sentence as the web sheet); null without the column. */
     shareNote: string | null;
+    /**
+     * False when no spot has a rank for the room's usual crowd (there is no usual-crowd list to compare with): the
+     * table then has no "Vs usual crowd" column.
+     */
+    showVsUsual: boolean;
     empty: string | null;
   };
   panel5: { title: string; status: string | null; podcasts: MediaRow[]; sponsor: MediaRow | null; sponsorNote: string | null };
@@ -307,7 +380,7 @@ export interface SheetModel {
     attribution: string;
     /** Kept for callers that want it; the PDF and the print view say "Sample" in the header, the footer line and the watermark only. */
     fixtureNote: string | null;
-    /** What the files carry that the page doesn't (the calendar and the ad files). */
+    /** What the files carry that the page doesn't (the calendar, and the ad files when the sheet has numbered areas). */
     elsewhere: string;
     /** One small line for the foot of the page: headliner, room and date, print date, data date, "Sample" on fixtures. */
     printLine: string;
@@ -437,6 +510,64 @@ function withoutLeadName(text: string | undefined, name: string): string | undef
   return rest ? `${rest.charAt(0).toUpperCase()}${rest.slice(1)}` : text;
 }
 
+/**
+ * The spots table's column widths, the same on the PDF and the print view: no Share column when every spot gets the
+ * same share, no "Vs usual crowd" column without a usual-crowd list (the Spot column takes its width).
+ */
+export function spotColumnWidths(showShare: boolean, showVsUsual: boolean): { spot: string; type: string; distance: string; share: string | null; vsUsual: string | null } {
+  const extra = showVsUsual ? 0 : 20;
+  return showShare
+    ? { spot: `${35 + extra}%`, type: "23%", distance: "12%", share: "10%", vsUsual: showVsUsual ? "20%" : null }
+    : { spot: `${40 + extra}%`, type: "25%", distance: "15%", share: null, vsUsual: showVsUsual ? "20%" : null };
+}
+
+/** One partner's cell in the hours column. */
+export interface PartnerHoursCell {
+  /** As `PartnerRow.hours`: "4 pm to 2 am" with one street-team day, "Sat 10 am to 2 pm" with more. */
+  hours: string;
+  /** As `PartnerRow.visitDay`. */
+  visitDay: string;
+  /** As `PartnerRow.hoursMissing`. */
+  hoursMissing: boolean;
+  /**
+   * The same hours always led by their day, for a line of text (the email, a phone-width list): "Sat noon to
+   * 3 pm", "Thu 10 am to 7 pm", "Hours not listed: call first", "Closed Thu and Sat".
+   */
+  withDay: string;
+}
+
+/**
+ * The partner hours column, one rule for the PDF, the print view, partners.csv and street-team.ics, and for the plan
+ * page and the email when they use it. With more than one street-team day: the day street-team.ics visits each
+ * partner and its hours that day (header "Visit day"). With one: the hours the plan read for that day ("Open Thu").
+ */
+export function partnerHoursColumn(
+  sheet: StreetSheet,
+  opts: { maxTiles?: number } = {},
+): { header: string; byVisit: boolean; cell: (p: Pick<Partner, "entity" | "hoursOnDay">) => PartnerHoursCell } {
+  const days = sheet.operator.streetTeamDays ?? [];
+  const visits: Map<string, PartnerVisit> = days.length > 1 ? partnerVisits(sheet, { maxTiles: opts.maxTiles ?? 5 }) : new Map();
+  const byVisit = visits.size > 0;
+  // The day the plan read the hours for (first street-team day, else show day).
+  const firstDay = hoursWeekday(sheet);
+  const cell = (p: Pick<Partner, "entity" | "hoursOnDay">): PartnerHoursCell => {
+    if (!byVisit) {
+      const body = p.hoursOnDay ? formatHours(p.hoursOnDay.replace(/^[A-Z][a-z]{2} /, "")) : HOURS_NOT_LISTED;
+      return { hours: body, visitDay: "", hoursMissing: !p.hoursOnDay, withDay: p.hoursOnDay && firstDay ? `${weekdayShort(firstDay)} ${body}` : body };
+    }
+    const v = visits.get(p.entity.entityId);
+    if (!v) {
+      const closed = `Closed ${streetDaysText(days)}`;
+      return { hours: closed, visitDay: "", hoursMissing: true, withDay: closed };
+    }
+    // One weekday in every pass (a holiday's stops move to the same weekday when it is free); a holiday's stops moved
+    // to another day of its week can visit on a second weekday, and then both are named, each with its own hours.
+    const hours = v.days.map((d) => (d.hours ? `${weekdayShort(d.weekday)} ${formatHours(d.hours)}` : `${weekdayShort(d.weekday)}, hours not listed: call first`)).join("; ");
+    return { hours, visitDay: v.days.map((d) => weekdayShort(d.weekday)).join("; "), hoursMissing: v.days.some((d) => d.hours === null), withDay: hours };
+  };
+  return { header: byVisit ? "Visit day" : firstDay ? `Open ${weekdayShort(firstDay)}` : "Hours", byVisit, cell };
+}
+
 export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}): SheetModel {
   const audience: Audience = opts.audience ?? "operator";
   const bill = sheet.bill;
@@ -453,10 +584,13 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const { headliner, support } = billParts(bill);
   const placeLine = placeOf(venue);
   const dateLine = [date, opts.showName?.trim() ?? ""].filter((x) => x !== "").join(" · ");
+  const reach = mapReachKm(sheet);
   const subline = [
     age.short,
     days.length > 0 ? `street team ${streetDaysText(days)}` : "no street-team days set",
-    `${sheet.operator.radiusKm} km radius`,
+    // The plan page's words when the map search widened past the operator's radius: the header never claims a
+    // radius the map didn't keep to.
+    reach !== null ? `radius ${sheet.operator.radiusKm} km; the map search widened to ${reach} km` : `${sheet.operator.radiusKm} km radius`,
     audience === "fan" ? "fan-facing version" : "",
   ]
     .filter((x) => x !== "")
@@ -486,23 +620,30 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
 
   // Discovery ----------------------------------------------------------------
   const d = sheet.discovery;
+  // A picked partner the table marks less certain gets the same dagger and note here (as on the plan page).
+  const picked = d?.kind === "partner" && d.entityId ? cards.partners.results.find((p) => p.entity.entityId === d.entityId) : undefined;
+  const pickLessSure = !!picked && partnerLessSure(picked);
   const discovery: DiscoveryLine | null =
     d && d.headline && d.headline.trim() !== ""
       ? {
           kind: d.kind,
           label: d.kind === "partner" ? "Start with this place" : "Start in this area",
-          text: [sentence(d.headline), sentence(d.detail ?? "")].filter((x) => x !== "").join(" "),
+          text: [sentence(`${d.headline.trim().replace(/[.!?]$/, "")}${pickLessSure ? "†" : ""}`), sentence(d.detail ?? "")].filter((x) => x !== "").join(" "),
           rule:
             d.why && d.why.trim() !== ""
               ? `Why this one: ${sentence(d.why)}`
               : d.rule && d.rule.trim() !== ""
                 ? `Why this one: ${sentence(d.rule.charAt(0).toLowerCase() + d.rule.slice(1))}`
                 : "",
+          lessSureNote: pickLessSure ? LESS_SURE_NOTE : null,
           refs: refsList(d.ledgerRefs ?? []),
           entityId: d.entityId ?? null,
           geohash: d.geohash ?? null,
         }
-      : null;
+      : (sheet.steps ?? []).length > 0
+        ? // A run that went through the pick and found none says so, and why, where the line would be (as the plan page).
+          { kind: "none", label: noTopPick(sheet).lead, text: sentence(noTopPick(sheet).reason), rule: "", lessSureNote: null, refs: "", entityId: null, geohash: null }
+        : null;
 
   // Panel 1 ----------------------------------------------------------------
   const top = topTiles(sheet, { maxTiles: opts.maxTiles ?? 5 });
@@ -521,8 +662,9 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       lift: formatLift(t.lift),
       zips: zipLine,
       why: whyLine,
-      // The why line keeps at least its first sentence whole, however long.
-      blurb: `${zipLine}. ${sentencesUpTo(whyLine, Math.max(0, AREA_BLURB_CHARS - zipLine.length - 2))}`.trim(),
+      // The why line keeps at least its first sentence whole, however long. A long ZIP list takes no more than
+      // three ZIPs' worth of the length, so an area with four ZIPs keeps the same sentences as its neighbours.
+      blurb: `${zipLine}. ${sentencesUpTo(whyLine, Math.max(0, AREA_BLURB_CHARS - Math.min(zipLine.length, AREA_BLURB_ZIP_CHARS) - 2))}`.trim(),
     };
   });
   const checks = cards.liftMap.results.liftDiagnostics;
@@ -548,20 +690,13 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const listed = partners.slice(0, maxPartners);
   // With more than one street-team day, the hours column names the day street-team.ics visits each partner and
   // gives that day's hours (from the place's own week), so the paper, partners.csv and the calendar agree.
-  const visits = days.length > 1 ? partnerVisits(sheet, { maxTiles: opts.maxTiles ?? 5 }) : new Map<string, never>();
-  const byVisit = visits.size > 0;
-  const hoursCell = (p: Partner): { hours: string; visitDay: string; hoursMissing: boolean } => {
-    if (!byVisit) {
-      return { hours: p.hoursOnDay ? formatHours(p.hoursOnDay.replace(/^[A-Z][a-z]{2} /, "")) : HOURS_NOT_LISTED, visitDay: "", hoursMissing: !p.hoursOnDay };
-    }
-    const v = visits.get(p.entity.entityId);
-    if (!v) return { hours: `Closed ${streetDaysText(days)}`, visitDay: "", hoursMissing: true };
-    const day = weekdayShort(v.weekdays[0]!);
-    return { hours: v.hours ? `${day} ${formatHours(v.hours)}` : `${day}, hours not listed: call first`, visitDay: day, hoursMissing: v.hours === null };
-  };
+  const hoursCol = partnerHoursColumn(sheet, { maxTiles: opts.maxTiles });
   const rows: PartnerRow[] = listed.map((p, i) => {
     const tile = p.tileGeohash ? tileByHash.get(p.tileGeohash) : undefined;
-    const web = p.website ?? (typeof p.entity.properties?.website === "string" ? (p.entity.properties.website as string) : null);
+    // The cleaned website only (`Partner.website`), as the plan page and partners.csv: a site the engine's rule
+    // dropped (another business's server, a host that doesn't carry the name) is not printed either.
+    const web = p.website ?? null;
+    const h = hoursCol.cell(p);
     const ex = p.explain;
     return {
       n: String(i + 1),
@@ -570,12 +705,15 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       category: categoryLabel(p.category),
       house: houseShort(p),
       tileRank: p.tileGeohash && topRank.has(p.tileGeohash) ? (topRank.get(p.tileGeohash) as number) : null,
-      tile: partnerAreaLabel(p, tileByHash) || "near venue",
+      tile: partnerAreaText(p, tileByHash) || "near venue",
       tileLift: tile ? formatLift(tile.lift) : "",
       address: (p.address ?? (typeof p.entity.properties?.address === "string" ? (p.entity.properties.address as string) : "")).replace(/, [A-Z]{2}$/, ""),
-      ...hoursCell(p),
+      hours: h.hours,
+      visitDay: h.visitDay,
+      hoursMissing: h.hoursMissing,
       phone: p.phone ?? "",
-      phoneText: p.phone && p.phone.trim() !== "" ? formatPhone(p.phone) : PHONE_NOT_LISTED,
+      // No phone: said out loud, with the website's domain when there is one, so the row still has a way in.
+      phoneText: p.phone && p.phone.trim() !== "" ? formatPhone(p.phone) : web ? `${PHONE_NOT_LISTED} · ${shortDomain(web)}` : PHONE_NOT_LISTED,
       web: web ? shortDomain(web) : "",
       webUrl: web && /^https?:\/\//i.test(web) ? web : null,
       activation: ex?.activation?.trim() ?? "",
@@ -589,8 +727,6 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   });
   const explained = listed.some((p) => !!p.explain);
   const hasHouse = rows.some((r) => r.house !== "");
-  // The day the hours column shows: the day the plan read the hours for (first street-team day, else show day).
-  const firstDay = hoursWeekday(sheet);
 
   // Panel 3 ----------------------------------------------------------------
   const maxDeclared = opts.maxDeclared ?? 12;
@@ -614,6 +750,9 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const spotPicks = sheetSpots(cards.prePost.results);
   const listedSpots = (audience === "fan" ? spotPicks.filter((sp) => spotIsFanFacing(sp, sheet)) : spotPicks).slice(0, maxSpots);
   const showShare = spotSharesDiffer(listedSpots.map((sp) => sp.expectedShare));
+  // The usual crowd's list came back when any spot has a rank on it: a spot without one is then "not in its list",
+  // said in words. With no rank at all there is nothing to compare with, and the column is left out.
+  const usualRanked = spotPicks.some((sp) => sp.deltaRank !== null && Number.isFinite(sp.deltaRank));
   for (const sp of spotPicks) {
     const operatorOnly = !spotIsFanFacing(sp, sheet);
     if (audience === "fan" && operatorOnly) {
@@ -625,13 +764,20 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     const distance = formatKm(sp.entity.distanceM);
     const share = showShare ? formatPct(sp.expectedShare, 1) : "";
     // "3 places higher" here than for the room's usual crowd (the table's short form of `spotVsUsual`).
-    const moved = sp.deltaRank === null ? "" : sp.deltaRank === 0 ? "the same" : `${Math.abs(sp.deltaRank)} ${Math.abs(sp.deltaRank) === 1 ? "place" : "places"} ${sp.deltaRank > 0 ? "higher" : "lower"}`;
+    const moved =
+      sp.deltaRank === null || !Number.isFinite(sp.deltaRank)
+        ? usualRanked
+          ? SPOT_NOT_IN_USUAL_SHORT
+          : ""
+        : sp.deltaRank === 0
+          ? "the same"
+          : `${Math.abs(sp.deltaRank)} ${Math.abs(sp.deltaRank) === 1 ? "place" : "places"} ${sp.deltaRank > 0 ? "higher" : "lower"}`;
     const notForFans = operatorOnly && audience === "operator";
     const bits = [
       category,
       distance,
       share ? `${share} of the crowd` : "",
-      spotVsUsual(sp.deltaRank),
+      spotVsUsual(sp.deltaRank, usualRanked),
       notForFans ? "not for fans" : "",
     ].filter((b) => b !== "");
     spots.push({
@@ -746,7 +892,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     panel2: {
       title: `Partners (${partners.length})`,
       status: statusOf(cards.partners),
-      hoursHeader: byVisit ? "Visit day" : firstDay ? `Open ${weekdayShort(firstDay)}` : "Hours",
+      hoursHeader: hoursCol.header,
       explained,
       hasHouse,
       houseNote: null,
@@ -772,6 +918,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       ageLine: bill.legalAgeEnforced === null && sheet.operator.allAges !== true ? "Age policy: not on the listing, so treated as all ages." : `Age policy: ${age.long}.`,
       showShare,
       shareNote: showShare ? spotsShareNote(spots.map((sp) => sp.capacity)) : null,
+      showVsUsual: usualRanked,
       empty: spots.length === 0 ? "No spots on this sheet." : null,
     },
     panel5: { title: "Podcasts and a sponsor", status: statusOf(cards.media), podcasts, sponsor, sponsorNote },
@@ -793,7 +940,9 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       ledgerUrl: ledgerUrl && /^https?:\/\//i.test(ledgerUrl) ? ledgerUrl : null,
       attribution: fixture ? SAMPLE_ATTRIBUTION : ATTRIBUTION,
       fixtureNote: fixture ? FIXTURE_NOTICE : null,
-      elsewhere: "Street-team days and times are in street-team.ics; ad ZIPs and pins in zips.csv and pins.csv.",
+      // Without a numbered area there are no ad ZIPs or pins to point to (the plan page drops those downloads too).
+      elsewhere:
+        top.length > 0 ? "Street-team days and times are in street-team.ics; ad ZIPs and pins in zips.csv and pins.csv." : "Street-team days and times are in street-team.ics.",
       printLine,
     },
   };
@@ -806,7 +955,7 @@ export function sheetModelText(m: SheetModel): string[] {
   out.push(m.title, m.headliner, m.support, m.dateLine, m.placeLine, m.subline, m.tMinus, ...m.labels);
   if (m.seatsLine) out.push(m.seatsLine);
   out.push(...m.notes);
-  if (m.discovery) out.push(m.discovery.label, m.discovery.text, m.discovery.rule, m.discovery.refs);
+  if (m.discovery) out.push(m.discovery.label, m.discovery.text, m.discovery.lessSureNote ?? "", m.discovery.rule, m.discovery.refs);
   out.push(m.panel1.title, ...m.panel1.tiles.flatMap((t) => [t.name, t.lift, t.blurb]), m.panel1.legendCaption, m.panel1.baseline);
   if (m.panel1.empty) out.push(m.panel1.empty);
   out.push(

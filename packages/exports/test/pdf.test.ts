@@ -80,6 +80,8 @@ describe("toPdf", () => {
       expect(text).toContain("Phone not listed");
       // Before and after the show is a small table.
       for (const head of ["Spot", "Type", "Distance", "Share", "Vs usual crowd"]) expect(text).toContain(head);
+      // A spot the usual crowd's list does not have says so, never an empty cell.
+      expect(text).toContain("not in its list");
       expect(text).toContain("not in Qloo's catalog, kept in your order");
       expect(text).toContain("not for fans");
       expect(text).toMatch(/Juniper Wire · Example Hall · Fri Nov 20 · printed \w{3} \w{3} \d{1,2} \d{4} · data from Fri Oct 9 2026/);
@@ -153,6 +155,20 @@ describe("toPdf", () => {
   );
 
   it(
+    "says why there is no top pick on the g3 sample sheet, whole, in the plan page's words",
+    async () => {
+      const g3 = (JSON.parse(readFileSync(new URL("../../../fixtures/synthetic/engine/g3.sheet.json", import.meta.url), "utf8")) as { sheet: StreetSheet }).sheet;
+      const res = await renderStreetSheetPdf(g3);
+      expect(res.pages).toBe(1);
+      const text = pdfPlainText(res.buffer);
+      expect(text).toContain("No top pick on this sheet: both rules compare this crowd with the room's usual crowd, and this run has no usual crowd to compare with.");
+      expect(text).not.toContain("ranks no partner");
+      expect(text).not.toContain("Start with this place");
+    },
+    SLOW,
+  );
+
+  it(
     "marks less certain rows with a dagger and one note, and prints the discovery line, still on one page",
     async () => {
       const res = await renderStreetSheetPdf(makeExplainedSheet());
@@ -163,7 +179,10 @@ describe("toPdf", () => {
       expect(text).toContain("Corner Fade Barbers †");
       expect(text).toContain("† Less certain: the search widened, the list was short or the place ranked low. Call before you go.");
       expect(text).toContain("Start with this place:");
-      expect(text).toContain("Paper Lantern Books, 4.2 km out in Edgehill.");
+      // The pick is less certain: the table's dagger after its headline; the note is said once, under the table, so it
+      // takes no line from the one-page fit.
+      expect(text).toContain("Paper Lantern Books, 4.2 km out in Edgehill†.");
+      expect(countOccurrences(text, "† Less certain: the search widened")).toBe(1);
       expect(text).toContain("Why this one: the highest-ranked partner that is not a bar");
       const busy = makeBusySheet();
       const explained = makeExplainedSheet();
@@ -171,6 +190,10 @@ describe("toPdf", () => {
       busy.discovery = explained.discovery;
       const fitted = await renderStreetSheetPdf(busy);
       expect(fitted.pages).toBe(1);
+      // With rows cut, the note shares the "+N more partners" line instead of taking one of its own.
+      const busyText = pdfPlainText(fitted.buffer);
+      expect(busyText).toMatch(/\+\d+ more partners in partners\.csv\. † Less certain: the search widened/);
+      expect(countOccurrences(busyText, "† Less certain: the search widened")).toBe(1);
     },
     SLOW,
   );
@@ -282,6 +305,16 @@ describe("React tree", () => {
     s.cards.partners.results = s.cards.partners.results.map((p, i) => (i === 1 ? { ...p, hoursOnDay: null } : p));
     const rows = walk(streetSheetDocument(s)).filter((n) => n.type === "VIEW" && (n.props.style as { minHeight?: number } | undefined)?.minHeight !== undefined);
     expect(rows.map((r) => (r.props.style as { backgroundColor?: string }).backgroundColor ?? null)).toEqual([null, "#fff8db", null, null, null, null]);
+  });
+
+  it("leaves the Vs usual crowd column out when no spot has a usual-crowd rank, and fills it in words otherwise", () => {
+    expect(textOf(streetSheetDocument(makeSheet()))).toContain("not in its list");
+    const s = makeSheet();
+    s.cards.prePost.results = s.cards.prePost.results.map((x) => ({ ...x, deltaRank: null }));
+    const all = textOf(streetSheetDocument(s));
+    expect(all).toContain("Before and after the show");
+    expect(all).not.toContain("Vs usual crowd");
+    expect(all).not.toContain("not in its list");
   });
 
   it("has no watermark on a live sheet with real counts", () => {

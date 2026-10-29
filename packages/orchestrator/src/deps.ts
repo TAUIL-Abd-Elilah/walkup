@@ -3,7 +3,7 @@
  *
  * - createFixtureDeps(): the real clients wired to @walkup/qloo-world
  *   transports. Mode is always "fixture". Used by tests, the fixture
- *   generator and the web app while no keys exist.
+ *   generator, and the web app's and MCP server's sample (fixture) mode.
  * - createDepsFromEnv(): live clients when QLOO_API_KEY and
  *   TICKETMASTER_API_KEY are set (and WALKUP_MODE is not "fixture" or
  *   "recorded"); otherwise the fixture deps. Server-side only.

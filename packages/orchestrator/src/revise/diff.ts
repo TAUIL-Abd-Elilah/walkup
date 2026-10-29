@@ -1,15 +1,18 @@
 /**
  * What a revision changed, in display order: settings, then areas, partners
- * and pre/post spots (removed first, then added). Removed rows say why when
- * the new settings explain it. Receipts point at this run's ledger: an added
- * row cites the call that returned it; a removed row cites the new search that
- * no longer has it.
+ * and pre/post spots (removed first, then added). Areas are the numbered areas
+ * 1-5 the sheet shows (`numberedTiles`), by name: an area whose name is on both
+ * lists did not change. Removed rows say why when the new settings explain it.
+ * Receipts point at this run's ledger: an added row cites the call that
+ * returned it; a removed partner cites its own area's new search and that
+ * search's usual-crowd twin (every new partner search when its area wasn't
+ * searched again); other removed rows cite the new search that no longer has them.
  */
-import type { LiftTile, OperatorInputs, Partner, PrePostSpot, RevisionChange, StreetSheet } from "@walkup/contracts";
-import { barsExcluded, DEFAULT_BAR_CATEGORIES, isDrinkLed, liftInWords } from "@walkup/engine";
+import type { LiftTile, OperatorInputs, Partner, PrePostSpot, RevisionChange, StreetSheet, Weekday } from "@walkup/contracts";
+import { barsExcluded, DEFAULT_BAR_CATEGORIES, hoursOnDay, isDrinkLed, liftInWords } from "@walkup/engine";
 import { categoriesInWords, categoryWord, dayWord } from "@walkup/narrator";
-import { isExcludedArea } from "../steps/heat";
-import { sheetAreas, reviseSummary } from "./summary";
+import { isExcludedArea, mapSearchKm, numberedTiles, THIN_CELLS } from "../steps/heat";
+import { reviseSummary } from "./summary";
 
 function joinAnd(items: readonly string[]): string {
   if (items.length <= 1) return items[0] ?? "";
@@ -112,9 +115,32 @@ function settingChanges(parent: StreetSheet, child: StreetSheet, refs: readonly 
   }
   if (p.radiusKm !== c.radiusKm) {
     const km = (n: number) => `${n.toLocaleString("en-US", { maximumFractionDigits: 1 })} km`;
-    out.push({ kind: "setting_changed", label: "Search radius", detail: `${km(c.radiusKm)} (was ${km(p.radiusKm)})`, ledgerRefs });
+    out.push({ kind: "setting_changed", label: "Search radius", detail: `${km(c.radiusKm)} (was ${km(p.radiusKm)})${radiusEffect(parent, child)}`, ledgerRefs });
   }
   return out;
+}
+
+/** Geohashes of the numbered areas, in order. */
+function numberedIds(sheet: StreetSheet): string[] {
+  return numberedTiles(sheet.cards.liftMap.results.tiles).map((t) => t.geohash);
+}
+
+/**
+ * True when a new radius changed nothing on the map: both sheets' map searches widened to the same reach (fewer
+ * than THIN_CELLS squares came back within either radius), so the numbered areas are the same ones.
+ */
+export function radiusNoOp(parent: StreetSheet, child: StreetSheet): boolean {
+  const reach = mapSearchKm(child);
+  return reach !== child.operator.radiusKm && reach === mapSearchKm(parent) && numberedIds(parent).join(",") === numberedIds(child).join(",");
+}
+
+/** What a new radius did to the map search, when the map widened past it (said after "10 km (was 40 km)"). */
+function radiusEffect(parent: StreetSheet, child: StreetSheet): string {
+  const reach = mapSearchKm(child);
+  if (reach === child.operator.radiusKm) return "";
+  const why = `fewer than ${THIN_CELLS} map squares came back within ${child.operator.radiusKm} km`;
+  if (radiusNoOp(parent, child)) return `; the map search still widened to ${reach} km (${why}), so the areas are the same as before`;
+  return `; the map search widened to ${reach} km (${why})`;
 }
 
 function tileLabel(t: LiftTile): string {
@@ -122,27 +148,29 @@ function tileLabel(t: LiftTile): string {
 }
 
 function tileChanges(parent: StreetSheet, child: StreetSheet): RevisionChange[] {
-  const before = sheetAreas(parent);
-  const after = sheetAreas(child);
-  const was = new Set(before.map((t) => t.geohash));
-  const now = new Set(after.map((t) => t.geohash));
+  const before = numberedTiles(parent.cards.liftMap.results.tiles);
+  const after = numberedTiles(child.cards.liftMap.results.tiles);
+  // An area is on a list by its square or by its name: a reader matches the banner to the numbered list by name.
+  const on = (list: readonly LiftTile[], t: LiftTile) => list.some((x) => x.geohash === t.geohash || (!!t.name && x.name === t.name));
   const baseline = child.cards.liftMap.results.diagnostics.baseline === "tag" ? "tag" : "house";
   const refs = stepRefs(child, "heat", child.cards.liftMap.provenance);
   const out: RevisionChange[] = [];
-  for (const t of before) {
-    if (now.has(t.geohash)) continue;
+  before.forEach((t, i) => {
+    if (on(after, t)) return;
     const skipped = areaSkipped(child.operator, t.geohash, t.name);
-    out.push({ kind: "tile_removed", label: tileLabel(t), detail: `${skipped ? "skipped at your request" : "no longer among the top areas"} (map square ${t.geohash})`, ledgerRefs: refs });
-  }
-  for (const t of after) {
-    if (was.has(t.geohash)) continue;
-    out.push({ kind: "tile_added", label: tileLabel(t), detail: `${liftInWords(t.lift, baseline)} (map square ${t.geohash})`, ledgerRefs: refs });
-  }
+    const why = skipped ? "skipped at your request" : "no longer among the numbered areas";
+    out.push({ kind: "tile_removed", label: tileLabel(t), detail: `${why} (was area ${i + 1}, map square ${t.geohash})`, ledgerRefs: refs });
+  });
+  after.forEach((t, i) => {
+    if (on(before, t)) return;
+    out.push({ kind: "tile_added", label: tileLabel(t), detail: `now area ${i + 1}, ${liftInWords(t.lift, baseline)} (map square ${t.geohash})`, ledgerRefs: refs });
+  });
   return out;
 }
 
+/** "Near" the area: a partner sits up to 2 km from its area's centre (3.5 km when widened), sometimes past its edge. */
 function partnerWhere(p: Partner): string {
-  return p.tileName ? `in ${p.tileName}` : "near the room";
+  return p.tileName ? `near ${p.tileName}` : "near the room";
 }
 
 function partnerRefs(p: Partner): string[] {
@@ -161,6 +189,11 @@ function rebuiltWhy(p: Partner, after: readonly Partner[]): string {
   return "dropped when the list was rebuilt";
 }
 
+/** The day a sheet's partner searches checked opening hours for (the first street-team day, else the show's). */
+function searchDay(sheet: StreetSheet): Weekday {
+  return sheet.operator.streetTeamDays[0] ?? sheet.bill.weekday;
+}
+
 function partnerChanges(parent: StreetSheet, child: StreetSheet): RevisionChange[] {
   const before = parent.cards.partners.results;
   const after = child.cards.partners.results;
@@ -168,12 +201,39 @@ function partnerChanges(parent: StreetSheet, child: StreetSheet): RevisionChange
   const now = new Set(after.map((p) => p.entity.entityId));
   const types = excludedTypes(child.operator);
   const removedRefs = stepRefs(child, "partners", child.cards.partners.provenance);
+  // Each area's new search and its usual-crowd twin, as the partners still listed there cite them.
+  const areaRefs = new Map<string, string[]>();
+  for (const x of after) {
+    if (!x.tileGeohash) continue;
+    areaRefs.set(x.tileGeohash, uniq([...(areaRefs.get(x.tileGeohash) ?? []), ...(x.explain?.ledgerRefs ?? [])]));
+  }
+  const day = searchDay(child);
+  const newDay = day !== searchDay(parent);
+  // What that day is now. Thursday and Saturday -> Saturday: Saturday was a street-team day already, and what is new
+  // is that the search checks it.
+  const childDays = child.operator.streetTeamDays;
+  const dayRole =
+    childDays.length === 0
+      ? "the show day, which the new search checks"
+      : !parent.operator.streetTeamDays.includes(day)
+        ? "the new street-team day"
+        : childDays.length === 1
+          ? "now the only street-team day"
+          : "now the first street-team day, which the new search checks";
   const out: RevisionChange[] = [];
   for (const p of before) {
     if (now.has(p.entity.entityId)) continue;
+    // Closed on the day the new search checks: it asked Qloo for places open that day.
+    const closed = newDay && hoursOnDay(p.entity.properties?.hours, day).status === "closed";
     const why =
-      types.leftOut(p.category, p.entity) ?? (areaSkipped(child.operator, p.tileGeohash, p.tileName) ? "its area was skipped" : rebuiltWhy(p, after));
-    out.push({ kind: "partner_removed", label: p.entity.name, detail: `${categoryWord(p.category, false)} ${partnerWhere(p)}: ${why}`, ledgerRefs: removedRefs });
+      types.leftOut(p.category, p.entity) ??
+      (areaSkipped(child.operator, p.tileGeohash, p.tileName)
+        ? "its area was skipped"
+        : closed
+          ? `closed ${dayWord(day)}, ${dayRole}`
+          : rebuiltWhy(p, after));
+    const own = p.tileGeohash ? areaRefs.get(p.tileGeohash) : undefined;
+    out.push({ kind: "partner_removed", label: p.entity.name, detail: `${categoryWord(p.category, false)} ${partnerWhere(p)}: ${why}`, ledgerRefs: own && own.length > 0 ? own : removedRefs });
   }
   for (const p of after) {
     if (was.has(p.entity.entityId)) continue;

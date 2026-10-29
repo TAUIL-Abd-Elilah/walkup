@@ -1,9 +1,25 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
-import { AREA_BLURB_CHARS, buildSheetModel, HOURS_NOT_LISTED, PAGE_SECTIONS, PHONE_NOT_LISTED, sheetModelText, THIN_SIGNAL_NOTE } from "../src/sheet-model";
-import { formatHours, formatKm, isCartOrStand, ledgerRanges, receiptGroup, sentencesUpTo, sheetSpots, spotSharesDiffer, tMinusDays, tMinusLabel } from "../src/format";
+import { LIMITS_EVERY_SHEET, type StreetSheet } from "@walkup/contracts";
+import {
+  AREA_BLURB_CHARS,
+  AREA_BLURB_ZIP_CHARS,
+  buildSheetModel,
+  HOURS_NOT_LISTED,
+  noTopPick,
+  noTopPickText,
+  PAGE_SECTIONS,
+  partnerHoursColumn,
+  PHONE_NOT_LISTED,
+  sheetModelText,
+  spotColumnWidths,
+  THIN_SIGNAL_NOTE,
+} from "../src/sheet-model";
+import { formatHours, formatKm, isCartOrStand, ledgerRanges, receiptGroup, sentencesUpTo, sheetSpots, spotSharesDiffer, spotVsUsual, tMinusDays, tMinusLabel } from "../src/format";
 import { fanFacingSpots, isFanFacing, partnerIsFanFacing, spotIsFanFacing } from "../src/audience";
-import { addressState, areaLabel, formatPhone } from "../src/format";
+import { addressState, areaLabel, formatPhone, LESS_SURE_NOTE } from "../src/format";
+import { toIcs } from "../src/ics";
+import { pinRows, zipRows } from "../src/tables";
 import { makeExplainedSheet, makeMultiStateSheet, makeSheet, PARTNERS, place, SPOTS } from "./helpers";
 
 describe("header", () => {
@@ -135,8 +151,10 @@ describe("header", () => {
     expect(d).toEqual({
       kind: "partner",
       label: "Start with this place",
-      text: "Paper Lantern Books, 4.2 km out in Edgehill. A bookstore this crowd ranks highly that the list without Qloo does not have.",
+      // The pick's row is less certain (medium confidence), so the line has its dagger and note.
+      text: "Paper Lantern Books, 4.2 km out in Edgehill†. A bookstore this crowd ranks highly that the list without Qloo does not have.",
       rule: "Why this one: the highest-ranked partner that is not a bar, more than 2 km from the venue and missing from the list without Qloo.",
+      lessSureNote: "† Less certain: the search widened, the list was short or the place ranked low. Call before you go.",
       refs: "Q4, P1",
       entityId: "syn-place-4",
       geohash: null,
@@ -197,6 +215,106 @@ describe("panels", () => {
     // Honest blanks: the paper says "Phone not listed" instead of an empty cell.
     expect(m.panel2.rows[5]).toMatchObject({ phone: "", phoneText: PHONE_NOT_LISTED, web: "", webUrl: null });
     expect(m.panel2.rows[0]!.phoneText).toBe(m.panel2.rows[0]!.phone);
+  });
+
+  it("marks a less certain top pick with the table's dagger and note, as the plan page does", () => {
+    // The pick (Paper Lantern Books) has medium confidence: its table row has the dagger, so the line does too.
+    const x = buildSheetModel(makeExplainedSheet());
+    expect(x.panel2.rows.find((r) => r.entityId === "syn-place-4")!.lessSure).toBe(true);
+    expect(x.discovery).toMatchObject({ kind: "partner", label: "Start with this place", lessSureNote: LESS_SURE_NOTE });
+    expect(x.discovery!.text).toMatch(/^Paper Lantern Books, 4\.2 km out in Edgehill†\. A bookstore/);
+    // A sure pick has neither.
+    const sure = makeExplainedSheet();
+    sure.discovery = { ...sure.discovery!, entityId: "syn-place-1" };
+    expect(buildSheetModel(sure).discovery).toMatchObject({ lessSureNote: null });
+    expect(buildSheetModel(sure).discovery!.text).not.toContain("†");
+  });
+
+  it("says there is no top pick when the run found none, and why, read from the sheet", () => {
+    const s = makeSheet();
+    expect(buildSheetModel(s).discovery).toBeNull();
+    s.steps = [{ id: "guard", kind: "other", label: "Guard", decision: "Checked.", status: "ok", ledgerRefs: [] }];
+    expect(buildSheetModel(s).discovery).toMatchObject({
+      kind: "none",
+      label: "No top pick on this sheet",
+      text: "no partner has a rank for the room's usual crowd to compare with, and the area rule needs map checks this sheet doesn't have.",
+      lessSureNote: null,
+      entityId: null,
+    });
+    // A one-act bill (f81d3edd, 090902c0): no partner stands apart, and the map had no second half to check against.
+    s.cards.partners.results = s.cards.partners.results.map((p) => ({ ...p, houseRank: p.qlooRank + 2 }));
+    const checks = { splitHalfSpearman: null, liftVsHeatSpearman: 0.1, billFloor: 0.7, method: "Lift." };
+    s.cards.liftMap.results.liftDiagnostics = { ...checks, note: "This bill has one act, so there was no second half to check the map against." };
+    expect(noTopPickText(s)).toBe(
+      "No top pick on this sheet: the room's usual crowd ranks no partner here at least 5 places lower than this crowd does, and the area rule needs the map's split-half check, which can't run on a one-act bill.",
+    );
+    // Halves that disagree, or a map that passed its checks and still had no area.
+    s.cards.liftMap.results.liftDiagnostics = { ...checks, splitHalfSpearman: 0.31 };
+    expect(noTopPickText(s)).toMatch(/and the area rule needs the two halves of the bill to agree on the map, and they didn't \(0\.31; above 0\.5 needed\)\.$/);
+    s.cards.liftMap.results.liftDiagnostics = { ...checks, splitHalfSpearman: 0.8 };
+    expect(noTopPickText(s)).toMatch(/, and no numbered area met the area rule\.$/);
+    // The only place the usual crowd ranks far lower is a national chain, which the rule skips.
+    s.cards.partners.results[0] = { ...s.cards.partners.results[0]!, houseRank: 30, chain: true };
+    expect(noTopPickText(s)).toMatch(/^No top pick on this sheet: the only partners the room's usual crowd ranks at least 5 places lower are national chains, which the rule skips, and /);
+    // A genre stand-in instead of the room's own crowd: neither rule runs.
+    s.cards.liftMap.results.diagnostics = { ...s.cards.liftMap.results.diagnostics, baseline: "tag" };
+    expect(noTopPick(s).reason).toMatch(/^both rules compare this crowd with the room's usual crowd, and this run compared it with .+ instead\.$/);
+    s.revision = { parentPlanId: "test-plan-0", instruction: "No restaurants", interpreter: "rules", toolCalls: [], changes: [] };
+    expect(buildSheetModel(s).discovery!.label).toBe("No top pick after this change");
+    expect(noTopPickText(s)).toMatch(/^No top pick after this change: both rules /);
+  });
+
+  it("gives the g3 sample sheet, which has no usual crowd, a reason that matches the rest of its sheet", () => {
+    const g3 = (JSON.parse(readFileSync(new URL("../../../fixtures/synthetic/engine/g3.sheet.json", import.meta.url), "utf8")) as { sheet: StreetSheet }).sheet;
+    expect(g3.cards.liftMap.results.diagnostics.baseline).toBe("none");
+    const m = buildSheetModel(g3);
+    expect(m.discovery).toMatchObject({
+      kind: "none",
+      label: "No top pick on this sheet",
+      text: "both rules compare this crowd with the room's usual crowd, and this run has no usual crowd to compare with.",
+    });
+    expect(sheetModelText(m).join(" ")).not.toContain("ranks no partner");
+    expect(m.panel1.baseline).toMatch(/^Nothing to compare with/);
+  });
+
+  it("says when the map search widened past the radius, in the plan page's words", () => {
+    const s = makeSheet();
+    expect(buildSheetModel(s).subline).toContain("40 km radius");
+    s.operator = { ...s.operator, radiusKm: 10 };
+    s.cards.liftMap = { ...s.cards.liftMap, status: "partial", reason: "The search widened to 60 km (fewer than 200 map squares came back within 10 km)." };
+    const sub = buildSheetModel(s).subline;
+    expect(sub).toContain("radius 10 km; the map search widened to 60 km");
+    expect(sub).not.toContain("10 km radius");
+  });
+
+  it("puts the website's domain beside a missing phone, and points to the ad files only when there are areas", () => {
+    const s = makeSheet();
+    s.cards.partners.results = [{ ...PARTNERS[0]!, phone: null }, PARTNERS[5]!];
+    const m = buildSheetModel(s);
+    expect(m.panel2.rows[0]!.phoneText).toBe("Phone not listed · example.com");
+    expect(m.panel2.rows[1]!.phoneText).toBe("Phone not listed");
+    expect(m.footer.elsewhere).toContain("zips.csv and pins.csv");
+    s.cards.liftMap = { ...s.cards.liftMap, results: { ...s.cards.liftMap.results, tiles: s.cards.liftMap.results.tiles.map((t) => ({ ...t, lift: 1.1 })) } };
+    expect(buildSheetModel(s).footer.elsewhere).toBe("Street-team days and times are in street-team.ics.");
+  });
+
+  it("gives the plan page and the email the same hours column as the paper, the CSV and the calendar", () => {
+    const s = makeSheet();
+    const col = partnerHoursColumn(s);
+    expect(col).toMatchObject({ header: "Visit day", byVisit: true });
+    const model = buildSheetModel(s).panel2.rows;
+    s.cards.partners.results.forEach((p, i) => {
+      const c = col.cell(p);
+      expect({ hours: c.hours, visitDay: c.visitDay, hoursMissing: c.hoursMissing }).toEqual({ hours: model[i]!.hours, visitDay: model[i]!.visitDay, hoursMissing: model[i]!.hoursMissing });
+      expect(c.withDay).toBe(c.hours);
+    });
+    // With one street-team day, the line form leads with that day.
+    const oneDay = makeSheet();
+    oneDay.operator = { ...oneDay.operator, streetTeamDays: ["thursday"] };
+    const one = partnerHoursColumn(oneDay);
+    expect(one).toMatchObject({ header: "Open Thu", byVisit: false });
+    expect(one.cell(PARTNERS[0]!)).toEqual({ hours: "10 am to 7 pm", visitDay: "", hoursMissing: false, withDay: "Thu 10 am to 7 pm" });
+    expect(one.cell({ ...PARTNERS[0]!, hoursOnDay: null }).withDay).toBe(HOURS_NOT_LISTED);
   });
 
   it("panel 2 keeps the explain parts and says one plain line on why", () => {
@@ -448,6 +566,29 @@ describe("area labels", () => {
     expect(text).not.toMatch(/Silver Spring, (Washington|DC)|Arlington, (Washington|DC)/);
   });
 
+  it("take the state from the tile's own point when the run recorded it, over its first ZIP's", () => {
+    // Georgetown's nearest ZCTA can be across the river in Virginia; the tile's point is in DC.
+    const georgetown = { name: "Georgetown", geohash: "dqcjq9", zctas: ["22209", "20007"], state: "DC" };
+    expect(areaLabel(georgetown)).toBe("Georgetown, DC");
+    expect(areaLabel({ ...georgetown, state: undefined })).toBe("Georgetown, VA");
+    // Every file reads the whole tile, so the state reaches the map list, the budget split, zips.csv and pins.csv.
+    const s = makeMultiStateSheet();
+    const tiles = s.cards.liftMap.results.tiles.map((t, i) => (i === 1 ? { ...t, name: "Georgetown", zctas: ["22209", "20007"], state: "DC" } : t));
+    s.cards.liftMap.results.tiles = tiles;
+    const m = buildSheetModel(s);
+    expect(m.panel1.tiles[1]!.name).toBe("Georgetown, DC");
+    expect(m.footer.budget[1]!.name).toBe("Georgetown, DC");
+    expect(m.panel2.rows.find((r) => r.tileRank === 2)!.tile).toBe("Georgetown, DC");
+    expect(zipRows(s, { isResidentialZip: () => true }).filter((r) => r.area === 2).map((r) => r.areaName)).toEqual(["Georgetown, DC", "Georgetown, DC"]);
+    expect(pinRows(s)[1]!.name).toBe("Georgetown, DC");
+    expect(toIcs(s).replace(/\r\n /g, "")).toContain("area 2\\, Georgetown\\, DC");
+  });
+
+  it("put the state before a trailing distance, as the plan page does", () => {
+    expect(areaLabel({ name: "Des Plaines, 19 km northwest", geohash: "dp3wbe", zctas: ["60018"] })).toBe("Des Plaines, IL, 19 km northwest");
+    expect(areaLabel({ name: "Des Plaines, IL, 19 km northwest", geohash: "dp3wbe", zctas: ["60018"] })).toBe("Des Plaines, IL, 19 km northwest");
+  });
+
   it("keep a name that already ends with its state, and a geohash-only area bare", () => {
     expect(areaLabel({ name: "Silver Spring, MD", geohash: "dqcjz5", zctas: ["20910"] })).toBe("Silver Spring, MD");
     expect(areaLabel({ name: "", geohash: "dqcjz5", zctas: ["20910"] })).toBe("dqcjz5");
@@ -544,6 +685,18 @@ describe("one page, the same sections on paper and in print", () => {
     expect(t.blurb).not.toContain("Then a second");
   });
 
+  it("keeps the same sentences in an area with four ZIPs as in its neighbours", () => {
+    const s = makeSheet();
+    const why = "About 2.3 times the room's usual crowd. 78th percentile for this crowd, 5th for the room's usual crowd.";
+    s.cards.liftMap.results.tiles = s.cards.liftMap.results.tiles.map((t, i) => (i === 1 ? { ...t, zctas: ["37203", "37212", "37204", "37215"] } : t));
+    s.narration = { ...s.narration!, tileWhy: s.cards.liftMap.results.tiles.slice(0, 3).map((t) => ({ geohash: t.geohash, text: why })) };
+    const tiles = buildSheetModel(s).panel1.tiles.slice(0, 3);
+    expect(tiles[1]!.zips).toBe("ZIP 37203, 37212, 37204, 37215");
+    for (const t of tiles) expect(t.blurb.endsWith(why)).toBe(true);
+    // The ZIP line takes at most three ZIPs' worth of the length.
+    expect(tiles[1]!.blurb.length).toBeLessThanOrEqual(AREA_BLURB_CHARS + tiles[1]!.zips.length - AREA_BLURB_ZIP_CHARS);
+  });
+
   it("keeps the phone whole for its own line", () => {
     const s = makeSheet();
     s.cards.partners.results = [{ ...PARTNERS[0]!, address: "1000 Extremely Long Boulevard Name Northeast, Suite 12, Nashville", phone: "+16155550101" }];
@@ -596,5 +749,29 @@ describe("before and after the show", () => {
     expect(formatKm(30)).toBe("<0.1 km");
     expect(formatKm(null)).toBe("");
     expect(buildSheetModel(makeSheet()).panel4.rows.map((r) => r.distance)).toEqual(["0.2 km", "0.4 km", "1.2 km"]);
+  });
+
+  it("says in words when the usual crowd's list does not have a spot, never a blank cell", () => {
+    const p = buildSheetModel(makeSheet()).panel4;
+    expect(p.showVsUsual).toBe(true);
+    // Morning Shift Coffee has no usual-crowd rank while the other spots do: the list came back without it.
+    const coffee = p.rows.find((r) => r.name === "Morning Shift Coffee")!;
+    expect(coffee.vsUsual).toBe("not in its list");
+    expect(coffee.detail).toContain("not in the room's usual crowd's list");
+    expect(p.rows.every((r) => r.vsUsual !== "")).toBe(true);
+    expect(spotVsUsual(null)).toBe("");
+    expect(spotVsUsual(null, true)).toBe("not in the room's usual crowd's list");
+  });
+
+  it("leaves the Vs usual crowd column out when no spot has a usual-crowd rank", () => {
+    const s = makeSheet();
+    s.cards.prePost.results = SPOTS.map((x) => ({ ...x, deltaRank: null }));
+    const p = buildSheetModel(s).panel4;
+    expect(p.showVsUsual).toBe(false);
+    expect(p.rows.every((r) => r.vsUsual === "")).toBe(true);
+    expect(p.rows.map((r) => r.detail).join(" ")).not.toContain("usual crowd");
+    // The freed width goes to the Spot column, on the PDF and the print view alike.
+    expect(spotColumnWidths(true, false)).toEqual({ spot: "55%", type: "23%", distance: "12%", share: "10%", vsUsual: null });
+    expect(spotColumnWidths(false, true)).toEqual({ spot: "40%", type: "25%", distance: "15%", share: null, vsUsual: "20%" });
   });
 });

@@ -8,12 +8,16 @@
  * - Directions: "western suburbs", "north of", "southeast" must match the compass bearing from the venue of
  *   the area the line is about (8 points, the neighbouring point allowed). In the summary, the bearing of an
  *   area named in the same sentence, or, when none is named, of most of the sheet's top areas.
- * - Unbacked claims: forecasts ("expected", "projected") and "concentrated" / "most common" always fail.
- *   A superlative ("the most", "largest", "highest", "strongest") passes only when it is about lift, bill
- *   percentile, adult population or the budget split and the area it is about really has the maximum.
+ * - Unbacked claims: forecasts ("expected", "projected"), "concentrated" / "most common" and where a crowd lives
+ *   or comes from ("draws a crowd from outer suburbs") always fail. A superlative ("the most", "largest",
+ *   "highest", "strongest") passes only when it is about lift, bill percentile, adult population or the budget
+ *   split and the area it is about really has the maximum. The room's usual crowd placed in areas ("sits closer
+ *   to Oak Park") passes only for areas below a lift of 1; "the South Side of <city>" always fails.
  * - Partner lines: may name only the tags the partner panel shows as "Tags it shares" (`explain.tags`; the
  *   place's own tags on sheets without them). Any genre or audience word known to the sheet that is not one
- *   of them fails the line, as does a weekday other than the street-team day.
+ *   of them fails the line, as does a weekday other than the street-team day, "close to the room" for a place
+ *   more than 2 km from it (3.5 km for the near-venue list), and opening hours that are not one of the place's
+ *   own spans for the day.
  *
  * Fan copy: audience and identity tags never appear, and every line names the act.
  */
@@ -115,18 +119,132 @@ const ALWAYS_UNBACKED: ReadonlyArray<[RegExp, string]> = [
   [/\bconcentrat(?:ed|ion|es)\b/i, '"concentrated" is not backed by the map'],
   [/\bmost common\b/i, '"most common" is not backed by the sheet'],
   [/\bmost likely\b/i, '"most likely" is not backed by the sheet'],
+  // The map shows where this crowd stands out, never where anyone lives or travels from. "Draws a different crowd
+  // from the room's usual one" is a comparison, not a place.
+  [
+    /\bdraws?\s+(?:a|its|the|this)?\s*(?:(?!(?:different|other|distinct|separate)\b)\w+\s+)?crowd\s+from\b(?!\s+(?:the\s+)?(?:(?:room|venue)['’]s\s+|its\s+|their\s+)?(?:usual|regular)\b|\s+['’]s\s+(?:usual|regular)\b|\s+that\s+of\b)|\bcrowd\s+(?:comes?|travels?)\s+from\b|\b(?:fans|crowd|buyers)\s+(?:live|lives|living)\s+in\b/i,
+    "where the crowd lives or comes from is not on the sheet",
+  ],
 ];
+
+/**
+ * "the room's usual crowd sits closer to Evanston and Oak Park": a place for the usual crowd, named after it. The usual
+ * crowd must be the verb's subject ("... the room's usual crowd and is in the 96th percentile" is about the area; in
+ * "the usual crowd that sits near Shaw" it still is), and a percentile is not a place.
+ */
+const USUAL_CROWD_PLACED_RE =
+  /\busual crowd(?:'s)?\s+(?:(?!(?:and|but|while|whereas)\b)\w+\s+){0,2}?(?:sits?|is|are|lives?|leans?|skews?|clusters?|cent(?:er|re)s?)\s+(?:\w+\s+)?(?:closer to|near|in|around|towards?)\b(?!\s+(?:the\s+|its\s+|about\s+)?\d)/i;
+
+/**
+ * The room's usual crowd put in areas: backed only when every area named after it has a lift below 1 (the usual
+ * crowd ranks it higher than this bill's crowd does). Oak Park at about 2.1 times is where this crowd stands out.
+ * Not checked when no area on the sheet is named after it.
+ */
+function usualCrowdPlacedProblem(ctx: VetContext, sentence: string): string | null {
+  const m = USUAL_CROWD_PLACED_RE.exec(sentence);
+  if (!m) return null;
+  const named = tilesNamedIn(ctx, sentence.slice((m.index ?? 0) + m[0].length));
+  if (named.length === 0 || named.every((t) => finite(t.lift) && t.lift < 1)) return null;
+  return "places the room's usual crowd in areas where this crowd stands out";
+}
+
+const SIDE_WORDS = "north|south|east|west|northwest|southwest|northeast|southeast|near\\s+(?:north|south|east|west)";
+
+/**
+ * "areas on the South Side of Chicago": a city's sides are not on the map, and a suburb in the list makes it false.
+ * Checked on the raw sentence (the city's name is blanked in the other checks).
+ */
+function citySideProblem(ctx: VetContext, sentence: string): string | null {
+  const city = ctx.venueCity ? `|${escapeRe(ctx.venueCity)}` : "";
+  const re = new RegExp(`\\b(?:${SIDE_WORDS})(?:\\s+and\\s+(?:${SIDE_WORDS}))?\\s+sides?\\s+of\\s+(?:the\\s+city${city})\\b`, "i");
+  return re.test(sentence) ? "places the areas on a side of the city, which the map doesn't show" : null;
+}
+
+/** "is close to the room", "a short walk from the venue": nearness to the room the sheet must back with its distance. */
+const NEAR_ROOM_RE =
+  /\b(?:close to|near(?:by)?|next to|steps from|a short walk (?:from|to)|walking distance (?:of|from|to)|around the corner from|minutes from)\s+(?:the\s+)?(?:room|venue|show|hall|club|theater|theatre)\b/i;
+/** The farthest a partner from an area's search can be from the room for a line to call it close. */
+const NEAR_ROOM_KM = 2;
+/**
+ * The near-venue list (partners with no area) is searched within 3.5 km of the venue (the orchestrator's
+ * TILE_RADIUS_WIDE_M), and the template calls those places "near the venue": a line may too.
+ */
+const NEAR_VENUE_LIST_KM = 3.5;
+
+function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371.0088 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+/**
+ * A partner line calling the place close to the room when the sheet puts it farther than NEAR_ROOM_KM away
+ * (NEAR_VENUE_LIST_KM for the near-venue list).
+ */
+function nearRoomProblem(ctx: VetContext, text: string, partner: Partner | undefined): string | null {
+  const venueName = ctx.venueName ? new RegExp(`\\b(?:close to|near|next to|steps from|around the corner from|minutes from)\\s+${escapeRe(ctx.venueName)}`, "i") : null;
+  if (!NEAR_ROOM_RE.test(text) && !(venueName && venueName.test(text))) return null;
+  const loc = partner?.entity?.location;
+  const listed = partner?.explain?.distanceKm;
+  const km = finite(listed) ? listed : ctx.venue && loc && finite(loc.lat) && finite(loc.lon) ? haversineKm(ctx.venue, loc) : null;
+  const limit = partner && !partner.tileGeohash ? NEAR_VENUE_LIST_KM : NEAR_ROOM_KM;
+  if (km !== null && km <= limit) return null;
+  return km === null ? "says the place is near the room; the sheet has no distance for it" : `says the place is near the room; the sheet puts it ${km.toFixed(1)} km away`;
+}
+
+/** "10:00:00-14:00:00, 17:00:00-21:30:00" (optionally after "Sat ") as ["10:00-14:00", "17:00-21:30"]. */
+function hourSpans(hoursOnDay: string | null | undefined): string[] {
+  return (hoursOnDay ?? "")
+    .replace(/^[A-Z][a-z]{2} /, "")
+    .split(/,\s*/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) =>
+      s
+        .split(/\s*[-–]\s*/)
+        .map((t) => t.slice(0, 5).padStart(5, "0"))
+        .join("-"),
+    );
+}
+
+/**
+ * Opening hours quoted as one span ("10:00 to 21:30") must be one of the place's own spans for the day: "open
+ * Saturday 10:00 to 21:30" for a place closed from 14:00 to 17:00 fails. Not checked when the sheet lists no hours.
+ */
+function hoursProblem(text: string, partner: Partner | undefined): string | null {
+  const spans = hourSpans(partner?.hoursOnDay);
+  if (spans.length === 0) return null;
+  for (const m of text.matchAll(/\b(\d{1,2}:\d{2})\s*(?:to|-|–)\s*(\d{1,2}:\d{2})\b/g)) {
+    const span = `${m[1]!.padStart(5, "0")}-${m[2]!.padStart(5, "0")}`;
+    if (!spans.includes(span)) return spans.length > 1 ? "merges split opening hours into one span" : "quotes hours the place doesn't list";
+  }
+  return null;
+}
 
 const SUPERLATIVE_RE = /\bthe\s+most\b|\b(?:largest|highest|biggest|greatest|strongest)\b/gi;
 
 type Metric = "lift" | "billPct" | "adults" | "budget";
 
+const METRIC_CUES: ReadonlyArray<[Metric, RegExp]> = [
+  ["budget", /\bbudget\b|\bsplit\b/i],
+  ["adults", /\badults?\b|\bpopulation\b|\bresidents\b/i],
+  ["billPct", /\bbill(?:'s)?\s+(?:crowd(?:'s)?\s+)?(?:share|percentile)\b|\bshare of (?:the |this )?(?:bill|crowd)\b|\bpercentile\b/i],
+  ["lift", /\blift\b|\btimes\b|\bstands? out\b|\bover-?index/i],
+];
+
+/**
+ * The metric a superlative is about: the one named first after it. "The largest lift on the sheet, about 2.2 times
+ * the room's usual crowd, at the 98th percentile" is about lift, not the percentile named later.
+ */
 function metricOf(window: string): Metric | null {
-  if (/\bbudget\b|\bsplit\b/i.test(window)) return "budget";
-  if (/\badults?\b|\bpopulation\b|\bresidents\b/i.test(window)) return "adults";
-  if (/\bbill(?:'s)?\s+(?:crowd(?:'s)?\s+)?(?:share|percentile)\b|\bshare of (?:the |this )?(?:bill|crowd)\b|\bpercentile\b/i.test(window)) return "billPct";
-  if (/\blift\b|\btimes\b|\bstands? out\b|\bover-?index/i.test(window)) return "lift";
-  return null;
+  let best: { metric: Metric; at: number } | null = null;
+  for (const [metric, re] of METRIC_CUES) {
+    const at = window.search(re);
+    if (at >= 0 && (best === null || at < best.at)) best = { metric, at };
+  }
+  return best?.metric ?? null;
 }
 
 function splitSentences(text: string): string[] {
@@ -198,6 +316,8 @@ const WEEKDAY_RE = /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)
 
 interface VetContext {
   venue: { lat: number; lon: number } | null;
+  venueName: string;
+  venueCity: string;
   /** Every area the sheet shows (superlatives are checked against these). */
   pool: LiftTile[];
   /** The areas the narration is about (the summary's majority rule uses these). */
@@ -353,6 +473,8 @@ function summaryProblem(ctx: VetContext, summary: string): string | null {
     if (claim) return claim;
     const share = shareProblem(ctx, sentence);
     if (share) return share;
+    const placed = usualCrowdPlacedProblem(ctx, sentence) ?? citySideProblem(ctx, sentence);
+    if (placed) return placed;
   }
   return null;
 }
@@ -365,7 +487,7 @@ function tileProblem(ctx: VetContext, text: string, tile: LiftTile | undefined):
   const base = directionProblemForTiles(ctx, text, subjects, false) ?? claimProblem(ctx, text, subjects);
   if (base) return base;
   for (const sentence of splitSentences(text)) {
-    const share = shareProblem(ctx, sentence);
+    const share = shareProblem(ctx, sentence) ?? usualCrowdPlacedProblem(ctx, sentence) ?? citySideProblem(ctx, sentence);
     if (share) return share;
   }
   const plain = blankProtected(text, ctx.protectedNames);
@@ -407,6 +529,8 @@ function partnerProblem(ctx: VetContext, text: string, partner: Partner | undefi
   if (claim) return claim;
   const diet = dietTypeProblem(text, partner);
   if (diet) return diet;
+  const near = nearRoomProblem(ctx, text, partner) ?? hoursProblem(text, partner);
+  if (near) return near;
   const shared = partner ? partnerShared(partner) : [];
   const covered = (term: string) => shared.some((s) => s.includes(term) || term.includes(s));
   const plain = blankProtected(text, ctx.protectedNames);
@@ -517,6 +641,10 @@ function sheetContext(sheet: StreetSheet, narration: Narration | undefined): Vet
   const streetDay = (sheet.operator?.streetTeamDays?.[0] ?? sheet.bill.weekday ?? "").toLowerCase();
   const honest = honestFor(sheet);
   const wdA = vetWhatsDifferent(c?.whatsDifferent?.results?.a ?? []).filter((t) => SUMMARY_TAG_NAMESPACES.some((ns) => t.id.startsWith(ns)));
+  // The run's copy allowlist, as far as the sheet keeps it: the tags its copy lines cite. The template's "leans toward"
+  // names only those, as the run's own template would ("michigan" is a distinctive tag no copy line could use).
+  const hookTags = new Set((c?.copyHooks?.results ?? []).flatMap((h) => h.tagIds ?? []));
+  const allowed = wdA.filter((t) => hookTags.has(t.id));
   const input: NarrateInput = {
     bill: sheet.bill,
     tiles: top,
@@ -524,7 +652,7 @@ function sheetContext(sheet: StreetSheet, narration: Narration | undefined): Vet
     prePost: c?.prePost?.results ?? [],
     media: c?.media?.results ?? [],
     compareTags: { shared: [], a: wdA, b: [], fromTagDiff: c?.whatsDifferent?.results?.fromTagDiff ?? false },
-    allowlistTags: wdA.map((t) => ({ id: t.id, name: t.name })),
+    allowlistTags: allowed.map((t) => ({ id: t.id, name: t.name })),
     numbers: [],
     hypothetical: sheet.hypothetical,
     streetTeamDay: streetDay,
@@ -532,6 +660,8 @@ function sheetContext(sheet: StreetSheet, narration: Narration | undefined): Vet
   let summary: string | null = null;
   return {
     venue: finite(sheet.bill?.venue?.lat) && finite(sheet.bill?.venue?.lon) ? { lat: sheet.bill.venue.lat, lon: sheet.bill.venue.lon } : null,
+    venueName: sheet.bill?.venue?.name?.trim() ?? "",
+    venueCity: sheet.bill?.venue?.city?.trim() ?? "",
     pool,
     top,
     partners: new Map(partners.map((p) => [p.entity.entityId, p])),
@@ -574,6 +704,8 @@ function inputContext(input: NarrateInput, prepared: PreparedRun): VetContext {
   let summary: string | null = null;
   return {
     venue: finite(bill.venue?.lat) && finite(bill.venue?.lon) ? { lat: bill.venue.lat, lon: bill.venue.lon } : null,
+    venueName: bill.venue?.name?.trim() ?? "",
+    venueCity: bill.venue?.city?.trim() ?? "",
     pool: input.tiles,
     top: input.tiles,
     partners: new Map(input.partners.map((p) => [p.entity.entityId, p])),

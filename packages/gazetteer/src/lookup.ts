@@ -243,6 +243,8 @@ export interface AnnotatedFields {
   adultPopulation?: number | null;
   /** The OSM or Census name behind `name` when it differs. */
   gazetteerName?: string;
+  /** The state the tile's point is in (`stateForPoint`), which can differ from the first ZIP's near a state line. */
+  state?: string | null;
 }
 
 /** The residential ZCTA a point is in: the smallest equivalent circle holding it, else the circle with the nearest edge. */
@@ -302,7 +304,8 @@ export function areaNameForPoint(lat: number, lon: number, metro: MetroRef, opts
 
 /**
  * Fill a lift tile's gazetteer fields: name (the name people use, `areaNameForPoint`; the
- * OSM/Census name rides along as `gazetteerName` when it differs), zctas and adultPopulation.
+ * OSM/Census name rides along as `gazetteerName` when it differs), zctas, adultPopulation and the
+ * state the point is in (`stateForPoint`).
  * Only residential ZIPs count (no federal, single-organisation, military or campus ZIP), at
  * most MAX_AREA_ZIPS of them, nearest first, so a dense downtown area keeps a meaningful
  * count. Uses the nearest residential ZCTA when none is inside the radius. Leaves the
@@ -322,6 +325,8 @@ export function annotateTile<T extends Pick<LiftTile, "lat" | "lon"> & Partial<L
   if (!metro || !bboxContains(metro.bbox, tile.lat, tile.lon)) return { ...tile, adultPopulation: null };
   const detail = adultsNearDetail(tile.lat, tile.lon, radiusKm, { metro, ensureNearest: true, residentialOnly: true, maxZctas: opts?.maxZctas ?? MAX_AREA_ZIPS });
   const out: T & AnnotatedFields = { ...tile, zctas: detail.zctas, adultPopulation: detail.adults21 };
+  // Georgetown's point is in DC though its nearest ZIP (22209, Rosslyn) is in VA: the point decides the state.
+  out.state = stateForPoint(tile.lat, tile.lon, metro, opts);
   if (opts?.naming === "gazetteer") {
     const named = nameForPoint(tile.lat, tile.lon, metro, opts);
     if (named) out.name = named.name;

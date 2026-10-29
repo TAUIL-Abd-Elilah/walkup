@@ -9,7 +9,7 @@ import { errorEnvelope, scrubSecrets, scrubText, type ToolEnvelope } from "./env
 import { EnvelopeOutput, PlanRefInput, PlanShowInput, RankPartnersInput, RevisePlanInput } from "./schemas";
 import type { McpServices } from "./services";
 import { envelopeText } from "./text";
-import { billVsHouseTool, getSheetTool, planShowTool, rankPartnersTool, revisePlanTool, type Caller, type ToolOutcome } from "./tools";
+import { billVsHouseTool, envelopeMode, getSheetTool, planShowTool, rankPartnersTool, revisePlanTool, type Caller, type ToolOutcome } from "./tools";
 
 export const SERVER_NAME = "walkup";
 export const SERVER_VERSION = "0.1.0";
@@ -24,7 +24,8 @@ export const SERVER_INSTRUCTIONS = [
   "Seat counts are what-ifs: pass them only if the user offers them, and never call a real show soft or selling badly.",
   "Send only what the user typed: event text, partner names, what-if numbers. Never send personal data, buyer data or contact details. Sending the sheet to anyone happens only in the Walkup web app after the user confirms.",
   "Fresh runs are capped per caller per day; presets and existing plans are not. Without a live Qloo key the data is synthetic (mode fixture), and a hosted server then runs presets only.",
-  "If a tool answers with mode recorded, the server serves sheets recorded from live Qloo and Ticketmaster runs, and live runs are paused for judging: get_sheet, bill_vs_house and plan_show for a preset or a plan id read those sheets, which are what a live run produced (say the day each was recorded). New plans, rank_partners and revise_plan are not run while live runs are paused; revise_plan names any recorded revision of the plan and says whether it was made for the same note or a different one.",
+  "If a tool answers with mode recorded, the server serves sheets recorded from live Qloo and Ticketmaster runs, and live runs are paused for judging: get_sheet, bill_vs_house and plan_show for a preset or a plan id read those sheets, which come from live runs, with any change since made offline and no API call (say the day each was recorded). New plans, rank_partners and revise_plan are not run while live runs are paused; revise_plan names any recorded revision of the plan and says which one makes the change the note asks for, when the server can tell.",
+  "The presets g2 and g3 have no live show: where they open, they are sample sheets with made-up places and numbers (mode fixture).",
 ].join("\n");
 
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true } as const;
@@ -46,7 +47,7 @@ async function guarded(tool: string, services: McpServices, run: () => Promise<T
     return toCallResult(tool, await run(), services);
   } catch (err) {
     const reason = `${tool} failed: ${err instanceof Error ? err.message : String(err)}`;
-    return toCallResult(tool, { envelope: errorEnvelope(reason, services.mode), httpStatus: 500 }, services);
+    return toCallResult(tool, { envelope: errorEnvelope(reason, envelopeMode(services)), httpStatus: 500 }, services);
   }
 }
 

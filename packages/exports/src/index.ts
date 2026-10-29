@@ -8,11 +8,26 @@
 export { toPdf, renderStreetSheetPdf, streetSheetDocument, streetSheetElement, countPdfPages, PAGE_SIZES } from "./pdf";
 export type { PdfOptions, PdfPageSize, PdfRenderResult, DocumentOptions } from "./pdf";
 
-export { buildSheetModel, sheetModelText, PAGE_SECTIONS, AREA_BLURB_CHARS } from "./sheet-model";
-export type { Audience, SheetModel, SheetModelOptions, SheetSection, TileItem, PartnerRow, DeclaredRow, SpotRow, MediaRow, BudgetRow, DiscoveryLine } from "./sheet-model";
+export { buildSheetModel, sheetModelText, partnerHoursColumn, spotColumnWidths, noTopPick, noTopPickText, PAGE_SECTIONS, AREA_BLURB_CHARS, AREA_BLURB_ZIP_CHARS } from "./sheet-model";
+export type { Audience, SheetModel, SheetModelOptions, SheetSection, TileItem, PartnerRow, PartnerHoursCell, DeclaredRow, SpotRow, MediaRow, BudgetRow, DiscoveryLine } from "./sheet-model";
 
-export { layoutTileMap, placeLabels, liftBand, liftAlpha, liftFill, niceKm, LIFT_INK, MAP_COLORS, LABEL_RADIUS, MIN_VISIBLE_CELL } from "./map";
-export type { MapRect, TileMapLayout, TileMapOptions, LiftBand } from "./map";
+export {
+  layoutTileMap,
+  placeLabels,
+  venueLabelSpot,
+  venueLabelBox,
+  liftBand,
+  liftAlpha,
+  liftFill,
+  niceKm,
+  LIFT_INK,
+  MAP_COLORS,
+  LABEL_RADIUS,
+  MIN_VISIBLE_CELL,
+  VENUE_LABEL_SIZE,
+  VENUE_LABEL_MAX_CHARS,
+} from "./map";
+export type { MapRect, MapBox, TileMapLayout, TileMapOptions, LiftBand } from "./map";
 
 export {
   toIcs,
@@ -20,6 +35,9 @@ export {
   streetTeamDates,
   streetTeamPasses,
   partnerVisits,
+  isStreetTeamBlackout,
+  streetTeamBlackout,
+  streetTeamHolidays,
   FIRST_PASS_WEEKS_OUT,
   escapeIcsText,
   foldLine,
@@ -30,7 +48,7 @@ export {
   ICS_EOL,
   ICS_PRODID,
 } from "./ics";
-export type { IcsOptions, StreetTeamVisit, StreetTeamPass, PartnerVisit } from "./ics";
+export type { IcsOptions, StreetTeamVisit, StreetTeamPass, StreetTeamPassDate, StreetTeamHoliday, PartnerVisit } from "./ics";
 
 export { toCsv, csvCell, looksLikeFormula, CSV_BOM, CSV_EOL } from "./csv";
 export type { CsvCell, CsvOptions } from "./csv";
@@ -61,7 +79,7 @@ export type { PartnersCsvOptions, ZipRow, ZipOptions, PinRow, PinOptions, OfferC
 export { toSheetJson, sheetJsonDocument, sanitizeSheet, SHEET_JSON_FORMAT, SHEET_JSON_VERSION } from "./json";
 export type { SheetJsonOptions, SheetJsonDocument } from "./json";
 
-export { toExportFiles, EXPORT_FILE_NAMES, EXPORT_CONTENT_TYPES } from "./bundle";
+export { toExportFiles, exportFilePrefix, EXPORT_FILE_NAMES, EXPORT_CONTENT_TYPES } from "./bundle";
 export type { ExportFile, ExportKind, ExportAllOptions } from "./bundle";
 
 export { pdfText, isPdfSafe } from "./winansi";
@@ -88,6 +106,14 @@ export {
   streetDaysText,
   capacityText,
   DECLARED_UNRANKED,
+  PHONE_NOT_LISTED,
+  WEBSITE_NOT_LISTED,
+  HOURS_NOT_LISTED,
+  SPOT_NOT_IN_USUAL,
+  SPOT_NOT_IN_USUAL_SHORT,
+  DISTANCE_SUFFIX,
+  withState,
+  mapReachKm,
   spotVsUsual,
   spotsShareNote,
   dayHoursText,
@@ -106,6 +132,8 @@ export {
   areaState,
   addressState,
   partnerAreaLabel,
+  partnerAreaText,
+  partnerOtherState,
   hoursWeekday,
   formatPhone,
   sortedReceipts,

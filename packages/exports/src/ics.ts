@@ -2,7 +2,10 @@
  * street-team.ics: an RFC 5545 calendar of street-team stops by day, plus the show.
  *
  * - Two passes: a first pass about four weeks out and a final pass in the show
- *   week (never before the plan was made). Each street-team day covers one part
+ *   week (never before the plan was made, never on a holiday such as Christmas
+ *   Eve, when shops keep holiday hours: that day's stops move to the same
+ *   weekday a week earlier, else to the nearest free day of the same week, so
+ *   each pass keeps its number of days). Each street-team day covers one part
  *   of town: the areas are cut into runs along a nearest-neighbour route from
  *   the venue, an area's partners share a day, and the day's stops follow a
  *   nearest-neighbour walk.
@@ -32,11 +35,12 @@ import {
   categoryLabel,
   formatHours,
   formatPhone,
+  formatShowDate,
   FIXTURE_NOTICE,
   hoursWeekday,
   SAMPLE_PREFIX,
   isYmd,
-  partnerAreaLabel,
+  partnerAreaText,
   receiptGroup,
   streetDaysText,
   SUGGESTED_NOT_AFFILIATED,
@@ -91,7 +95,7 @@ export interface IcsOptions extends TileSelectOptions {
 export interface StreetTeamVisit {
   date: string; // YYYY-MM-DD
   weekday: Weekday;
-  /** "first": the sweep about four weeks out; "final": the show week. */
+  /** "first": the sweep about four weeks out; "final": the show week (a day moved off a holiday is a week earlier). */
   pass: StreetTeamPass;
   /** "HH:MM" local. Inside the partner's open hours whenever they are listed for that day. */
   start: string;
@@ -255,13 +259,41 @@ export function vtimezoneLines(tzid: string): string[] {
 // The plan: which stops on which day
 // ---------------------------------------------------------------------------
 
-/** The street-team days in one week before the show: week 0 is the 7 days right before it, week 1 the 7 before those. */
-function weekDates(showDate: string, wanted: readonly Weekday[], w: number): { date: string; weekday: Weekday }[] {
+/** Fixed-date days with no street team: shops keep holiday hours then, not the week's listed hours. */
+const BLACKOUT_DAYS: Readonly<Record<string, string>> = {
+  "12-24": "Christmas Eve",
+  "12-25": "Christmas Day",
+  "12-31": "New Year's Eve",
+  "01-01": "New Year's Day",
+  "07-04": "Independence Day",
+};
+
+/**
+ * The holiday a street-team date falls on, or null: Christmas Eve and Day, New Year's Eve and Day, Independence Day,
+ * and Thanksgiving (the fourth Thursday of November). The calendar sends no one out on these days.
+ */
+export function streetTeamBlackout(date: string): string | null {
+  if (!isYmd(date)) return null;
+  const named = BLACKOUT_DAYS[date.slice(5)];
+  if (named) return named;
+  const day = Number(date.slice(8, 10));
+  return date.slice(5, 7) === "11" && day >= 22 && day <= 28 && weekdayOfYmd(date) === "thursday" ? "Thanksgiving" : null;
+}
+
+export function isStreetTeamBlackout(date: string): boolean {
+  return streetTeamBlackout(date) !== null;
+}
+
+/**
+ * The street-team days in one week before the show: week 0 is the 7 days right before it, week 1 the 7 before those.
+ * Holidays (`streetTeamBlackout`) are left out unless `withHolidays`.
+ */
+function weekDates(showDate: string, wanted: readonly Weekday[], w: number, withHolidays = false): { date: string; weekday: Weekday }[] {
   const out: { date: string; weekday: Weekday }[] = [];
   for (let k = 1; k <= 7; k++) {
     const date = addDaysYmd(showDate, -(k + 7 * w));
     const weekday = weekdayOfYmd(date);
-    if (wanted.includes(weekday)) out.push({ date, weekday });
+    if (wanted.includes(weekday) && (withHolidays || !isStreetTeamBlackout(date))) out.push({ date, weekday });
   }
   return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
@@ -294,33 +326,142 @@ export type StreetTeamPass = "first" | "final";
 /** Default weeks before the show for the first pass: the street-team days 22 to 28 days out. */
 export const FIRST_PASS_WEEKS_OUT = 4;
 
+/** How far a holiday's stops may move on the same weekday: one week earlier, else two (else another day of its week). */
+const HOLIDAY_MOVE_WEEKS = 2;
+
+/** One street-team day of a pass. */
+export interface StreetTeamPassDate {
+  date: string;
+  weekday: Weekday;
+  pass: StreetTeamPass;
+  /**
+   * Set when this day stands in for a holiday of the pass: the same weekday a week or two before it, else another
+   * day of the holiday's week (then `weekday` is that day's own).
+   */
+  insteadOf?: { date: string; holiday: string };
+}
+
+/** A holiday in a pass's week, and the day its stops moved to (null: no day was free, so the pass is a day short). */
+export interface StreetTeamHoliday {
+  date: string;
+  weekday: Weekday;
+  pass: StreetTeamPass;
+  holiday: string;
+  movedTo: string | null;
+}
+
+/**
+ * Both passes, and the holidays in their weeks. A holiday moves to the same weekday a week earlier (two weeks when
+ * that one is a holiday too), never before `notBefore` and, in the final pass, never onto or before the first pass's
+ * days. With no such day it moves to the nearest free day of its own week (earlier first; not a holiday, not
+ * another street-team day of the pass, same limits), so the pass keeps its number of days and no day holds two
+ * days' stops. Only when the whole week is taken does the final pass go a day short; a first pass that would moves a
+ * week closer (or there is only the final pass).
+ */
+function planPasses(
+  showDate: string,
+  days: readonly Weekday[],
+  opts: { notBefore?: string; firstPassWeeksOut?: number },
+): { dates: StreetTeamPassDate[]; holidays: StreetTeamHoliday[] } {
+  const none = { dates: [], holidays: [] };
+  if (!isYmd(showDate)) return none;
+  const wanted = WEEKDAYS.filter((d) => days.includes(d));
+  if (wanted.length === 0) return none;
+  const notBefore = opts.notBefore && isYmd(opts.notBefore) ? opts.notBefore : null;
+  const ok = (date: string) => notBefore === null || date >= notBefore;
+  const byDate = (a: { date: string }, b: { date: string }) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  // `w`: the week the pass stands for (0 = the 7 days right before the show).
+  const resolve = (week: readonly { date: string; weekday: Weekday }[], pass: StreetTeamPass, after: string | null, w: number) => {
+    const dates: StreetTeamPassDate[] = [];
+    const holidays: StreetTeamHoliday[] = [];
+    const weekStart = addDaysYmd(showDate, -(7 + 7 * w));
+    const weekEnd = addDaysYmd(showDate, -(1 + 7 * w));
+    const free = (alt: string) =>
+      !isStreetTeamBlackout(alt) && ok(alt) && (after === null || alt > after) && !week.some((x) => x.date === alt) && !dates.some((x) => x.date === alt);
+    for (const d of week) {
+      const holiday = streetTeamBlackout(d.date);
+      if (!holiday) {
+        dates.push({ ...d, pass });
+        continue;
+      }
+      let movedTo: { date: string; weekday: Weekday } | null = null;
+      for (let j = 1; j <= HOLIDAY_MOVE_WEEKS && movedTo === null; j++) {
+        const alt = addDaysYmd(d.date, -7 * j);
+        if (free(alt)) movedTo = { date: alt, weekday: d.weekday };
+      }
+      // No free day on that weekday: the nearest other day of the same week, earlier first, with that day's own
+      // weekday (and hours), so the pass keeps its number of days instead of piling its stops on the days left.
+      for (let k = 1; k <= 6 && movedTo === null; k++) {
+        for (const alt of [addDaysYmd(d.date, -k), addDaysYmd(d.date, k)]) {
+          if (movedTo === null && alt >= weekStart && alt <= weekEnd && free(alt)) movedTo = { date: alt, weekday: weekdayOfYmd(alt) };
+        }
+      }
+      if (movedTo) dates.push({ ...movedTo, pass, insteadOf: { date: d.date, holiday } });
+      holidays.push({ ...d, pass, holiday, movedTo: movedTo?.date ?? null });
+    }
+    return { dates: dates.sort(byDate), holidays };
+  };
+  const out: StreetTeamPassDate[] = [];
+  const holidays: StreetTeamHoliday[] = [];
+  const weeksOut = Math.min(8, Math.max(0, Math.floor(opts.firstPassWeeksOut ?? FIRST_PASS_WEEKS_OUT)));
+  for (let w = weeksOut - 1; w >= 1; w--) {
+    const week = weekDates(showDate, wanted, w, true);
+    if (week.length === 0 || !week.every((d) => ok(d.date))) continue;
+    const first = resolve(week, "first", null, w);
+    // A first pass keeps every one of its days or moves a week closer: a short one would pile two days' stops onto one.
+    if (first.dates.length < week.length) continue;
+    out.push(...first.dates);
+    holidays.push(...first.holidays);
+    break;
+  }
+  const lastFirst = out.length > 0 ? out[out.length - 1]!.date : null;
+  const final = resolve(
+    weekDates(showDate, wanted, 0, true).filter((d) => ok(d.date)),
+    "final",
+    lastFirst,
+    0,
+  );
+  out.push(...final.dates);
+  holidays.push(...final.holidays);
+  return { dates: out, holidays };
+}
+
 /**
  * The street-team passes: a first pass about four weeks out (the street-team days 22 to 28 days before the show)
  * and a final pass in the show week (the 7 days before it). A first-pass week that starts before `notBefore` (the
  * plan's creation date) moves one week closer at a time, down to 8-14 days out; when no whole week fits, there is
  * only the final pass, without its dates before `notBefore`. `firstPassWeeksOut` 0 or 1 gives the final pass only.
+ * No one goes out on a holiday (`streetTeamBlackout`: Christmas Eve): its stops move to the same weekday a week
+ * earlier (`insteadOf` says so), so a pass keeps its days and a partner its weekday. When that day is not free
+ * (before the plan was made, or onto the first pass) they move to the nearest free day of the holiday's own week,
+ * with that day's weekday. Each pass is in date order.
  */
 export function streetTeamPasses(
   showDate: string,
   days: readonly Weekday[],
   opts: { notBefore?: string; firstPassWeeksOut?: number } = {},
-): { date: string; weekday: Weekday; pass: StreetTeamPass }[] {
-  if (!isYmd(showDate)) return [];
-  const wanted = WEEKDAYS.filter((d) => days.includes(d));
-  if (wanted.length === 0) return [];
-  const notBefore = opts.notBefore && isYmd(opts.notBefore) ? opts.notBefore : null;
-  const ok = (date: string) => notBefore === null || date >= notBefore;
-  const out: { date: string; weekday: Weekday; pass: StreetTeamPass }[] = [];
-  const weeksOut = Math.min(8, Math.max(0, Math.floor(opts.firstPassWeeksOut ?? FIRST_PASS_WEEKS_OUT)));
-  for (let w = weeksOut - 1; w >= 1; w--) {
-    const week = weekDates(showDate, wanted, w);
-    if (week.length > 0 && week.every((d) => ok(d.date))) {
-      out.push(...week.map((d) => ({ ...d, pass: "first" as const })));
-      break;
-    }
-  }
-  out.push(...weekDates(showDate, wanted, 0).filter((d) => ok(d.date)).map((d) => ({ ...d, pass: "final" as const })));
-  return out;
+): StreetTeamPassDate[] {
+  return planPasses(showDate, days, opts).dates;
+}
+
+/**
+ * The holidays in the weeks `streetTeamPasses` uses (the final pass's week, and the first pass's when there is one),
+ * not before `notBefore`, with the day each one's stops moved to, so the calendar can say where they went.
+ */
+export function streetTeamHolidays(
+  showDate: string,
+  days: readonly Weekday[],
+  opts: { notBefore?: string; firstPassWeeksOut?: number } = {},
+): StreetTeamHoliday[] {
+  return planPasses(showDate, days, opts).holidays;
+}
+
+/** The pass options `planStreetTeamVisits` and `toIcs` share: the days, the earliest date and the first pass's weeks out. */
+function passOptions(sheet: StreetSheet, opts: IcsOptions): { days: readonly Weekday[]; notBefore: string | undefined; firstPassWeeksOut: number | undefined } {
+  const days = opts.streetTeamDays ?? sheet.operator.streetTeamDays ?? [];
+  const created = new Date(sheet.createdAt);
+  const notBefore = opts.notBefore ?? (Number.isNaN(created.getTime()) ? undefined : ymdOf(created));
+  return { days, notBefore: notBefore || undefined, firstPassWeeksOut: opts.firstPassWeeksOut };
 }
 
 interface Point {
@@ -573,10 +714,8 @@ function scheduleDay(items: readonly Item[], start: number, gapMin: number, venu
  * (`properties.hours`), so a Saturday stop is timed and labelled with Saturday's hours.
  */
 export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}): StreetTeamVisit[] {
-  const days = opts.streetTeamDays ?? sheet.operator.streetTeamDays ?? [];
-  const created = new Date(sheet.createdAt);
-  const notBefore = opts.notBefore ?? (Number.isNaN(created.getTime()) ? undefined : ymdOf(created));
-  const dates = streetTeamPasses(sheet.bill.date, days, { notBefore: notBefore || undefined, firstPassWeeksOut: opts.firstPassWeeksOut });
+  const { days, notBefore, firstPassWeeksOut } = passOptions(sheet, opts);
+  const dates = streetTeamPasses(sheet.bill.date, days, { notBefore, firstPassWeeksOut });
   if (dates.length === 0) return [];
 
   const tiles = topTiles(sheet, opts);
@@ -598,7 +737,10 @@ export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}):
   type Placed = StreetTeamVisit & { slot: number };
   const visits: Placed[] = [];
   for (const pass of ["first", "final"] as const) {
-    const passDates = dates.filter((d) => d.pass === pass);
+    // In the order of the week the pass stands for: a day moved off a holiday keeps the holiday's place, so day k is
+    // the same weekday in both passes and a partner keeps its weekday (and that day's hours).
+    const slot = (d: StreetTeamPassDate) => d.insteadOf?.date ?? d.date;
+    const passDates = dates.filter((d) => d.pass === pass).sort((a, b) => (slot(a) < slot(b) ? -1 : slot(a) > slot(b) ? 1 : 0));
     const n = passDates.length;
     if (n === 0) continue;
     const minutes = pass === "final" ? finalMin : stopMin;
@@ -675,18 +817,23 @@ export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}):
   return visits.map(({ slot: _slot, ...v }) => v);
 }
 
-/** Where and when one partner is visited: the weekdays and dates of its stops, and its hours on the first of them. */
+/** Where and when one partner is visited: the weekdays and dates of its stops, and its hours on each weekday. */
 export interface PartnerVisit {
   weekdays: Weekday[];
   dates: string[];
   /** The partner's hours on its first visit day, as listed; null when not listed. */
   hours: string | null;
   callFirst: boolean;
+  /**
+   * Each visit weekday with that day's hours (null when not listed), in visit order. One entry when the passes visit
+   * on the same weekday, as they do unless a holiday's stops moved to another day of its week.
+   */
+  days: { weekday: Weekday; hours: string | null }[];
 }
 
 /**
  * Each partner's street-team stops (keyed by entity id), from the same plan as street-team.ics, so the call list and
- * the sheet name the same day as the calendar. A partner closed on every street-team day has no entry.
+ * the sheet name the same days as the calendar. A partner closed on every street-team day has no entry.
  */
 export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<string, PartnerVisit> {
   const out = new Map<string, PartnerVisit>();
@@ -695,10 +842,13 @@ export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<st
     const id = v.partner.entity.entityId;
     const cur = out.get(id);
     if (!cur) {
-      out.set(id, { weekdays: [v.weekday], dates: [v.date], hours: v.hours, callFirst: v.callFirst });
+      out.set(id, { weekdays: [v.weekday], dates: [v.date], hours: v.hours, callFirst: v.callFirst, days: [{ weekday: v.weekday, hours: v.hours }] });
       continue;
     }
-    if (!cur.weekdays.includes(v.weekday)) cur.weekdays.push(v.weekday);
+    if (!cur.weekdays.includes(v.weekday)) {
+      cur.weekdays.push(v.weekday);
+      cur.days.push({ weekday: v.weekday, hours: v.hours });
+    }
     if (!cur.dates.includes(v.date)) cur.dates.push(v.date);
   }
   return out;
@@ -740,22 +890,41 @@ function zipText(t: LiftTile): string {
 /** The area a stop is in, in words: "area 1, Langston, DC", "Kenilworth, DC", or "near The Anthem". */
 function stopArea(sheet: StreetSheet, v: StreetTeamVisit, tiles: ReadonlyMap<string, LiftTile>): string {
   if (v.tile && v.tileRank !== null) return `area ${v.tileRank}, ${areaLabel(v.tile)}`;
-  const label = v.partner ? partnerAreaLabel(v.partner, tiles) : v.tile ? areaLabel(v.tile) : "";
+  const label = v.partner ? partnerAreaText(v.partner, tiles) : v.tile ? areaLabel(v.tile) : "";
   return label !== "" ? label : `near ${sheet.bill.venue.name}`;
 }
 
-/** "First pass, 4 weeks out: ..." or "Final pass, show week: ...", said only when the calendar has both passes. */
+/**
+ * "First pass, 4 weeks out: ..." or "Final pass, show week: ...", said only when the calendar has both passes. A final
+ * pass day moved off a holiday to the week before says "Final pass, 2 weeks out".
+ */
 function passLine(sheet: StreetSheet, v: StreetTeamVisit): string {
-  const weeks = Math.max(1, Math.round((Date.parse(`${sheet.bill.date}T12:00:00Z`) - Date.parse(`${v.date}T12:00:00Z`)) / (7 * 86_400_000)));
-  const when = v.pass === "first" ? `First pass, ${weeks} ${weeks === 1 ? "week" : "weeks"} out` : "Final pass, show week";
+  const daysOut = Math.round((Date.parse(`${sheet.bill.date}T12:00:00Z`) - Date.parse(`${v.date}T12:00:00Z`)) / 86_400_000);
+  const weeks = Math.max(1, Math.round(daysOut / 7));
+  const out = `${weeks} ${weeks === 1 ? "week" : "weeks"} out`;
+  const when = v.pass === "first" ? `First pass, ${out}` : daysOut <= 7 ? "Final pass, show week" : `Final pass, ${out}`;
   if (!v.partner) return `${when}.`;
   return v.pass === "first" ? `${when}: leave flyers and ask to put a poster up.` : `${when}: restock flyers and check the poster is still up.`;
 }
 
-function visitDescription(sheet: StreetSheet, v: StreetTeamVisit, tileCount: number, tiles: ReadonlyMap<string, LiftTile>, streetDays: readonly Weekday[], twoPasses: boolean): string {
+/**
+ * `streetDays` are the street-team days of this stop's pass (a holiday moved to another day of its week brings that
+ * day's weekday), so "closed on Wed and Sat" names only days the pass visits. `holidayNote` is said on the pass's
+ * earliest event.
+ */
+function visitDescription(
+  sheet: StreetSheet,
+  v: StreetTeamVisit,
+  tileCount: number,
+  tiles: ReadonlyMap<string, LiftTile>,
+  streetDays: readonly Weekday[],
+  twoPasses: boolean,
+  holidayNote: string | null,
+): string {
   const lines: string[] = [];
   if (sheet.mode === "fixture") lines.push(FIXTURE_NOTICE);
   if (twoPasses) lines.push(passLine(sheet, v));
+  if (holidayNote) lines.push(holidayNote);
   if (v.tile && v.tileRank !== null) {
     const zips = zipText(v.tile);
     lines.push(`Area ${v.tileRank} of ${tileCount}: ${areaLabel(v.tile)}${zips ? `, ${zips}` : ""}. ${liftWords(v.tile.lift)}.`);
@@ -788,6 +957,16 @@ function visitDescription(sheet: StreetSheet, v: StreetTeamVisit, tileCount: num
   return lines.join("\n");
 }
 
+/**
+ * "No street team on Thu Dec 24 2026 (Christmas Eve): shops keep holiday hours. Its stops are on Thu Dec 17 2026
+ * instead." (or "on Wed Dec 23 2026 instead" when they moved within the week), or, with no free day to move to,
+ * "... Its stops are on the pass's other days."
+ */
+function holidayLine(x: StreetTeamHoliday): string {
+  const where = x.movedTo ? `on ${formatShowDate(x.movedTo)} instead` : "on the pass's other days";
+  return `No street team on ${formatShowDate(x.date)} (${x.holiday}): shops keep holiday hours. Its stops are ${where}.`;
+}
+
 /** RFC 5545 text of the street-team calendar. */
 export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
   // The caller's zone wins; otherwise the venue's own (Ticketmaster's venue timezone), when it is one we can write.
@@ -816,6 +995,12 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
   const twoPasses = visits.some((v) => v.pass === "first") && visits.some((v) => v.pass === "final");
   const tiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
   const streetDays = WEEKDAYS.filter((d) => (opts.streetTeamDays ?? sheet.operator.streetTeamDays ?? []).includes(d));
+  // Each pass's own days and its holidays (with the day their stops moved to), said on its earliest event.
+  const po = passOptions(sheet, opts);
+  const passDates = streetTeamPasses(sheet.bill.date, po.days, po);
+  const passDays = (pass: StreetTeamPass) => WEEKDAYS.filter((d) => passDates.some((x) => x.pass === pass && x.weekday === d));
+  const holidays = streetTeamHolidays(sheet.bill.date, po.days, po);
+  const noted = new Set<StreetTeamPass>();
   for (const v of visits) {
     const area = stopArea(sheet, v, tiles);
     const p = v.partner;
@@ -834,7 +1019,17 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
     );
     const geo = geoProp(p?.entity.location?.lat, p?.entity.location?.lon) ?? (v.tile ? geoProp(v.tile.lat, v.tile.lon) : null) ?? geoProp(sheet.bill.venue.lat, sheet.bill.venue.lon);
     if (geo) lines.push(geo);
-    lines.push(textProp("DESCRIPTION", visitDescription(sheet, v, tileCount, tiles, streetDays, twoPasses)), "CATEGORIES:Street team", "STATUS:TENTATIVE", "TRANSP:OPAQUE", "END:VEVENT");
+    const skipped = noted.has(v.pass) ? [] : holidays.filter((x) => x.pass === v.pass);
+    noted.add(v.pass);
+    const holidayNote = skipped.length > 0 ? skipped.map(holidayLine).join(" ") : null;
+    const days = passDays(v.pass);
+    lines.push(
+      textProp("DESCRIPTION", visitDescription(sheet, v, tileCount, tiles, days.length > 0 ? days : streetDays, twoPasses, holidayNote)),
+      "CATEGORIES:Street team",
+      "STATUS:TENTATIVE",
+      "TRANSP:OPAQUE",
+      "END:VEVENT",
+    );
   }
 
   const includeShow = (opts.includeShow ?? true) || visits.length === 0;

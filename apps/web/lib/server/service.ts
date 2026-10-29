@@ -596,7 +596,8 @@ export async function planSnapshot(id: string, ctx: RequestContext): Promise<Ser
     case "sheet": {
       // Recorded state: a live sheet is a recording (the mode its envelope reports too).
       const mode = v.sheet.mode === "live" && runtimeMode().kind === "recorded" ? "recorded" : v.sheet.mode;
-      return { status: 200, body: { ...base, status: "complete", mode, sheetUrl: `${ctx.origin}/api/sheet/${v.planId}` } };
+      // sheetUrl is the street-team page, as in every other answer; the JSON envelope has its own field.
+      return { status: 200, body: { ...base, status: "complete", mode, sheetUrl: `${ctx.origin}/s/${v.planId}`, envelopeUrl: `${ctx.origin}/api/sheet/${v.planId}` } };
     }
     case "paused":
       return { status: 200, body: { ...base, status: "needs_input", mode: v.mode, pending: v.pause.pending, resolveUrl: `${ctx.origin}/api/plan/${v.planId}/resolve` } };

@@ -14,6 +14,14 @@ const rho = (v: number | null): string => (v === null ? "not enough areas to che
 /** The lift card's own definition of lift, said once in the hint; the run's limits line repeats it, so it is dropped there. */
 const LIFT_DEFINITION = /^Lift compares percentile ranks/;
 
+/** Said instead of the trust checks when the run built no lift map (no usual crowd, or no areas). */
+export const NO_LIFT_TRUST = "No lift map on this run, so there is nothing to check.";
+
+/** True when the run built no lift map: nothing to compare with, or no areas at all. */
+export function noLiftMap(sheet: StreetSheet): boolean {
+  return sheet.cards.liftMap.results.diagnostics.baseline === "none" || sheet.cards.liftMap.results.tiles.length === 0;
+}
+
 /**
  * How far to trust the map, in one sentence: "The map holds up when the bill is split in two (0.71) and isn't just
  * where people go anyway."
@@ -33,6 +41,7 @@ export function TrustTable({ sheet }: { sheet: StreetSheet }) {
   const extra = env.results.liftDiagnostics;
   const weak = liftWeak(sheet);
   const against = baselineName(sheet);
+  const overlap = extra ? extra.liftVsHeatSpearman : diag.spearmanLiftVsHeat;
   return (
     <table className="table mt-2">
       <tbody>
@@ -64,10 +73,13 @@ export function TrustTable({ sheet }: { sheet: StreetSheet }) {
             Overlap with general popularity
           </th>
           <td className="tabular">
-            {rho(extra ? extra.liftVsHeatSpearman : diag.spearmanLiftVsHeat)}
-            <span className="block text-sm text-muted">
-              {weak ? "High: the map mostly shows where people go anyway." : "Near 0 or below: the map isn't just where people go anyway."}
-            </span>
+            {rho(overlap)}
+            {/* With no number there is nothing to read as high or low. */}
+            {overlap === null ? null : (
+              <span className="block text-sm text-muted">
+                {weak ? "High: the map mostly shows where people go anyway." : "Near 0 or below: the map isn't just where people go anyway."}
+              </span>
+            )}
           </td>
         </tr>
         {extra ? (
@@ -100,6 +112,8 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
   const spread = spreadSentence(top, { lat: sheet.bill.venue.lat, lon: sheet.bill.venue.lon });
   const square = squareSizeLine(tiles);
   const listId = `lift-${sheet.planId}-areas`;
+  // No lift map on this run (nothing to compare with, or no areas): no legend, no lift hint, no trust sentence.
+  const noLift = noLiftMap(sheet);
   // The budget rows use the same numbers and names as the map and the area list.
   const area = (gh: string) => {
     const i = top.findIndex((t) => t.geohash === gh);
@@ -111,7 +125,7 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
       <div className="grid gap-x-8 gap-y-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {/* Under 1024px the numbered list comes first and the map draws the same rows under it. */}
         <div className="min-w-0 max-lg:order-2">
-          <LiftLegend className="mb-2" caption={`Fans compared with ${against}`} />
+          {noLift ? null : <LiftLegend className="mb-2" caption={`Fans compared with ${against}`} />}
           <LiftMap
             tiles={tiles}
             venue={{ lat: sheet.bill.venue.lat, lon: sheet.bill.venue.lon, name: sheet.bill.venue.name }}
@@ -131,20 +145,27 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
           />
         </div>
         <div className="min-w-0 max-lg:order-1">
-          <h3 className="mb-2 text-base">{top.length === 1 ? "Top area" : `Top ${top.length} areas`}</h3>
-          <TileList id={listId} tiles={top} selected={selected} onSelect={toggle} why={(gh) => tileWhy(sheet, gh)} />
-          {spread ? <p className="mt-3">{spread}</p> : null}
-          <p className="hint mt-3">
-            Lift compares where this bill&apos;s crowd ranks each area with where {against} ranks it; it isn&apos;t a count of people. Above 1.0, this crowd
-            ranks the area higher. Select an area to find it on the map.
-          </p>
+          {noLift ? (
+            <p className="text-muted">With no lift map on this run, no area is numbered.</p>
+          ) : (
+            <>
+              {/* No heading over an empty list: the list's own line says why nothing is numbered. */}
+              {top.length > 0 ? <h3 className="mb-2 text-base">{top.length === 1 ? "Top area" : `Top ${top.length} areas`}</h3> : null}
+              <TileList id={listId} tiles={top} selected={selected} onSelect={toggle} why={(gh) => tileWhy(sheet, gh)} />
+              {spread ? <p className="mt-3">{spread}</p> : null}
+              <p className="hint mt-3">
+                Lift compares where this bill&apos;s crowd ranks each area with where {against} ranks it; it isn&apos;t a count of people. Above 1.0, this
+                crowd ranks the area higher.{top.length > 0 ? " Select an area to find it on the map." : ""}
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       <div className="mt-8 grid gap-x-8 gap-y-8 lg:grid-cols-2">
         <div className="min-w-0">
           <h3 className="text-base">How far to trust this map</h3>
-          <p className="mt-1">{trustSentence(extra ? extra.splitHalfSpearman : undefined, weak)}</p>
+          <p className="mt-1">{noLift ? NO_LIFT_TRUST : trustSentence(extra ? extra.splitHalfSpearman : undefined, weak)}</p>
           {extra?.note ? <p className="mt-2 text-base">{plainText(extra.note)}</p> : null}
           <p className="hint mt-1">
             <a href="#different" className="underline underline-offset-2 hover:text-ink">

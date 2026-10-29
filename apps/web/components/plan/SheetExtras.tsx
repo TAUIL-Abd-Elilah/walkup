@@ -4,7 +4,9 @@
  * callout, the step list and the revision note. Each takes its contract type
  * and nothing else from the page, so the live view can reuse them.
  */
-import type { RevisionChange, SheetDiscovery, SheetRevision, TraceStep } from "@walkup/contracts";
+import type { RevisionChange, SheetDiscovery, SheetRevision, StreetSheet, TraceStep } from "@walkup/contracts";
+import { LESS_SURE_NOTE } from "@walkup/exports/format";
+import { noTopPickText } from "@walkup/exports/sheet-model";
 import { STEP_STATUS_WORD } from "../../lib/labels";
 import { plainText } from "../../lib/sheet-utils";
 import { changeCountLine, groupChanges, readAsLine, toolCallsLine } from "./model";
@@ -15,20 +17,34 @@ export function DiscoveryNote({
   discovery,
   target,
   onGo,
+  lessSure = false,
 }: {
   discovery: SheetDiscovery;
   target: { href: string; label: string } | null;
   /** Called before following the link (selects the tile when the pick is an area). */
   onGo?: () => void;
+  /** The picked partner is less certain (its row in the table carries a dagger): said here too. */
+  lessSure?: boolean;
 }) {
   return (
     <section id="discovery" aria-labelledby="discovery-title" className="section scroll-mt-4">
       <h2 id="discovery-title">{discovery.kind === "partner" ? "Start with this place" : "Start in this area"}</h2>
       <p className="mt-2 max-w-[760px] font-semibold">
         {discovery.headline}
+        {lessSure ? (
+          <span>
+            <span aria-hidden="true">†</span>
+            <span className="sr-only"> (less certain)</span>
+          </span>
+        ) : null}
         <Refs ids={discovery.ledgerRefs} />
       </p>
       <p className="mt-1 max-w-[760px]">{discovery.detail}</p>
+      {lessSure ? (
+        <p className="mt-1 max-w-[760px]" data-testid="discovery-less-sure">
+          {LESS_SURE_NOTE}
+        </p>
+      ) : null}
       <p className="mt-1 max-w-[760px] text-sm text-muted">
         Why this one: {discovery.why ?? `${discovery.rule.charAt(0).toLowerCase()}${discovery.rule.slice(1).replace(/\.$/, "")}`}.
         {target ? (
@@ -40,6 +56,27 @@ export function DiscoveryNote({
             .
           </>
         ) : null}
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Where the discovery callout would be, on a sheet that has none, with the reason read from the sheet
+ * (`noTopPickText`, the same words as the print view and the PDF). A revision says it was the change ("after this
+ * change"), so the callout doesn't vanish without a word. Without the sheet it says only that no rule found one.
+ */
+export function NoDiscoveryNote({ sheet, revised = false }: { sheet?: StreetSheet; revised?: boolean }) {
+  const text = sheet ? noTopPickText(sheet) : `${revised ? "No top pick after this change" : "No top pick on this sheet"}: no place or area met the fixed rule.`;
+  return (
+    <section id="discovery" aria-labelledby="no-discovery-title" className="section scroll-mt-4" data-testid="no-discovery">
+      <h2 id="no-discovery-title">Top pick</h2>
+      <p className="mt-2 max-w-[760px]">
+        {text}{" "}
+        <a href="/system-card#pick" className="link">
+          How the top pick is chosen
+        </a>
+        .
       </p>
     </section>
   );
@@ -102,19 +139,21 @@ export function StepList({
 /** How many changes a group lists before the rest fold into "N more". */
 const GROUP_SHOWN = 5;
 
-function ChangeItem({ c, look }: { c: RevisionChange; look: "added" | "removed" | "changed" }) {
+function ChangeItem({ c, look, rules = false }: { c: RevisionChange; look: "added" | "removed" | "changed"; rules?: boolean }) {
   return (
     <li>
       {look === "removed" ? <del className="text-muted">{c.label}</del> : c.label}
       {look === "added" ? <span className="text-sm text-muted"> new</span> : null}
       <Refs ids={c.ledgerRefs} />
+      {/* A setting the fixed rules read has no request to cite: say who read it instead of a bare row. */}
+      {rules && c.kind === "setting_changed" && c.ledgerRefs.length === 0 ? <span className="text-sm text-muted"> read by the fixed rules, no request to cite</span> : null}
       {c.detail ? <span className="block text-base text-muted">{c.detail}</span> : null}
     </li>
   );
 }
 
 /** One group of changes. Removed items are struck through in the muted colour; added ones are marked "new". */
-function ChangeGroup({ title, items, look }: { title: string; items: RevisionChange[]; look: "added" | "removed" | "changed" }) {
+function ChangeGroup({ title, items, look, rules = false }: { title: string; items: RevisionChange[]; look: "added" | "removed" | "changed"; rules?: boolean }) {
   if (items.length === 0) return null;
   const shown = items.slice(0, GROUP_SHOWN);
   const rest = items.slice(GROUP_SHOWN);
@@ -125,7 +164,7 @@ function ChangeGroup({ title, items, look }: { title: string; items: RevisionCha
       </h3>
       <ul className="mt-1 space-y-1">
         {shown.map((c, i) => (
-          <ChangeItem key={`${c.kind}-${c.label}-${i}`} c={c} look={look} />
+          <ChangeItem key={`${c.kind}-${c.label}-${i}`} c={c} look={look} rules={rules} />
         ))}
       </ul>
       {rest.length > 0 ? (
@@ -133,7 +172,7 @@ function ChangeGroup({ title, items, look }: { title: string; items: RevisionCha
           <summary className="cursor-pointer text-sm text-muted">{rest.length} more</summary>
           <ul className="mt-1 space-y-1">
             {rest.map((c, i) => (
-              <ChangeItem key={`${c.kind}-${c.label}-${i}`} c={c} look={look} />
+              <ChangeItem key={`${c.kind}-${c.label}-${i}`} c={c} look={look} rules={rules} />
             ))}
           </ul>
         </details>
@@ -178,7 +217,7 @@ export function RevisionNote({ revision }: { revision: SheetRevision }) {
       </p>
       {revision.changes.length > 0 ? (
         <div className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-3">
-          <ChangeGroup title="Changed" items={groups.changed} look="changed" />
+          <ChangeGroup title="Changed" items={groups.changed} look="changed" rules={revision.interpreter === "rules"} />
           <ChangeGroup title="Removed" items={groups.removed} look="removed" />
           <ChangeGroup title="Added" items={groups.added} look="added" />
         </div>

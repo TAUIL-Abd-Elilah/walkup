@@ -9,6 +9,7 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { LedgerEntry, Partner, SheetDiscovery, SheetRevision, StreetSheet, TraceStep } from "@walkup/contracts";
+import { noTopPickText, partnerHoursColumn } from "@walkup/exports/sheet-model";
 
 // The map pieces load MapLibre and use the "@/" alias; the page is checked without them.
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => undefined, refresh: () => undefined }) }));
@@ -35,6 +36,7 @@ const { DiscoveryNote, RevisionNote, StepList } = await import("../components/pl
 const { PartnerWhy } = await import("../components/plan/PartnersCard");
 const { ReceiptContext } = await import("../components/plan/receipts");
 const model = await import("../components/plan/model");
+const { MAX_REVISE_CHARS } = await import("../lib/server/input");
 const utils = await import("../lib/sheet-utils");
 const { RecordedStrip } = await import("../components/RecordedStrip");
 const { runtimeMode } = await import("../lib/mode");
@@ -219,7 +221,9 @@ describe("plan page helpers", () => {
   it("checks a revise instruction before it is sent", () => {
     expect(model.checkInstruction("  All ages,   no bars ")).toEqual({ ok: true, text: "All ages, no bars" });
     expect(model.checkInstruction("x").ok).toBe(false);
-    expect(model.checkInstruction("a".repeat(281)).ok).toBe(false);
+    // The box takes what the server takes (MAX_REVISE_CHARS), no more and no less.
+    expect(model.checkInstruction("a".repeat(MAX_REVISE_CHARS)).ok).toBe(true);
+    expect(model.checkInstruction("a".repeat(MAX_REVISE_CHARS + 1))).toEqual({ ok: false, message: `Keep the note to ${MAX_REVISE_CHARS} characters or fewer.` });
   });
 });
 
@@ -285,7 +289,7 @@ describe("the plan page as a document", () => {
     expect(html).toContain(`/api/sheet/${sheet.planId}/pdf`);
     // One row per partner, with its hours on the first street-team day.
     expect(html.match(/id="partner-/g)?.length).toBe(sheet.cards.partners.results.length);
-    expect(html).toContain(`Open ${model.streetDayShort(sheet.operator.streetTeamDays)}`);
+    expect(html).toContain(`>${partnerHoursColumn(sheet).header}<`);
     // Absent fields render nothing.
     for (const id of ['id="revision"', 'id="discovery-title"', 'id="steps"', 'id="revise"', "Why this place", "Split-half agreement"]) expect(html).not.toContain(id);
     expect(visibleText(html)).not.toMatch(BANNED);
@@ -349,6 +353,14 @@ describe("the plan page as a document", () => {
     expect(renderView(sheet, { runtimeLive: false })).not.toContain("Sample sheet.");
   });
 
+  it("gives the reason there is no top pick in the print view's words", () => {
+    const { sheet } = fixture("g3");
+    expect(sheet.discovery ?? null).toBeNull();
+    const html = renderView(sheet).replace(/&#x27;|&apos;/g, "'");
+    expect(html).toContain(noTopPickText(sheet));
+    expect(html).not.toContain("no place or area met the fixed rule");
+  });
+
   it("says when a live sheet was recorded while live runs are paused, and keeps a sample sheet a sample", () => {
     const metaLine = (html: string) => visibleText(/data-testid="meta-line">([\s\S]*?)<\/p>/.exec(html)?.[1] ?? "").trim();
     // A live copy of a preset sheet, standing in for a run recorded mode serves from the plan store.
@@ -356,7 +368,7 @@ describe("the plan page as a document", () => {
     const html = renderView(live, { recorded: true, canRerun: false, revisable: false });
     expect(metaLine(html)).toMatch(/^Street sheet · Draft, not sent · Recorded Oct 30 2026, 15:00 UTC from \d+ requests in \d+ steps$/);
     expect(visibleText(html)).toContain(
-      "Recorded from a live Qloo and Ticketmaster run on Oct 30 2026, 15:00 UTC. Live runs are paused for judging; this is what the live run produced.",
+      "Recorded from a live Qloo and Ticketmaster run on Oct 30 2026, 15:00 UTC. Live runs are paused for judging; this sheet comes from that run, and any change since was made offline, with no API call.",
     );
     expect(visibleText(html)).not.toMatch(/not refreshed|no longer|unavailable/);
     for (const gone of ["Sample sheet.", "Sample street sheet", "A live run.", "Run it again", 'id="revise"']) expect(html).not.toContain(gone);
@@ -377,16 +389,18 @@ describe("the plan page as a document", () => {
     );
     const text = visibleText(renderToStaticMarkup(createElement(RecordedStrip, { mode })));
     expect(text.trim()).toBe(
-      "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a live run produced.",
+      "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; each recorded sheet comes from a live run, and any change since was made offline, with no API call.",
     );
-    expect(text).not.toMatch(/\bsample\b|made-up|\bfresh\b|live data|no longer|unavailable|are off/i);
+    expect(text).not.toMatch(/\bsample\b|made-up|\bfresh\b|live data|no longer|unavailable|are off|what a live run produced/i);
     // The first sentence is the strip's bold lead.
     expect(renderToStaticMarkup(createElement(RecordedStrip, { mode }))).toContain(
       '<strong class="font-semibold">Recorded from live Qloo and Ticketmaster runs on Oct 21 2026.</strong> Live runs are paused',
     );
     // Without a stored recording the sentence leaves the date out rather than guessing one.
     const undated = runtimeMode({ WALKUP_MODE: "recorded" }, { recordedOn: () => null });
-    expect(undated.detail).toBe("Recorded from live Qloo and Ticketmaster runs. Live runs are paused for judging; these sheets are what a live run produced.");
+    expect(undated.detail).toBe(
+      "Recorded from live Qloo and Ticketmaster runs. Live runs are paused for judging; each recorded sheet comes from a live run, and any change since was made offline, with no API call.",
+    );
   });
 });
 
@@ -521,6 +535,10 @@ describe("sheet page patterns from the design research", () => {
     const { sheet } = fixture("g1-a");
     expect(utils.sendStatus(sheet.ledger)).toEqual({ line: "Draft, not sent", title: "draft", sent: false });
     expect(utils.sheetTitle(sheet)).toBe("Sample: Hollis Creek String Band at The Truth, street sheet (draft)");
+    // A revision names its change note, so its tab differs from the sheet it revises.
+    const revised = structuredClone(sheet);
+    revised.revision = { parentPlanId: sheet.planId, instruction: "No restaurants" } as StreetSheet["revision"];
+    expect(utils.sheetTitle(revised)).toBe("Sample: Hollis Creek String Band at The Truth, street sheet, revised: “No restaurants” (draft)");
     const demo = sendEntry("A1", "demo: not sent. RESEND_API_KEY is not set on this server, so nothing is sent.", "2026-10-14T16:05:00.000Z");
     expect(utils.sendStatus([...sheet.ledger, demo]).line).toBe("Draft, not sent (demo send recorded Oct 14, 16:05 UTC)");
     const sent = sendEntry("A2", "sent: message id abc", "2026-10-14T16:20:00.000Z", ["a@example.com", "b@example.com"]);
@@ -589,6 +607,20 @@ describe("sheet page patterns from the design research", () => {
     // The street team's part comes before how the plan was made.
     expect(html.indexOf('id="partners"')).toBeLessThan(html.indexOf('id="steps"'));
     expect(text).not.toMatch(BANNED);
+  });
+
+  it("says a run with no lift map has nothing to number or check, without a zero heading or a lift hint", () => {
+    const g3 = fixture("g3").sheet;
+    expect(g3.cards.liftMap.results.diagnostics.baseline).toBe("none");
+    const text = visibleText(renderView(g3));
+    expect(text).not.toMatch(/Top 0 areas|Lift compares where|isn t just where people go anyway|Near 0 or below/);
+    expect(text).toContain("With no lift map on this run, no area is numbered.");
+    expect(text).toContain("No lift map on this run, so there is nothing to check.");
+    // A sheet with a lift map keeps its numbered heading, its hint and its trust sentence.
+    const a = visibleText(renderView(fixture("g1-a").sheet));
+    expect(a).toMatch(/Top \d areas/);
+    expect(a).toContain("Lift compares where");
+    expect(a).not.toContain("No lift map on this run");
   });
 
   it("says the popularity check in one sentence with its receipts, and nothing when the sheet has none", () => {

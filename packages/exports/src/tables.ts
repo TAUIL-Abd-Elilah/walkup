@@ -21,13 +21,16 @@ import {
   FIXTURE_NOTICE,
   hoursWeekday,
   partnerAreaLabel,
+  partnerAreaText,
   partnerWhyLong,
+  PHONE_NOT_LISTED,
   round,
   SAMPLE_PREFIX,
   sortedReceipts,
   streetDaysText,
   SUGGESTED_NOT_AFFILIATED,
   topTiles,
+  WEBSITE_NOT_LISTED,
   weekdayShort,
   ymdOf,
   type TileSelectOptions,
@@ -78,6 +81,11 @@ function prop(e: QlooEntity | undefined, key: string): string {
   return typeof v === "string" ? v : "";
 }
 
+/** The value, or the words for a blank ("Phone not listed"), so the call list never leaves the cell silent. */
+function notListed(value: string, words: string): string {
+  return value.trim() !== "" ? value : words;
+}
+
 function chipsText(chips: readonly { label: string; ledgerRef: string }[]): string {
   return chips.map((c) => `${c.label} [${c.ledgerRef}]`).join("; ");
 }
@@ -124,14 +132,16 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
       "suggested",
       p.entity.name,
       categoryLabel(p.category),
-      partnerAreaLabel(p, tiles),
+      partnerAreaText(p, tiles),
       tile ? round(tile.lift, 2) : null,
       p.address ?? prop(p.entity, "address"),
       visit ? visit.weekdays.map(weekdayShort).join("; ") : "",
-      visit ? dayHoursText(visit.hours, visit.weekdays[0]) : closedAll ? `Closed ${streetDaysText(streetDays)}: not on the calendar` : dayHoursText(p.hoursOnDay, day),
+      visit ? visit.days.map((d) => dayHoursText(d.hours, d.weekday)).join("; ") : closedAll ? `Closed ${streetDaysText(streetDays)}: not on the calendar` : dayHoursText(p.hoursOnDay, day),
       visit ? visit.dates.join("; ") : "",
-      p.phone ?? prop(p.entity, "phone"),
-      p.website ?? prop(p.entity, "website"),
+      // A blank is said out loud, as on the paper. The website is the cleaned one only (`Partner.website`), the same
+      // as the plan page and the PDF: a site the engine's rule dropped is not written here either.
+      notListed(p.phone ?? prop(p.entity, "phone"), PHONE_NOT_LISTED),
+      notListed(p.website ?? "", WEBSITE_NOT_LISTED),
       "",
       // The partner panel's parts, when the run built them: what to do there, why it is listed, how sure.
       p.explain?.activation ?? "",
@@ -163,8 +173,8 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
         "",
         "",
         "",
-        prop(d.entity, "phone"),
-        prop(d.entity, "website"),
+        notListed(prop(d.entity, "phone"), PHONE_NOT_LISTED),
+        notListed(prop(d.entity, "website"), WEBSITE_NOT_LISTED),
         // Only ever an address the operator typed; never scraped.
         d.declared.contactEmail ?? "",
         "",
@@ -196,7 +206,8 @@ export function partnersCsv(sheet: StreetSheet, opts: PartnersCsvOptions = {}): 
 
 /**
  * Weight per numbered area, summing to 1 and never rising with the area number (area 1 gets the most), so every
- * file agrees with the order the sheet recommends. The values are the sheet's budget split when it covers every
+ * file agrees with the order the sheet recommends (in zips.csv, an area's ZIPs add up to its weight). The values are
+ * the sheet's budget split when it covers every
  * area (the largest share goes to area 1, the next to area 2, ...), otherwise proportional to lift (already in
  * area order). Same "heuristic, not a forecast" status as the budget split.
  */
@@ -258,7 +269,10 @@ export interface ZipRow {
   areaName: string;
   /** That area's lift, 2 decimals. */
   liftScore: number;
-  /** The area's weight for each of its ZIPs, 4 decimals, summing to 1 across rows; never higher than an earlier area's. */
+  /**
+   * The ZIP's part of its area's budget share: the area's share split evenly over its ZIPs, 4 decimals, summing to 1
+   * across rows. An area's rows add up to its share in the budget split (re-scaled when an area has no ZIP to list).
+   */
   suggestedWeight: number;
   /** Geohashes of the numbered areas that contain this ZCTA, first area first. */
   tiles: string[];
@@ -274,9 +288,9 @@ export interface ZipOptions extends TileSelectOptions {
 
 /**
  * One row per residential 5-digit ZCTA in the numbered areas' `zctas`, in area order. A ZIP in several areas is
- * listed once, under the first. Every ZIP of an area carries that area's weight (`tileWeights`), so the weights
- * fall with the area number as the sheet's areas and budget split do; the rows are then scaled to sum to 1. Areas
- * without a residential ZIP drop out.
+ * listed once, under the first. Each area's weight (`tileWeights`, the sheet's budget split) is split evenly over the
+ * ZIPs listed under it, so an area's rows add up to its share and the area totals fall with the area number as the
+ * sheet's budget split does; the rows are then scaled to sum to 1. Areas without a residential ZIP drop out.
  */
 export function zipRows(sheet: StreetSheet, opts: ZipOptions = {}): ZipRow[] {
   const tiles = topTiles(sheet, opts);
@@ -290,7 +304,9 @@ export function zipRows(sheet: StreetSheet, opts: ZipOptions = {}): ZipRow[] {
     }
   });
   const ordered = [...acc.entries()].sort((a, b) => a[1].area - b[1].area || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  const rounded = apportion(ordered.map(([zip, v]) => ({ key: zip, w: weights.get(v.t.geohash) ?? 0 })));
+  const zipsInArea = new Map<number, number>();
+  for (const [, v] of ordered) zipsInArea.set(v.area, (zipsInArea.get(v.area) ?? 0) + 1);
+  const rounded = apportion(ordered.map(([zip, v]) => ({ key: zip, w: (weights.get(v.t.geohash) ?? 0) / (zipsInArea.get(v.area) ?? 1) })));
   return ordered.map(([zip, v]) => ({
     zip,
     area: v.area,

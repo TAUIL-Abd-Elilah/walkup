@@ -261,4 +261,11 @@ describe("the landing's rooms", () => {
     const png = readFileSync(file);
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([w, h]);
   });
+
+  it("describes the screenshot's partner rows by the day the street team visits, as the sheet shows them", () => {
+    const page = readFileSync(fileURLToPath(new URL("../app/page.tsx", import.meta.url)), "utf8");
+    const alt = /alt: "([^"]+)"/.exec(page)?.[1] ?? "";
+    expect(alt).toContain("the day the street team visits it and its hours that day");
+    expect(alt).not.toContain("hours on the street-team day");
+  });
 });

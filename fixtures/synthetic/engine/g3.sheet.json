@@ -35,7 +35,7 @@
   },
   "sheet": {
     "planId": "g3",
-    "createdAt": "2026-11-20T15:00:00.000Z",
+    "createdAt": "2026-10-17T15:00:00.000Z",
     "mode": "fixture",
     "hypothetical": true,
     "bill": {
@@ -1510,7 +1510,7 @@
         "cacheHit": false,
         "resultCount": 1,
         "curl": "curl -s \"https://app.ticketmaster.com/discovery/v2/events/syn-tm-ev-superfunny-1204-ada.json?apikey=$TICKETMASTER_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "note": "node T intake; fixture world: synthetic response",
         "id": "T1"
       },
@@ -1527,7 +1527,7 @@
           "take": 5
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Ada%20Pell&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1550,7 +1550,7 @@
           "take": 5
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Margo%20Vint&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 404,
         "envelopeStatus": "empty",
         "latencyMs": 0,
@@ -1574,7 +1574,7 @@
           "filter.radius": 1
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/search?filter.location=47.244,-122.453&filter.radius=1&query=Super%20Funny%20Comedy%20Club&take=10&types=urn:entity:place\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 404,
         "envelopeStatus": "empty",
         "latencyMs": 0,
@@ -1590,7 +1590,7 @@
         "endpoint": "/discovery/v2/events.json",
         "params": {
           "venueId": "syn-tm-ven-superfunny",
-          "startDateTime": "2026-11-20T00:00:00Z",
+          "startDateTime": "2026-10-17T00:00:00Z",
           "size": 60,
           "sort": "date,asc",
           "apikey": "$TICKETMASTER_API_KEY"
@@ -1601,8 +1601,8 @@
         "bytes": 4685,
         "cacheHit": false,
         "resultCount": 4,
-        "curl": "curl -s \"https://app.ticketmaster.com/discovery/v2/events.json?venueId=syn-tm-ven-superfunny&startDateTime=2026-11-20T00%3A00%3A00Z&size=60&sort=date%2Casc&apikey=$TICKETMASTER_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "curl": "curl -s \"https://app.ticketmaster.com/discovery/v2/events.json?venueId=syn-tm-ven-superfunny&startDateTime=2026-10-17T00%3A00%3A00Z&size=60&sort=date%2Casc&apikey=$TICKETMASTER_API_KEY\"",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "note": "node Q3 house roster (Ticketmaster); fixture world: synthetic response",
         "id": "T2"
       },
@@ -1619,7 +1619,7 @@
           "take": 5
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Tamsin%20Rook&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1642,7 +1642,7 @@
           "take": 5
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/search?query=Benny%20Okafor&take=5&types=urn:entity:artist,urn:entity:person\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 404,
         "envelopeStatus": "empty",
         "latencyMs": 0,
@@ -1666,7 +1666,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.location=POINT(-122.453%2047.244)&filter.location.radius=1500&filter.type=urn:entity:place&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=1\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1689,7 +1689,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.location=POINT(-122.453%2047.244)&filter.location.radius=40000&filter.type=urn:heatmap&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1712,7 +1712,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.location=POINT(-122.453%2047.244)&filter.location.radius=60000&filter.type=urn:heatmap&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1753,7 +1753,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.exclude.tags=urn:tag:category:place:night_club&filter.hours=wednesday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=3500&filter.price_level.max=3&filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:clothing_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon&filter.type=urn:entity:place&operator.filter.tags=union&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=50\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1790,7 +1790,7 @@
           "take": 50
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.exclude.tags=urn:tag:category:place:night_club&filter.hours=wednesday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=3500&filter.price_level.max=3&filter.tags=urn:tag:category:place:bar,urn:tag:category:place:restaurant,urn:tag:category:place:cafe,urn:tag:category:place:record_store,urn:tag:category:place:book_store,urn:tag:category:place:clothing_store,urn:tag:category:place:barber_shop,urn:tag:category:place:beauty_salon&filter.type=urn:entity:place&operator.filter.tags=union&take=50\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1822,7 +1822,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.hours=friday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=1500&filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe&filter.type=urn:entity:place&operator.filter.tags=union&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=25\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1854,7 +1854,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.hours=friday&filter.location=POINT(-122.453%2047.244)&filter.location.radius=2500&filter.tags=urn:tag:category:place:restaurant,urn:tag:category:place:bar,urn:tag:category:place:cafe&filter.type=urn:entity:place&operator.filter.tags=union&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=25\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1878,7 +1878,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.type=urn:entity:podcast&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&signal.location=POINT(-122.453%2047.244)&take=15\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,
@@ -1907,7 +1907,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?feature.explainability=true&filter.exclude.tags=urn:tag:genre:brand:alcohol,urn:tag:genre:brand:tobacco,urn:tag:genre:brand:gambling&filter.type=urn:entity:brand&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&signal.location=POINT(-122.453%2047.244)&take=15\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "empty",
         "latencyMs": 0,
@@ -1928,7 +1928,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?filter.type=urn:demographics&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "empty",
         "latencyMs": 0,
@@ -1957,7 +1957,7 @@
           ]
         },
         "curl": "curl -sS \"https://hackathon.api.qloo.com/v2/insights?diversify.by=subtype&filter.tag.types=urn:tag:keyword:media,urn:tag:genre:music,urn:tag:theme:qloo,urn:tag:audience:qloo&filter.type=urn:tag&signal.interests.entities=0000c782-048a-4a80-8990-95d0d5287866&take=30\" -H \"X-Api-Key: $QLOO_API_KEY\"",
-        "startedAt": "2026-11-20T15:00:00.000Z",
+        "startedAt": "2026-10-17T15:00:00.000Z",
         "httpStatus": 200,
         "envelopeStatus": "ok",
         "latencyMs": 0,

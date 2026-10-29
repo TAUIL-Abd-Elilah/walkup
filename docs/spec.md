@@ -23,7 +23,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 ### A. First visit (desktop and phone, no login, no email)
 
 1. The landing page renders from cache (the Salt Shed pair first, then G1) and is never empty.
-2. The mode is said in words, never in a pill: live ("Live data" with the Qloo calls left this month); fixture, with a strip on every page saying the sheets use made-up places and numbers; or recorded, with a strip saying the sheets were recorded from live Qloo and Ticketmaster runs and that live runs are paused; sheets recorded from live runs show the date of the run and are not refreshed. A recorded sheet says "Recorded <date>" where a live one says "Planned <date>".
+2. The mode is said in words, never in a pill: live ("Live data" with the Qloo calls left this month); fixture, with a strip on every page saying the sheets use made-up places and numbers; or recorded, with a strip saying the sheets were recorded from live Qloo and Ticketmaster runs and that live runs are paused; sheets recorded from live runs show the date of the run and get no new Qloo or Ticketmaster data (an offline re-check may reword them, with no API call). A recorded sheet says "Recorded <date>" where a live one says "Planned <date>".
 3. Three preset chips (the goldens) and a search box for any Ticketmaster show.
 4. Opening a sheet shows the cards in order, each with a status badge (`ok`, `empty`, `needs_input`, `partial`, `degraded`, `error`) and a reason when not `ok`: resolution, lift map with top 5 named tiles, partners, pre/post, media and sponsor, copy hooks.
 5. Removed on Oct 20 2026: the "Without Qloo" toggle and its Google Places list. Qloo is the core; the list added a key, a quota and a 30-day storage limit for little decision value ([what we tried](what-we-tried.md)).
@@ -92,12 +92,12 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 
 ### I. Exports
 
-`partners.csv`, `zips.csv` (ZIP, lift score, suggested weight), `pins.csv` (lat, lon, radius_mi of at least 1), `street-team.ics`, `offer-codes.csv` (labelled "create in your ticketing platform"), `sheet.json` with the ledger, and the PDF (US Letter or A4, readable on a phone). The share URL `/s/<plan-id>` is readable without login.
+`partners.csv`, `zips.csv` (ZIP, lift score, suggested weight), `pins.csv` (area, area_name, lat, lon, radius_km of at least 1.6, i.e. one mile), `street-team.ics`, `offer-codes.csv` (labelled "create in your ticketing platform"), `sheet.json` with the ledger, and the PDF (US Letter or A4, readable on a phone). The share URL `/s/<plan-id>` is readable without login.
 
 ### J. Fixture and recorded modes
 
 1. **Fixture: sample data.** Without a Qloo or a Ticketmaster key, or with `WALKUP_MODE=fixture`, the presets run on a synthetic stand-in for Qloo and Ticketmaster and no API is called. Every page, sheet, file and email says it is sample data (made-up places and numbers), and free-form runs answer 503 with an explanation. `npm ci && npm run dev` works with an empty `.env`.
-2. **Recorded: live runs paused.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date; their envelope says `mode: "recorded"`. Sample sheets stay sample, and when no live run was recorded the landing page calls its sheets sample sheets. New plans, searches, picks and every MCP tool but `get_sheet` answer with `mode: "recorded"` and one plain reason (503 on the REST routes); a change note on a recorded sheet opens the revision recorded ahead for the same change, or answers that the change needs new Qloo requests (`docs/deploy-vercel.md`); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
+2. **Recorded: live runs paused.** With `WALKUP_MODE=recorded`, once the time in `WALKUP_QLOO_UNTIL` has passed, or when Qloo has rejected the configured key and the plan store holds a live sheet, the app serves sheets recorded from earlier live runs and calls nothing. Each preset shows its latest live run made with the preset's own inputs, unless Qloo refused the key on it or at least half its cards failed; a preset without one shows its sample sheet, labelled sample. Stored live sheets open as recorded, with their date; their envelope says `mode: "recorded"`. Sample sheets stay sample, and when no live run was recorded the landing page calls its sheets sample sheets. New plans, searches, picks and every MCP tool that would start a run answer with `mode: "recorded"` and one plain reason (503 on the REST routes); a change note on a recorded sheet opens the revision recorded ahead for the same change, or answers that the change needs new Qloo requests (`docs/deploy-vercel.md`); reading, downloads and the confirm-gated send still work. `/healthz` reports the mode, a rejected key, `WALKUP_QLOO_UNTIL` and the recorded run behind each preset.
 3. A rejected key with no live sheet stored falls back to fixture mode. Recorded data is never shown as sample data, and sample data never as recorded.
 
 ### K. Agents
@@ -107,7 +107,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 
 ### L. Evals
 
-1. The P1 analysis plan is hashed and committed under `docs/preregistration/` before any run (P1 was not run).
+1. The P1 analysis plan is hashed and committed under `docs/preregistration/` before any run (P1 was run Oct 21 2026; result null, `evals/p1/results.md`).
 2. Coverage is reported before results; nulls are published.
 3. The 20-case product eval runs in CI with an ID validator.
 

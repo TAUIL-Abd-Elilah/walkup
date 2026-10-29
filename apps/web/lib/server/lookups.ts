@@ -21,16 +21,22 @@ const DAY = 24 * HOUR;
 /** Live title searches (one Qloo /search each) across all networks per day, beside the per-network window. */
 export const PROXY_SEARCHES_PER_DAY = 100;
 
+/** Where presets open in recorded state: reading routes only, since POST /api/plan runs nothing there. */
+export const RECORDED_PRESETS =
+  "unlimited: open /plan/<presetId> or GET /api/plan/<presetId> (or MCP plan_show {presetId}); these are recorded live runs or the bundled sample sheets. POST /api/plan runs nothing in recorded mode.";
+
 export function limitsFor(ctx: RequestContext): ServiceResponse {
   const mode = runtimeMode();
   const st = freshRuns().status(ctx.ip);
+  const live = mode.kind === "live";
   return {
     status: 200,
     body: {
       mode: mode.kind,
-      freshRunsEnabled: mode.kind === "live",
-      freshRuns: freshRunsBody(st),
-      presets: mode.kind === "recorded" ? "unlimited (recorded live runs, or the bundled sample sheets)" : "unlimited (served from stored runs or the fixture world)",
+      freshRunsEnabled: live,
+      // No counts where fresh runs are off: a remaining count there would read as runs on offer.
+      freshRuns: live ? freshRunsBody(st) : null,
+      presets: mode.kind === "recorded" ? RECORDED_PRESETS : "unlimited (served from stored runs or the fixture world)",
       ...(mode.kind === "fixture" ? { reason: FIXTURE_FRESH_RUNS_REASON } : mode.kind === "recorded" ? { reason: RECORDED_REASON } : {}),
     },
   };
@@ -142,7 +148,8 @@ export async function health(): Promise<ServiceResponse> {
       qlooMonthlyRemaining: quota?.remaining ?? null,
       qlooMonthlyLimit: quota?.limit ?? null,
       quotaGuard: quota ? { floor: quota.floor, tripped: quota.guardTripped } : null,
-      freshRunsToday: { used: st.total.used, limit: st.total.limit, remaining: st.total.remaining, day: st.day },
+      freshRunsEnabled: mode.kind === "live",
+      freshRunsToday: mode.kind === "live" ? { used: st.total.used, limit: st.total.limit, remaining: st.total.remaining, day: st.day } : null,
       planStore: store,
       checkedAt: new Date().toISOString(),
     },

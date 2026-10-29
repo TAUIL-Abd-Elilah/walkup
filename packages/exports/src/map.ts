@@ -43,8 +43,42 @@ export interface TileMapLayout {
    * (anchorX, anchorY) is the cell centre, for a leader line.
    */
   labels: { rank: number; text: string; x: number; y: number; anchorX: number; anchorY: number }[];
+  /**
+   * The venue's name under its square (above it near the bottom edge), kept inside the frame: (x, y) is the text's
+   * centre on its baseline, `half` its half width. The markers keep clear of it. Null without a venue or a name.
+   */
+  venueLabel: { text: string; x: number; y: number; half: number } | null;
   /** Map units per kilometre (0 when nothing was laid out), for the grid and the scale bar. */
   unitsPerKm: number;
+}
+
+/** Type size of the venue's name on the map, in map units, and the most characters printed. */
+export const VENUE_LABEL_SIZE = 5.2;
+export const VENUE_LABEL_MAX_CHARS = 32;
+
+/** A box on the map the markers keep clear of. */
+export interface MapBox {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+/**
+ * Where the venue's name goes: centred under the venue square (above it when that would run off the bottom), kept
+ * inside the frame. The width is estimated from the character count (Helvetica at 5.2 units).
+ */
+export function venueLabelSpot(text: string, venue: { x: number; y: number }, width: number, height: number): { text: string; x: number; y: number; half: number } {
+  const name = text.slice(0, VENUE_LABEL_MAX_CHARS);
+  const half = name.length * 1.35;
+  const x = Math.max(half + 2, Math.min(width - half - 2, venue.x));
+  const y = venue.y + 9 > height - 2 ? venue.y - 5 : venue.y + 9;
+  return { text: name, x, y, half };
+}
+
+/** The box a venue label covers, with a small margin: from the tops of the capitals to below the descenders. */
+export function venueLabelBox(l: { x: number; y: number; half: number }): MapBox {
+  return { x0: l.x - l.half - 1, x1: l.x + l.half + 1, y0: l.y - 4.2, y1: l.y + 1.5 };
 }
 
 /** Radius of a rank label, in map units. */
@@ -52,12 +86,6 @@ export const LABEL_RADIUS = 4.3;
 /** Cells drawn smaller than this (either side) also get a ring so they stay visible. */
 export const MIN_VISIBLE_CELL = 5;
 
-/**
- * Places rank labels beside their cells: tries a ring of offsets around each
- * cell and keeps the first spot that stays inside the box and clear of earlier
- * labels, the cells' centres and the venue; otherwise the spot with the most
- * room. Deterministic.
- */
 /**
  * Groups anchors closer than `minDist` map units into one marker labelled with every rank ("3, 4"), so two
  * areas too close to tell apart at this scale never stack. The group sits at the first rank's anchor.
@@ -72,11 +100,18 @@ export function groupAnchors(anchors: readonly { rank: number; x: number; y: num
   return groups.map((g) => ({ rank: g.ranks[0] as number, text: g.ranks.join(", "), x: g.x, y: g.y }));
 }
 
+/**
+ * Places rank labels beside their cells: tries a ring of offsets around each
+ * cell and keeps the first spot that stays inside the box and clear of earlier
+ * labels, the cells' centres, the venue and `avoidBoxes` (the venue's name);
+ * otherwise the spot with the most room. Deterministic.
+ */
 export function placeLabels(
   anchors: readonly { rank: number; x: number; y: number; text?: string }[],
   avoid: readonly { x: number; y: number }[],
   width: number,
   height: number,
+  avoidBoxes: readonly MapBox[] = [],
 ): TileMapLayout["labels"] {
   const r = LABEL_RADIUS;
   const d = 2 * r + 1.2;
@@ -103,7 +138,12 @@ export function placeLabels(
     for (const [ox, oy] of offsets) {
       const x = clampX(a.x + ox);
       const y = clampY(a.y + oy);
-      const others = [...placed.map((p) => Math.hypot(p.x - x, p.y - y) - 2 * r), ...avoid.map((p) => Math.hypot(p.x - x, p.y - y) - r - 2.5)];
+      const others = [
+        ...placed.map((p) => Math.hypot(p.x - x, p.y - y) - 2 * r),
+        ...avoid.map((p) => Math.hypot(p.x - x, p.y - y) - r - 2.5),
+        // Inside or touching a box: negative room, so the next offset is tried.
+        ...avoidBoxes.map((b) => Math.hypot(x - Math.max(b.x0, Math.min(b.x1, x)), y - Math.max(b.y0, Math.min(b.y1, y))) - r - 0.5),
+      ];
       const room = others.length > 0 ? Math.min(...others) : Number.POSITIVE_INFINITY;
       if (room >= 0.5) {
         best = { x, y, room };
@@ -127,6 +167,8 @@ export interface TileMapOptions {
   minSpanDeg?: number;
   /** Most context tiles drawn. Default 400. */
   maxContextTiles?: number;
+  /** The venue's name as printed under its square; the markers keep clear of it. */
+  venueLabel?: string;
 }
 
 /** The accent ink the tiles are drawn in (the web app's LIFT_INK and --color-accent). */
@@ -218,7 +260,7 @@ export function layoutTileMap(
   const { width, height } = opts;
   const pad = opts.padding ?? 0.18;
   const minSpan = opts.minSpanDeg ?? 0.03;
-  const empty: TileMapLayout = { width, height, rects: [], venue: null, labels: [], unitsPerKm: 0 };
+  const empty: TileMapLayout = { width, height, rects: [], venue: null, labels: [], venueLabel: null, unitsPerKm: 0 };
 
   // Ranks come from the position in `top` before invalid cells are dropped, so
   // map label N always matches tile N in the list beside it.
@@ -288,12 +330,15 @@ export function layoutTileMap(
   const venuePt = v ? { x: px(v.lon), y: py(v.lat) } : null;
   const anchors = ranked.map((r) => ({ rank: r.rank as number, x: r.x + r.w / 2, y: r.y + r.h / 2 }));
   const avoid = [...anchors.map((a) => ({ x: a.x, y: a.y })), ...(venuePt ? [venuePt] : [])];
+  const name = (opts.venueLabel ?? "").trim();
+  const venueLabel = venuePt && name !== "" ? venueLabelSpot(name, venuePt, width, height) : null;
   return {
     width,
     height,
     rects: [...context, ...[...ranked].reverse()],
     venue: venuePt,
-    labels: placeLabels(groupAnchors(anchors), avoid, width, height),
+    labels: placeLabels(groupAnchors(anchors), avoid, width, height, venueLabel ? [venueLabelBox(venueLabel)] : []),
+    venueLabel,
     // One degree of latitude is about 110.57 km; `scale` is map units per degree of latitude.
     unitsPerKm: scale / 110.57,
   };

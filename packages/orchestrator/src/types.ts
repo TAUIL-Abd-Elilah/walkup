@@ -114,6 +114,8 @@ export interface AnnotatedTile {
   gazetteerName?: string;
   zctas?: string[];
   adultPopulation?: number | null;
+  /** The state the tile's point is in ("DC" for Georgetown, whose nearest ZIP is in VA). */
+  state?: string | null;
 }
 
 /** The slice of @walkup/gazetteer the orchestrator uses. */

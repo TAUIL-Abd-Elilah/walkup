@@ -2,8 +2,9 @@ import type { RuntimeMode } from "@/lib/mode";
 
 /**
  * Recorded mode, said once at the very top of every page (from the layout): when the sheets were recorded from
- * live Qloo and Ticketmaster runs, that live runs are paused for judging, and that the sheets are what a live run
- * produced. The words come from the runtime mode, so /healthz says the same; the first sentence is set in bold.
+ * live Qloo and Ticketmaster runs, that live runs are paused for judging, and that each recorded sheet comes from a
+ * live run, with any change since made offline (a sample sheet says below it that it is not one). The words come
+ * from the runtime mode, so /healthz says the same; the first sentence (up to the first ". ") is set in bold.
  */
 export function RecordedStrip({ mode }: { mode: RuntimeMode }) {
   const cut = mode.detail.indexOf(". ");

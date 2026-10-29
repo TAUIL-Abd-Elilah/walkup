@@ -4,7 +4,7 @@
  * Built only from facts already on the sheet; no generated copy.
  */
 import { LIMITS_EVERY_SHEET, type StreetSheet } from "@walkup/contracts";
-import { categoryLabel, dayHoursText, realLimits, streetDaysText, topTiles, TOP_LIFT } from "@walkup/exports";
+import { categoryLabel, partnerHoursColumn, realLimits, streetDaysText, topTiles, TOP_LIFT } from "@walkup/exports";
 import { ATTACHMENT_LABELS, type AttachmentFile } from "./attachments";
 import { BODY_PARTNER_LIMIT, BODY_TILE_LIMIT, FIXTURE_NOTE, NOT_AFFILIATED_LINE, WHAT_IF_NOTE } from "./constants";
 
@@ -136,7 +136,8 @@ function parts(sheet: StreetSheet, files: AttachmentFile[]): Parts {
   }
 
   const partners = sheet.cards.partners.results;
-  const firstDay = operator.streetTeamDays[0];
+  // The hours the plan page, the PDF and the CSV show (the visit day's hours with more than one street-team day).
+  const hoursCol = partnerHoursColumn(sheet);
   const areaNumber = new Map(tiles.map((t, i) => [t.geohash, i + 1]));
   if (partners.length > 0) {
     const shown = partners.slice(0, BODY_PARTNER_LIMIT);
@@ -150,7 +151,8 @@ function parts(sheet: StreetSheet, files: AttachmentFile[]): Parts {
         const head = [oneLine(p.entity.name, 100), categoryLabel(p.category).toLowerCase(), p.address ? oneLine(p.address.replace(/, [A-Z]{2}$/, ""), 140) : ""]
           .filter((x) => x !== "")
           .join(", ");
-        const bits = [head, oneLine(dayHoursText(p.hoursOnDay, firstDay), 60)];
+        // Room for two visit days with their hours ("Thu 5 pm to 9 pm; Sat 11 am to 3 pm") when the passes differ.
+        const bits = [head, oneLine(hoursCol.cell(p).withDay, 100)];
         if (p.phone) bits.push(oneLine(p.phone, 40));
         // A sample sheet's websites are made up (.example), so the email leaves them out.
         if (p.website && sheet.mode !== "fixture") bits.push(oneLine(p.website, 120));

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import type { StreetSheet } from "@walkup/contracts";
+import type { LiftTile, StreetSheet } from "@walkup/contracts";
 import { HeroSplit, type HeroSide } from "@/components/HeroSplit";
 import { WithWithout } from "@/components/WithWithout";
 import { ShowSearch } from "@/components/ShowSearch";
@@ -19,6 +19,7 @@ import {
   compareBills,
   comparisonSentence,
   areaName,
+  distinctAcross,
   landingRooms,
   missedPick,
   missedPickLine,
@@ -42,12 +43,16 @@ const PAIRS: readonly (readonly [string, string])[] = [
 ];
 /** The sheet the primary button opens when its live recording is served: The Roots at The Salt Shed. */
 const FEATURED_PLAN_ID = "g4-b";
-/** A real screenshot of that sheet (apps/web/public, captured from its recording), shown only when that recording is served. */
+/**
+ * A real screenshot of that sheet (apps/web/public, captured from its recording), shown only when that recording is
+ * served. The key-facts row is cut out: its "Days to show" counts from the day the page is viewed, so a frozen copy
+ * would soon disagree with the sheet it links to.
+ */
 const FEATURED_IMAGE = {
   src: "/roots-sheet.png",
   width: 1424,
-  height: 1335,
-  alt: "Screenshot of The Roots' street sheet: the header with the requests behind it, then the first two rows of the partner table, each with its area, type, hours on the street-team day, address, phone and why it was picked.",
+  height: 1172,
+  alt: "Screenshot of The Roots' street sheet: the header with the requests behind it, then the first two rows of the partner table, each with its area, type, the day the street team visits it and its hours that day, address, phone and why it was picked.",
   caption: "The top of The Roots' sheet and its first two partners, recorded from a live run. Every footnote opens the request behind the claim.",
 };
 /**
@@ -103,10 +108,14 @@ function AreaRefs({ data, planId }: { data: WithWithoutArea; planId: string }) {
 function SecondExample({ a, b, revisions }: { a: StreetSheet; b: StreetSheet; revisions: Record<string, readonly PlanRevisionLink[]> }) {
   const cmp = compareBills(a, b);
   const names = { a: headlinerName(a.bill), b: headlinerName(b.bill), venue: a.bill.venue.name };
-  const bill = (s: StreetSheet, letter: "A" | "B") => {
+  // The names said for both bills: one on both lists gets its distance and direction (different squares).
+  const [topA, topB] = distinctAcross(
+    { tiles: topTiles(a).slice(0, 3), venue: a.bill.venue },
+    { tiles: topTiles(b).slice(0, 3), venue: b.bill.venue },
+  );
+  const bill = (s: StreetSheet, letter: "A" | "B", top: LiftTile[]) => {
     const headliner = headlinerName(s.bill);
     const support = s.bill.acts.map((x) => x.name).filter((n) => n !== headliner);
-    const top = topTiles(s);
     const pc = s.popularityCheck;
     const near = pc?.perArea.length === 1 && pc.perArea[0]?.tileGeohash === null;
     const n = s.cards.partners.results.length;
@@ -116,7 +125,7 @@ function SecondExample({ a, b, revisions }: { a: StreetSheet; b: StreetSheet; re
         {support.length > 0 ? <p className="text-sm text-muted">with {joinAnd(support)}</p> : null}
         <p className="text-sm text-muted">{[formatShowDate(s.bill.date), genreLabel(s.bill.classification, `Bill ${letter}`)].join(" · ")}</p>
         <p className="mt-2">
-          Stands out most in {joinAnd(top.slice(0, 3).map((t) => t.name ?? areaName(t)))}.
+          Stands out most in {joinAnd(top.map((t) => t.name ?? areaName(t)))}.
           {near ? " The two halves of the bill disagree on where its crowd is, so the partners are places near the room, marked as a starting list." : ""}
         </p>
         {pc && n > 0 ? <p className="mt-1">{popularityLine(pc)}</p> : null}
@@ -150,8 +159,8 @@ function SecondExample({ a, b, revisions }: { a: StreetSheet; b: StreetSheet; re
         <span data-testid="second-comparison">{comparisonSentence(cmp, names)}</span>
       </p>
       <div className="mt-5 grid max-w-[1000px] gap-x-10 gap-y-8 md:grid-cols-2">
-        {bill(a, "A")}
-        {bill(b, "B")}
+        {bill(a, "A", topA)}
+        {bill(b, "B", topB)}
       </div>
     </section>
   );
@@ -255,8 +264,17 @@ export default async function Home() {
     a ? revisionsOf(a.planId, a.mode === "live" ? "live" : undefined) : Promise.resolve([]),
     b ? revisionsOf(b.planId, b.mode === "live" ? "live" : undefined) : Promise.resolve([]),
   ]);
-  const heroA = a ? side(a, "Bill A", revA) : null;
-  const heroB = b ? side(b, "Bill B", revB) : null;
+  // An area name on both lists gets its distance and direction, so two different squares never read as one.
+  const [heroA, heroB] = ((): [HeroSide | null, HeroSide | null] => {
+    const x = a ? side(a, "Bill A", revA) : null;
+    const y = b ? side(b, "Bill B", revB) : null;
+    if (!x || !y) return [x, y];
+    const [topX, topY] = distinctAcross({ tiles: x.top, venue: x.venue }, { tiles: y.top, venue: y.venue });
+    return [
+      { ...x, top: topX },
+      { ...y, top: topY },
+    ];
+  })();
   // The second room: the next pair served as two live recordings (it has no sample sheets).
   const second = await (async () => {
     const p = rooms.second;

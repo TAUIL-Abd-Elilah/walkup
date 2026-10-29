@@ -249,7 +249,7 @@ export const PRESETS: Record<PresetId, Preset> = {
     title: "Super Funny, Tacoma",
     venue: { name: superfunny.name, city: superfunny.city, state: superfunny.state, tmVenueId: superfunny.id },
     tmEventId: WORLD_EVENT_IDS.g3,
-    asOf: "2026-11-20",
+    asOf: "2026-10-17",
     selection: { rule: "An invented two-night bill at Super Funny Comedy Club, Tacoma: Fri Dec 4 2026, the first of the two nights.", result: "Friday show" },
     operator: {
       seatsLeft: null,

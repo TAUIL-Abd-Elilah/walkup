@@ -4,8 +4,8 @@
  *
  * - recorded: live runs are paused. WALKUP_MODE=recorded, the time in
  *   WALKUP_QLOO_UNTIL has passed, or Qloo rejected the configured key while the
- *   plan store holds a live sheet. Sheets recorded from live runs are served as
- *   they were made; nothing new runs.
+ *   plan store holds a live sheet. Sheets recorded from live runs are served
+ *   from the plan store; nothing new runs.
  * - live: QLOO_API_KEY and TICKETMASTER_API_KEY are set, WALKUP_MODE is not
  *   "fixture", and Qloo has not rejected the key.
  * - fixture: anything else, a rejected key with no live sheet stored included
@@ -71,16 +71,20 @@ function dayWords(ymd: string): string {
 }
 
 /**
- * The recorded-mode sentence: when the sheets were recorded, that live runs are paused, and that the sheets are what
- * a live run produced. Said so it holds whether or not any live run was recorded (a preset without one shows a
- * sample sheet, marked so).
+ * The recorded-mode sentence: when the sheets were recorded, that live runs are paused, and that each recorded sheet
+ * comes from a live run and any change since was made offline with no API call (on the hosted sheets, `recheckSheet`
+ * run by `scripts/refresh-recorded-plans.ts --recheck` on Oct 28 and 29 2026: wording and checks changed, no Qloo or
+ * Ticketmaster answer did; a store that never had that pass has no change since, so the sentence holds there too). Said of recorded
+ * sheets only, so it holds on a page that shows a sample sheet too (a preset with no live run shows one, marked so:
+ * "No live run of this show was recorded"). RecordedStrip sets the text up to the first ". " in bold, so the first
+ * sentence has none inside it.
  */
 export function recordedDetail(day: string | null, changesDay: string | null = null): string {
   const ok = (d: string | null): d is string => Boolean(d && /^\d{4}-\d{2}-\d{2}$/.test(d));
   const when = ok(day) ? ` on ${dayWords(day)}` : "";
   // Ready-made changes recorded on a later day say so, so their sheets aren't dated by the earlier runs.
-  const later = ok(day) && ok(changesDay) && changesDay > day ? `; changes recorded ahead on ${dayWords(changesDay)}` : "";
-  return `Recorded from live Qloo and Ticketmaster runs${when}${later}. Live runs are paused for judging; these sheets are what a live run produced.`;
+  const later = ok(day) && ok(changesDay) && changesDay > day ? `; later changes recorded ahead on ${dayWords(changesDay)}` : "";
+  return `Recorded from live Qloo and Ticketmaster runs${when}${later}. Live runs are paused for judging; each recorded sheet comes from a live run, and any change since was made offline, with no API call.`;
 }
 
 function recordedMode(day: string | null, changesDay: string | null = null): RuntimeMode {

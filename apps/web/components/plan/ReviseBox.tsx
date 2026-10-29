@@ -144,8 +144,8 @@ export function ReviseBox({
         </label>
         <p id="revise-hint" className="hint mt-0.5">
           {recorded
-            ? `Up to 280 characters. ${readyMade?.reader === "model" ? "Claude reads" : "Fixed rules read"} your note on this server${readyMade?.reader === "model" ? "" : " (it has no model key)"}; the earlier plan stays as it is.`
-            : "For example: all ages, no bars, street team only on Saturday, within 10 km of the room. Up to 280 characters. Walkup makes a new version of this plan and lists what changed; this one stays as it is."}
+            ? `Up to 300 characters. ${readyMade?.reader === "model" ? "Claude reads" : "Fixed rules read"} your note on this server${readyMade?.reader === "model" ? "" : " (it has no model key)"}; the earlier plan stays as it is.`
+            : "For example: all ages, no bars, street team only on Saturday, within 10 km of the room. Up to 300 characters. Walkup makes a new version of this plan and lists what changed; this one stays as it is."}
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           <input
@@ -157,7 +157,7 @@ export function ReviseBox({
               setText(e.target.value);
               if (message?.kind === "error" || message?.kind === "notice") setMessage(null);
             }}
-            maxLength={280}
+            maxLength={300}
             autoComplete="off"
             aria-describedby={`revise-hint${message ? " revise-message" : ""}`}
             aria-invalid={message?.kind === "error" ? true : undefined}

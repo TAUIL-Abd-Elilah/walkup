@@ -15,7 +15,15 @@ export interface ReviseStepInput {
   fallback: RevisionFallback | null;
   calls: readonly ReviseCall[];
   ledgerRefs: readonly string[];
+  /** The fixed rules were picked on purpose although a model was set up (the ready-made changes, read as the hosted site reads notes). */
+  rulesChosen?: boolean;
 }
+
+/**
+ * The step's words when the rules read a note on purpose: a model was there, so "no model is set up here" would be
+ * false. The aside is in brackets like that one, so "<reader> and changed ..." reads as one sentence.
+ */
+export const RULES_CHOSEN_READER = "Fixed rules read it (as on the hosted site)";
 
 function quoted(note: string): string {
   const t = note.length > 80 ? `${note.slice(0, 79).trimEnd()}…` : note;
@@ -24,6 +32,7 @@ function quoted(note: string): string {
 
 function reader(i: ReviseStepInput): string {
   if (i.interpreter === "model") return "The model read it";
+  if (i.rulesChosen) return RULES_CHOSEN_READER;
   switch (i.fallback) {
     case "refusal":
       return "The model declined, so fixed rules read it";

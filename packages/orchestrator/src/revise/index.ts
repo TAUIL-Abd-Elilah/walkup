@@ -22,9 +22,9 @@ import { reviseStep } from "./step";
 import { reviseSummary } from "./summary";
 
 export { overridesFor } from "./apply";
-export { diffSheets } from "./diff";
+export { diffSheets, radiusNoOp } from "./diff";
 export { parentRequest, pausePicks, revisedRequest, type ParentRequestInput } from "./request";
-export { reviseStep, REVISE_STEP_ID, type ReviseStepInput } from "./step";
+export { reviseStep, REVISE_STEP_ID, RULES_CHOSEN_READER, type ReviseStepInput } from "./step";
 export { reviseSummary, sheetAreas } from "./summary";
 
 /** How a note was read, before anything re-runs. */

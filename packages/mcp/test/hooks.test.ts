@@ -6,7 +6,7 @@ import type { StreetSheet } from "@walkup/contracts";
 import { NO_LIVE_SHOW, PRESETS, type FixtureDeps, type LivePreset, type PlanResult } from "@walkup/orchestrator";
 import { WORLD_EVENT_IDS } from "@walkup/qloo-world";
 import { describe, expect, it } from "vitest";
-import { createMcpServices, DEFAULT_FIXTURE_REFUSAL, planShowTool, rankPartnersTool, type FreshRunLimiter, type PlanView } from "../src/index";
+import { createMcpServices, DEFAULT_FIXTURE_REFUSAL, planShowTool, rankPartnersTool, revisePlanTool, type FreshRunLimiter, type PlanView } from "../src/index";
 import { caller, connect, ORIGIN, services } from "./helpers";
 
 describe("run policy", () => {
@@ -42,7 +42,7 @@ describe("run policy", () => {
     const planId = made.envelope.planId as string;
     const runs: string[] = [];
     // Whatever reason the host passes in (apps/web passes RECORDED_REASON) is what the refusals carry.
-    const reason = "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a live run produced.";
+    const reason = "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; each recorded sheet comes from a live run, and any change since was made offline, with no API call.";
     const s = createMcpServices({
       deps: live.deps,
       store: live.store,
@@ -67,10 +67,10 @@ describe("run policy", () => {
         const r = await c.call(tool, args);
         expect(r.result.isError, tool).toBe(true);
         expect(r.env).toMatchObject({ status: "error", mode: "recorded", results: null });
-        // revise_plan leads with the note it did not run, then the host's reason.
-        if (tool === "revise_plan") expect(r.env.reason).toBe(`Live runs are paused for judging, so your note "only Saturday" was not run. ${reason}`);
+        // revise_plan gives the host's reason once, then the note it did not run.
+        if (tool === "revise_plan") expect(r.env.reason).toBe(`${reason} Your note "only Saturday" was not run.`);
         else expect(r.env.reason).toBe(reason);
-        expect(r.text).toContain("Mode: recorded (live runs are paused for judging; the recorded sheets are what live Qloo and Ticketmaster runs produced, and get_sheet reads them).");
+        expect(r.text).toContain("Mode: recorded (live runs are paused for judging; the recorded sheets come from live Qloo and Ticketmaster runs, with any change since made offline, and get_sheet reads them).");
         expect(r.text).not.toMatch(/no longer available|unavailable/i);
       }
       expect((await planShowTool(s, caller(), { presetId: "g1-a" })).httpStatus).toBe(503);
@@ -92,7 +92,7 @@ describe("run policy", () => {
       // Served without its Google Places list: the product no longer shows it.
       expect(recSheet.control).toBeUndefined();
       expect(rec.text).toContain(
-        "Mode: recorded (recorded from live Qloo and Ticketmaster runs on Oct 30 2026; live runs are paused for judging, and this sheet is what the live run produced).",
+        "Mode: recorded (recorded from live Qloo and Ticketmaster runs on Oct 30 2026; live runs are paused for judging, and this sheet comes from a live run, with any change since made offline and no API call).",
       );
       expect(rec.text).not.toMatch(/no longer available|unavailable/i);
       // The same sheet on a live server is a live sheet, still without the list.
@@ -118,23 +118,53 @@ describe("run policy", () => {
         revision: { parentPlanId: "rec-live-1", instruction: "All ages, no bars", interpreter: "rules", toolCalls: [], changes: [] } as unknown as StreetSheet["revision"],
       };
       await live.store.put({ ...from!, planId: "rec-rev-1", mode: "live", sheet: revSheet });
-      // The same note (case and spacing aside): the recorded revision is the recorded run of that note.
+      // The same note (case, spacing and punctuation aside): the recorded revision is the recorded run of that note.
       const same = await c.call("revise_plan", { planId: "rec-live-1", instruction: "  all ages,  NO bars " });
       expect(same.result.isError).toBe(true);
       expect(same.env.mode).toBe("recorded");
       expect(same.env.reason).toBe(
-        `Live runs are paused for judging, so your note "all ages, NO bars" was not run. This plan has a recorded run of that same note (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet. ${reason}`,
+        `${reason} Your note "all ages, NO bars" was not run. This plan has a recorded run of that same note (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet.`,
       );
       expect(same.env.summary).toBe(same.env.reason);
       expect(same.env.reason).not.toMatch(/different note/);
-      // A different note: the refusal says plainly that the recorded revision was made for another note.
+      // The tool description's own example, with a colon, is the same note too.
+      expect((await c.call("revise_plan", { planId: "rec-live-1", instruction: "All ages: no bars" })).env.reason).toContain("a recorded run of that same note (plan rec-rev-1");
+      // Other words, and no reader on this server: the revision is listed with its note to read, never called a different change.
       const other = await c.call("revise_plan", { planId: "rec-live-1", instruction: "Skip Germantown" });
       expect(other.result.isError).toBe(true);
       expect(other.env.reason).toBe(
-        `Live runs are paused for judging, so your note "Skip Germantown" was not run. This plan has a recorded revision for a different note: "All ages, no bars" (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet. That is not your note. ${reason}`,
+        `${reason} Your note "Skip Germantown" was not run. This plan has a recorded revision for a different note: "All ages, no bars" (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet. Read its note to see whether it makes your change.`,
       );
-      expect(other.text).toContain('your note "Skip Germantown" was not run');
+      expect(other.text).toContain('Your note "Skip Germantown" was not run');
       expect(other.text).toContain('a different note: "All ages, no bars"');
+      // The reason says the paused clause once.
+      expect(other.env.reason!.match(/paused for judging/g)).toHaveLength(1);
+      // A host reader (the web app's revise route): a paraphrase that makes the same change opens that revision.
+      const asked: string[] = [];
+      const read = createMcpServices({
+        deps: live.deps,
+        store: live.store,
+        limiter: live.limiter,
+        rate: null,
+        secrets: [],
+        now: live.now,
+        idGen: live.idGen,
+        policy: { recorded: reason },
+        recordedMatch: async (parentId, note) => {
+          asked.push(`${parentId}:${note}`);
+          return /family show/i.test(note) ? { planId: "rec-rev-1" } : /germantown/i.test(note) ? { planId: null } : null;
+        },
+      });
+      const meant = await revisePlanTool(read, caller(), { planId: "rec-live-1", instruction: "It's a family show - no bars" });
+      expect(meant.envelope.reason).toBe(
+        `${reason} Your note "It's a family show - no bars" was not run. This plan has a recorded revision that makes the change your note asks for: "All ages, no bars" (plan rec-rev-1, ${ORIGIN}/s/rec-rev-1), readable with get_sheet.`,
+      );
+      // Read and matched to none: said plainly.
+      const none = await revisePlanTool(read, caller(), { planId: "rec-live-1", instruction: "Skip Germantown" });
+      expect(none.envelope.reason).toContain('a different note: "All ages, no bars" (plan rec-rev-1, ' + `${ORIGIN}/s/rec-rev-1), readable with get_sheet. It does not make the change your note asks for.`);
+      // Not read (an unclear note): the agent is told to read the note.
+      expect((await revisePlanTool(read, caller(), { planId: "rec-live-1", instruction: "hmm" })).envelope.reason).toContain("Read its note to see whether it makes your change.");
+      expect(asked).toEqual(["rec-live-1:It's a family show - no bars", "rec-live-1:Skip Germantown", "rec-live-1:hmm"]);
       // A second recorded revision for the asked note: the same-note one is named first, the other as a different note.
       await live.store.put({
         ...from!,

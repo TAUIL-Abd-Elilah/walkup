@@ -11,7 +11,18 @@ import { headlinerName, possessive } from "../lib/format";
 import { LIFT_LEGEND, TOP_LIFT, liftAlpha, liftBand, liftColor } from "../lib/lift";
 import { liftInWords } from "@walkup/engine";
 import { dataSourcesLine } from "../lib/labels";
-import { compareBills, comparisonSentence, compassDirection, distanceKm, formatKm, liftPhrase, normalizeName, recordedSheetsSection, topTiles } from "../lib/sheet-utils";
+import {
+  compareBills,
+  comparisonSentence,
+  compassDirection,
+  distanceKm,
+  distinctAcross,
+  formatKm,
+  liftPhrase,
+  normalizeName,
+  recordedSheetsSection,
+  topTiles,
+} from "../lib/sheet-utils";
 import { OPENFREEMAP_STYLE } from "../lib/webgl";
 
 const ENGINE = fileURLToPath(new URL("../../../fixtures/synthetic/engine/", import.meta.url));
@@ -52,6 +63,24 @@ describe("compareBills on the paired preset sheets", () => {
     }
     expect(s).not.toMatch(/\bAI\b|powered|insight|!/);
   });
+
+  it("never shows two different squares under one name across the two lists", () => {
+    const [topA, topB] = distinctAcross({ tiles: topTiles(a), venue: a.bill.venue }, { tiles: topTiles(b), venue: b.bill.venue });
+    const namesA = new Set(topA.map((t) => t.name));
+    for (const t of topB) {
+      const twin = topA.find((x) => x.name === t.name);
+      // A name on both sides is the same square, or it was told apart.
+      if (twin) expect(twin.geohash).toBe(t.geohash);
+    }
+    // The sample pair has the case this guards ("Nashville, TN" on both sides, two squares).
+    const bareA = new Set(topTiles(a).map((t) => t.name));
+    const clash = topTiles(b).filter((t) => bareA.has(t.name));
+    expect(clash.length).toBeGreaterThan(0);
+    for (const t of clash) expect(namesA.has(topB.find((x) => x.geohash === t.geohash)!.name)).toBe(false);
+    expect(topB.find((x) => x.geohash === clash[0]!.geohash)!.name).toMatch(/^Nashville, TN, [\d.]+ km \w+$/);
+    // Lists with no shared name come back unchanged.
+    expect(distinctAcross({ tiles: topA.slice(0, 1), venue: a.bill.venue }, { tiles: [], venue: b.bill.venue })[0]).toEqual(topA.slice(0, 1));
+  });
 });
 
 describe("recorded mode copy (live runs paused)", () => {
@@ -59,12 +88,12 @@ describe("recorded mode copy (live runs paused)", () => {
     expect(recordedSheetsSection([{ mode: "live" }, { mode: "live" }])).toEqual({
       heading: "Recorded sheets",
       intro:
-        "Live runs are paused for judging. These sheets were recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced.",
+        "Live runs are paused for judging. These sheets were recorded from live Qloo and Ticketmaster runs on the dates shown; any change since was made offline, with no API call.",
     });
     const mixed = recordedSheetsSection([{ mode: "live" }, { mode: "fixture" }]);
     expect(mixed.heading).toBe("Recorded sheets");
     expect(mixed.intro).toBe(
-      "Live runs are paused for judging. The sheets not marked sample were recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced. A sheet marked sample uses made-up places and numbers.",
+      "Live runs are paused for judging. The sheets not marked sample were recorded from live Qloo and Ticketmaster runs on the dates shown; any change since was made offline, with no API call. A sheet marked sample uses made-up places and numbers.",
     );
     // Nothing was recorded on this server: every preset shows its sample sheet, and the section says so.
     const none = recordedSheetsSection([{ mode: "fixture" }, { mode: "fixture" }, { mode: "fixture" }, { mode: "fixture" }]);

@@ -42,7 +42,7 @@ A live server runs a preset's live show: the real Ticketmaster bill in its `live
 
 ### Revising a sheet
 
-`revise_plan({planId, instruction})` changes a finished plan with the user's note, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". The orchestrator reads the note (`readInstruction`): the model with six strict tools when the server has an Anthropic key, the fixed rules otherwise (`revision.interpreter` says which). If the note is unclear, the answer is `needs_input` with `question` and `reason`, and nothing runs or is stored: ask the user and call again. Otherwise the plan re-runs with the new operator inputs (`runRevision`) under a new plan id, stored like any plan, so it can be read with `get_sheet` and revised again. A preset is re-run by its event, never in the preset's slot. `revision.changes` lists settings, areas, partners and pre/post spots added or removed, each with receipts in the new sheet's ledger, and the text digest lists the tool calls and the first 12 changes. A plan that is waiting for a pick answers with its pause; a sheet made in the other mode answers 409. On a recorded server the note is not run (live runs are paused for judging); the refusal says so and names any recorded revision of the plan with its plan id and note, saying whether it is the recorded run of the same note (case and spacing aside) or a revision made for a different note.
+`revise_plan({planId, instruction})` changes a finished plan with the user's note, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". The orchestrator reads the note (`readInstruction`): the model with six strict tools when the server has a model key (OpenRouter or Anthropic), the fixed rules otherwise (`revision.interpreter` says which). If the note is unclear, the answer is `needs_input` with `question` and `reason`, and nothing runs or is stored: ask the user and call again. Otherwise the plan re-runs with the new operator inputs (`runRevision`) under a new plan id, stored like any plan, so it can be read with `get_sheet` and revised again. A preset is re-run by its event, never in the preset's slot. `revision.changes` lists settings, areas, partners and pre/post spots added or removed, each with receipts in the new sheet's ledger, and the text digest lists the tool calls and the first 12 changes. A plan that is waiting for a pick answers with its pause; a sheet made in the other mode answers 409. On a recorded server the note is not run (live runs are paused for judging); the refusal says so and names any recorded revision of the plan with its plan id and note. A revision is named as the caller's when its note is the same words (case, spacing and punctuation aside), or when the host's reader (`recordedMatch`; the web app passes the reader its revise box uses) reads the note as the change that revision made. Without that reading, a revision for other words is listed with its note to read, not called a different change.
 
 ### Caps (docs/spec.md)
 
@@ -78,7 +78,7 @@ The route runs on the web app's engine:
 - the same preset sheets;
 - the same per-IP limiter;
 - the same fixture-mode rule: without live keys only presets run, and preset what-ifs are free;
-- the same recorded-mode rule: the hosted site serves sheets recorded from live Qloo and Ticketmaster runs (Oct 21 2026) and live runs are paused for judging, so `get_sheet`, `bill_vs_house` and `plan_show` for a preset or plan id read those sheets (envelope `mode: "recorded"`, the sheet's own mode stays `live`, and the text digest says the day each was recorded), and anything that would run answers 503 with `mode: "recorded"`;
+- the same recorded-mode rule: the hosted site serves sheets recorded from live Qloo and Ticketmaster runs (Oct 21 2026; most ready-made changes Oct 28 2026) and live runs are paused for judging, so `get_sheet`, `bill_vs_house` and `plan_show` for a preset or plan id read those sheets (envelope `mode: "recorded"`, the sheet's own mode stays `live`, and the text digest says the day each was recorded), and anything that would run answers 503 with `mode: "recorded"`;
 - the same quota and rejected-key bookkeeping after live runs.
 
 `handleMcpHttpRequest(request, services, {origin?, clientIp?})` works with any fetch-style server.
@@ -175,6 +175,7 @@ const res = await handleMcpHttpRequest(request, services, { origin, clientIp });
   - `presetView(presetId, "page" | "api")`: the host's own preset sheets.
   - `afterRun(result, deps)`
   - `policy`: `{fixtureEventRuns, capFixtureRuns, fixtureRefusal, recorded}` (`recorded`: the reason anything that would run is refused with while live runs are paused, or null)
+  - `recordedMatch(parentPlanId, instruction, ip)`: recorded state only; reads a revise note the host's way and answers `{planId}` (the recorded revision that makes that change, or null when none does), or null when the note was not read
 - `PLANS_DB_FILE` (`plans.sqlite`)
 
 **Envelopes**
@@ -222,7 +223,7 @@ The tests run on the fixture world with nothing on the network:
 
 ## Known limits
 
-- **Untested live.** Live mode is wired (`createDepsFromEnv`) but no keys exist yet.
+- **Live runs paused on the hosted server.** The hosted `/mcp` runs in recorded mode while live runs are paused for judging: it serves the four sheets run live on Oct 21 2026 (live mode, `createDepsFromEnv`) and their ready-made changes, and calls no API. `get_sheet`, `bill_vs_house` and `plan_show` for a preset or a recorded plan id read those sheets; `revise_plan` names any recorded revision of the plan; anything that would start a new run answers 503 with `mode: "recorded"`. Fresh runs need a server with your own Qloo and Ticketmaster keys.
 - **Ticketmaster links.**
   - A link is read only for its id (it is never fetched).
   - When Discovery does not serve a link's page id, the server searches by the slug's words and date. It matches the event whose own link carries that id.

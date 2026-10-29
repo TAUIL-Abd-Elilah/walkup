@@ -98,8 +98,16 @@ export default function SystemCardPage() {
         places that crowd already likes. This page says what it calls, what it stores, what it won&apos;t do and where it is known to fail.
       </p>
       <p className="mt-2">
-        The hosted sheets were recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a
-        live run produced.
+        The hosted sheets were recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and most of their ready-made changes on Oct 28 2026. Live
+        runs are paused for judging; each recorded sheet comes from a live run and was re-checked offline afterwards, as the next paragraph says.
+      </p>
+      <p id="recheck" className="mt-2 scroll-mt-24">
+        On Oct 28 and 29 2026 the recorded sheets were re-checked offline with the newer checks, with no API call. Four Claude sentences that fail a check
+        now read as template wording, with the reason in the sheet&apos;s checks. Partner lines say a place is &ldquo;near&rdquo; its area unless the
+        address is on that street, and each area carries its own state. Each revision&apos;s change list was rebuilt over the five numbered areas. One
+        spot listed as a restaurant, SWIG, is a bar by its Qloo tags (a bar and grill, with dive-bar tags), so it left the two &ldquo;All ages, no
+        bars&rdquo; revisions at The Salt Shed, which now list 7 spots. FLO&apos;s &ldquo;Within 10 km&rdquo; revision, which changed nothing, was
+        removed. No Qloo or Ticketmaster answer, ranking, partner list or ledger changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>
@@ -130,8 +138,8 @@ export default function SystemCardPage() {
         <Section id="models" title="Models and versions">
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <strong>Claude</strong> <span className="font-semibold">claude-haiku-5-5</span> through OpenRouter when that key is set (no server-side refusal fallback on that route),
-              otherwise <span className="font-semibold">claude-opus-5-5</span> through the Anthropic Messages API.
+              <strong>Claude</strong> Haiku 5.5 (<span className="font-semibold">anthropic/claude-haiku-5.5</span>) through OpenRouter when that key is set (no server-side refusal fallback on that route),
+              otherwise Opus 5.5 (<span className="font-semibold">claude-opus-5-5</span>) through the Anthropic Messages API.
             </li>
             <li>
               Narration: effort <span className="font-semibold">low</span>, structured output against a JSON schema built per run. It may cite only entity ids and
@@ -160,12 +168,15 @@ export default function SystemCardPage() {
           <p>
             Base URL <span className="font-semibold break-all">https://hackathon.api.qloo.com</span>, key in a server-side header only. About 16 to 32 calls per
             fresh run on the sample data: the sample bill A at The Truth, Nashville, makes 32 from cold, including the signal check, the 4 map-check heatmaps, 3 usual-crowd
-            partner searches and 3 popularity searches; the Super Funny, Tacoma sample, with no lift map, makes 16. The live runs recorded on Oct 21 2026 made
-            about 30 each from cold (29 and 21 at The Salt Shed, the second reusing cached answers). The hackathon key&apos;s monthly limit read 50,000 calls. Every call is a GET with plain entity ids.
+            partner searches and 3 popularity searches; the Super Funny, Tacoma sample, with no lift map, makes 16. The live runs on Oct 21 2026 made
+            about 30 calls each. From a cold cache, the first runs made 30 and 22 new calls at The Anthem and 29 and 21 at The Salt Shed; the second
+            bill at each room reused the room&apos;s cached answers. The sheets served here are same-day re-runs with the final rules, at 29 or 30 requests
+            each. Of those, 0 were new at The Anthem and 12 and 11 at The Salt Shed; the rest came from the cache. Each sheet shows its own count. The
+            hackathon key&apos;s monthly limit read 50,000 calls. Every call is a GET with plain entity ids.
           </p>
           <p className="hint">
             Every request shape below was checked against the live Qloo host on Oct 15 2026, the day the key arrived; what it did is listed after this
-            list. Both hero sheets were run live and recorded on the hosted site on Oct 21 2026 (see{" "}
+            list. The four hero sheets were run live and recorded on Oct 21 2026 (see{" "}
             <a href="#evals" className="link">
               Evals
             </a>
@@ -201,12 +212,13 @@ export default function SystemCardPage() {
 
         <Section id="pick" title="How the top pick is chosen">
           <p>
-            &ldquo;Start in this area&rdquo; or &ldquo;Start with this place&rdquo; at the top of a sheet comes from a fixed rule, never from the model. The area rule
-            goes first: of the numbered areas on the map (the 1 to 5 the area list and the partner table share), the highest-lift one that ranks at least 5
-            places lower when you look at this crowd on its own. If none qualifies, the partner rule: the best-scoring partner in a top area that isn&apos;t a
-            national chain or the most common type on the list (ties all count as most common) and that the room&apos;s usual crowd ranks at least 5 places lower, or not at all.
-            If neither finds one, the sheet has no top pick. Both need the room&apos;s own crowd as the baseline, and the area rule needs a map that passed its
-            checks.
+            &ldquo;Start with this place&rdquo; or &ldquo;Start in this area&rdquo; at the top of a sheet comes from a fixed rule, never from the model. The partner
+            rule goes first. Walk the numbered areas on the map in order (the 1 to 5 the area list and the partner table share). In each area, take the
+            partners in this crowd&apos;s rank order, skip national chains, and pick the first one that the room&apos;s usual crowd ranks at least 5 places
+            lower in the same search, or not at all. If no place in area 1 qualifies, area 2 is tried, and so on. If no partner qualifies, the area rule:
+            the highest-lift numbered area that ranks at least 5 places lower when you look at this crowd on its own. If neither finds one, the sheet says
+            &ldquo;No top pick on this sheet&rdquo; and why. A picked partner that the partner table marks less certain keeps the table&apos;s dagger
+            (&dagger;) and its note. Both need the room&apos;s own crowd as the baseline, and the area rule needs a map that passed its checks.
           </p>
         </Section>
 
@@ -355,8 +367,9 @@ export default function SystemCardPage() {
             <li>Qloo: fresh runs stop when the monthly quota falls to 1,500; presets are served from cache. Fresh runs are capped at 3 per connection and 15 per day in total.</li>
             <li>Claude (OpenRouter or Anthropic): a daily spend cap; above it, narration uses the labelled template and change notes are read by the fixed rules.</li>
             <li>
-              Revisions: on a live server a revision that runs again counts as a fresh run (same caps), and at most 12 per connection per hour; 30 per hour
-              in sample mode.
+              Revisions: on a live server a revision that runs again counts as a fresh run (same caps, refunded when it makes no new Qloo call), and at
+              most 12 per connection per hour; 30 per hour in sample mode; 120 per hour on the recorded site, where a change only opens a stored version (no
+              API call).
             </li>
             <li>Email: the provider&apos;s free tier, test inbox by default.</li>
           </ul>

@@ -1,7 +1,8 @@
 /**
  * Every export for one sheet as named files, ready to attach or zip.
  * Fixture sheets get a "fixture-" file-name prefix so a file never passes for a
- * live run once it leaves the app.
+ * live run once it leaves the app. `exportFilePrefix` names the show, the date
+ * and the plan, so files from two sheets never share a name.
  */
 import type { StreetSheet } from "@walkup/contracts";
 import { toIcs, type IcsOptions } from "./ics";
@@ -61,6 +62,31 @@ export interface ExportAllOptions {
 }
 
 const ALL: readonly ExportKind[] = ["pdf", "partners", "zips", "pins", "offerCodes", "ics", "json"];
+
+/** Lower-case ASCII words joined by "-", accents dropped, at most `max` characters: "Greensky Bluegrass" -> "greensky-bluegrass". */
+function slug(s: string, max = 40): string {
+  return s
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, max)
+    .replace(/-+$/g, "");
+}
+
+/**
+ * A file-name prefix that says which sheet a download belongs to: "walkup-greensky-bluegrass-2026-12-30-455629e6-",
+ * from the headliner, the show date and the plan id's first 8 characters (one show can have several sheets: a plan
+ * and its revisions). ASCII only, so it is safe in a Content-Disposition header. `toExportFiles` still puts
+ * "fixture-" first on a sample sheet.
+ */
+export function exportFilePrefix(sheet: Pick<StreetSheet, "planId" | "bill">): string {
+  const acts = sheet.bill.acts ?? [];
+  const headliner = (acts.find((a) => a.role === "headliner") ?? acts[0])?.name ?? "";
+  const plan = slug(sheet.planId, 64).slice(0, 8).replace(/-+$/g, "");
+  return ["walkup", slug(headliner), slug(sheet.bill.date ?? "", 10), plan].filter((x) => x !== "").join("-") + "-";
+}
 
 export async function toExportFiles(sheet: StreetSheet, opts: ExportAllOptions = {}): Promise<ExportFile[]> {
   const include = opts.include ?? ALL;

@@ -51,6 +51,14 @@ describe("drinking places by name or bar-type tags", () => {
     expect(isDrinkLed(place("Pho Corner", { tags: [tag("urn:tag:category:place:bar"), tag("urn:tag:category:place:pho_restaurant")] }))).toBe(false);
     expect(isDrinkLed(place("Izakaya Mori", { tags: [tag("urn:tag:amenities:place:bar_onsite"), tag("urn:tag:category:place:japanese_restaurant")] }))).toBe(false);
   });
+  it("counts a bar and grill, or a place Qloo tags as a dive bar, as drink-led whatever its name", () => {
+    // "SWIG": a bar_grill whose description opens "Lively Wicker Park bar"; shown to fans on an all-ages sheet before.
+    expect(isDrinkLed(place("SWIG", { tags: [tag("urn:tag:category:place:bar_grill"), tag("urn:tag:genre:place:restaurant")] }))).toBe(true);
+    expect(isDrinkLed(place("Corner Spot", { tags: [tag("urn:tag:genre:place:restaurant"), tag("urn:tag:decor:qloo:dive_bar")] }))).toBe(true);
+    // A bar culinary style alone is not enough: a pho house carries it.
+    expect(isDrinkLed(place("Pho House", { tags: [tag("urn:tag:genre:place:restaurant"), tag("urn:tag:culinary_style:qloo:bar")] }))).toBe(false);
+    expect(isDrinkLed(place("Corner Spot", { tags: [tag("urn:tag:genre:place:restaurant"), tag("urn:tag:ambience:qloo:cozy")] }))).toBe(false);
+  });
   it("knows when the excluded types leave bars out", () => {
     expect(barsExcluded(["bar", "pub"])).toBe(true);
     expect(barsExcluded(["Night_Club"])).toBe(true);

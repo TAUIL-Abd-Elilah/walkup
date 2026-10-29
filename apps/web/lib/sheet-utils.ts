@@ -1,5 +1,5 @@
 import type { GuardReport, LedgerEntry, LiftTile, Partner, PopularityCheck, PopularPlace, QlooEntity, StreetSheet, TraceStep } from "@walkup/contracts";
-import { areaState, partnerAreaLabel } from "@walkup/exports/format";
+import { areaState, DISTANCE_SUFFIX, partnerAreaLabel, withState } from "@walkup/exports/format";
 import { formatClockUtc, formatDayMonth, formatStamp, headlinerName, joinAnd, possessive } from "./format";
 import { TOP_LIFT } from "./lift";
 import { CATEGORY_LABEL, LEDGER_SOURCE_SHORT, tagFallbackName } from "./labels";
@@ -45,20 +45,32 @@ export function distinctNames(tiles: LiftTile[], venue: { lat: number; lon: numb
   );
 }
 
-const DISTANCE_SUFFIX = /, [\d.]+ km (north|northeast|east|southeast|south|southwest|west|northwest)$/;
+type Located = { tiles: LiftTile[]; venue: { lat: number; lon: number } };
+
+/**
+ * Two area lists shown side by side (the landing's two bills): a name on both lists gets each area's distance and
+ * direction from its own venue, as `distinctNames` does within one list, so "Nashville, TN" on both sides never reads
+ * as one area when they are different squares. A name that already carries a distance keeps it.
+ */
+export function distinctAcross(a: Located, b: Located): [LiftTile[], LiftTile[]] {
+  const bare = (name: string) => name.replace(DISTANCE_SUFFIX, "");
+  const inB = new Set(b.tiles.flatMap((t) => (t.name ? [bare(t.name)] : [])));
+  const both = new Set(a.tiles.flatMap((t) => (t.name && inB.has(bare(t.name)) ? [bare(t.name)] : [])));
+  const tag = ({ tiles, venue }: Located): LiftTile[] =>
+    tiles.map((t) =>
+      t.name && both.has(t.name) && !DISTANCE_SUFFIX.test(t.name) ? { ...t, name: `${t.name}, ${formatKm(distanceKm(venue, t))} ${compassDirection(venue, t)}` } : t,
+    );
+  return [tag(a), tag(b)];
+}
 
 /**
  * An area's display name: its gazetteer name with its own state ("Arlington, VA", from the area's ZIPs, never the
  * venue's), never a geohash. A name that already carries the state, or a tile without ZIPs, is left as it is; a
- * distance suffix ("..., 17 km west") stays last.
+ * distance suffix ("..., 17 km west") stays last. The state is added by the downloads' own rule (`withState`), so
+ * the page and the files can't name an area differently.
  */
 export function areaName(t: (Pick<LiftTile, "name"> & Partial<Pick<LiftTile, "zctas">>) | undefined, number?: number): string {
-  if (t?.name) {
-    const st = areaState(t);
-    if (!st || t.name.split(/,\s*/).includes(st)) return t.name;
-    const suffix = DISTANCE_SUFFIX.exec(t.name)?.[0] ?? "";
-    return `${t.name.slice(0, t.name.length - suffix.length)}, ${st}${suffix}`;
-  }
+  if (t?.name) return withState(t.name, areaState(t));
   return number ? `Area ${number}` : "Unnamed area";
 }
 
@@ -416,7 +428,7 @@ export function recordedSheetsSection(sheets: readonly Pick<StreetSheet, "mode">
       intro: `${lead} No live run was recorded on this server, so these are sample sheets with made-up places and numbers.`,
     };
   }
-  const intro = `${lead} ${live === sheets.length ? "These sheets were" : "The sheets not marked sample were"} recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced.`;
+  const intro = `${lead} ${live === sheets.length ? "These sheets were" : "The sheets not marked sample were"} recorded from live Qloo and Ticketmaster runs on the dates shown; any change since was made offline, with no API call.`;
   return { heading: "Recorded sheets", intro: live === sheets.length ? intro : `${intro} A sheet marked sample uses made-up places and numbers.` };
 }
 
@@ -468,10 +480,16 @@ export function sendStatus(entries: readonly LedgerEntry[]): { line: string; tit
   return { line: "Draft, not sent", title: "draft", sent: false };
 }
 
-/** The tab title of a finished sheet: "Sample: Hollis Creek String Band at The Truth, street sheet (draft)". */
+/**
+ * The tab title of a finished sheet: "Sample: Hollis Creek String Band at The Truth, street sheet (draft)". A revision
+ * names its change note, so its tab and history entry differ from the sheet it revises:
+ * "... street sheet, revised: “No restaurants” (draft)".
+ */
 export function sheetTitle(sheet: StreetSheet, entries: readonly LedgerEntry[] = sheet.ledger): string {
   const who = headlinerName(sheet.bill) || "Untitled bill";
-  return `${sheet.mode === "fixture" ? "Sample: " : ""}${who} at ${sheet.bill.venue.name}, street sheet (${sendStatus(entries).title})`;
+  const note = sheet.revision?.instruction?.trim();
+  const rev = note ? `, revised: “${note}”` : "";
+  return `${sheet.mode === "fixture" ? "Sample: " : ""}${who} at ${sheet.bill.venue.name}, street sheet${rev} (${sendStatus(entries).title})`;
 }
 
 /** One step per send action, added after the run's own steps in "What Walkup decided". */

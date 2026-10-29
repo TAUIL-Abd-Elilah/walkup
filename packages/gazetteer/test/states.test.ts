@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_GAZETTEER_DIR, loadMetro, parseMetro, stateForPoint, stateFromGeoid, stateFromZctas, stateFromZip } from "../src/index";
+import { annotateTile, DEFAULT_GAZETTEER_DIR, loadMetro, parseMetro, stateForPoint, stateFromGeoid, stateFromZctas, stateFromZip } from "../src/index";
 
 describe("state from a ZIP, a GEOID or a ZCTA list", () => {
   it("reads the USPS 3-digit prefix, including the DC, Maryland and Virginia split", () => {
@@ -93,5 +93,15 @@ describe("stateForPoint", () => {
     expect(stateForPoint(38.8816, -77.091, dc)).toBe("VA"); // Arlington, Clarendon
     expect(stateForPoint(38.9187, -77.2311, dc)).toBe("VA"); // Tysons
     expect(stateForPoint(38.8899, -76.9905, dc)).toBe("DC"); // Capitol Hill
+  });
+
+  it.skipIf(!built)("gives a tile the state of its own point: Georgetown is DC though its nearest ZIP (22209, Rosslyn) is VA", () => {
+    const dc = loadMetro("dc", { dir: DEFAULT_GAZETTEER_DIR });
+    const georgetown = annotateTile({ lat: 38.906119, lon: -77.072526 }, { metro: dc });
+    expect(georgetown.zctas?.[0]).toBe("22209");
+    expect(stateFromZctas(georgetown.zctas)).toBe("VA");
+    expect(georgetown.state).toBe("DC");
+    // Takoma Park's point is on the Maryland side, though two of its three ZIPs are DC's.
+    expect(annotateTile({ lat: 38.9767, lon: -77.0087 }, { metro: dc }).state).toBe("MD");
   });
 });

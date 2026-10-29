@@ -205,8 +205,8 @@ export function resetRateWindowsForTests(): void {
 
 /**
  * Revisions per network per hour. A revision re-runs the plan on cached Qloo answers (only the requests
- * whose inputs changed are new) and may make one model call, so it does not take a fresh run, but it is
- * capped on its own window. Live is tighter than fixture mode.
+ * whose inputs changed are new) and may make one model call, and is capped on its own window; in live mode it
+ * also takes a fresh run (see revise.ts), refunded when it makes no new Qloo call. Live is tighter than fixture mode.
  */
 /** Recorded mode reads the note and opens a stored version: no API call, so judges sharing one network get a higher cap. */
 export const REVISES_PER_HOUR = { fixture: 30, live: 12, recorded: 120 } as const;

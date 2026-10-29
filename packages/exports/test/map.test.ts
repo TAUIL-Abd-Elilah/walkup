@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layoutTileMap, LIFT_INK, liftAlpha, liftBand, liftFill, MAP_COLORS, niceKm } from "../src/map";
+import { LABEL_RADIUS, layoutTileMap, LIFT_INK, liftAlpha, liftBand, liftFill, MAP_COLORS, niceKm, placeLabels, venueLabelBox, type MapBox } from "../src/map";
 import { topTiles } from "../src/format";
 import { makeSheet, TILES, VENUE } from "./helpers";
 
@@ -86,6 +86,24 @@ describe("layoutTileMap", () => {
     const l = layoutTileMap(TILES, withBad, VENUE, { width: 160, height: 120 });
     expect(l.labels.map((x) => x.rank)).toEqual([1, 3]);
     expect(l.rects.find((r) => r.geohash === top[2]!.geohash)?.rank).toBe(3);
+  });
+
+  it("keeps the numbered markers off the venue's name", () => {
+    // A marker whose first spot (up and right of its cell) would sit on the name moves to a clear one.
+    const box: MapBox = { x0: 40, y0: 40, x1: 80, y1: 46 };
+    const clearOf = (l: { x: number; y: number }, b: MapBox) => Math.hypot(l.x - Math.max(b.x0, Math.min(b.x1, l.x)), l.y - Math.max(b.y0, Math.min(b.y1, l.y))) >= LABEL_RADIUS;
+    const without = placeLabels([{ rank: 1, x: 50, y: 55 }], [], 160, 120);
+    expect(clearOf(without[0]!, box)).toBe(false);
+    const withBox = placeLabels([{ rank: 1, x: 50, y: 55 }], [], 160, 120, [box]);
+    expect(clearOf(withBox[0]!, box)).toBe(true);
+    // The layout places the name under the venue square, inside the frame, and every marker clear of it.
+    const l = layoutTileMap(TILES, top, VENUE, { width: 170, height: 112, venueLabel: "The Salt Shed" });
+    const v = l.venueLabel!;
+    expect(v).toMatchObject({ text: "The Salt Shed", y: l.venue!.y + 9 });
+    expect(v.x - v.half).toBeGreaterThan(0);
+    expect(v.x + v.half).toBeLessThan(170);
+    for (const m of l.labels) expect(clearOf(m, venueLabelBox(v))).toBe(true);
+    expect(layoutTileMap(TILES, top, VENUE, { width: 170, height: 112 }).venueLabel).toBeNull();
   });
 
   it("handles empty and invalid input", () => {

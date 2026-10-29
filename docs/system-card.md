@@ -1,6 +1,8 @@
 # Walkup System Card
 
-The same content is served by the app at `/system-card`. The probe outcomes below come from the day-one checks against `hackathon.api.qloo.com` on Oct 15 2026, as derived facts only (statuses, counts, field names). The live sheets (two bills at The Anthem, Washington DC, and two at The Salt Shed, Chicago) were recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; the hosted site, https://walkup-eight.vercel.app, serves what a live run produced and calls no API. Nothing here is a projection.
+The same content is served by the app at `/system-card`. The probe outcomes below come from the day-one checks against `hackathon.api.qloo.com` on Oct 15 2026, as derived facts only (statuses, counts, field names). The live sheets (two bills at The Anthem, Washington DC, and two at The Salt Shed, Chicago) were recorded from live Qloo and Ticketmaster runs on Oct 21 2026; most of their ready-made changes were recorded on Oct 28 2026. Live runs are paused for judging; on the hosted site, https://walkup-eight.vercel.app, each recorded sheet comes from a live run and was re-checked offline afterwards, as the next paragraph says (the two sample presets are labelled sample), and the site calls no API. Nothing here is a projection.
+
+On Oct 28 and 29 2026 the recorded sheets were re-checked offline with the newer checks, with no API call (`recheckSheet` in `packages/orchestrator/src/refresh.ts`, run by `scripts/refresh-recorded-plans.ts --recheck`). Four Claude sentences that fail a check now read as template wording, with the reason in the sheet's checks (a partner line that called a place 35 km away close to the room, merged opening hours, and two summaries about where the crowd lives or which side of the city it is on). Partner lines say a place is "near" its area unless the address is on that street; each area carries its own state from its own point (Georgetown is DC); "isn't searched yet" reads "aren't"; the Checks step says why each dropped line went; each revision's change list was rebuilt over the five numbered areas. One spot listed as a restaurant, SWIG, is a bar by its Qloo tags (a bar and grill, with dive-bar tags), so it left the two "All ages, no bars" revisions at The Salt Shed, which now list 7 spots. FLO's "Within 10 km of the room" revision, which changed nothing, was removed. No Qloo or Ticketmaster answer, ranking, partner list or ledger changed.
 
 ## Purpose and operator
 
@@ -153,7 +155,7 @@ Known API behaviour we design around: invalid or type-inapplicable parameters ar
 |---|---|
 | Qloo | Month guard at 1,500 remaining; fresh runs capped at 3 per IP per day and 15 per day in total; cached presets unlimited |
 | Claude (OpenRouter or Anthropic) | Daily spend counter capped at $5/day, at Anthropic list rates; narration cached per plan; template narration above the cap |
-| Revisions | 12 per network per hour on a live server (30 in sample mode); unchanged Qloo requests come from the cache, so only requests whose inputs changed are sent |
+| Revisions | 12 per network per hour on a live server, where a revision that runs also counts as a fresh run (same caps; refunded when it makes no new Qloo call); 30 in sample mode; 120 on the recorded site, where a note only opens a stored version (no API call). Unchanged Qloo requests come from the cache, so only requests whose inputs changed are sent |
 | Resend | Free tier (100/day); test inbox by default |
 | Hosting | Vercel (Hobby), serving the recorded sheets in recorded mode ([docs/deploy-vercel.md](deploy-vercel.md)); a Fly.io setup for live mode is in `fly.toml` ([docs/deploy.md](deploy.md)) |
 

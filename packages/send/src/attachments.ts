@@ -5,7 +5,7 @@
  * Exporters are injectable for tests.
  */
 import type { StreetSheet } from "@walkup/contracts";
-import { EXPORT_CONTENT_TYPES, EXPORT_FILE_NAMES } from "@walkup/exports";
+import { EXPORT_CONTENT_TYPES, EXPORT_FILE_NAMES, exportFilePrefix } from "@walkup/exports";
 import { ATTACHMENT_KINDS, type AttachmentKind } from "./constants";
 import { sha256Hex } from "./crypto";
 
@@ -37,9 +37,12 @@ export const ATTACHMENT_LABELS: Readonly<Record<AttachmentKind, string>> = {
   partners: "Partner call list (CSV)",
 };
 
-/** Same names as the downloads: "street-sheet.pdf", "street-team.ics", "partners.csv", with "fixture-" in front on fixture sheets. */
-export function attachmentFilename(kind: AttachmentKind, sheet: Pick<StreetSheet, "mode">): string {
-  return `${sheet.mode === "fixture" ? "fixture-" : ""}${EXPORT_FILE_NAMES[kind]}`;
+/**
+ * Same names as the downloads: the sheet's prefix (show, date, plan id) and "street-sheet.pdf", "street-team.ics" or
+ * "partners.csv", with "fixture-" in front on fixture sheets.
+ */
+export function attachmentFilename(kind: AttachmentKind, sheet: Pick<StreetSheet, "mode" | "planId" | "bill">): string {
+  return `${sheet.mode === "fixture" ? "fixture-" : ""}${exportFilePrefix(sheet)}${EXPORT_FILE_NAMES[kind]}`;
 }
 
 export type AttachmentKindsCheck = { ok: true; kinds: AttachmentKind[] } | { ok: false; reason: string };

@@ -24,8 +24,8 @@ import { Circle, Document, Line, Link, Page, Rect, renderToBuffer, Svg, Text, Vi
 import type { Style } from "@react-pdf/types";
 import type { StreetSheet } from "@walkup/contracts";
 import { DECLARED_UNRANKED, LESS_SURE_NOTE, LIFT_KEY } from "./format";
-import { LABEL_RADIUS, layoutTileMap, liftFill, MAP_COLORS, MIN_VISIBLE_CELL, niceKm } from "./map";
-import { buildSheetModel, type PartnerRow, type SheetModel, type SheetModelOptions, type SheetSection, type SpotRow } from "./sheet-model";
+import { LABEL_RADIUS, layoutTileMap, liftFill, MAP_COLORS, MIN_VISIBLE_CELL, niceKm, VENUE_LABEL_SIZE } from "./map";
+import { buildSheetModel, spotColumnWidths, type PartnerRow, type SheetModel, type SheetModelOptions, type SheetSection, type SpotRow } from "./sheet-model";
 import { pdfText } from "./winansi";
 
 export type PdfPageSize = "LETTER" | "A4";
@@ -124,7 +124,8 @@ function section(st: Styles, title: string, status: string | null, ...body: (El 
   return view(
     undefined,
     view(st.sectionHead, text(st.sectionTitle, title)),
-    status ? text([st.status, { maxLines: 2, textOverflow: "ellipsis" }], status) : null,
+    // Three lines: a fallback reason (no usual crowd, a widened search) is said whole, not cut mid-sentence.
+    status ? text([st.status, { maxLines: 3, textOverflow: "ellipsis" }], status) : null,
     ...body,
   );
 }
@@ -153,6 +154,10 @@ function header(m: SheetModel, st: Styles): El {
   );
 }
 
+/**
+ * The top pick in one line, its rule under it. A less certain pick keeps the partner table's dagger; the note that
+ * explains the dagger is printed once, under the table (`panel2`), so it costs the one-page fit no line here.
+ */
 function discoveryLine(m: SheetModel, st: Styles): El | null {
   const d = m.discovery;
   if (!d) return null;
@@ -164,7 +169,8 @@ function discoveryLine(m: SheetModel, st: Styles): El | null {
 }
 
 function tileMap(m: SheetModel, width: number, height: number): El {
-  const layout = layoutTileMap(m.panel1.allTiles, m.panel1.topTiles, m.panel1.venue, { width, height });
+  // The venue's name is laid out with the markers, so no marker covers it.
+  const layout = layoutTileMap(m.panel1.allTiles, m.panel1.topTiles, m.panel1.venue, { width, height, venueLabel: pdfText(m.panel1.venue.name) });
   const kids: El[] = [h(Rect, { x: 0, y: 0, width, height, fill: "#ffffff" })];
   // A light kilometre grid in place of a basemap, centred on the frame.
   if (layout.unitsPerKm > 0) {
@@ -186,12 +192,11 @@ function tileMap(m: SheetModel, width: number, height: number): El {
   if (layout.venue) {
     const v = layout.venue;
     kids.push(h(Rect, { x: v.x - 2.6, y: v.y - 2.6, width: 5.2, height: 5.2, fill: MAP_COLORS.venue, stroke: "#ffffff", strokeWidth: 0.8 }));
-    // The venue's name under its square (above it near the bottom edge), kept inside the frame.
-    const name = pdfText(m.panel1.venue.name).slice(0, 32);
-    const half = name.length * 1.35;
-    const tx = Math.max(half + 2, Math.min(width - half - 2, v.x));
-    const ty = v.y + 9 > height - 2 ? v.y - 5 : v.y + 9;
-    kids.push(h(Text, { x: tx, y: ty, textAnchor: "middle", fill: INK, style: { fontSize: 5.2 } }, name));
+  }
+  // The venue's name under its square (above it near the bottom edge), kept inside the frame (`layout.venueLabel`).
+  if (layout.venueLabel) {
+    const l = layout.venueLabel;
+    kids.push(h(Text, { x: l.x, y: l.y, textAnchor: "middle", fill: INK, style: { fontSize: VENUE_LABEL_SIZE } }, l.text));
   }
   // Numbered markers beside their tiles (filled ink, white numbers), as on the web maps.
   for (const l of layout.labels) {
@@ -319,7 +324,8 @@ function partnerCols(_m: SheetModel, st: Styles): Col[] {
       ),
   };
   const area: Col = { key: "area", head: () => "Area", width: "12.5%", cell: (r) => areaText(r, st) };
-  const hours: Col = { key: "hours", head: (mm) => mm.panel2.hoursHeader, width: "9%", cell: (r) => text(lines(st.cell, 2), r.hours) };
+  // Two lines for one visit day; a third when a holiday's move puts the passes on two weekdays (the place column is three).
+  const hours: Col = { key: "hours", head: (mm) => mm.panel2.hoursHeader, width: "9%", cell: (r) => text(lines(st.cell, 3), r.hours) };
   const why: Col = {
     key: "why",
     head: () => "Why",
@@ -333,6 +339,7 @@ function partnerCols(_m: SheetModel, st: Styles): Col[] {
 
 function panel2(m: SheetModel, st: Styles, rowPt: number): El {
   const p = m.panel2;
+  const dagger = p.rows.some((r) => r.lessSure) || !!m.discovery?.lessSureNote;
   const cols = partnerCols(m, st);
   const cellView = (c: Col, child: El): El => view({ width: c.width, paddingRight: c.key === "notes" ? 0 : st.fs(3) }, child);
   const rule: Style = { borderBottomWidth: 0.5, borderBottomColor: "#bdbdbd", borderBottomStyle: "solid" };
@@ -350,9 +357,10 @@ function panel2(m: SheetModel, st: Styles, rowPt: number): El {
     head,
     ...rows,
     p.rows.length === 0 ? text([st.small, st.gap(1)], "No partners came back for this sheet.") : null,
-    p.omitted > 0 ? text([st.small, st.gap(1)], `+${p.omitted} more partners in partners.csv.`) : null,
+    // The dagger's note is said once: for the rows, and for the top pick's headline even when its row is past the cap.
+    // It shares the "+N more" line when there is one, so it costs the one-page fit no line of its own.
+    p.omitted > 0 || dagger ? text([st.small, st.gap(1)], [p.omitted > 0 ? `+${p.omitted} more partners in partners.csv.` : "", dagger ? LESS_SURE_NOTE : ""].filter((x) => x !== "").join(" ")) : null,
     p.withheld > 0 ? text([st.small, st.gap(1)], `${p.withheld} bar${p.withheld === 1 ? "" : "s"} left out of this fan-facing version (show not 21+).`) : null,
-    p.rows.some((r) => r.lessSure) ? text([st.small, st.gap(1)], LESS_SURE_NOTE) : null,
     text([st.small, st.gap(2)], text([st.bold, { color: INK }], p.footer), ` ${p.refsNote}`),
   );
 }
@@ -382,17 +390,20 @@ type SpotCol = { head: string; width: string; cell: (r: SpotRow) => El };
 
 /**
  * Before and after the show, as a small table: spot, type, distance (nearest first), share of the crowd (only when
- * the shares differ), and the usual crowd's rank.
+ * the shares differ), and the usual crowd's rank (only when there is a usual-crowd list to compare with; the spot
+ * column takes its width otherwise). The print view uses the same widths (`spotColumnWidths`).
  */
 function panel4(m: SheetModel, st: Styles): El {
   const p = m.panel4;
-  const share: SpotCol[] = p.showShare ? [{ head: "Share", width: "10%", cell: (r) => text(oneLine(st.cell), r.share) }] : [];
+  const w = spotColumnWidths(p.showShare, p.showVsUsual);
+  const share: SpotCol[] = w.share ? [{ head: "Share", width: w.share, cell: (r) => text(oneLine(st.cell), r.share) }] : [];
+  const vsUsual: SpotCol[] = w.vsUsual ? [{ head: "Vs usual crowd", width: w.vsUsual, cell: (r) => text([oneLine(st.cell), st.muted], r.vsUsual) }] : [];
   const cols: SpotCol[] = [
-    { head: "Spot", width: p.showShare ? "35%" : "40%", cell: (r) => text(lines(st.cell, 2), text(st.bold, r.name), r.refs ? text(st.ref, ` ${r.refs}`) : null) },
-    { head: "Type", width: p.showShare ? "23%" : "25%", cell: (r) => text(lines(st.cell, 2), r.category) },
-    { head: "Distance", width: p.showShare ? "12%" : "15%", cell: (r) => text(oneLine(st.cell), r.distance) },
+    { head: "Spot", width: w.spot, cell: (r) => text(lines(st.cell, 2), text(st.bold, r.name), r.refs ? text(st.ref, ` ${r.refs}`) : null) },
+    { head: "Type", width: w.type, cell: (r) => text(lines(st.cell, 2), r.category) },
+    { head: "Distance", width: w.distance, cell: (r) => text(oneLine(st.cell), r.distance) },
     ...share,
-    { head: "Vs usual crowd", width: "20%", cell: (r) => text([oneLine(st.cell), st.muted], r.vsUsual) },
+    ...vsUsual,
   ];
   const cell = (i: number, child: El): El => view({ width: cols[i]!.width, paddingRight: i === cols.length - 1 ? 0 : st.fs(3) }, child);
   const rowStyle: Style = { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: RULE, borderBottomStyle: "solid", paddingVertical: st.fs(1.2) };

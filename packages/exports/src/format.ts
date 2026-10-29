@@ -300,24 +300,35 @@ export function tileLabel(t: Pick<LiftTile, "name" | "geohash">): string {
   return t.name && t.name.trim() !== "" ? t.name.trim() : t.geohash;
 }
 
-/** The state an area is in ("MD"), from its ZCTAs (nearest first, as the run lists them). Null when none is known. */
-export function areaState(t: Pick<LiftTile, "zctas">): string | null {
-  return stateFromZctas(t.zctas ?? []);
+/**
+ * The state an area is in ("MD"): the state of the tile's own point when the run stored it, else from its ZCTAs
+ * (nearest first, as the run lists them). Null when none is known.
+ */
+export function areaState(t: Pick<LiftTile, "zctas"> & Partial<Pick<LiftTile, "state">>): string | null {
+  return t.state ?? stateFromZctas(t.zctas ?? []);
 }
 
-/** Appends ", ST" unless the name already ends with that state. */
-function withState(name: string, st: string | null): string {
+/** A trailing distance in an area name, ", 19 km northwest" (the run names a far area by its distance from the room). */
+export const DISTANCE_SUFFIX = /, [\d.]+ km (?:north|northeast|east|southeast|south|southwest|west|northwest)$/;
+
+/**
+ * Adds ", ST" unless the name already carries that state as one of its parts. A trailing distance stays last:
+ * "Des Plaines, 19 km northwest" becomes "Des Plaines, IL, 19 km northwest", as on the plan page.
+ */
+export function withState(name: string, st: string | null): string {
   if (!st || name === "") return name;
-  return name === st || name.endsWith(`, ${st}`) ? name : `${name}, ${st}`;
+  if (name === st || name.split(/,\s*/).includes(st)) return name;
+  const suffix = DISTANCE_SUFFIX.exec(name)?.[0] ?? "";
+  return `${name.slice(0, name.length - suffix.length)}, ${st}${suffix}`;
 }
 
 /**
  * An area as people name it: its own place name and its own state, "Silver Spring, MD", "Langston, DC",
- * "Tysons Green, VA". Never the venue's city or state: a metro can span several states. The state comes from the
- * area's ZCTAs; an area without a known ZCTA, or named only by its geohash, keeps the bare name. The same label on
- * the web sheet, the PDF, the CSVs and the calendar.
+ * "Tysons Green, VA", "Des Plaines, IL, 19 km northwest". Never the venue's city or state: a metro can span several
+ * states. The state comes from the tile's own point, else its ZCTAs; an area without either, or named only by its
+ * geohash, keeps the bare name. The same label on the web sheet, the PDF, the CSVs and the calendar.
  */
-export function areaLabel(t: Pick<LiftTile, "name" | "geohash" | "zctas">): string {
+export function areaLabel(t: Pick<LiftTile, "name" | "geohash" | "zctas"> & Partial<Pick<LiftTile, "state">>): string {
   const name = tileLabel(t);
   if (!t.name || t.name.trim() === "") return name;
   return withState(name, areaState(t));
@@ -342,6 +353,24 @@ export function partnerAreaLabel(p: Pick<Partner, "tileGeohash" | "tileName" | "
   const name = (p.tileName ?? "").trim();
   if (name !== "") return withState(name, addressState(p.address));
   return tile ? tileLabel(tile) : (p.tileGeohash ?? "");
+}
+
+/**
+ * The state of a partner's own address when it differs from the state its area label ends in ("Kenilworth, DC",
+ * "Des Plaines, IL, 19 km northwest"), else null: an area's places come from up to 2 km around its centre, sometimes
+ * over a state line ("Oasiz Bar & Grill", area Kenilworth, DC, at an address in Hyattsville, MD).
+ */
+export function partnerOtherState(p: Pick<Partner, "address">, label: string): string | null {
+  const own = addressState(p.address);
+  const area = /,\s*([A-Z]{2})(?:,\s*[\d.]+ km \w+)?$/.exec(label)?.[1] ?? null;
+  return own && area && own !== area ? own : null;
+}
+
+/** `partnerAreaLabel` for paper and files: "Kenilworth, DC (place in MD)" when the address is over a state line. */
+export function partnerAreaText(p: Pick<Partner, "tileGeohash" | "tileName" | "address">, tiles: ReadonlyMap<string, LiftTile>): string {
+  const label = partnerAreaLabel(p, tiles);
+  const other = label ? partnerOtherState(p, label) : null;
+  return other ? `${label} (place in ${other})` : label;
 }
 
 /**
@@ -472,6 +501,16 @@ export function partnerWhyRefs(p: { chips: readonly { label: string; ledgerRef: 
   return p.chips.filter((c) => !/^in a [\d.]+x lift tile$/.test(c.label) && !/^most influenced by /.test(c.label)).map((c) => c.ledgerRef);
 }
 
+/**
+ * The radius the lift map was searched at when it widened past the operator's ("The search widened to 60 km ..." on
+ * the map card's reason), else null. The same reading as the plan page's header.
+ */
+export function mapReachKm(sheet: { cards: { liftMap: { reason?: string | null } }; operator: { radiusKm: number } }): number | null {
+  const m = /The search widened to (\d+(?:\.\d+)?) km/.exec(sheet.cards.liftMap.reason ?? "");
+  const km = m ? Number(m[1]) : null;
+  return km !== null && km !== sheet.operator.radiusKm ? km : null;
+}
+
 /** "Thu and Sat", "Thu, Fri and Sat": the street-team days, the same words everywhere. */
 export function streetDaysText(days: readonly Weekday[]): string {
   const w = days.map(weekdayShort);
@@ -500,15 +539,26 @@ export function realLimits(limits: readonly string[] | undefined, fallback: read
   return [...new Set(own.length > 0 ? own : fallback)];
 }
 
+/** Blanks the paper and partners.csv say out loud instead of leaving a cell empty. */
+export const PHONE_NOT_LISTED = "Phone not listed";
+export const WEBSITE_NOT_LISTED = "Website not listed";
+export const HOURS_NOT_LISTED = "Hours not listed: call first";
+
+/** A spot the room's usual crowd's list does not have, in a sentence and in the paper table's narrow column. */
+export const SPOT_NOT_IN_USUAL = "not in the room's usual crowd's list";
+export const SPOT_NOT_IN_USUAL_SHORT = "not in its list";
+
 /** A declared partner Qloo could not rank, in the same words on the web, on paper, in the CSV and over MCP. */
 export const DECLARED_UNRANKED = "not in Qloo's catalog, kept in your order";
 
 /**
  * How a spot ranks for this crowd against the room's usual crowd, in one phrase:
  * "ranks 3 places higher here than for the room's usual crowd", "ranks the same here as for the room's usual crowd".
+ * A spot without a rank says so when the usual crowd's list came back (`listCameBack`, other spots have a rank):
+ * "not in the room's usual crowd's list". Otherwise "".
  */
-export function spotVsUsual(deltaRank: number | null): string {
-  if (deltaRank === null || !Number.isFinite(deltaRank)) return "";
+export function spotVsUsual(deltaRank: number | null, listCameBack = false): string {
+  if (deltaRank === null || !Number.isFinite(deltaRank)) return listCameBack ? SPOT_NOT_IN_USUAL : "";
   if (deltaRank === 0) return "ranks the same here as for the room's usual crowd";
   const n = Math.abs(deltaRank);
   return `ranks ${n} ${n === 1 ? "place" : "places"} ${deltaRank > 0 ? "higher" : "lower"} here than for the room's usual crowd`;

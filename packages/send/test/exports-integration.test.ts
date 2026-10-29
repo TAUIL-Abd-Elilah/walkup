@@ -5,6 +5,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createMemoryLedger, type StreetSheet } from "@walkup/contracts";
+import { exportFilePrefix } from "@walkup/exports";
 import { confirmSend, defaultExporters, prepareSend } from "../src/index";
 import { clock, freshStore, liveConfig, mockResend } from "./helpers";
 
@@ -25,7 +26,10 @@ describe("default exporters (@walkup/exports)", () => {
     expect(r.status).toBe("ready");
     if (r.status !== "ready") return;
     expect(r.preview.attachmentFailures).toEqual([]);
-    expect(r.preview.attachments.map((a) => a.filename)).toEqual(["fixture-street-sheet.pdf", "fixture-street-team.ics", "fixture-partners.csv"]);
+    // The same names as the downloads of this sheet.
+    const pre = `fixture-${exportFilePrefix(sheet)}`;
+    expect(pre).toBe("fixture-walkup-hollis-creek-string-band-2026-11-20-g1-a-");
+    expect(r.preview.attachments.map((a) => a.filename)).toEqual([`${pre}street-sheet.pdf`, `${pre}street-team.ics`, `${pre}partners.csv`]);
 
     const client = mockResend();
     const out = await confirmSend(r.confirmToken, { config, store, now: c.now, ledger: createMemoryLedger(), mailClient: client });

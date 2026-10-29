@@ -2,9 +2,23 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import type { StreetSheet } from "@walkup/contracts";
-import { escapeIcsText, foldLine, icsUtc, planStreetTeamVisits, streetTeamDates, streetTeamPasses, toIcs, type StreetTeamVisit } from "../src/ics";
-import { hoursWeekday, topTiles } from "../src/format";
+import {
+  escapeIcsText,
+  foldLine,
+  icsUtc,
+  isStreetTeamBlackout,
+  planStreetTeamVisits,
+  streetTeamBlackout,
+  streetTeamDates,
+  streetTeamHolidays,
+  streetTeamPasses,
+  toIcs,
+  type StreetTeamPass,
+  type StreetTeamVisit,
+} from "../src/ics";
+import { formatHours, hoursWeekday, topTiles, weekdayShort } from "../src/format";
 import { partnerHoursOn } from "../src/hours";
+import { partnerHoursColumn } from "../src/sheet-model";
 import { haversineM } from "@walkup/engine";
 import { makeHoursSheet, makeMultiStateSheet, makeSheet, partner, qlooHours, tile, TILES } from "./helpers";
 
@@ -439,6 +453,156 @@ describe("street-team passes", () => {
     expect(visits.every((v) => v.date >= "2026-11-16" && v.pass === "final")).toBe(true);
     // One pass: the summaries don't name a pass.
     expect(events(toIcs(late)).every((e) => !(prop(e, "SUMMARY") ?? "").includes("pass"))).toBe(true);
+  });
+
+  it("sends no one out on a holiday: Christmas Eve, New Year's Eve and Day, Thanksgiving", () => {
+    expect(streetTeamBlackout("2026-12-24")).toBe("Christmas Eve");
+    expect(streetTeamBlackout("2026-11-26")).toBe("Thanksgiving");
+    expect(streetTeamBlackout("2026-11-19")).toBeNull();
+    expect(streetTeamBlackout("2026-12-26")).toBeNull();
+    // A Wednesday Dec 30 show: the final pass's Thursday (Christmas Eve) moves to the Thursday before, Dec 17.
+    const dec30 = streetTeamPasses("2026-12-30", ["thursday", "saturday"], { notBefore: "2026-10-28" });
+    expect(dec30.map((d) => `${d.pass} ${d.date}`)).toEqual(["first 2026-12-03", "first 2026-12-05", "final 2026-12-17", "final 2026-12-26"]);
+    expect(dec30[2]!.insteadOf).toEqual({ date: "2026-12-24", holiday: "Christmas Eve" });
+    // A Friday Jan 15 show: the first pass's Christmas Eve moves to Dec 17 too; both passes keep Thursday and Saturday.
+    const jan15 = streetTeamPasses("2027-01-15", ["thursday", "saturday"], { notBefore: "2026-10-28" });
+    expect(jan15.map((d) => d.date)).not.toContain("2026-12-24");
+    expect(jan15.map((d) => `${d.pass} ${d.date} ${d.weekday}`)).toEqual([
+      "first 2026-12-17 thursday",
+      "first 2026-12-19 saturday",
+      "final 2027-01-09 saturday",
+      "final 2027-01-14 thursday",
+    ]);
+    expect(streetTeamHolidays("2027-01-15", ["thursday", "saturday"], { notBefore: "2026-10-28" })).toEqual([
+      { date: "2026-12-24", weekday: "thursday", pass: "first", holiday: "Christmas Eve", movedTo: "2026-12-17" },
+    ]);
+    // Thanksgiving moves a week back; a day before the plan existed is never used.
+    expect(streetTeamPasses("2026-12-19", ["thursday"], { notBefore: "2026-10-17" }).map((d) => d.date)).toEqual(["2026-11-19", "2026-12-17"]);
+  });
+
+  it("moves a holiday's stops to the same weekday a week earlier: both passes keep their days, each partner its weekday", () => {
+    for (const [date, weekday] of [
+      ["2026-12-30", "wednesday"],
+      ["2027-01-15", "friday"],
+    ] as const) {
+      const s = makeTownSheet();
+      s.createdAt = "2026-10-28T12:00:00.000Z";
+      s.bill = { ...s.bill, date, weekday };
+      const visits = planStreetTeamVisits(s);
+      expect(visits.some((v) => isStreetTeamBlackout(v.date)), date).toBe(false);
+      // Each pass covers Thursday and Saturday, and a partner is visited on the same weekday in both passes.
+      for (const pass of ["first", "final"] as const) expect(new Set(visits.filter((v) => v.pass === pass).map((v) => v.weekday)), `${date} ${pass}`).toEqual(new Set(["thursday", "saturday"]));
+      const days = new Map<string, Set<string>>();
+      for (const v of visits) if (v.partner) days.set(v.partner.entity.entityId, new Set([...(days.get(v.partner.entity.entityId) ?? []), v.weekday]));
+      for (const [id, d] of days) expect(d.size, `${date} ${id}`).toBe(1);
+      // The day is doable: no two stops overlap, and none is cut off at midnight.
+      expect(overlaps(visits), date).toEqual([]);
+      expect(visits.filter((v) => v.end === "23:59"), date).toEqual([]);
+      // The paper's Visit day cell and partners.csv name the calendar's weekday and that day's hours.
+      const col = partnerHoursColumn(s);
+      for (const v of visits.filter((x) => x.partner && x.hours)) expect(col.cell(v.partner!).hours, `${date} ${v.partner!.entity.name}`).toBe(`${weekdayShort(v.weekday)} ${formatHours(v.hours!)}`);
+    }
+  });
+
+  it("says on the calendar where a holiday's stops went, and names only the pass's own days", () => {
+    const s = makeHoursSheet();
+    s.createdAt = "2026-10-28T12:00:00.000Z";
+    s.bill = { ...s.bill, date: "2026-12-30", weekday: "wednesday" };
+    const visits = planStreetTeamVisits(s);
+    expect(visits.some((v) => v.date === "2026-12-24")).toBe(false);
+    expect([...new Set(visits.filter((v) => v.pass === "final").map((v) => v.date))].sort()).toEqual(["2026-12-17", "2026-12-26"]);
+    const finals = events(toIcs(s)).filter((e) => (prop(e, "SUMMARY") ?? "").includes("final pass"));
+    const desc = finals.map((e) => unescapeText(prop(e, "DESCRIPTION") ?? ""));
+    expect(desc.filter((d) => d.includes("No street team on Thu Dec 24 2026 (Christmas Eve): shops keep holiday hours. Its stops are on Thu Dec 17 2026 instead."))).toHaveLength(1);
+    // Dec 17 is 13 days out, so its stops don't claim to be in the show week.
+    expect(desc.some((d) => d.startsWith("Final pass, 2 weeks out:"))).toBe(true);
+    expect(desc.join("\n")).not.toMatch(/closed on Sat: [^\n]*Evening Records/);
+
+    // Made Dec 13: the first pass is Dec 17 and 19, so the final pass's Christmas Eve has no free Thursday before it.
+    // Its stops move to Wed Dec 23, the nearest free day of its week: the final pass keeps two days.
+    const late = makeHoursSheet();
+    late.createdAt = "2026-12-13T12:00:00.000Z";
+    late.bill = { ...late.bill, date: "2026-12-30", weekday: "wednesday" };
+    expect(streetTeamHolidays(late.bill.date, ["thursday", "saturday"], { notBefore: "2026-12-13" })).toEqual([
+      { date: "2026-12-24", weekday: "thursday", pass: "final", holiday: "Christmas Eve", movedTo: "2026-12-23" },
+    ]);
+    expect(streetTeamPasses(late.bill.date, ["thursday", "saturday"], { notBefore: "2026-12-13" }).map((d) => `${d.pass} ${d.date} ${d.weekday}`)).toEqual([
+      "first 2026-12-17 thursday",
+      "first 2026-12-19 saturday",
+      "final 2026-12-23 wednesday",
+      "final 2026-12-26 saturday",
+    ]);
+    const lateVisits = planStreetTeamVisits(late);
+    expect([...new Set(lateVisits.filter((v) => v.pass === "final").map((v) => v.date))].sort()).toEqual(["2026-12-23", "2026-12-26"]);
+    expect(lateVisits.some((v) => isStreetTeamBlackout(v.date))).toBe(false);
+    expect(overlaps(lateVisits)).toEqual([]);
+    expect(lateVisits.filter((v) => v.end === "23:59")).toEqual([]);
+    const lateDesc = events(toIcs(late))
+      .filter((e) => (prop(e, "SUMMARY") ?? "").includes("final pass"))
+      .map((e) => unescapeText(prop(e, "DESCRIPTION") ?? ""));
+    expect(lateDesc.filter((d) => d.includes("No street team on Thu Dec 24 2026 (Christmas Eve): shops keep holiday hours. Its stops are on Wed Dec 23 2026 instead."))).toHaveLength(1);
+    // Evening Records is open on Thursday and Friday only: in a final pass of Wednesday and Saturday it is closed on
+    // "Wed and Sat", the pass's own days, not "Thu and Sat".
+    const all = lateDesc.join("\n");
+    expect(all).toMatch(/Not scheduled, closed on Wed and Sat: [^\n]*Evening Records/);
+    expect(all).not.toContain("closed on Thu and Sat: Evening Records");
+    // A partner visited on Thursday in the first pass and Saturday in the final one shows both days, each with its hours.
+    const col = partnerHoursColumn(late);
+    const twice = lateVisits.find((v) => v.partner?.entity.name === "Split Shift Diner" && v.pass === "final")!;
+    expect(twice.weekday).toBe("saturday");
+    expect(col.cell(twice.partner!).hours).toBe("Thu 10 am to 2 pm, 5 pm to 9:30 pm; Sat 10 am to 2 pm, 5 pm to 9:30 pm");
+
+    // Only when every day of the week is taken does a pass go a day short, and the calendar says so.
+    const every = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+    expect(streetTeamHolidays("2026-12-30", every, { notBefore: "2026-12-13" }).map((x) => `${x.date} ${x.movedTo}`)).toEqual(["2026-12-24 null", "2026-12-25 null"]);
+    const full = makeHoursSheet();
+    full.createdAt = "2026-12-13T12:00:00.000Z";
+    full.bill = { ...full.bill, date: "2026-12-30", weekday: "wednesday" };
+    full.operator = { ...full.operator, streetTeamDays: [...every] };
+    const fullDesc = events(toIcs(full)).map((e) => unescapeText(prop(e, "DESCRIPTION") ?? ""));
+    expect(fullDesc.filter((d) => d.includes("(Christmas Eve): shops keep holiday hours. Its stops are on the pass's other days."))).toHaveLength(1);
+  });
+
+  it("moves a holiday it can't move a week back to the nearest free day of its week: the passes keep their size", () => {
+    // Every partner open Wednesday, Thursday and Saturday; made Dec 13 for a Dec 30 show (first pass Dec 17 and 19).
+    const s = makeTownSheet(false);
+    const week = qlooHours({ wednesday: [["09:00", "21:00"]], thursday: [["09:00", "21:00"]], saturday: [["09:00", "21:00"]] });
+    s.cards.partners.results = s.cards.partners.results.map((p) => ({ ...p, entity: { ...p.entity, properties: { hours: week } } }));
+    s.createdAt = "2026-12-13T12:00:00.000Z";
+    s.bill = { ...s.bill, date: "2026-12-30", weekday: "wednesday" };
+    const visits = planStreetTeamVisits(s);
+    const perDay = (pass: StreetTeamPass) => [...new Set(visits.filter((v) => v.pass === pass).map((v) => v.date))].sort().map((d) => `${d} ${visits.filter((v) => v.date === d).length}`);
+    expect(perDay("first")).toEqual(["2026-12-17 6", "2026-12-19 4"]);
+    // The final pass has the same two runs: Christmas Eve's on Wed Dec 23, not piled onto Saturday.
+    expect(perDay("final")).toEqual(["2026-12-23 6", "2026-12-26 4"]);
+    expect(overlaps(visits)).toEqual([]);
+    expect(visits.filter((v) => v.end === "23:59")).toEqual([]);
+    // A partner the first pass visits on Thursday is visited on Wednesday in the final pass, and the Visit day cell
+    // names both days, each with its hours.
+    const thu = visits.find((v) => v.pass === "first" && v.weekday === "thursday")!.partner!;
+    expect(visits.filter((v) => v.partner?.entity.entityId === thu.entity.entityId).map((v) => `${v.pass} ${v.weekday}`)).toEqual(["first thursday", "final wednesday"]);
+    expect(partnerHoursColumn(s).cell(thu).hours).toBe("Thu 9 am to 9 pm; Wed 9 am to 9 pm");
+    const desc = events(toIcs(s)).map((e) => unescapeText(prop(e, "DESCRIPTION") ?? ""));
+    expect(desc.filter((d) => d.includes("No street team on Thu Dec 24 2026 (Christmas Eve): shops keep holiday hours. Its stops are on Wed Dec 23 2026 instead."))).toHaveLength(1);
+  });
+
+  it("drops a first pass a holiday would leave a day short rather than pile two days' stops onto one", () => {
+    // Made on Christmas Eve for a Sunday Jan 3 show: the only first-pass week left is Dec 24 and 26, and Christmas
+    // Eve's stops have no free day to go to, so there is only the final pass (New Year's Eve's stops on Wed Dec 30).
+    expect(streetTeamPasses("2027-01-03", ["thursday", "saturday"], { notBefore: "2026-12-24" }).map((d) => `${d.pass} ${d.date} ${d.weekday}`)).toEqual([
+      "final 2026-12-30 wednesday",
+      "final 2027-01-02 saturday",
+    ]);
+    const s = makeTownSheet(false);
+    const week = qlooHours({ wednesday: [["09:00", "21:00"]], thursday: [["09:00", "21:00"]], saturday: [["09:00", "21:00"]] });
+    s.cards.partners.results = s.cards.partners.results.map((p) => ({ ...p, entity: { ...p.entity, properties: { hours: week } } }));
+    s.createdAt = "2026-12-24T12:00:00.000Z";
+    s.bill = { ...s.bill, date: "2027-01-03", weekday: "sunday" };
+    const visits = planStreetTeamVisits(s);
+    expect(visits.length).toBeGreaterThan(0);
+    expect(visits.every((v) => v.pass === "final" && !isStreetTeamBlackout(v.date))).toBe(true);
+    expect(overlaps(visits)).toEqual([]);
+    expect(visits.filter((v) => v.end === "23:59")).toEqual([]);
   });
 
   it("visits every partner once in each pass, on the same street-team day, never before the plan existed", () => {

@@ -14,7 +14,7 @@ This skill is a thin client. The Walkup server holds every API key and does all 
 
 ## Setup
 
-Set `WALKUP_URL` to a Walkup server: the hosted instance, `https://walkup-eight.vercel.app` (recorded mode: it serves sheets recorded from live Qloo and Ticketmaster runs on Oct 21 2026, which are what a live run produced; live runs are paused for judging, so `sheet` and `health` work and `plan`/`rank-partners` are not run), or your own (`npm run dev` in the repository serves `http://localhost:3000`). In OpenClaw you can set it per skill under `skills.entries.walkup.env`. The bundled CLI falls back to `http://localhost:3000` when the variable is empty.
+Set `WALKUP_URL` to a Walkup server: the hosted instance, `https://walkup-eight.vercel.app` (recorded mode: it serves sheets recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and changes to them recorded ahead, most on Oct 28 2026, each from a live run and all re-checked offline on Oct 28 and 29 2026 with no API call; live runs are paused for judging, so `sheet` and `health` work and `plan`/`rank-partners` are not run), or your own (`npm run dev` in the repository serves `http://localhost:3000`). In OpenClaw you can set it per skill under `skills.entries.walkup.env`. The bundled CLI falls back to `http://localhost:3000` when the variable is empty.
 
 No API key is needed or accepted. Self-hosters set `QLOO_API_KEY` and the other keys on the server only.
 
@@ -84,7 +84,7 @@ The server returns one envelope: `status`, `summary`, `planId`, `sheetUrl`, `mod
 - Partners are **suggested, not affiliated**: no business has agreed to anything.
 - Always pass on the `limits` lines ("What this does not establish").
 - If `mode` is `fixture`, say the data is sample data (synthetic), not live.
-- If the server answered with `mode` `recorded` (or `health` says so), it serves sheets recorded from live Qloo and Ticketmaster runs and live runs are paused for judging: a sheet it returns is what a live run produced on the sheet's `createdAt` date (say that date, e.g. "Oct 21 2026"). Do not say the product or Qloo is gone.
+- If the server answered with `mode` `recorded` (or `health` says so), it serves sheets recorded from live Qloo and Ticketmaster runs and live runs are paused for judging: a sheet it returns comes from a live run on the sheet's `createdAt` date (say that date, e.g. "Oct 21 2026"), and the hosted instance's sheets were re-checked offline afterwards, with no API call (no Qloo or Ticketmaster answer changed). Do not say the product or Qloo is gone.
 
 ## What this sends
 

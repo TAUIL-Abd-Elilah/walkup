@@ -73,12 +73,16 @@ export function templateTileWhy(t: Pick<LiftTile, "lift" | "billPct" | "housePct
   return `${capitalize(liftWords(t.lift))}. ${ordinal(pct(t.billPct))} percentile for this crowd, ${ordinal(pct(t.housePct))} for the room's usual crowd.`;
 }
 
-/** The template's line for one partner. qlooRank is the place's position in the search it came from (one per area, or near the venue). */
-export function templatePartnerLine(p: Pick<Partner, "category" | "qlooRank" | "tileName">): string {
+/**
+ * The template's line for one partner. qlooRank is the place's position in the search it came from (one per area, or
+ * near the venue). "Near" the area: a partner can sit up to 2 km from its centre (3.5 km when the search widened).
+ * Only a partner with no area (no tileGeohash) came from the near-venue search; an area without a name is still an area.
+ */
+export function templatePartnerLine(p: Pick<Partner, "category" | "qlooRank" | "tileName" | "tileGeohash">): string {
   const kind = capitalize(withArticle(categoryWord(p.category)));
-  return p.tileName
-    ? `${kind} in ${p.tileName}, ${ordinal(p.qlooRank)} on that area's list for this crowd.`
-    : `${kind} near the venue, ${ordinal(p.qlooRank)} on that list for this crowd.`;
+  if (p.tileName) return `${kind} near ${p.tileName}, ${ordinal(p.qlooRank)} on that area's list for this crowd.`;
+  if (p.tileGeohash) return `${kind} near an unnamed area, ${ordinal(p.qlooRank)} on that area's list for this crowd.`;
+  return `${kind} near the venue, ${ordinal(p.qlooRank)} on that list for this crowd.`;
 }
 
 function billNames(input: NarrateInput): string {
@@ -95,6 +99,8 @@ export function tagInProse(name: string): string {
   const words = name
     .trim()
     .replace(/\s+fans$/i, "")
+    // "Hip - Hop" (a Qloo tag name) reads "hip hop".
+    .replace(/\s+-\s+/g, " ")
     .split(/\s+/)
     .map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase()));
   return words.join(" ");

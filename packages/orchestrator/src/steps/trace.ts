@@ -407,6 +407,6 @@ function alcoholHeld(reasons: readonly string[]): number {
 }
 
 export function guardTrace(guard: StreetSheet["guard"], reasons: readonly string[], allAgesByOperator = false): TraceStep {
-  return guardStep({ dropped: guard.dropped, denied: guard.deniedTagCount, alcoholHeld: alcoholHeld(reasons), allAgesByOperator, ledgerRefs: [] });
+  return guardStep({ dropped: guard.dropped, denied: guard.deniedTagCount, alcoholHeld: alcoholHeld(reasons), allAgesByOperator, reasons, ledgerRefs: [] });
 }
 

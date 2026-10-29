@@ -7,6 +7,7 @@ import {
   countOf,
   dayName,
   declaredStep,
+  guardDropCounts,
   guardStep,
   heatStep,
   joinAnd,
@@ -279,8 +280,29 @@ describe("spots, media, summary and checks", () => {
     expect(s.decision).toBe("Checked every line against this run's requests; nothing had to go.");
     expect(s.cause).toBe("Held back 4 tags by policy: none of them appears in copy or on this sheet. Kept 2 alcohol tags out of fan copy: Ticketmaster doesn't list the show as 21+.");
     expect(guardStep({ dropped: 0, denied: 0, alcoholHeld: 2, allAgesByOperator: true, ledgerRefs: [] }).cause).toBe("Kept 2 alcohol tags out of fan copy: you set the show to all ages.");
-    expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] })).toMatchObject({ decision: "Dropped 2 lines that cited something this run didn't return." });
+    expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] })).toMatchObject({ decision: "Dropped 2 lines that didn't pass the checks." });
+    const cited = ["summary: number 1.8 is not in this run", "tileWhy[2]: geohash not in this run"];
+    expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, reasons: cited, ledgerRefs: [] })).toMatchObject({ decision: "Dropped 2 lines that cited something this run didn't return." });
     expect(guardStep({ dropped: 2, denied: 0, alcoholHeld: 0, ledgerRefs: [] }).cause).toBeUndefined();
+    expectPlain(s);
+  });
+  it("says why each dropped line went, not that every one cited something the run didn't return", () => {
+    const reasons = [
+      "63 tags denied by policy (ethnicity/inclusivity)",
+      'partnerLines[0]: alcohol word "Wine" on a show that is not 21+',
+      'partnerLines[16]: alcohol word "Cocktail" on a show that is not 21+',
+      ...Array.from({ length: 13 }, (_, i) => `partnerLines[${22 + i}]: not a partner`),
+      "replaced by the template: tileWhy[0]: says 16 partners, the sheet has 8 in this area",
+    ];
+    expect(guardDropCounts(reasons)).toEqual({ citation: 0, notPartner: 13, alcohol: 2, other: 0 });
+    const s = guardStep({ dropped: 15, denied: 63, alcoholHeld: 3, reasons, ledgerRefs: [] });
+    expect(s.decision).toBe("Dropped 15 lines: 13 about places that aren't partners on this sheet and 2 with alcohol words on a show that isn't 21+.");
+    expect(s.decision).not.toMatch(/didn't return/);
+    expect(guardStep({ dropped: 1, denied: 0, alcoholHeld: 0, reasons: ["partnerLines[3]: not a partner"], ledgerRefs: [] }).decision).toBe(
+      "Dropped 1 line about a place that isn't a partner on this sheet.",
+    );
+    // The ledger check counts its lines in one reason.
+    expect(guardDropCounts(["2 partner line(s) dropped: cited entity not traced to this run's ledger."]).citation).toBe(2);
     expectPlain(s);
   });
 });

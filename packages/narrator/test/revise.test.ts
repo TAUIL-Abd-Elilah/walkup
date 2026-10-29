@@ -194,6 +194,32 @@ describe("rules interpreter", () => {
     expect(read("street team on Sat and Fri").calls).toEqual([{ tool: "set_street_team_days", input: { days: ["friday", "saturday"] } }]);
     expect(read("no thursday").calls).toEqual([{ tool: "set_street_team_days", input: { days: ["saturday"] } }]);
     expect(read("no thursday or saturday").question).toMatch(/no days/);
+    for (const n of ["Saturday only for the street team", "only Saturday for the street team", "Saturdays only for the street team", "have the street team work Saturday only", "our street team only works Saturday"]) {
+      expect(read(n).calls, n).toEqual([{ tool: "set_street_team_days", input: { days: ["saturday"] } }]);
+    }
+    // "instead of" names a day to drop, never one to add.
+    expect(read("Saturday instead of Thursday").calls).not.toContainEqual({ tool: "set_street_team_days", input: { days: ["thursday", "saturday"] } });
+    // A day that is out, or let go, is a day to drop: never read as "only that day". The rules ask instead.
+    for (const n of [
+      "Saturday is out for our crew",
+      "Our crew is out Saturday",
+      "our crew is out on Saturday",
+      "Thursday is out for our crew",
+      "Saturday is out",
+      "Saturday is out for us",
+      "Saturday is out for the street team",
+      "Let Saturday go",
+      "Thursday can go",
+      "Saturday is going out",
+      "Thursday goes out",
+    ]) {
+      expect(read(n).calls, n).toEqual([]);
+      expect(read(n).question, n).not.toBeNull();
+    }
+    expect(read("only go out on Saturday").calls).toEqual([{ tool: "set_street_team_days", input: { days: ["saturday"] } }]);
+    expect(read("street team goes Saturday").calls).toEqual([{ tool: "set_street_team_days", input: { days: ["saturday"] } }]);
+    expect(read("we are going out on Saturday").calls).toEqual([{ tool: "set_street_team_days", input: { days: ["saturday"] } }]);
+    expect(read("crew goes out Thursday").calls).toEqual([{ tool: "set_street_team_days", input: { days: ["thursday"] } }]);
   });
 
   it("within 10 km, 6 miles; out of range asks", () => {

@@ -35,7 +35,7 @@ import { createRunLedger } from "./ledger";
 import { deniedReceipt } from "./policy";
 import { NO_LIVE_SHOW, presetById, presetFor, presetShowOf, presetVenueName, type Preset, type PresetShow } from "./presets";
 import { splitBudget, type BudgetShare } from "./steps/budget";
-import { honestWording, partnerLinesWithinTags, runCopy, tidyAreaPhrases } from "./steps/copy";
+import { honestWording, partnerLinesNearArea, partnerLinesWithinTags, runCopy, tidyAreaPhrases } from "./steps/copy";
 import { runDeclared } from "./steps/declared";
 import { discoverFor } from "./steps/discovery";
 import { explainPartners } from "./steps/explain";
@@ -406,7 +406,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
     bill: ctx.bill,
     operator,
     cards,
-    narration: { ...narration, partnerLines: withinTags.lines },
+    // "near <area>", never "in" or "on" it: a partner's area is the square its search started from.
+    narration: { ...narration, partnerLines: partnerLinesNearArea(withinTags.lines, partners.partners).lines },
     ledger: entries,
     guard: {
       dropped: copy.guardDropped + citationDrops,

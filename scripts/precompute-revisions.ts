@@ -30,7 +30,9 @@ import { createMemoryLedger, type LedgerEntry, type LedgerSink, type OperatorInp
 import { readRevisionByRules } from "@walkup/narrator";
 import {
   createDepsFromEnv,
+  numberedTiles,
   overridesFor,
+  radiusNoOp,
   parentRequest,
   planShow,
   readInstruction,
@@ -345,6 +347,21 @@ function noteFreeNode(radiusChanged: boolean): RegExp {
   return radiusChanged ? /^node (Q1|Q2|Q3)\b/ : /^node (Q1|Q2|Q3|Q4|Q5|Q6|Q7|Q8)\b/;
 }
 
+/**
+ * Why a revision shows its parent's results again (the same numbered areas, partners and spots), or null when it
+ * changes something a reader can see. Exported for the test.
+ */
+export function sameResults(parent: StreetSheet, child: StreetSheet): string | null {
+  const ids = <T>(xs: readonly T[], id: (x: T) => string) => xs.map(id).join(",");
+  const areas = (s: StreetSheet) => ids(numberedTiles(s.cards.liftMap.results.tiles), (t) => t.geohash);
+  const partners = (s: StreetSheet) => ids(s.cards.partners.results, (p) => p.entity.entityId);
+  const spots = (s: StreetSheet) => ids(s.cards.prePost.results, (x) => x.entity.entityId);
+  if (areas(parent) !== areas(child) || partners(parent) !== partners(child) || spots(parent) !== spots(child)) return null;
+  return radiusNoOp(parent, child)
+    ? "the map search widened to the parent's reach, so the areas, partners and spots are the parent's"
+    : "the areas, partners and spots are the parent's";
+}
+
 function modelCalls(ledger: readonly LedgerEntry[]): number {
   return ledger.filter((e) => e.kind === "anthropic").length;
 }
@@ -410,7 +427,14 @@ async function record(
       }
       const planId = randomUUID();
       const { sink, refs } = seedLedger(reading.ledger);
-      const step = reviseStep({ instruction: reading.instruction, interpreter: reading.interpreter, fallback: reading.fallback, calls: reading.calls, ledgerRefs: refs });
+      const step = reviseStep({
+        instruction: reading.instruction,
+        interpreter: reading.interpreter,
+        fallback: reading.fallback,
+        calls: reading.calls,
+        ledgerRefs: refs,
+        ...(opts.rulesReader ? { rulesChosen: true } : {}),
+      });
       // The real clock (no as-of shift): the revised sheet says the day it was made.
       const result = await planShow(revisedRequest(base, reading.overrides, planId), { ...deps, tm: replayTm(sheet, tmKey), ledger: () => sink }, {
         serveFromStoreWhenGuarded: false,
@@ -440,6 +464,14 @@ async function record(
         );
         console.log(rows.at(-1));
         if (drift.length > 0 || billMoved) throw new Error("A revision drifted from its parent; stopping before more calls.");
+        continue;
+      }
+      // A change a reader can't see is no ready-made change: FLO's "Within 10 km" widened back to the same 60 km map.
+      const same = sameResults(sheet, result.sheet);
+      if (same) {
+        if (kept) await st.plans.put({ ...kept, status: "needs_input" });
+        rows.push(`${tag}: NOT KEPT; ${same}`);
+        console.log(rows.at(-1));
         continue;
       }
       // As the web app stores a revision: the caller's own inputs, never the preset's slot.

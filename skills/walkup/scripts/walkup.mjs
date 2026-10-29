@@ -472,7 +472,7 @@ function report(data, opts, base, resumeEvent) {
   if ((data.mode ?? sheet?.mode) === "fixture") lines.push("FIXTURE: sample data (synthetic), not a live run.");
   else if (data.mode === "recorded" && sheet) {
     const day = recordedDay(sheet.createdAt);
-    lines.push(`RECORDED: recorded from live Qloo and Ticketmaster runs${day ? ` on ${day}` : ""}. Live runs are paused for judging; this sheet is what the live run produced.`);
+    lines.push(`RECORDED: recorded from live Qloo and Ticketmaster runs${day ? ` on ${day}` : ""}. Live runs are paused for judging; this sheet comes from a live run, and any change since was made offline, with no API call.`);
   }
   if (sheet?.hypothetical) lines.push("HYPOTHETICAL COUNT: seats left and capacity are what-ifs.");
   lines.push(`Status: ${status}${data.planId ? ` · plan ${data.planId}` : ""}`);

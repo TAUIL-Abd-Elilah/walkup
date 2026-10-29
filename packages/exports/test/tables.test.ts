@@ -20,6 +20,7 @@ import {
 } from "../src/tables";
 import { topTiles, weekdayShort } from "../src/format";
 import { planStreetTeamVisits } from "../src/ics";
+import { buildSheetModel } from "../src/sheet-model";
 import { parseCsv, parseCsvObjects } from "./csv-parse";
 import { ACTS, makeExplainedSheet, makeHoursSheet, makeMultiStateSheet, makeSheet, PARTNERS, TILES } from "./helpers";
 
@@ -67,6 +68,22 @@ describe("partners.csv", () => {
 
   it("only carries a contact email the operator typed", () => {
     expect(rows.filter((r) => r.contact_email !== "").map((r) => r.contact_email)).toEqual(["lead@example.com"]);
+  });
+
+  it("says a missing phone or website out loud, as the paper does", () => {
+    // Field Day Cafe has neither; the operator's own entries carry none either.
+    expect(rows[5]).toMatchObject({ name: "Field Day Cafe", phone: "Phone not listed", website: "Website not listed" });
+    expect(rows[8]).toMatchObject({ phone: "Phone not listed", website: "Website not listed" });
+    expect(rows[0]).toMatchObject({ phone: "(615) 555-0101", website: "https://example.com/test/1" });
+  });
+
+  it("writes the cleaned website only, as the plan page and the PDF: never Qloo's raw one the engine dropped", () => {
+    const s = makeSheet();
+    const p = PARTNERS[0]!;
+    s.cards.partners.results = [{ ...p, website: null, entity: { ...p.entity, properties: { website: "https://agency-host.example/sites/low-hum" } } }];
+    const r = parseCsvObjects(partnersCsv(s, { includeDeclared: false }))[0]!;
+    expect(r.website).toBe("Website not listed");
+    expect(buildSheetModel(s).panel2.rows[0]).toMatchObject({ web: "", webUrl: null });
   });
 
   it("escapes names with commas and quotes", () => {
@@ -232,17 +249,37 @@ describe("zips.csv", () => {
     expect(rows.find((r) => r.zip === "37212")?.area).toBe(topTiles(s).findIndex((t) => t.geohash === TILES[1]!.geohash) + 1);
   });
 
-  it("weights sum to exactly 1 and fall with the area number: area 1's ZIPs get the most", () => {
+  /** Each area's ZIP weights added up, by area number. */
+  const areaTotals = (rows: { area: number; suggestedWeight: number }[]) => {
+    const out = new Map<number, number>();
+    for (const r of rows) out.set(r.area, (out.get(r.area) ?? 0) + r.suggestedWeight);
+    return out;
+  };
+
+  it("weights sum to exactly 1, and an area's ZIPs add up to its share in the budget split", () => {
     const rows = zipRows(sheet, allHomes);
     expect(rows.reduce((a, r) => a + r.suggestedWeight, 0)).toBeCloseTo(1, 10);
     expect(rows.map((r) => r.area)).toEqual([...rows.map((r) => r.area)].sort((a, b) => a - b));
-    for (let i = 1; i < rows.length; i++) expect(rows[i - 1]!.suggestedWeight).toBeGreaterThanOrEqual(rows[i]!.suggestedWeight);
-    // Area 1 has one ZIP and area 2 two: each of area 2's ZIPs still gets less than area 1's.
-    const a1 = rows.filter((r) => r.area === 1);
+    // Area 4 (Woodbine) has no ZIP, so the other areas' shares are scaled to fill its part.
+    const budget = areaBudget(sheet);
+    const totals = areaTotals(rows);
+    const kept = budget.filter((b) => totals.has(b.rank));
+    const keptShare = kept.reduce((a, b) => a + b.share, 0);
+    for (const b of kept) expect(totals.get(b.rank)!).toBeCloseTo(b.share / keptShare, 3);
+    // Area 1 has one ZIP and area 2 two: area 2's ZIPs share its weight, so its total stays under area 1's.
     const a2 = rows.filter((r) => r.area === 2);
-    expect(a1).toHaveLength(1);
+    expect(rows.filter((r) => r.area === 1)).toHaveLength(1);
     expect(a2).toHaveLength(2);
-    for (const r of a2) expect(r.suggestedWeight).toBeLessThan(a1[0]!.suggestedWeight);
+    expect(a2[0]!.suggestedWeight).toBeCloseTo(a2[1]!.suggestedWeight, 3);
+    expect(totals.get(2)!).toBeLessThan(totals.get(1)!);
+  });
+
+  it("an area with more ZIPs never adds up to more than an earlier area", () => {
+    const s = makeSheet();
+    // Area 1 with one ZIP, area 2 with four: the budget split gives area 2 less, and so does zips.csv.
+    s.cards.liftMap.results.tiles = s.cards.liftMap.results.tiles.map((t, i) => (i === 1 ? { ...t, zctas: ["37203", "37212", "37204", "37215"] } : t));
+    const totals = [...areaTotals(zipRows(s, allHomes)).entries()].sort((a, b) => a[0] - b[0]).map(([, w]) => w);
+    for (let i = 1; i < totals.length; i++) expect(totals[i - 1]!).toBeGreaterThanOrEqual(totals[i]!);
   });
 
   it("agrees with the area order even when a stored budget split does not", () => {
@@ -250,7 +287,8 @@ describe("zips.csv", () => {
     const shares = [0.1, 0.4, 0.1, 0.25, 0.15];
     s.budgetSplit = TILES.slice(0, 5).map((t, i) => ({ geohash: t.geohash, share: shares[i]!, label: "heuristic, not a forecast" as const }));
     const rows = zipRows(s, allHomes);
-    for (let i = 1; i < rows.length; i++) expect(rows[i - 1]!.suggestedWeight).toBeGreaterThanOrEqual(rows[i]!.suggestedWeight);
+    const totals = [...areaTotals(rows).entries()].sort((a, b) => a[0] - b[0]).map(([, w]) => w);
+    for (let i = 1; i < totals.length; i++) expect(totals[i - 1]!).toBeGreaterThanOrEqual(totals[i]!);
     expect(rows[0]).toMatchObject({ zip: "37206", area: 1 });
     expect(rows[0]!.suggestedWeight).toBeGreaterThan(rows.at(-1)!.suggestedWeight);
   });

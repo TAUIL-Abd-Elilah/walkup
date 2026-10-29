@@ -7,8 +7,8 @@ New plans and searches answer with the plain recorded-mode reason (HTTP 503), as
 [deploy.md, Recorded mode](deploy.md#recorded-mode-live-runs-paused). No API key is set
 on Vercel: recorded mode calls nothing.
 
-"Change something" still works on the four hero sheets, from changes made ahead. Each hero sheet has five revisions
-recorded from live runs (its ready-made changes, listed under the box). The fixed rules read the note on Vercel (no
+"Change something" still works on the four hero sheets, from changes made ahead. Each hero sheet has four or five
+revisions recorded from live runs, 19 in all (its ready-made changes, listed under the box). The fixed rules read the note on Vercel (no
 model key there, and the page says so) and turn it into revise tool calls; the page shows that reading, then opens the
 ready-made revision whose own calls give the same changes. Any other change gets a plain
 answer that it needs new Qloo requests while live runs are paused, with the ready-made changes to pick from; nothing
@@ -18,15 +18,27 @@ hides).
 | Sheet | Ready-made changes |
 |---|---|
 | g1-a Rhiannon Giddens, The Anthem | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Within 10 km of the room; Skip H Street NE; No restaurants |
-| g1-b FLO, The Anthem | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Within 10 km of the room; Skip U Street / Shaw; No restaurants |
+| g1-b FLO, The Anthem | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Skip U Street / Shaw; No restaurants |
 | g4-a Greensky Bluegrass, The Salt Shed | All ages, no bars (Oct 21, with the sheet); Street team only on Saturday; Within 10 km of the room; Skip Schaumburg; No restaurants |
 | g4-b The Roots, The Salt Shed | Street team only on Saturday; Within 10 km of the room; Skip Bronzeville; No restaurants; All ages, no bars |
 
-The changes without a date were recorded on Oct 28 2026 and say so on their sheets. They re-ran each parent's own
+The changes without a date (16) were recorded on Oct 28 2026 and say so on their sheets. They re-ran each parent's own
 request with the note's overrides, on the parent's own Qloo answers wherever a request did not change (the Qloo cache
 of the records that made the parents) and on the parent's Ticketmaster roster of the room (rebuilt from the parent's
-receipts, so the room's usual crowd is the parent's; that receipt is marked as reused). The parents in `plans.json`
-were not touched.
+receipts, so the room's usual crowd is the parent's; that receipt is marked as reused). Recording them did not change
+the parents.
+
+After that, on Oct 28 and 29 2026, all 23 sheets in `plans.json`, the four parents included, were re-checked offline
+with no API call (`recheckSheet` in `packages/orchestrator/src/refresh.ts`, run by
+`scripts/refresh-recorded-plans.ts --recheck`; the README's "Re-checked offline, Oct 28 and 29 2026" lists what
+changed). Each area gained its state, partner lines were reworded, four Claude sentences became template wording,
+"isn't searched yet" became "aren't", and the Checks step and each revision's change list were rebuilt. SWIG, a bar by
+its Qloo tags, left the two "All ages, no bars" revisions at The Salt Shed. No Qloo or Ticketmaster answer, ranking,
+partner list or ledger changed. The same pass removed FLO's "Within 10 km of the room" version (below).
+
+FLO has no "Within 10 km of the room" change. Fewer than 200 map squares come back near The Anthem for FLO's crowd,
+so the map widens to 60 km either way, and the version recorded for that note changed nothing on the sheet. It was
+removed.
 
 Fly.io ([deploy.md](deploy.md)) is still the setup for a live host (an always-on machine and a volume). Nothing in
 this file changes it.
@@ -83,6 +95,8 @@ variables (Production and Preview), none of them secret:
 
    `record` stops if a revision makes a request its note cannot reach (the bill, the room, its usual crowd; the heat
    calls too unless the note changes the radius). A new room needs its roster in `ROOM_ROSTERS` in the script first.
+   Sheets kept from an older engine can be held to the newer checks offline, with no API call:
+   `npx tsx scripts/refresh-recorded-plans.ts --recheck` (the original is kept as `plans.before-refresh.json`).
 3. Check what would be uploaded; no `.env`, `fixtures/raw`, `probe_out` or `.cache` path may appear, and
    `deploy/vercel/plans.json` must:
 

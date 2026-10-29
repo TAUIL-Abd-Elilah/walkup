@@ -149,8 +149,12 @@ export default function EvalPage() {
       <h1>Evaluation</h1>
       <p className="mt-3">
         What has been checked so far, and what has not. The first section was recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and the
-        Claude-alone check after it ran on live Qloo calls on Oct 28 2026. Live runs are paused for judging; the sheets on this site are what a live run
-        produced. The product eval after them ran on sample data: a stand-in for Qloo and Ticketmaster with made-up places and numbers.
+        Claude-alone check after it ran on live Qloo calls on Oct 28 2026. Live runs are paused for judging; each recorded sheet on this site comes from
+        a live run and was re-checked offline on Oct 28 and 29 2026, with no API call (the{" "}
+        <Link href="/system-card#recheck" className="link">
+          system card
+        </Link>{" "}
+        says what changed). The product eval after them ran on sample data: a stand-in for Qloo and Ticketmaster with made-up places and numbers.
       </p>
 
       <section id="live" className="section mt-8 scroll-mt-24" aria-labelledby="live-title">
@@ -563,7 +567,7 @@ export default function EvalPage() {
               ; <span className="tabular">{score.failed}</span> fail
             </>
           ) : null}
-          . Last run {dateOf(score.generatedAt)}.
+          . Score unchanged since {dateOf(score.generatedAt)}; CI re-runs the cases on every push.
         </p>
         <p className="mt-2 text-muted">
           Each case runs one plan end to end and checks the sheet it produces: every card has a status and says why when it is not ok, every receipt
@@ -586,7 +590,7 @@ export default function EvalPage() {
             );
           })}
           {score.clauses.some((c) => c.status === "ci") ? (
-            <li className="border-b border-rule py-2">CI re-runs these cases on every push, and on the main branch commits the score file.</li>
+            <li className="border-b border-rule py-2">CI re-runs these cases on every push, and on the main branch commits the score file when the result changes.</li>
           ) : null}
         </ul>
 

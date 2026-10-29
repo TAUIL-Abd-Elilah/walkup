@@ -1,6 +1,6 @@
 # @walkup/send
 
-The "Send to street team" action. It emails the Street Sheet PDF (`street-sheet.pdf`), the street-team timeline (`street-team.ics`) and the partner call list (`partners.csv`), all built by `@walkup/exports` with the same names as the downloads (`fixture-` in front on fixture sheets), after a person confirms, and writes one `A#` entry to the sheet's ledger for every confirm, whether or not anything was sent.
+The "Send to street team" action. It emails the Street Sheet PDF (`street-sheet.pdf`), the street-team timeline (`street-team.ics`) and the partner call list (`partners.csv`), all built by `@walkup/exports` with the same names as the downloads (the sheet's prefix of show, date and plan id, as in `walkup-the-roots-2027-01-15-fe1ff2bc-street-sheet.pdf`, with `fixture-` in front on fixture sheets), after a person confirms, and writes one `A#` entry to the sheet's ledger for every confirm, whether or not anything was sent.
 
 Two steps, with a human in between:
 

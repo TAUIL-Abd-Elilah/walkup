@@ -166,7 +166,7 @@ describe("live runs recorded, then Qloo goes away", () => {
     const sheets = sheetsSection(html);
     expect(sheets).toContain("Recorded sheets");
     expect(sheets).toContain(
-      "Live runs are paused for judging. The sheets not marked sample were recorded from live Qloo and Ticketmaster runs on the dates shown; they are what a live run produced. A sheet marked sample uses made-up places and numbers.",
+      "Live runs are paused for judging. The sheets not marked sample were recorded from live Qloo and Ticketmaster runs on the dates shown; any change since was made offline, with no API call. A sheet marked sample uses made-up places and numbers.",
     );
     expect(sheets.match(/· recorded /g)?.length).toBe(2);
     expect(sheets.match(/· sample ·/g)?.length).toBe(2);

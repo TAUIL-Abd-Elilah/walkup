@@ -36,7 +36,7 @@ import {
   type PresetShow,
   type StoredPlan,
 } from "@walkup/orchestrator";
-import { baseLimits, cardStatuses, errorEnvelope, planUrlFor, sheetUrlFor, worstStatus, type PauseLike, type PendingPick, type ToolEnvelope } from "./envelope";
+import { baseLimits, cardStatuses, errorEnvelope, planUrlFor, sheetUrlFor, worstStatus, type PauseLike, type PendingPick, type PlanMode, type ToolEnvelope } from "./envelope";
 import { lookupEvent } from "./event";
 import { callerKey, type CapDecision } from "./limits";
 import { inputProblem } from "./policy";
@@ -69,8 +69,16 @@ function ok<T>(envelope: ToolEnvelope<T>): ToolOutcome<T> {
   return { envelope, httpStatus: envelope.status === "error" ? 422 : 200 };
 }
 
+/**
+ * The mode an envelope reports. A recorded server sits on fixture deps (it runs nothing) but serves sheets recorded
+ * from live runs, so its answers say "recorded", never "fixture" with the sample-data limits.
+ */
+export function envelopeMode(services: Pick<McpServices, "mode" | "policy">): PlanMode {
+  return services.policy.recorded ? "recorded" : services.mode;
+}
+
 function fail(services: McpServices, httpStatus: number, reason: string, extras: Parameters<typeof errorEnvelope>[2] = {}): ToolOutcome<null> {
-  return { envelope: errorEnvelope(reason, services.mode, extras), httpStatus };
+  return { envelope: errorEnvelope(reason, envelopeMode(services), extras), httpStatus };
 }
 
 /** Recorded state (recorded sheets served, live runs paused for judging): the refusal for anything that would run, or null. */
@@ -195,7 +203,7 @@ async function resumePreset(services: McpServices, presetId: string, picks: Pick
 /** The preset's show in this server's mode, or the 404 for a live server and a preset with no live show yet. */
 function showFor(services: McpServices, preset: Preset): { show: PresetShow } | { outcome: ToolOutcome<null> } {
   // Recorded state refuses before this (recordedRefusal); a recorded server has no show to run.
-  if (services.mode === "recorded") return { outcome: fail(services, 503, services.policy.recorded ?? NO_LIVE_SHOW) };
+  if (services.policy.recorded || services.mode === "recorded") return { outcome: fail(services, 503, services.policy.recorded ?? NO_LIVE_SHOW) };
   const show = presetFor(preset, services.mode);
   return show ? { show } : { outcome: fail(services, 404, NO_LIVE_SHOW) };
 }
@@ -292,13 +300,13 @@ async function eventRequest(services: McpServices, event: string, picks: Picks |
       summary: `${found.candidates.length} Ticketmaster events match "${event}". Which one?`,
       planId: null,
       sheetUrl: null,
-      mode: services.mode,
+      mode: envelopeMode(services),
       results: null,
       resolution: [row],
       pending: [{ input: found.input, candidates: found.candidates }],
       reason: `Show the events to the user, then call again with the same event text and picks: [{input: "${found.input}", entityId: "<event id>"}], or pass the event's link.`,
       provenance,
-      limits: baseLimits(services.mode),
+      limits: baseLimits(envelopeMode(services)),
     };
     return { outcome: ok(envelope) };
   }
@@ -538,15 +546,14 @@ export async function billVsHouseTool(services: McpServices, caller: Caller, arg
   const status = worstStatus(cards.map((c) => c.status));
   const reason = cards.find((c) => c.status === status && c.reason)?.reason ?? cards.find((c) => c.status !== "ok" && c.status !== "empty" && c.reason)?.reason;
   const results = billVsHouseOf(sheet);
-  const where =
-    results.baseline === "house"
-      ? "the room's usual crowd"
-      : results.baseline === "tag"
-        ? "a genre baseline (the room's roster did not resolve)"
-        : "nothing: there is no usual crowd to compare with (the room's roster did not resolve and no genre tag is pinned)";
+  // With no baseline the lift card's own summary says the same thing, so it is said once, with the reason.
+  const summary =
+    results.baseline === "none"
+      ? `Bill vs house at ${sheet.bill.venue.name}: there is no usual crowd to compare this bill with (the room's roster did not resolve and no genre tag is pinned).`
+      : `Bill vs house at ${sheet.bill.venue.name}, compared with ${results.baseline === "house" ? "the room's usual crowd" : "a genre baseline (the room's roster did not resolve)"}: ${sheet.cards.liftMap.summary}`;
   const envelope: ToolEnvelope<BillVsHouse> = {
     status,
-    summary: `Bill vs house at ${sheet.bill.venue.name}, compared with ${where}: ${sheet.cards.liftMap.summary}`,
+    summary,
     planId: sheet.planId,
     sheetUrl: sheetUrlFor(caller.origin, sheet.planId),
     planUrl: planUrlFor(caller.origin, sheet.planId),
@@ -579,54 +586,73 @@ function noteText(note: string): string {
   return note.replace(/\s+/g, " ").trim();
 }
 
-/** Two notes are the same note when they differ only in case and spacing. */
+/** Two notes are the same note when they differ only in case, spacing and punctuation ("All ages: no bars"). */
 function sameNote(a: string, b: string): boolean {
-  return a.replace(/\s+/g, "").toLowerCase() === b.replace(/\s+/g, "").toLowerCase();
+  const key = (s: string) => s.replace(/[^\p{L}\p{N}]+/gu, "").toLowerCase();
+  return key(a) === key(b);
 }
 
 /**
  * The recorded state cannot revise (live runs are paused), but a revision made while the server was live is still
- * stored. The refusal says the caller's note was not run and names each recorded revision (plan id, its note, sheet
- * link) so an agent can read it with get_sheet, saying plainly whether it was made for the same note (case and
- * spacing aside) or for a different one.
+ * stored. The refusal gives the host's reason first, says the caller's note was not run, and names each recorded
+ * revision (plan id, its note, sheet link) so an agent can read it with get_sheet. A revision counts as the caller's
+ * when its note is the same words (case, spacing and punctuation aside) or when the host's reader
+ * (services.recordedMatch, the one the web page's box uses) reads the note as the change that revision made. Without
+ * that reading, a revision for other words is not called a different change: the agent is told to read its note.
  */
 async function withRecordedRevisions(services: McpServices, caller: Caller, planId: string, instruction: string, off: ToolOutcome<null>): Promise<ToolOutcome<null>> {
   const asked = noteText(instruction);
-  const lead = asked ? `Live runs are paused for judging, so your note "${asked}" was not run.` : "Live runs are paused for judging, so your note was not run.";
+  const lead = asked ? `Your note "${asked}" was not run.` : "Your note was not run.";
   const refuse = (detail: string): ToolOutcome<null> => {
-    const reason = [lead, detail, off.envelope.reason ?? ""].filter(Boolean).join(" ");
+    const reason = [off.envelope.reason ?? "", lead, detail].filter(Boolean).join(" ");
     return { ...off, envelope: { ...off.envelope, summary: reason, reason } };
   };
   let revisions: StoredPlan[] = [];
+  let parentId = planId;
   try {
     const parent = await readView(services, planId);
-    const parentId = parent?.kind === "sheet" ? parent.sheet.planId : planId;
+    parentId = parent?.kind === "sheet" ? parent.sheet.planId : planId;
     const recent = await services.store.listComplete({ mode: "live" }, RECORDED_REVISION_LOOKBACK);
-    // Up to six: a hosted hero sheet has five ready-made changes, and an agent should see each one.
+    // Up to six: a hosted hero sheet has up to five ready-made changes, and an agent should see each one.
     revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 6);
   } catch {
     revisions = [];
   }
   if (revisions.length === 0) return refuse("");
+  // The host's reading of the note: null when there is none (no hook, an unclear note, a failure).
+  let reading: { planId: string | null } | null = null;
+  if (asked && services.recordedMatch) {
+    try {
+      reading = await services.recordedMatch(parentId, asked, caller.ip);
+    } catch {
+      reading = null;
+    }
+  }
   const where = (p: StoredPlan): string => {
     const url = sheetUrlFor(caller.origin, p.planId);
     return `plan ${p.planId}${url ? `, ${url}` : ""}`;
   };
   const noteOf = (p: StoredPlan): string => noteText(p.sheet?.revision?.instruction ?? "");
+  const listed = (ps: StoredPlan[]) => ps.map((p) => `"${noteOf(p)}" (${where(p)})`).join("; ");
   const same = asked ? revisions.filter((p) => sameNote(noteOf(p), asked)) : [];
-  const other = revisions.filter((p) => !same.includes(p));
+  const matchId = reading?.planId ?? null;
+  const meant = matchId ? revisions.filter((p) => p.planId === matchId && !same.includes(p)) : [];
+  const other = revisions.filter((p) => !same.includes(p) && !meant.includes(p));
   const parts: string[] = [];
   if (same.length > 0) {
     parts.push(`This plan has a recorded run of that same note (${same.map(where).join("; ")}), readable with get_sheet.`);
   }
-  if (other.length > 0) {
-    const listed = other.map((p) => `"${noteOf(p)}" (${where(p)})`).join("; ");
+  if (meant.length > 0) {
     const head = same.length > 0 ? "It also has" : "This plan has";
-    parts.push(
-      other.length === 1
-        ? `${head} a recorded revision for a different note: ${listed}, readable with get_sheet. That is not your note.`
-        : `${head} recorded revisions for different notes: ${listed}, readable with get_sheet. None of them is your note.`,
-    );
+    parts.push(`${head} a recorded revision that makes the change your note asks for: ${listed(meant)}, readable with get_sheet.`);
+  }
+  if (other.length > 0) {
+    const found = same.length > 0 || meant.length > 0;
+    const head = found ? "It also has" : "This plan has";
+    const one = other.length === 1;
+    // Only a reading of the note can say a revision makes a different change; otherwise the agent reads the note.
+    const tail = found ? "" : reading ? (one ? " It does not make the change your note asks for." : " None of them makes the change your note asks for.") : one ? " Read its note to see whether it makes your change." : " Read their notes to see whether one makes your change.";
+    parts.push(`${head} ${one ? "a recorded revision for a different note" : "recorded revisions for different notes"}: ${listed(other)}, readable with get_sheet.${tail}`);
   }
   return refuse(parts.join(" "));
 }
@@ -671,12 +697,12 @@ export async function revisePlanTool(services: McpServices, caller: Caller, args
       planId: parent.planId,
       sheetUrl: sheetUrlFor(caller.origin, parent.planId),
       planUrl: planUrlFor(caller.origin, parent.planId),
-      mode: services.mode,
+      mode: envelopeMode(services),
       results: null,
       resolution: [],
       reason: REVISE_QUESTION_REASON,
       provenance: [],
-      limits: baseLimits(services.mode),
+      limits: baseLimits(envelopeMode(services)),
       parentPlanId: parent.planId,
       question,
       revision,

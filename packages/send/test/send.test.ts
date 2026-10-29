@@ -30,7 +30,9 @@ import {
 } from "./helpers";
 
 const IP = "203.0.113.7";
-const typed = (address: string): TypedRecipient => ({ address, typedByOperator: true });
+/** Attachments carry the download names: "fixture-" on a sample sheet, then the sheet's own prefix. */
+const FILES = "fixture-walkup-synthetic-headliner-2026-11-20-syn-plan-";
+const typed =(address: string): TypedRecipient => ({ address, typedByOperator: true });
 
 function ready(r: PrepareSendResult) {
   if (r.status !== "ready") throw new Error(`expected ready, got refused: ${r.reason}`);
@@ -52,7 +54,7 @@ describe("prepareSend", () => {
     const r = ready(await prepareSend({ sheet: makeSheet(), requesterIp: IP }, { config: s.config, store: s.store, now: s.c.now, exporters: s.exporters }));
     expect(r.preview.recipients).toEqual([{ address: TEST_INBOX, source: "test_inbox" }]);
     expect(r.preview.mode).toBe("live");
-    expect(r.preview.attachments.map((a) => a.filename)).toEqual(["fixture-street-sheet.pdf", "fixture-street-team.ics", "fixture-partners.csv"]);
+    expect(r.preview.attachments.map((a) => a.filename)).toEqual([`${FILES}street-sheet.pdf`, `${FILES}street-team.ics`, `${FILES}partners.csv`]);
     expect(r.preview.attachments[0]?.bytes).toBe(PDF_BYTES.byteLength);
     expect(s.exporters.calls).toEqual(["pdf:syn-plan-1", "ics:syn-plan-1", "csv:syn-plan-1"]);
     expect(r.preview.expiresAt).toBe(new Date(T0 + TOKEN_TTL_MS).toISOString());
@@ -72,7 +74,8 @@ describe("prepareSend", () => {
     // The web sheet's own words: no uppercase labels, no "what-if numbers the operator typed".
     expect(text).toContain("Seats left 1,200 and capacity 3,000 are assumed numbers, not ticket sales.");
     expect(text).toContain("Sample sheet: made-up places and numbers, not a live run.");
-    expect(text).not.toMatch(/HYPOTHETICAL|FIXTURE|synthetic|illustrative/);
+    // (The attached file names carry this test sheet's headliner, "synthetic-headliner", so they are left out here.)
+    expect(text.replace(/walkup-[a-z0-9-]+/g, "")).not.toMatch(/HYPOTHETICAL|FIXTURE|synthetic|illustrative/);
     expect(footer).toContain(TEST_POSTAL);
     expect(footer).toMatch(/opt out/i);
     expect(footer).toContain("sheets@example.com");
@@ -137,7 +140,7 @@ describe("prepareSend", () => {
     const s = setup();
     const deps = { config: s.config, store: s.store, now: s.c.now, exporters: s.exporters };
     const r = ready(await prepareSend({ sheet: makeSheet(), requesterIp: IP, attachments: ["partners", "ics"] }, deps));
-    expect(r.preview.attachments.map((a) => a.filename)).toEqual(["fixture-street-team.ics", "fixture-partners.csv"]);
+    expect(r.preview.attachments.map((a) => a.filename)).toEqual([`${FILES}street-team.ics`, `${FILES}partners.csv`]);
     const bad = await prepareSend({ sheet: makeSheet(), requesterIp: IP, attachments: ["zip" as never] }, deps);
     expect(bad.status).toBe("refused");
   });
@@ -152,7 +155,7 @@ describe("prepareSend", () => {
     const r = ready(await prepareSend({ sheet: makeSheet(), requesterIp: IP }, { config: s.config, store: s.store, now: s.c.now, exporters }));
     expect(r.preview.attachments.map((a) => a.kind)).toEqual(["ics", "partners"]);
     expect(r.preview.attachmentFailures).toEqual([
-      { kind: "pdf", filename: "fixture-street-sheet.pdf", reason: "could not build fixture-street-sheet.pdf: renderer unavailable" },
+      { kind: "pdf", filename: `${FILES}street-sheet.pdf`, reason: `could not build ${FILES}street-sheet.pdf: renderer unavailable` },
     ]);
   });
 
@@ -196,7 +199,7 @@ describe("confirmSend: live path with a mocked Resend client", () => {
     expect(e.endpoint).toBe("resend.emails.send");
     expect(e.note).toBe("sent: message id re_synthetic_1");
     expect(e.params["recipients"]).toEqual([TEST_INBOX]);
-    expect(e.params["attachments"]).toEqual(["fixture-street-sheet.pdf", "fixture-street-team.ics", "fixture-partners.csv"]);
+    expect(e.params["attachments"]).toEqual([`${FILES}street-sheet.pdf`, `${FILES}street-team.ics`, `${FILES}partners.csv`]);
     expect(e.bytes).toBeGreaterThan(0);
     expect(out.ledgerEntry).toEqual(e);
 
@@ -210,7 +213,7 @@ describe("confirmSend: live path with a mocked Resend client", () => {
     expect(p["text"]).toBe(r.preview.text);
     expect(String(p["html"])).toContain("Suggested, not affiliated");
     const atts = p["attachments"] as { filename: string; content: Buffer; contentType: string }[];
-    expect(atts.map((a) => a.filename)).toEqual(["fixture-street-sheet.pdf", "fixture-street-team.ics", "fixture-partners.csv"]);
+    expect(atts.map((a) => a.filename)).toEqual([`${FILES}street-sheet.pdf`, `${FILES}street-team.ics`, `${FILES}partners.csv`]);
     expect(Buffer.from(atts[0]!.content).equals(Buffer.from(PDF_BYTES))).toBe(true);
     expect((p["headers"] as Record<string, string>)["List-Unsubscribe"]).toBe("<mailto:sheets@example.com?subject=unsubscribe>");
     expect(call.options?.idempotencyKey).toMatch(/^walkup-send-/);

@@ -3,9 +3,10 @@ import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
 import { shortUrl, telHref } from "../../lib/format";
 import { FANBAR_HREF, PARTNER_RANK_LINE, categoryLabel } from "../../lib/labels";
-import { areaName, formatHours, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
+import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSummary, popularityLine, topTiles, withWithout } from "../../lib/sheet-utils";
 import { WithWithout } from "../WithWithout";
-import { LESS_SURE_NOTE, partnerAreaLabel, partnerLessSure } from "@walkup/exports/format";
+import { LESS_SURE_NOTE, formatPhone, partnerAreaLabel, partnerLessSure, partnerOtherState } from "@walkup/exports/format";
+import { partnerHoursColumn } from "@walkup/exports/sheet-model";
 import { CONFIDENCE_LABEL, houseLines, influenceLine, partnerAnchor, partnerWhy, streetDayShort } from "./model";
 import { PlanCard } from "./PlanCard";
 import { Refs } from "./receipts";
@@ -20,11 +21,58 @@ const tagWord = (name: string) =>
 /** The Type cell: the kind of place, and "national chain" when the name is on the hand-kept list. */
 const typeWords = (p: Partner) => (p.chain ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category));
 
+/** The state of the place's own address when it differs from its area's (the same rule as the print view and files). */
+export const otherState = partnerOtherState;
+
+const WEEKDAY_LONG: Record<string, string> = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" };
+
+/**
+ * Claude's line gives the day the run read hours for (the first street-team day); with a Visit day column a row can
+ * be visited on another day ("Sat 8 pm to 5 am" beside "open Thursday 9:30 pm to 4 am"). Says which day each is about,
+ * or null when they agree. `visitDay` is the cell's "Sat", or "Sat; Thu" when a holiday's stops move to another day of its week;
+ * a day named for the show ("the Saturday show") is skipped.
+ */
+export function lineDayNote(line: string | undefined, visitDay: string): string | null {
+  if (!line || !visitDay) return null;
+  const days = visitDay.split(/;\s*/).filter(Boolean);
+  for (const m of line.matchAll(/\b(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b/g)) {
+    if (/^(?:'s)?\s+(?:show|night|concert|gig)\b/i.test(line.slice((m.index ?? 0) + m[0].length))) continue;
+    if (days.includes(m[0].slice(0, 3))) return null;
+    return `This line is about ${m[0]}; the street team visits on ${days.map((d) => WEEKDAY_LONG[d] ?? d).join(" and ")}.`;
+  }
+  return null;
+}
+
+/** The note under the partner table that says how far an area's places reach. */
+export const AREA_REACH_NOTE =
+  "An area's places come from within 2 km of its centre (3.5 km when the search widened), so some sit in the next neighbourhood; the address is the place's own.";
+
+/**
+ * The line under a partner Claude wrote no line for, or whose line the checks left out: what it is, near which area,
+ * and the tags it shares, all from the row itself.
+ */
+export function fixedPartnerLine(p: Pick<Partner, "category" | "tileName" | "tileGeohash" | "explain">): string {
+  const tags = (p.explain?.tags ?? []).map((t) => tagWord(t.name)).filter(Boolean).slice(0, 3);
+  // Only a place from the search around the venue (no area) is "near the venue"; an area with no name stays an area.
+  const where = p.tileName ? ` near ${p.tileName}` : p.tileGeohash ? " near an unnamed area" : " near the venue";
+  const shares = tags.length > 0 ? `, shares the ${joinWords(tags)} ${tags.length === 1 ? "tag" : "tags"} with this crowd` : "";
+  return `${categoryLabel(p.category)}${where}${shares}.`;
+}
+
+function joinWords(xs: readonly string[]): string {
+  return xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+}
+
 /** The "Why this place" detail under a partner row (only when the sheet carries `partner.explain`). */
 export function PartnerWhy({ p, area }: { p: Partner; area?: string | undefined }) {
   const x = p.explain;
   if (!x) return null;
-  const where = [area ?? x.areaName ?? p.tileName, typeof x.distanceKm === "number" && !/\d km \w+$/.test(area ?? x.areaName ?? "") ? `${x.distanceKm.toFixed(1)} km from the venue` : null]
+  const label = area ?? x.areaName ?? p.tileName;
+  const own = label ? otherState(p, label) : null;
+  const where = [
+    label ? `Near ${label}${own ? ` (the place is in ${own})` : ""}` : null,
+    typeof x.distanceKm === "number" && !/\d km \w+$/.test(area ?? x.areaName ?? "") ? `${x.distanceKm.toFixed(1)} km from the venue` : null,
+  ]
     .filter(Boolean)
     .join(", ");
   const house = houseLines(p);
@@ -85,8 +133,8 @@ export function PartnerWhy({ p, area }: { p: Partner; area?: string | undefined 
 function Contact({ p }: { p: Partner }) {
   const bits = [
     p.phone ? (
-      <a key="tel" className="underline underline-offset-2" href={telHref(p.phone)}>
-        {p.phone}
+      <a key="tel" className="tabular underline underline-offset-2" href={telHref(p.phone)}>
+        {formatPhone(p.phone)}
       </a>
     ) : null,
     p.website ? (
@@ -126,6 +174,8 @@ export function PartnersCard({
   // Live sheets only: a sample's places and ranks are made up, so they make no case either way.
   const withOut = useMemo(() => (sheet.mode === "live" ? withWithout(sheet) : null), [sheet]);
   const day = streetDayShort(sheet.operator.streetTeamDays);
+  // The same hours per partner as the PDF, the print view, partners.csv and street-team.ics.
+  const hoursCol = useMemo(() => partnerHoursColumn(sheet), [sheet]);
   const top = useMemo(() => topTiles(sheet), [sheet]);
   // The areas the partner pools came from, numbered and named as on the map.
   const byHash = useMemo(() => new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t])), [sheet]);
@@ -171,8 +221,12 @@ export function PartnersCard({
       return n;
     });
 
-  const areaWords = (p: Partner, a: (typeof areas)[number] | undefined) =>
-    a ? (
+  const areaWords = (p: Partner, a: (typeof areas)[number] | undefined) => {
+    const label = a ? a.name : partnerAreaLabel(p, byHash);
+    // An address over a state line from its area says so: "Kenilworth, DC · place in MD".
+    const own = label ? otherState(p, label) : null;
+    const hint = own ? <span className="text-muted"> · place in {own}</span> : null;
+    return a ? (
       <>
         {a.marker > 0 ? (
           <>
@@ -181,20 +235,33 @@ export function PartnersCard({
           </>
         ) : null}
         {a.name}
+        {hint}
+      </>
+    ) : label ? (
+      <>
+        {label}
+        {hint}
       </>
     ) : (
-      partnerAreaLabel(p, byHash) || "Near the venue"
+      "Near the venue"
     );
-
-  // Only the model's lines: the template's partner lines repeat the rank line above them.
-  const narrated = (p: Partner) => {
-    const line = sheet.narration?.templated ? undefined : partnerLine(sheet, p.entity.entityId);
-    return line ? humanTimes(line) : undefined;
   };
+
+  // The model's lines. The template's partner lines repeat the rank line above them, so a sheet the template wrote shows
+  // none; on a sheet Claude wrote, a row with no line (none written, or one the checks left out) gets its fixed line.
+  const narrated = (p: Partner) => {
+    if (!sheet.narration || sheet.narration.templated) return undefined;
+    const line = partnerLine(sheet, p.entity.entityId);
+    return line ? humanTimes(line) : fixedPartnerLine(p);
+  };
+  // Claude's line is about the first street-team day; the Visit day cell may name another (only Claude's lines name one).
+  const dayNote = (p: Partner) =>
+    hoursCol.byVisit && sheet.narration && !sheet.narration.templated ? lineDayNote(partnerLine(sheet, p.entity.entityId), hoursCol.cell(p).visitDay) : null;
 
   const whyCell = (p: Partner) => {
     const w = partnerWhy(p);
     const isNew = added.has(normalizeName(p.entity.name));
+    const note = dayNote(p);
     return (
       <>
         <span>
@@ -203,7 +270,12 @@ export function PartnersCard({
           {isNew ? <span className="text-muted"> new</span> : null}
         </span>
         {/* The narration's one line for this partner: checked against this run's ids, numbers and words. */}
-        {narrated(p) ? <span className="mt-1 block">{narrated(p)}</span> : null}
+        {narrated(p) ? (
+          <span className="mt-1 block">
+            {narrated(p)}
+            {note ? <span className="text-muted"> {note}</span> : null}
+          </span>
+        ) : null}
         {p.explain ? (
           <span className="mt-1 block">
             <button
@@ -267,7 +339,10 @@ export function PartnersCard({
         </p>
       ) : (
         <table className="table">
-          <caption className="sr-only">Suggested partners, best first{day ? `, with their hours on ${day}` : ""}</caption>
+          <caption className="sr-only">
+            Suggested partners, best first
+            {hoursCol.byVisit ? ", with the day the street team visits each one and its hours that day" : day ? `, with their hours on ${day}` : ""}
+          </caption>
           <thead>
             <tr>
               {/* Under 640px the rows are two-line blocks: the lone header is hidden but still read out. */}
@@ -281,7 +356,7 @@ export function PartnersCard({
                 Area
               </th>
               <th scope="col" className="hidden md:table-cell md:w-[12%]">
-                {day ? `Open ${day}` : "Hours"}
+                {hoursCol.header}
               </th>
               <th scope="col" className="hidden sm:table-cell">
                 Why
@@ -292,8 +367,9 @@ export function PartnersCard({
             {rows.map((p) => {
               const id = p.entity.entityId;
               const area = areas.find((a) => a.geohash === p.tileGeohash);
-              const noHours = !p.hoursOnDay;
-              const hours = p.hoursOnDay ? formatHours(p.hoursOnDay.replace(/^[A-Z][a-z]{2} /, "")) : "Hours not listed: call first";
+              const h = hoursCol.cell(p);
+              const noHours = h.hoursMissing;
+              const hours = h.hours;
               const open = openWhy.has(id);
               return (
                 <Fragment key={id}>
@@ -308,14 +384,14 @@ export function PartnersCard({
                       ) : null}
                       <span className="mt-0.5 block text-sm text-muted md:hidden">
                         {areaWords(p, area)}
-                        {` · ${typeWords(p)} · ${day ? `${day} ${hours}` : hours}`}
+                        {` · ${typeWords(p)} · ${h.withDay}`}
                       </span>
                       <Contact p={p} />
                       <span className="mt-1 block text-sm sm:hidden">{whyCell(p)}</span>
                     </td>
                     <td className="hidden md:table-cell">{typeWords(p)}</td>
                     <td className="hidden md:table-cell">{areaWords(p, area)}</td>
-                    <td className={`hidden md:table-cell ${p.hoursOnDay ? "tabular" : "text-sm"}`}>{hours}</td>
+                    <td className={`hidden md:table-cell ${noHours ? "text-sm" : "tabular"}`}>{hours}</td>
                     <td className="hidden sm:table-cell">{whyCell(p)}</td>
                   </tr>
                   {open ? (
@@ -362,6 +438,7 @@ export function PartnersCard({
       ) : null}
       <p className="mt-4 max-w-[760px]">
         {notes.join(" ")} Call before you drop posters.
+        {areas.length > 0 ? ` ${AREA_REACH_NOTE}` : ""}
         {anyWhy ? " Open “Why this place” for what to ask and how sure the pick is." : ""}
       </p>
     </PlanCard>

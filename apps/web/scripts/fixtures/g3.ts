@@ -89,7 +89,8 @@ const SPOTS: SpotSpec[] = [
 
 export function buildG3(): SheetFixture {
   const r = rng(4404);
-  const createdAt = "2026-11-20T18:00:00.000Z";
+  // Dated before the hosted site's recordings (Oct 21 2026), never after the day a judge reads it.
+const createdAt = "2026-10-17T18:00:00.000Z";
   const L = new RunLedger(createdAt, r);
   const venuePoint = `POINT(${VENUE.lon} ${VENUE.lat})`;
   const planId = "g3";

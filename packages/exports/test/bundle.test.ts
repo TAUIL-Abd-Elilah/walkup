@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXPORT_FILE_NAMES, toExportFiles } from "../src/bundle";
+import { EXPORT_FILE_NAMES, exportFilePrefix, toExportFiles } from "../src/bundle";
 import { makeSheet } from "./helpers";
 
 describe("toExportFiles", () => {
@@ -38,6 +38,19 @@ describe("toExportFiles", () => {
   it("prefixes fixture files so they never pass for a live run", async () => {
     const files = await toExportFiles(makeSheet({ mode: "fixture" }), { include: ["partners", "zips"] });
     expect(files.map((f) => f.filename)).toEqual([`fixture-${EXPORT_FILE_NAMES.partners}`, `fixture-${EXPORT_FILE_NAMES.zips}`]);
+  });
+
+  it("names the show, the date and the plan, so two sheets' downloads never share a name", async () => {
+    const s = makeSheet({ planId: "455629e6-ec44-4494-a69b-6154e4433c65" });
+    expect(exportFilePrefix(s)).toBe("walkup-juniper-wire-2026-11-20-455629e6-");
+    const other = exportFilePrefix(makeSheet({ planId: "8439cb36-1252-4678-a8ff-7f19131dc792" }));
+    expect(other).not.toBe(exportFilePrefix(s));
+    // ASCII only, for the Content-Disposition header; a sample sheet keeps "fixture-" first.
+    const accented = makeSheet({ planId: "g1-a", mode: "fixture" });
+    accented.bill = { ...accented.bill, acts: [{ name: "Beyoncé & The Señoritas", role: "headliner" }] };
+    expect(exportFilePrefix(accented)).toBe("walkup-beyonce-the-senoritas-2026-11-20-g1-a-");
+    const files = await toExportFiles(accented, { include: ["partners"], prefix: exportFilePrefix(accented) });
+    expect(files[0]!.filename).toBe("fixture-walkup-beyonce-the-senoritas-2026-11-20-g1-a-partners.csv");
   });
 
   it("passes tile options through to zips and pins", async () => {

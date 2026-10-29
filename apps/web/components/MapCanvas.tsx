@@ -15,6 +15,7 @@
  */
 import { useEffect, useRef } from "react";
 import type { FeatureCollection, Point, Polygon } from "geojson";
+import type { ExpressionSpecification } from "@maplibre/maplibre-gl-style-spec";
 import type { GeoJSONSource, Map as MlMap, MapMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { LiftTile } from "@walkup/contracts";
@@ -22,7 +23,7 @@ import { bboxRing, decodeBbox, unionBbox, type Bbox } from "../lib/geohash";
 import { LIFT_INK, liftAlpha } from "../lib/lift";
 import { MAP_PAD, MARKER, groupMarkers } from "../lib/markers";
 import { areaName } from "../lib/sheet-utils";
-import { MAP_FONT_BOLD, MAP_FONT_REGULAR, MAPLIBRE_WORKER_URL, OPENFREEMAP_STYLE, hasWebGL } from "../lib/webgl";
+import { MAP_FONT_BOLD, MAP_FONT_REGULAR, MAP_TIMEOUT_REASON, MAPLIBRE_WORKER_URL, OPENFREEMAP_STYLE, hasWebGL } from "../lib/webgl";
 
 export interface MapCanvasProps {
   tiles: LiftTile[];
@@ -41,6 +42,27 @@ const INK = "#111111";
 const WHITE = "#ffffff";
 /** Pixel offset of the number markers from the tile centre (up and to the right); MAP_PAD leaves room for it. */
 const MARKER_OFFSET: [number, number] = [13, -13];
+/** A single number's circle (px across); a merged marker's circle is a multiple of it, by label length. */
+const RANK_BOX_PX = MARKER.radius * 2;
+/** Label length ("3", "3, 4", "1, 3, 5", ...) to circle size in RANK_BOX_PX: wide enough for every number in it. */
+const RANK_SCALE: [number, number][] = [
+  [1, 1],
+  [4, 1.4],
+  [7, 2],
+  [10, 2.6],
+  [13, 3.2],
+];
+
+/** A layout or paint value per label length, from the circle's scale (a step expression: labels come in fixed lengths). */
+function rankStep(value: (scale: number) => unknown): ExpressionSpecification {
+  const [first, ...rest] = RANK_SCALE;
+  return ["step", ["length", ["get", "label"]], value(first![1]), ...rest.flatMap(([len, s]) => [len, value(s)])] as unknown as ExpressionSpecification;
+}
+
+/** How long the street map may take to come up, counted in painted frames (see the wait in MapCanvas). */
+const MAP_WAIT_MS = 15_000;
+/** The most one frame adds to that wait: a longer gap is time the page was not painted. */
+const MAX_FRAME_GAP_MS = 250;
 /** Layers a click or tap can select, top first: a number, then the tile under it. */
 const PICKABLE = ["wk-rank", "wk-tiles-fill"];
 
@@ -134,12 +156,12 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
       return;
     }
     let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let frame: number | undefined;
     let ready = false;
     const readyNow = () => {
       if (ready || cancelled) return;
       ready = true;
-      if (timer) clearTimeout(timer);
+      if (frame !== undefined) cancelAnimationFrame(frame);
       cb.current.onReady();
     };
 
@@ -205,11 +227,25 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
       // Datawrapper's locator maps always carry a scale; so does the static drawing.
       map.addControl(new ml.ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
 
-      timer = setTimeout(() => {
+      // The wait counts painted frames, not the clock. MapLibre fires "load" from an animation frame, and a page that
+      // paints none (a background tab, a minimised window, a hidden app pane that still reports "visible") would
+      // otherwise give up on the map before anyone looked at it. A long gap between frames is unpainted time.
+      let waited = 0;
+      let last: number | null = null;
+      const tick = (now: number) => {
+        frame = undefined;
+        if (ready || cancelled) return;
+        if (last !== null) waited += Math.min(now - last, MAX_FRAME_GAP_MS);
+        last = now;
+        if (waited < MAP_WAIT_MS) {
+          frame = requestAnimationFrame(tick);
+          return;
+        }
         // Style up but tiles still coming: show the street map anyway; nothing up at all: keep the drawing.
         if (loadedRef.current) readyNow();
-        else cb.current.onUnavailable("Map tiles did not load in time.");
-      }, 15000);
+        else cb.current.onUnavailable(MAP_TIMEOUT_REASON);
+      };
+      frame = requestAnimationFrame(tick);
 
       map.on("error", () => {
         // Individual tile/sprite errors are not fatal once the style is up.
@@ -266,17 +302,28 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
           data: { type: "Feature", properties: { name: venue.name }, geometry: { type: "Point", coordinates: [venue.lon, venue.lat] } },
         });
         if (!map.hasImage("wk-venue-square")) map.addImage("wk-venue-square", venueSquare(), { pixelRatio: 2 });
+        // Transparent: only its size matters (the area numbers' collision box).
+        if (!map.hasImage("wk-rank-box")) map.addImage("wk-rank-box", { width: RANK_BOX_PX, height: RANK_BOX_PX, data: new Uint8Array(RANK_BOX_PX * RANK_BOX_PX * 4) });
+        // Our marks are placed before the basemap's labels (they sit above them), so a place name under the venue square
+        // or an area number gives way ("Chicago" under the square is hidden) instead of being drawn half covered.
         map.addLayer({
           id: "wk-venue",
           type: "symbol",
           source: "wk-venue",
-          layout: { "icon-image": "wk-venue-square", "icon-allow-overlap": true, "icon-ignore-placement": true },
+          layout: { "icon-image": "wk-venue-square", "icon-allow-overlap": true, "icon-ignore-placement": false },
         });
+        // Under the square by default; on another side when an area number sits there.
         map.addLayer({
           id: "wk-venue-label",
           type: "symbol",
           source: "wk-venue",
-          layout: { "text-field": ["get", "name"], "text-font": MAP_FONT_REGULAR, "text-size": 12, "text-offset": [0, 1.1], "text-anchor": "top" },
+          layout: {
+            "text-field": ["get", "name"],
+            "text-font": MAP_FONT_REGULAR,
+            "text-size": 12,
+            "text-variable-anchor": ["top", "bottom", "left", "right", "top-left", "top-right", "bottom-left", "bottom-right"],
+            "text-radial-offset": 1.1,
+          },
           paint: { "text-color": INK, "text-halo-color": WHITE, "text-halo-width": 1.5 },
         });
         // The widest tile buffer, so a number whose point sits near a vector-tile edge is never cut off in one tile and
@@ -286,9 +333,10 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
           id: "wk-rank",
           type: "circle",
           source: "wk-rank",
-          // Beside the tile's centre, not on it, so a small tile stays visible under its number. A merged marker ("3, 4") is wider.
+          // Beside the tile's centre, not on it, so a small tile stays visible under its number. A merged marker grows
+          // with its label ("3, 4", "1, 3, 4, 5"), so every number sits inside the circle.
           paint: {
-            "circle-radius": ["case", [">", ["length", ["get", "label"]], 2], 14, MARKER.radius],
+            "circle-radius": rankStep((s) => s * RANK_BOX_PX / 2),
             "circle-color": MARKER.fill,
             "circle-stroke-color": MARKER.text,
             "circle-stroke-width": MARKER.ring,
@@ -299,16 +347,27 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
           id: "wk-rank-num",
           type: "symbol",
           source: "wk-rank",
+          // Always drawn, and counted in placement, so basemap labels and the venue's name give way to a number. The
+          // collision box is an invisible square the circle's size, placed where the circle is drawn (layout offsets,
+          // which placement uses; paint translates are not).
           layout: {
             "text-field": ["get", "label"],
             "text-font": MAP_FONT_BOLD,
             "text-size": MARKER.fontSize,
+            "text-offset": [MARKER_OFFSET[0] / MARKER.fontSize, MARKER_OFFSET[1] / MARKER.fontSize],
             "text-allow-overlap": true,
-            "text-ignore-placement": true,
+            "text-ignore-placement": false,
             "text-padding": 0,
+            "icon-image": "wk-rank-box",
+            "icon-size": rankStep((s) => s),
+            // An icon offset is scaled by the icon size, so it is divided back out.
+            "icon-offset": rankStep((s) => ["literal", [MARKER_OFFSET[0] / s, MARKER_OFFSET[1] / s]]),
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": false,
+            "icon-padding": 0,
             "symbol-avoid-edges": false,
           },
-          paint: { "text-color": MARKER.text, "text-translate": MARKER_OFFSET },
+          paint: { "text-color": MARKER.text },
         });
         // Regroup the markers whenever the zoom changes what is too close to tell apart.
         map.on("moveend", () => {
@@ -331,7 +390,7 @@ export default function MapCanvas({ tiles, venue, ranked, selected, onSelect, on
 
     return () => {
       cancelled = true;
-      if (timer) clearTimeout(timer);
+      if (frame !== undefined) cancelAnimationFrame(frame);
       mapRef.current?.remove();
       mapRef.current = null;
       loadedRef.current = false;

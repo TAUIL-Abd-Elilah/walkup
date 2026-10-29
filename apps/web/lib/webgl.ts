@@ -9,6 +9,13 @@ export function hasWebGL(): boolean {
   }
 }
 
+/**
+ * Why the street map gave up when its basemap was not up within the wait (counted in painted frames, so a page
+ * nobody is looking at never runs out of time). LiftMap tries again when the page is shown next, since a slow load
+ * can still finish.
+ */
+export const MAP_TIMEOUT_REASON = "Map tiles did not load in time.";
+
 /** Same-origin copy of the MapLibre worker (served by app/vendor/maplibre-gl-worker.mjs/route.ts). */
 export const MAPLIBRE_WORKER_URL = "/vendor/maplibre-gl-worker.mjs";
 

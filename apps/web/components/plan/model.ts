@@ -284,11 +284,14 @@ export function openingLine(recorded: { instruction: string; recordedAt: string 
   return recorded.instruction ? `Opening the version made for “${recorded.instruction}”${when}.` : `Opening the version made for that change${when}.`;
 }
 
-/** Trims and checks a revise instruction; returns the text to send or a message for the field. */
+/**
+ * Trims and checks a revise instruction; returns the text to send or a message for the field. The cap is the
+ * server's (MAX_REVISE_CHARS in lib/server/input.ts), written out so server code stays out of the client bundle.
+ */
 export function checkInstruction(raw: string): { ok: true; text: string } | { ok: false; message: string } {
   const text = raw.replace(/\s+/g, " ").trim();
   if (text.length < 3) return { ok: false, message: "Say what to change, for example: all ages, no bars." };
-  if (text.length > 280) return { ok: false, message: "Keep it under 280 characters." };
+  if (text.length > 300) return { ok: false, message: "Keep the note to 300 characters or fewer." };
   return { ok: true, text };
 }
 

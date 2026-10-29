@@ -1,6 +1,6 @@
 # @walkup/narrator
 
-Every place Walkup calls Claude (`claude-haiku-5-5` through OpenRouter, `claude-opus-5-5` through the Anthropic API), and nothing else. `runControlArm` and `runLlmOnlyArm` are called by nothing since the product's arm F was removed on Oct 20 2026 (the P1 research harness has its own model arms in `evals/p1/arms/model-arms.ts`); they stay, with their tests, until the owner decides.
+Every place Walkup calls Claude (`anthropic/claude-haiku-5.5` through OpenRouter, `claude-opus-5-5` through the Anthropic API), and nothing else. `runControlArm` and `runLlmOnlyArm` are called by nothing since the product's arm F was removed on Oct 20 2026 (the P1 research harness has its own model arms in `evals/p1/arms/model-arms.ts`); they stay, with their tests, until the owner decides.
 
 | Function | What it does | Effort |
 |---|---|---|

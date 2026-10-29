@@ -16,7 +16,7 @@
  * short name people know it by ("REI", not "Recreational Equipment Inc").
  */
 import type { MediaPick, QlooEntity, StreetSheetCards } from "@walkup/contracts";
-import { backCatalogueLabel, brandDisplayName, findAlcoholTerm, findDeniedTerm, isDeniedTag, pickPodcasts, podcastRecency } from "@walkup/engine";
+import { backCatalogueLabel, brandDisplayName, findAlcoholTerm, findDeniedTerm, isSensitiveTag, pickPodcasts, podcastRecency } from "@walkup/engine";
 import { isAlcoholTag } from "@walkup/narrator";
 import { cite, clean, droppedFrom, envelope, node, plural, signal, venuePoint, type RunContext, type Seed } from "../context";
 
@@ -25,8 +25,13 @@ const RISKY_BRAND_WORDS = /\b(smoke|tobacco|vape|cigar|cigarette|casino|sportsbo
 
 type MediaCard = StreetSheetCards["media"];
 
-function deniedEntity(e: QlooEntity): boolean {
-  return findDeniedTerm(e.name) !== null || e.tags.some((t) => isDeniedTag(t) && !t.id.startsWith("urn:tag:credit_card:"));
+/**
+ * A podcast or brand never picked: a denied word in its name, or a tag denied for a sensitive reason. Tags denied
+ * only as commercial noise (a Wikipedia category such as "Companies based in Anaheim", a credit card) never reach
+ * the sheet and don't rule a well-known brand out.
+ */
+export function deniedEntity(e: QlooEntity): boolean {
+  return findDeniedTerm(e.name) !== null || e.tags.some((t) => isSensitiveTag(t));
 }
 
 function adultOnlyBrand(e: QlooEntity): boolean {

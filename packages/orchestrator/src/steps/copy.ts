@@ -184,6 +184,46 @@ export function partnerLinesWithinTags(
   return { lines: out, changed, dropped };
 }
 
+const STREET_WORDS: Record<string, string> = { street: "st", avenue: "ave", road: "rd", boulevard: "blvd" };
+
+/**
+ * A partner's area is the map square its search started from, and the place can sit up to 2 km from its centre (3.5
+ * km when widened): "Sports bar on H Street NE" for a place at 1007 8th St SE reads "Sports bar near H Street NE".
+ * Kept as written when the area is a street the place's own address is on ("on H Street NE" at 1339 H St NE).
+ */
+export function partnerLinesNearArea<L extends { entityId: string; text: string }>(
+  lines: readonly L[],
+  partners: readonly Pick<Partner, "entity" | "tileName" | "address">[],
+): { lines: L[]; changed: number } {
+  const byId = new Map(partners.map((p) => [p.entity.entityId, p]));
+  let changed = 0;
+  const out = lines.map((l) => {
+    const p = byId.get(l.entityId);
+    const area = p?.tileName?.trim();
+    if (!p || !area) return l;
+    const names = [escapeRe(area)];
+    const street = /^(.+?)\s+(street|avenue|road|boulevard)\b/i.exec(area);
+    if (street) {
+      const word = street[2]!.toLowerCase();
+      const onIt = new RegExp(`(?<![A-Za-z0-9])${escapeRe(street[1]!)}\\s+(?:${word}|${STREET_WORDS[word]})\\b`, "i");
+      if (onIt.test(p.address ?? "")) return l;
+      // "on H Street" names the area "H Street NE" too (and "on U Street" the area "U Street / Shaw").
+      names.push(`${escapeRe(street[1]!)}\\s+(?:${word}|${STREET_WORDS[word]})\\b(?:\\s+(?:NE|NW|SE|SW)\\b)?`);
+    }
+    // "in the Vienna area" already says it loosely and stays as written.
+    const re = new RegExp(`\\b(in|on)\\s+(?:${names.join("|")})(?![A-Za-z])(?!\\s+area\\b)`, "gi");
+    const text = l.text.replace(re, (_m, prep: string) => `${prep[0] === prep[0]!.toUpperCase() ? "Near" : "near"} ${area}`);
+    if (text === l.text) return l;
+    changed++;
+    return { ...l, text };
+  });
+  return { lines: out, changed };
+}
+
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyResult> {
   const provenance: string[] = [];
   const reasons: string[] = [];

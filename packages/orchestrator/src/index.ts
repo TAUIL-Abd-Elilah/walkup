@@ -36,10 +36,12 @@ export {
   revisedRequest,
   overridesFor,
   diffSheets,
+  radiusNoOp,
   reviseStep,
   reviseSummary,
   sheetAreas,
   REVISE_STEP_ID,
+  RULES_CHOSEN_READER,
 } from "./revise/index";
 export type { RevisionReading, ReviseParent, ReviseResult, ParentRequestInput, ReviseStepInput } from "./revise/index";
 export {
@@ -69,9 +71,10 @@ export { deniedReceipt, deniedClass } from "./policy";
 export type { DeniedReceipt } from "./policy";
 export { createRunLedger } from "./ledger";
 export type { RunLedger, NodeLevel } from "./ledger";
-export { applyReachedZips, disambiguateNames, genreBaselinePhrase, isExcludedArea, spreadTiles } from "./steps/heat";
-export { partnerLinesWithinTags, templateLine } from "./steps/copy";
-export { refreshSheet } from "./refresh";
-export type { RefreshOptions, RefreshReport } from "./refresh";
+export { applyReachedZips, disambiguateNames, genreBaselinePhrase, isExcludedArea, mapSearchKm, numberedTiles, spreadTiles } from "./steps/heat";
+export { partnerLinesNearArea, partnerLinesWithinTags, templateLine } from "./steps/copy";
+export { skippedCategoriesReason } from "./steps/partners";
+export { recheckSheet, refreshSheet } from "./refresh";
+export type { RecheckReport, RefreshOptions, RefreshReport } from "./refresh";
 export { nonIncreasing, splitBudget } from "./steps/budget";
 export { tagDiff } from "./steps/profile";

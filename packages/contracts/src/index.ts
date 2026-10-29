@@ -121,6 +121,11 @@ export interface LiftTile {
   name?: string;
   zctas?: string[];
   adultPopulation?: number | null;
+  /**
+   * USPS code of the state the tile's own point is in (gazetteer stateForPoint), for labels such as "Georgetown, DC".
+   * Wins over the state of the first ZIP, which can sit across a state line. Older sheets don't have it.
+   */
+  state?: string | null;
 }
 
 /**

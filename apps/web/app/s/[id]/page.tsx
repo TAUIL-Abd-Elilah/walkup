@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Partner } from "@walkup/contracts";
 import { LESS_SURE_NOTE, LIFT_KEY } from "@walkup/exports/format";
-import { buildSheetModel, type PartnerRow, type SheetModel, type SpotRow } from "@walkup/exports/sheet-model";
+import { buildSheetModel, spotColumnWidths, type PartnerRow, type SheetModel, type SpotRow } from "@walkup/exports/sheet-model";
 import { PrintButton } from "@/components/sheet/PrintButton";
 import { StaticLiftMap } from "@/components/StaticLiftMap";
 import { telHref } from "@/lib/format";
@@ -21,8 +21,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const v = await loadPlan(id, { view: "api" });
   if (v?.kind !== "sheet") return { title: "Sheet not found" };
-  const m = buildSheetModel(v.sheet);
-  return { title: `${m.headliner} at ${v.sheet.bill.venue.name}: street sheet${v.sheet.mode === "fixture" ? " (sample)" : ""}` };
+  // The checked sheet, the same one the page body prints; its summary is the plan page's description too.
+  const s = vettedSheet(v.sheet).sheet;
+  const m = buildSheetModel(s);
+  const summary = s.narration?.summary?.trim();
+  return {
+    // A revision's title names the change, in the plan page's words (`sheetTitle`), so it differs from its parent's.
+    title: `${m.headliner} at ${s.bill.venue.name}: street sheet${s.revision?.instruction?.trim() ? `, revised: “${s.revision.instruction.trim()}”` : ""}${s.mode === "fixture" ? " (sample)" : ""}`,
+    description: summary ? summary : `One-page street sheet for ${m.headliner} at ${s.bill.venue.name}, ${m.dateLine}.`,
+  };
 }
 
 /**
@@ -116,7 +123,7 @@ function Phone({ row }: { row: PartnerRow }) {
 
 /**
  * The partner table, as a form the street team writes on: a tick box, the row number, the place (name and type,
- * then address and phone), the area's map number, the hours on the street-team day, the why line with its
+ * then address and phone), the area's map number, the visit day and its hours (as in partners.csv and the calendar), the why line with its
  * receipts, and a blank Notes column about a quarter of the width. Rows with no listed hours are the ones to act
  * on (call first) and get the pale yellow row. Under 640px each row is a short block instead, so nothing scrolls
  * sideways.
@@ -215,8 +222,12 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
   );
 }
 
-/** Before and after the show: a short table (spot, type, distance, share, rank for this crowd), blocks under 640px. */
-function SpotsTable({ rows, planId, showShare }: { rows: SpotRow[]; planId: string; showShare: boolean }) {
+/**
+ * Before and after the show: a short table (spot, type, distance, share, rank against the usual crowd), blocks under
+ * 640px. No Share column when every spot gets the same share, no "Vs usual crowd" column without a usual-crowd list.
+ */
+function SpotsTable({ rows, planId, showShare, showVsUsual }: { rows: SpotRow[]; planId: string; showShare: boolean; showVsUsual: boolean }) {
+  const w = spotColumnWidths(showShare, showVsUsual);
   return (
     <>
       <ol className="space-y-1.5 sm:hidden print:hidden">
@@ -230,13 +241,13 @@ function SpotsTable({ rows, planId, showShare }: { rows: SpotRow[]; planId: stri
       </ol>
       <table className="table w-full table-fixed text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[2px] [&_td]:pr-2 [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em] [&_.fn]:align-[0.3em]">
         <caption className="sr-only">Spots for before and after the show, nearest first{showShare ? ", with their share of the crowd" : ""}.</caption>
-        {/* The same widths as the PDF; no Share column when every spot gets the same share. */}
+        {/* The same widths as the PDF (`spotColumnWidths`). */}
         <colgroup>
-          <col style={{ width: showShare ? "35%" : "40%" }} />
-          <col style={{ width: showShare ? "23%" : "25%" }} />
-          <col style={{ width: showShare ? "12%" : "15%" }} />
-          {showShare ? <col style={{ width: "10%" }} /> : null}
-          <col style={{ width: "20%" }} />
+          <col style={{ width: w.spot }} />
+          <col style={{ width: w.type }} />
+          <col style={{ width: w.distance }} />
+          {w.share ? <col style={{ width: w.share }} /> : null}
+          {w.vsUsual ? <col style={{ width: w.vsUsual }} /> : null}
         </colgroup>
         <thead>
           <tr>
@@ -250,7 +261,7 @@ function SpotsTable({ rows, planId, showShare }: { rows: SpotRow[]; planId: stri
                 Share
               </th>
             ) : null}
-            <th scope="col">Vs usual crowd</th>
+            {showVsUsual ? <th scope="col">Vs usual crowd</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -265,7 +276,11 @@ function SpotsTable({ rows, planId, showShare }: { rows: SpotRow[]; planId: stri
               </td>
               <td className="num tabular">{r.distance}</td>
               {showShare ? <td className="num tabular">{r.share}</td> : null}
-              <td className="truncate text-muted">{r.vsUsual}</td>
+              {showVsUsual ? (
+                <td className="truncate text-muted" title={r.vsUsual}>
+                  {r.vsUsual}
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
@@ -389,6 +404,15 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
             <p className="relative mt-2 border-b border-rule pb-2">
               <strong className="font-semibold">{d.label}:</strong> {discoveryId ? <a href={`#p-${discoveryId}`} className="hover:underline">{d.text}</a> : d.text}
               <Refs refs={d.refs} planId={m.planId} />
+              {d.kind === "none" ? (
+                <>
+                  {" "}
+                  <a href="/system-card#pick" className="link no-print">
+                    How the top pick is chosen
+                  </a>
+                </>
+              ) : null}
+              {/* A less certain pick keeps the table's dagger; its note is said once, under the table, as in the PDF. */}
               {d.rule ? <span className="block text-[0.92em] text-muted">{d.rule}</span> : null}
             </p>
           ) : null}
@@ -440,7 +464,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
             {/* Before and after the show, with the budget split under it (the right column has room there, as in the PDF). */}
             <div className="min-w-0">
               <SheetSection id="prepost" title={m.panel4.title} status={m.panel4.status}>
-                {m.panel4.rows.length === 0 ? <p className="text-muted">{m.panel4.empty}</p> : <SpotsTable rows={m.panel4.rows} planId={m.planId} showShare={m.panel4.showShare} />}
+                {m.panel4.rows.length === 0 ? <p className="text-muted">{m.panel4.empty}</p> : <SpotsTable rows={m.panel4.rows} planId={m.planId} showShare={m.panel4.showShare} showVsUsual={m.panel4.showVsUsual} />}
                 {m.panel4.shareNote ? <p className="mt-1.5 text-[0.92em] text-muted">{m.panel4.shareNote}</p> : null}
                 <p className="text-[0.92em] text-muted">{m.panel4.ageLine}</p>
               </SheetSection>
@@ -476,7 +500,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                 <p className="text-muted">No partners came back for this sheet. Try another street-team day in Change something on the plan page.</p>
               )}
               {m.panel2.omitted > 0 ? <p className="mt-1 text-muted">+{m.panel2.omitted} more partners in partners.csv.</p> : null}
-              {m.panel2.rows.some((r) => r.lessSure) ? <p className="mt-1 text-[0.92em] text-muted">{LESS_SURE_NOTE}</p> : null}
+              {m.panel2.rows.some((r) => r.lessSure) || d?.lessSureNote ? <p className="mt-1 text-[0.92em] text-muted">{LESS_SURE_NOTE}</p> : null}
               <p className="mt-1.5">
                 <span className="font-semibold">{m.panel2.footer}</span> <span className="text-[0.92em] text-muted">The small Q numbers after each line open the request behind it.</span>
               </p>

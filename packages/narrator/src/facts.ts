@@ -127,7 +127,9 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     // Hours are for the street-team day, which is often not the show's weekday.
     hoursDay: p.hoursOnDay ? dayName(input.streetTeamDay ?? input.bill.weekday) : null,
     address: p.address ?? null,
-    distanceM: p.entity.distanceM != null ? Math.round(p.entity.distanceM) : null,
+    // From the venue, as the sheet shows it. Qloo's own distanceM is from the area's search point (147 m for a place
+    // 35 km from the room), which once read as "close to the room".
+    distanceFromVenueKm: typeof p.explain?.distanceKm === "number" && Number.isFinite(p.explain.distanceKm) ? round(p.explain.distanceKm, 1) : null,
     // The tags the partner panel shows as "Tags it shares": the only tags a partner line may name.
     sharedTags: [
       ...new Set(
@@ -179,7 +181,7 @@ export function prepareRun(input: NarrateInput): PreparedRun {
   for (const p of partners) {
     pushNum(p.score);
     pushNum(p.qlooRank);
-    pushNum(p.distanceM);
+    pushNum(p.distanceFromVenueKm);
   }
   for (const s of prePost) {
     pushNum(s.deltaRank);

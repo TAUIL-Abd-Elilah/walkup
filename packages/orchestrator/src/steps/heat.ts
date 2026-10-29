@@ -166,7 +166,7 @@ export async function runSplitHalf(
   return out;
 }
 
-type Annotation = { name?: string; gazetteerName?: string; zctas?: string[]; adultPopulation?: number | null };
+type Annotation = { name?: string; gazetteerName?: string; zctas?: string[]; adultPopulation?: number | null; state?: string | null };
 
 /** Gazetteer names per run (geohash -> the OSM or Census name behind the area name), for the excluded-area match. */
 const ALIASES = new WeakMap<RunContext, Map<string, string>>();
@@ -196,6 +196,7 @@ function annotateCache(ctx: RunContext): (t: { geohash: string; lat: number; lon
       }
       if (a.zctas !== undefined) hit.zctas = a.zctas;
       if (a.adultPopulation !== undefined) hit.adultPopulation = a.adultPopulation;
+      if (a.state) hit.state = a.state;
       memo.set(t.geohash, hit);
     }
     return hit;
@@ -223,6 +224,29 @@ export function spreadTiles(tiles: readonly LiftTile[], minKm = MIN_TILE_SEPARAT
     if (out.every((o) => haversineM(o, t) >= minKm * 1000 && !shareZip(o, t))) out.push(t);
   }
   return out;
+}
+
+/**
+ * The numbered areas 1-5 as the web sheet, the PDF and the CSVs draw them from a sheet's tiles: lift at least the
+ * lift floor, by lift (then bill percentile, then geohash), skipping a tile within 3 km of one already numbered or
+ * sharing a ZIP with it. The revision banner diffs these, so its rows match the list a reader sees.
+ */
+export function numberedTiles(tiles: readonly LiftTile[], n = NARRATED_TILES): LiftTile[] {
+  const sorted = [...tiles]
+    .filter((t) => Number.isFinite(t.lift) && t.lift >= LIFT_DEFAULTS.minLift)
+    .sort((a, b) => b.lift - a.lift || b.billPct - a.billPct || (a.geohash < b.geohash ? -1 : a.geohash > b.geohash ? 1 : 0));
+  const out: LiftTile[] = [];
+  for (const t of sorted) {
+    if (out.length >= n) break;
+    if (!out.some((o) => haversineM(o, t) < MIN_TILE_SEPARATION_KM * 1000 || shareZip(o, t))) out.push(t);
+  }
+  return out;
+}
+
+/** The radius the lift map was searched at: the widened one when fewer than THIN_CELLS squares came back. */
+export function mapSearchKm(sheet: { operator: { radiusKm: number }; cards: { liftMap: { reason?: string } } }): number {
+  const m = /The search widened to (\d+(?:\.\d+)?) km/.exec(sheet.cards.liftMap.reason ?? "");
+  return m ? Number(m[1]) : sheet.operator.radiusKm;
 }
 
 const COMPASS = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"] as const;
@@ -461,6 +485,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
     if (a.name) out.name = a.name;
     if (a.zctas) out.zctas = a.zctas;
     out.adultPopulation = a.adultPopulation ?? null;
+    if (a.state) out.state = a.state;
     return out;
   };
   // Split-half check (after Q6, so Q4-Q6 keep their order in the ledger).

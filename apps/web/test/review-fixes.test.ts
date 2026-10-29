@@ -96,6 +96,11 @@ describe("plain words for the run's own text", () => {
     expect(text).not.toMatch(/signal check|not_found|56495BA4/);
   });
 
+  it("names the popularity-only search the way the rows next to it name theirs", () => {
+    expect(ledgerNoteText("node Q9 popularity twin, tile 3; cache hit (stored 2026-10-21)")).toBe("Popularity-only partner search, area 3, from the cache");
+    expect(ledgerNoteText("node Q9 popularity twin, near venue")).toBe("Popularity-only partner search, near the venue");
+  });
+
   it("labels the engine's new place kinds in sentence case, and title-cases an unknown key", () => {
     const want: Record<string, string> = {
       lounge: "Lounge",
@@ -237,7 +242,7 @@ describe("the plan page", () => {
     const show = Date.parse(`${s.bill.date}T00:00:00Z`);
     const today = new Date(show - 10 * 86_400_000).toISOString();
     const text = visibleText(renderView(s, { recorded: true, today }));
-    expect(text).toMatch(/Days to show 10 Recorded \w{3} \d{1,2} /);
+    expect(text).toMatch(/Days to show 10 from today · recorded \w{3} \d{1,2} /);
     expect(text).not.toMatch(/of 15 wanted/);
   });
 
@@ -295,7 +300,7 @@ describe("the plan page", () => {
 describe("recorded mode words", () => {
   it("dates the recording from the stored sheets and never says the product is gone", () => {
     expect(recordedDetail("2026-10-21")).toBe(
-      "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; these sheets are what a live run produced.",
+      "Recorded from live Qloo and Ticketmaster runs on Oct 21 2026. Live runs are paused for judging; each recorded sheet comes from a live run, and any change since was made offline, with no API call.",
     );
     const m = runtimeMode({ WALKUP_MODE: "recorded" }, { recordedOn: () => "2026-10-21" });
     expect(m.kind).toBe("recorded");
