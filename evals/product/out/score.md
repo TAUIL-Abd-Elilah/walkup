@@ -1,7 +1,7 @@
 # Product eval score
 
 Source: fixture world (synthetic stand-in for Qloo and Ticketmaster; seed `houselights-world-v1`). No live API was called.
-Generated: 2026-10-21T13:31:02.663Z
+Generated: 2026-10-29T03:00:20.859Z
 
 **20 passed, 0 failed (0 on known product gaps only, 0 unexpected), 0 skipped, of 20 cases.**
 
