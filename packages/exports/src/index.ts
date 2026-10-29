@@ -5,10 +5,10 @@
  * street-team calendar, the CSVs and sheet.json. No network, no clock (dates
  * come from the sheet), no writes to disk.
  */
-export { toPdf, renderStreetSheetPdf, streetSheetDocument, streetSheetElement, countPdfPages, PAGE_SIZES } from "./pdf";
+export { toPdf, renderStreetSheetPdf, streetSheetDocument, streetSheetElement, countPdfPages, PAGE_SIZES, PDF_MAX_PODCASTS } from "./pdf";
 export type { PdfOptions, PdfPageSize, PdfRenderResult, DocumentOptions } from "./pdf";
 
-export { buildSheetModel, sheetModelText, partnerHoursColumn, spotColumnWidths, noTopPick, noTopPickText, PAGE_SECTIONS, AREA_BLURB_CHARS, AREA_BLURB_ZIP_CHARS } from "./sheet-model";
+export { buildSheetModel, sheetModelText, partnerHoursColumn, spotColumnWidths, noTopPick, noTopPickText, podcastsOmittedText, PAGE_SECTIONS, AREA_BLURB_CHARS, AREA_BLURB_ZIP_CHARS } from "./sheet-model";
 export type { Audience, SheetModel, SheetModelOptions, SheetSection, TileItem, PartnerRow, PartnerHoursCell, DeclaredRow, SpotRow, MediaRow, BudgetRow, DiscoveryLine } from "./sheet-model";
 
 export {
@@ -31,6 +31,7 @@ export type { MapRect, MapBox, TileMapLayout, TileMapOptions, LiftBand } from ".
 
 export {
   toIcs,
+  planStreetTeam,
   planStreetTeamVisits,
   streetTeamDates,
   streetTeamPasses,
@@ -48,7 +49,7 @@ export {
   ICS_EOL,
   ICS_PRODID,
 } from "./ics";
-export type { IcsOptions, StreetTeamVisit, StreetTeamPass, StreetTeamPassDate, StreetTeamHoliday, PartnerVisit } from "./ics";
+export type { IcsOptions, StreetTeamVisit, StreetTeamPass, StreetTeamPassDate, StreetTeamHoliday, PartnerVisit, NotTimedStop, StreetTeamNote, StreetTeamPlan } from "./ics";
 
 export { toCsv, csvCell, looksLikeFormula, CSV_BOM, CSV_EOL } from "./csv";
 export type { CsvCell, CsvOptions } from "./csv";
@@ -133,6 +134,7 @@ export {
   addressState,
   partnerAreaLabel,
   partnerAreaText,
+  NEAR_VENUE,
   partnerOtherState,
   hoursWeekday,
   formatPhone,

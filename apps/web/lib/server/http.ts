@@ -106,6 +106,20 @@ export function freshRunsDisabled(): Response {
   return json({ mode, reason: mode === "recorded" ? RECORDED_REASON : FIXTURE_FRESH_RUNS_REASON }, 503);
 }
 
+/**
+ * The answers a route gives to methods it doesn't take, instead of Next's empty 405: `refuse` is a 405 with a JSON
+ * reason and an Allow header (as /mcp answers), `options` a 204 with the same Allow. A route exports `refuse` under
+ * each method it doesn't take and `options` as OPTIONS, so Next's own OPTIONS doesn't list those as allowed.
+ */
+export function otherMethods(...allow: ("GET" | "POST")[]): { refuse: () => Response; options: () => Response } {
+  const header = [...allow, ...(allow.includes("GET") ? ["HEAD"] : []), "OPTIONS"].join(", ");
+  const takes = allow.join(" or ");
+  return {
+    refuse: () => json({ reason: `This route takes ${takes} requests only; apps/web/README.md lists each route and the method it takes.` }, 405, { allow: header }),
+    options: () => new Response(null, { status: 204, headers: { allow: header } }),
+  };
+}
+
 /** Adds the session cookie to a response when the context created one. */
 export function withSession(res: Response, ctx: { sessionId: string | null; newSession: boolean; origin: string }): Response {
   if (ctx.newSession && ctx.sessionId) res.headers.append("set-cookie", sessionCookie(ctx.sessionId, ctx.origin.startsWith("https:")));

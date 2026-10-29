@@ -34,7 +34,10 @@ with no API call (`recheckSheet` in `packages/orchestrator/src/refresh.ts`, run 
 changed). Each area gained its state, partner lines were reworded, four Claude sentences became template wording,
 "isn't searched yet" became "aren't", and the Checks step and each revision's change list were rebuilt. SWIG, a bar by
 its Qloo tags, left the two "All ages, no bars" revisions at The Salt Shed. No Qloo or Ticketmaster answer, ranking,
-partner list or ledger changed. The same pass removed FLO's "Within 10 km of the room" version (below).
+partner list or ledger number changed. The same pass removed FLO's "Within 10 km of the room" version (below). A second
+pass on Oct 29 gave one FLO partner back its run's kind, dropped four dead partner website links, showed four places'
+own websites, made chain lists count places, fixed the Summary and Checks steps' wording and removed a repeated label
+from 16 ledger notes.
 
 FLO has no "Within 10 km of the room" change. Fewer than 200 map squares come back near The Anthem for FLO's crowd,
 so the map widens to 60 km either way, and the version recorded for that note changed nothing on the sheet. It was
@@ -113,8 +116,8 @@ variables (Production and Preview), none of them secret:
 
 ## Limits on the free plan
 
-- No new plans on the hosted site: it has no keys and no lasting disk. Fresh runs need your own machine (README, "Run
-  it yourself") or a live host such as Fly.
+- No new plans on the hosted site: it has no keys and no lasting disk. Fresh runs need your own machine ([README, "Setup from a
+  clean environment"](../README.md#setup-from-a-clean-environment)) or a live host such as Fly.
 - The send step stays in demo mode (no Resend key); prepared sends live in one instance's memory.
 - The recorded sheets are in the deployment, not in git. A deploy from a machine without `deploy/vercel/plans.json`
   shows the bundled sample sheets, labelled as samples.

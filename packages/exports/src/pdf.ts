@@ -389,9 +389,10 @@ function panel3(m: SheetModel, st: Styles): El {
 type SpotCol = { head: string; width: string; cell: (r: SpotRow) => El };
 
 /**
- * Before and after the show, as a small table: spot, type, distance (nearest first), share of the crowd (only when
- * the shares differ), and the usual crowd's rank (only when there is a usual-crowd list to compare with; the spot
- * column takes its width otherwise). The print view uses the same widths (`spotColumnWidths`).
+ * Before and after the show, as a small table: spot, type, distance (local spots nearest first, then national
+ * chains), share of the crowd (only when the shares differ), and the usual crowd's rank (only when there is a
+ * usual-crowd list to compare with; the spot column takes its width otherwise). The print view uses the same widths
+ * (`spotColumnWidths`).
  */
 function panel4(m: SheetModel, st: Styles): El {
   const p = m.panel4;
@@ -453,9 +454,12 @@ function mediaRow(m: SheetModel, st: Styles): El | null {
   const head = (t: string) => text([st.base, st.bold, { marginBottom: st.fs(1) }], t);
   const p5 = m.panel5;
   const p6 = m.panel6;
+  // A podcast past the paper's cap is counted beside the heading (as the partner list's "+N more" is), so the count
+  // costs the one-page fit no line.
+  const more = p5.podcastsOmitted > 0 ? `+${p5.podcastsOmitted} more ${p5.podcastsOmitted === 1 ? "podcast" : "podcasts"} on the plan page` : null;
   const media = view(
     { width: "42%", paddingRight: st.fs(10) },
-    head(p5.title),
+    more ? text([oneLine(st.base), { marginBottom: st.fs(1) }], text(st.bold, p5.title), text([st.small, { fontFamily: "Helvetica" }], `  ${more}`)) : head(p5.title),
     p5.status ? text([st.small, { maxLines: 2, textOverflow: "ellipsis" }], p5.status) : null,
     ...p5.podcasts.map((r) => text(lines(st.small, 2), text({ color: INK }, r.name), ` · podcast, ${r.scope}`, r.refs ? text(st.ref, ` ${r.refs}`) : null)),
     p5.podcasts.length === 0 ? text(st.small, "No podcasts came back for this bill.") : null,
@@ -605,9 +609,15 @@ export function streetSheetElement(m: SheetModel, opts: DocumentOptions = {}): E
   );
 }
 
+/**
+ * Podcasts the PDF lists (the print view, up to four): the rest are counted beside the heading. A fourth line there
+ * would cost the one-page fit two partner rows on most recorded sheets.
+ */
+export const PDF_MAX_PODCASTS = 3;
+
 /** Build the model and the element tree for a sheet (no rendering). */
 export function streetSheetDocument(sheet: StreetSheet, opts: PdfOptions = {}): El {
-  return streetSheetElement(buildSheetModel(sheet, opts), { pageSize: opts.pageSize, scale: opts.scale, creationDate: new Date(sheet.createdAt) });
+  return streetSheetElement(buildSheetModel(sheet, { ...opts, maxPodcasts: opts.maxPodcasts ?? PDF_MAX_PODCASTS }), { pageSize: opts.pageSize, scale: opts.scale, creationDate: new Date(sheet.createdAt) });
 }
 
 /** Number of pages in a PDF produced by this package (counts /Type /Page objects). */
@@ -642,7 +652,8 @@ function tighter(user: number | undefined, cap: number | undefined): number | un
 }
 
 /** Renders the sheet and reports how it was fitted. */
-export async function renderStreetSheetPdf(sheet: StreetSheet, opts: PdfOptions = {}): Promise<PdfRenderResult> {
+export async function renderStreetSheetPdf(sheet: StreetSheet, given: PdfOptions = {}): Promise<PdfRenderResult> {
+  const opts: PdfOptions = { ...given, maxPodcasts: given.maxPodcasts ?? PDF_MAX_PODCASTS };
   const created = new Date(sheet.createdAt);
   const lastPlan = FIT_PLANS[FIT_PLANS.length - 1] ?? { scale: 0.74, rowPt: 14 };
   const plans: { scale: number; rowPt: number; caps: SheetModelOptions | null }[] =

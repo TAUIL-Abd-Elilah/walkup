@@ -1,7 +1,7 @@
 import { PLAN_ID_RE } from "@/lib/api";
 import { runtimeMode } from "@/lib/mode";
 import { exportKind, exportResponse, exportShowName } from "@/lib/server/exports";
-import { contextOf, json } from "@/lib/server/http";
+import { contextOf, json, otherMethods } from "@/lib/server/http";
 import { loadPlan } from "@/lib/server/service";
 
 export const dynamic = "force-dynamic";
@@ -34,3 +34,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ plan
     return json({ reason: `Could not build ${file}: ${err instanceof Error ? err.message : String(err)}` }, 500);
   }
 }
+
+/** Any other method: 405 with a reason and Allow: GET, HEAD, OPTIONS (Next's own 405 has no body and no Allow). */
+const other = otherMethods("GET");
+export const POST = other.refuse;
+export const PUT = other.refuse;
+export const PATCH = other.refuse;
+export const DELETE = other.refuse;
+export const OPTIONS = other.options;

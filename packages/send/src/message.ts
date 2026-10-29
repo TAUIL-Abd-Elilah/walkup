@@ -148,7 +148,8 @@ function parts(sheet: StreetSheet, files: AttachmentFile[]): Parts {
       numbered: true,
       // "Heron & Garden Apparel, clothing, 371 Harlow Rd, Belle Meade. Thu 10 am to 8 pm. +1 555-0137. Area 1."
       lines: shown.map((p) => {
-        const head = [oneLine(p.entity.name, 100), categoryLabel(p.category).toLowerCase(), p.address ? oneLine(p.address.replace(/, [A-Z]{2}$/, ""), 140) : ""]
+        // "cafe, national chain" on a chain, as the plan page and the paper say it.
+        const head = [oneLine(p.entity.name, 100), categoryLabel(p.category).toLowerCase(), p.chain === true ? "national chain" : "", p.address ? oneLine(p.address.replace(/, [A-Z]{2}$/, ""), 140) : ""]
           .filter((x) => x !== "")
           .join(", ");
         // Room for two visit days with their hours ("Thu 5 pm to 9 pm; Sat 11 am to 3 pm") when the passes differ.

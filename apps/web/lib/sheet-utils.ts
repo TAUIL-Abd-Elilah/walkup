@@ -105,7 +105,19 @@ export function tagIndex(sheet: StreetSheet): Map<string, string> {
 }
 
 export function tagName(index: Map<string, string>, id: string): string {
-  return index.get(id) ?? tagFallbackName(id);
+  return tagLabel(index.get(id) ?? tagFallbackName(id));
+}
+
+/**
+ * A tag name as the sheet writes it: Qloo's spaced hyphen closed up ("Hip - Hop" reads "Hip-Hop", as Ticketmaster
+ * lists the genre; "Lo - Fi" reads "Lo-Fi") and a shouted name in sentence case, so "VERSATILE" and "work-life
+ * balance" read alike. For tag names only: a place name keeps its own dash ("Yolk - South Loop").
+ */
+export function tagLabel(name: string): string {
+  const n = name.trim().replace(/(\w) - (?=\w)/g, "$1-");
+  const shouted = n.length > 3 && /[A-Z]{3}/.test(n) && n === n.toUpperCase();
+  const s = shouted ? n.toLowerCase() : n;
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /** entityId -> display name across every card (for explainability rows). */
@@ -186,22 +198,54 @@ function clock(hh: number, mm: number): string {
  * narration's partner lines, which quote the run's hours as the data has them.
  */
 /**
- * A narration check's note in plain words: "tileWhy[4]: number 1.7 is not in this run" becomes
- * "Claude's line for area 5 was left out: it had a number (1.7) that isn't from this run." Notes it does not
- * recognise come back unchanged.
+ * The numbered area (1-5) of the area line a "replaced by the template: tileWhy[i]" note names, found by that line's
+ * geohash, or null when it can't be placed. The index counts the lines the checks were given, and those are the
+ * sheet's stored lines (narration.tileWhy) less any the checks dropped outright ("(dropped)"), so each dropped line
+ * before it shifts it down by one. It is not the area number: a line Claude's draft lost earlier leaves a gap.
  */
-export function guardNoteText(note: string): string {
+export function replacedLineArea(sheet: StreetSheet): (index: number) => number | null {
+  const top = topTiles(sheet);
+  const tiles = sheet.cards.liftMap.results.tiles;
+  const lines = sheet.narration?.tileWhy ?? [];
+  const gone = (sheet.guard?.reasons ?? []).flatMap((r) => {
+    const m = /^replaced by the template: tileWhy\[(\d+)\]: .*\(dropped\)$/.exec(r);
+    return m ? [Number(m[1])] : [];
+  });
+  return (i) => {
+    if (gone.includes(i)) return null;
+    const gh = lines[i - gone.filter((d) => d < i).length]?.geohash;
+    if (!gh) return null;
+    const k = top.findIndex((t) => t.geohash === gh);
+    if (k >= 0) return k + 1;
+    // A square merged into a numbered area (within 3 km or sharing a ZIP) is that area.
+    const tile = tiles.find((t) => t.geohash === gh);
+    const merged = tile ? top.findIndex((t) => sameArea(t, tile)) : -1;
+    return merged >= 0 ? merged + 1 : null;
+  };
+}
+
+/**
+ * A narration check's note in plain words: "replaced by the template: tileWhy[1]: ..." becomes "Claude's line for
+ * area 2 was replaced with fixed wording: ...". Notes it does not recognise come back unchanged.
+ *
+ * With `areaOfLine` (the sheet's `replacedLineArea`), a replaced area line is placed by its geohash. A line left out
+ * ("tileWhy[0]: number 94 is not in this run") counts Claude's own draft, which the sheet doesn't keep, so it is
+ * "One of Claude's area lines". Without it, the index is read as the area order ("tileWhy[4]" is area 5).
+ */
+export function guardNoteText(note: string, areaOfLine?: (index: number) => number | null): string {
   // "replaced by the template: tileWhy[1]: ..." -> the line was swapped for fixed wording, not left out.
   const swapped = /^replaced by the template: (.+)$/.exec(note.trim());
   const m = /^(summary|tileWhy|partnerLines|copyHooks)(?:\[(\d+)\])?: (.+)$/.exec(swapped ? swapped[1]! : note.trim());
   if (!m) return note;
   const [, field, idx, why] = m;
-  const n = idx === undefined ? null : Number(idx) + 1;
+  const n = idx === undefined ? null : !areaOfLine ? Number(idx) + 1 : swapped ? areaOfLine(Number(idx)) : null;
   const what =
     field === "summary"
       ? "Claude's summary"
       : field === "tileWhy"
-        ? `Claude's line for area ${n}`
+        ? n === null
+          ? "One of Claude's area lines"
+          : `Claude's line for area ${n}`
         : field === "partnerLines"
           ? "One of Claude's partner lines"
           : "One of Claude's copy lines";

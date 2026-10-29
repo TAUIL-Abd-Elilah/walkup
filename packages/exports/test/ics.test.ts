@@ -7,6 +7,7 @@ import {
   foldLine,
   icsUtc,
   isStreetTeamBlackout,
+  planStreetTeam,
   planStreetTeamVisits,
   streetTeamBlackout,
   streetTeamDates,
@@ -19,8 +20,10 @@ import {
 import { formatHours, hoursWeekday, topTiles, weekdayShort } from "../src/format";
 import { partnerHoursOn } from "../src/hours";
 import { partnerHoursColumn } from "../src/sheet-model";
+import { partnersCsv } from "../src/tables";
+import { parseCsvObjects } from "./csv-parse";
 import { haversineM } from "@walkup/engine";
-import { makeHoursSheet, makeMultiStateSheet, makeSheet, partner, qlooHours, tile, TILES } from "./helpers";
+import { makeHoursSheet, makeMultiStateSheet, makeSheet, partner, place, qlooHours, tile, TILES } from "./helpers";
 
 /** The show week only (the tests of one day's plan). */
 const ONE_PASS = { firstPassWeeksOut: 0 } as const;
@@ -202,18 +205,78 @@ describe("street-team dates and visits", () => {
     expect(visits.filter((v) => v.partner).every((v) => v.callFirst)).toBe(true);
   });
 
-  it("keeps a crowded day before midnight, every stop starting before it ends", () => {
+  it("keeps a crowded day before midnight: no stop on top of another, and the stops with no time left listed", () => {
+    // From 20:00, six 20-minute stops and a 90-minute flyer drop don't fit before midnight.
     const visits = planStreetTeamVisits(makeSheet(), { streetTeamDays: ["monday"], startTime: "20:00", ...ONE_PASS });
-    expect(visits).toHaveLength(7);
+    const notTimed = visits.flatMap((v) => v.notTimed);
+    expect(visits.length + notTimed.length).toBe(7);
+    expect(notTimed.length).toBeGreaterThan(0);
     for (const v of visits) expect(v.end <= "23:59" && v.start < v.end, `${v.start}-${v.end}`).toBe(true);
+    expect(overlaps(visits)).toEqual([]);
+    // Said once, on the day's earliest event, with what to do.
+    expect(visits.filter((v) => v.notTimed.length > 0)).toEqual([visits[0]]);
+    const desc = (startTime: string) => unescapeText(prop(events(toIcs(makeSheet(), { streetTeamDays: ["monday"], startTime, ...ONE_PASS }))[0]!, "DESCRIPTION") ?? "");
+    expect(desc("20:00")).toContain("No time left on the Mon Nov 16 2026 route for: the flyer drop in area 5, Inglewood, MA. Do the flyer drop another day.");
+    // A partner is named with what the street team needs to call it: its area, address and that day's hours.
+    expect(desc("21:00")).toContain(
+      "No time left on the Mon Nov 16 2026 route for: Field Day Cafe (area 4, Woodbine), 106 Example St, Nashville, TN, hours for Mon not listed; the flyer drop in area 5, Inglewood, MA. Call the partners to arrange a drop-off, and do the flyer drop, another day.",
+    );
+    // The call list keeps the partner's day and says the route had no time for it.
+    const csv = parseCsvObjects(partnersCsv(makeSheet(), { visits: { streetTeamDays: ["monday"], startTime: "21:00", ...ONE_PASS } }));
+    expect(csv.find((r) => r.name === "Field Day Cafe")).toMatchObject({ day: "Mon", visit_dates: "2026-11-16 (no time left on the route: call to arrange)" });
+  });
+
+  it("says a stop with no time left on a day with nothing timed, in an all-day event of that day", () => {
+    // One street-team day (Saturday), no numbered area, and one partner open only Saturday 23:45 to 2 am: a 10-minute
+    // final-pass stop fits before midnight, a 20-minute first-pass stop does not, so the first pass times nothing.
+    const s = makeSheet();
+    s.operator = { ...s.operator, streetTeamDays: ["saturday"] };
+    s.cards.liftMap.results.tiles = s.cards.liftMap.results.tiles.map((t) => ({ ...t, lift: 1.1 }));
+    const p = partner(1, "Low Hum Records", null, { entity: place("syn-place-1", "Low Hum Records", { properties: { hours: qlooHours({ saturday: [["23:45", "02:00"]] }) } }) });
+    s.cards.partners.results = [p];
+    const plan = planStreetTeam(s);
+    expect(plan.visits.map((v) => `${v.pass} ${v.date} ${v.start}-${v.end}`)).toEqual(["final 2026-11-14 23:45-23:55"]);
+    expect(plan.notes).toHaveLength(1);
+    expect(plan.notes[0]).toMatchObject({ pass: "first", date: "2026-10-24", weekday: "saturday", closedAllDays: [] });
+    expect(plan.notes[0]!.notTimed.map((x) => `${x.date} ${x.partner?.entity.name}`)).toEqual(["2026-10-24 Low Hum Records"]);
+    const ev = events(toIcs(s)).find((e) => prop(e, "DTSTART;VALUE=DATE") === "20261024")!;
+    expect(unescapeText(prop(ev, "SUMMARY") ?? "")).toBe("Street team, first pass: no time left for 1 stop");
+    expect(prop(ev, "TRANSP")).toBe("TRANSPARENT");
+    expect(unescapeText(prop(ev, "DESCRIPTION") ?? "")).toContain(
+      "No time left on the Sat Oct 24 2026 route for: Low Hum Records (near Example Hall), 101 Example St, Nashville, TN, (615) 555-0101, open Sat 11:45 pm to 2 am. Call to arrange a drop-off another day.",
+    );
+    // The call list marks that date too.
+    const row = parseCsvObjects(partnersCsv(s)).find((r) => r.name === "Low Hum Records")!;
+    expect(row.visit_dates).toBe("2026-10-24 (no time left on the route: call to arrange); 2026-11-14");
+    // With the show week only, nothing is timed at all: the note and the show are the whole calendar.
+    const only = planStreetTeam(s, ONE_PASS);
+    expect(only.visits).toEqual([]);
+    expect(only.notes.map((n) => n.date)).toEqual(["2026-11-14"]);
+    expect(events(toIcs(s, ONE_PASS)).map((e) => unescapeText(prop(e, "SUMMARY") ?? ""))).toEqual([
+      "Street team: no time left for 1 stop",
+      "Show: Juniper Wire, The Lantern Choir, Mesa Static at Example Hall",
+    ]);
+  });
+
+  it("says a partner outside the numbered areas closed on every street-team day, in each pass", () => {
+    const sheet = makeSheet();
+    const p0 = sheet.cards.partners.results[0]!;
+    const far = { ...p0, entity: { ...p0.entity, entityId: "syn-place-9", name: "Far Field Records", properties: { hours: qlooHours({ monday: [["09:00", "17:00"]] }) } }, tileGeohash: TILES[7]!.geohash, tileName: "Far South" };
+    sheet.cards.partners.results = [...sheet.cards.partners.results, far];
+    const visits = planStreetTeamVisits(sheet);
+    expect(visits.some((v) => v.partner?.entity.name === "Far Field Records")).toBe(false);
+    expect(visits.flatMap((v) => v.closedAllDays.map((c) => `${v.pass} ${c.entity.name}`))).toEqual(["first Far Field Records", "final Far Field Records"]);
+    const all = events(toIcs(sheet)).map((e) => unescapeText(prop(e, "DESCRIPTION") ?? "")).join("\n");
+    expect(all).toContain("Not scheduled, closed on Thu and Sat: Far Field Records.");
   });
 
   it("never runs a stop past midnight, even from a late start", () => {
     const late = planStreetTeamVisits(makeSheet(), { streetTeamDays: ["monday"], startTime: "23:50", maxTiles: 8, minLift: 0 });
-    expect(late.length).toBeGreaterThan(6);
+    expect(late.length + late.flatMap((v) => v.notTimed).length).toBeGreaterThan(6);
     for (const v of late) {
       expect(v.start < "24:00" && v.end <= "23:59" && v.start < v.end, `${v.start}-${v.end}`).toBe(true);
     }
+    expect(overlaps(late)).toEqual([]);
     const text = toIcs(makeSheet(), { streetTeamDays: ["monday"], startTime: "23:30" });
     const times = unfold(text).filter((l) => /^DT(START|END):\d{8}T/.test(l)).map((l) => l.slice(l.indexOf("T", 8) + 1));
     expect(times.length).toBeGreaterThan(0);
@@ -546,11 +609,13 @@ describe("street-team passes", () => {
     const all = lateDesc.join("\n");
     expect(all).toMatch(/Not scheduled, closed on Wed and Sat: [^\n]*Evening Records/);
     expect(all).not.toContain("closed on Thu and Sat: Evening Records");
-    // A partner visited on Thursday in the first pass and Saturday in the final one shows both days, each with its hours.
+    // Split Shift Diner's area stays on its own run day, Saturday, in both passes: moving the area to Thursday would
+    // take that day past one and a half times its share of stops. (A partner the passes visit on two weekdays is
+    // covered below.)
     const col = partnerHoursColumn(late);
-    const twice = lateVisits.find((v) => v.partner?.entity.name === "Split Shift Diner" && v.pass === "final")!;
-    expect(twice.weekday).toBe("saturday");
-    expect(col.cell(twice.partner!).hours).toBe("Thu 10 am to 2 pm, 5 pm to 9:30 pm; Sat 10 am to 2 pm, 5 pm to 9:30 pm");
+    const diner = lateVisits.filter((v) => v.partner?.entity.name === "Split Shift Diner");
+    expect(diner.map((v) => `${v.pass} ${v.weekday}`)).toEqual(["first saturday", "final saturday"]);
+    expect(col.cell(diner[0]!.partner!).hours).toBe("Sat 10 am to 2 pm, 5 pm to 9:30 pm");
 
     // Only when every day of the week is taken does a pass go a day short, and the calendar says so.
     const every = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
@@ -584,6 +649,35 @@ describe("street-team passes", () => {
     expect(partnerHoursColumn(s).cell(thu).hours).toBe("Thu 9 am to 9 pm; Wed 9 am to 9 pm");
     const desc = events(toIcs(s)).map((e) => unescapeText(prop(e, "DESCRIPTION") ?? ""));
     expect(desc.filter((d) => d.includes("No street team on Thu Dec 24 2026 (Christmas Eve): shops keep holiday hours. Its stops are on Wed Dec 23 2026 instead."))).toHaveLength(1);
+  });
+
+  it("moves a stop its day has no time left for to another street-team day where it fits, the same weekday in both passes", () => {
+    // Six partners in the north area, open Saturday 10:00-12:30 only and Thursday all day; two in the south area.
+    // Saturday's short morning holds four 20-minute stops with travel: the other two go to Thursday, not on top of them.
+    const s = makeSheet();
+    const tiles = [tile(36.3, -86.78, 2.4, { name: "North One", zctas: ["37201"] }), tile(36.02, -86.78, 2.2, { name: "South One", zctas: ["37202"] })];
+    const week = qlooHours({ thursday: [["09:00", "21:00"]], saturday: [["10:00", "12:30"]] });
+    const ps = Array.from({ length: 8 }, (_, k) => {
+      const t = tiles[k < 6 ? 0 : 1]!;
+      const p = partner(40 + k, `Place ${k + 1}`, null, { hoursOnDay: "09:00-21:00" });
+      return { ...p, tileGeohash: t.geohash, tileName: t.name, entity: { ...p.entity, location: { lat: t.lat + 0.003 * k, lon: t.lon }, properties: { hours: week } } };
+    });
+    const sheet = {
+      ...s,
+      bill: { ...s.bill, venue: { ...s.bill.venue, lat: 36.16, lon: -86.78 } },
+      cards: { ...s.cards, liftMap: { ...s.cards.liftMap, results: { ...s.cards.liftMap.results, tiles } }, partners: { ...s.cards.partners, results: ps } },
+      budgetSplit: tiles.map((t, i) => ({ geohash: t.geohash, share: [0.6, 0.4][i]!, label: "heuristic, not a forecast" as const })),
+    };
+    const visits = planStreetTeamVisits(sheet);
+    expect(overlaps(visits)).toEqual([]);
+    expect(visits.flatMap((v) => v.notTimed)).toEqual([]);
+    const at = (name: string) => visits.filter((v) => v.partner?.entity.name === name).map((v) => `${v.pass} ${v.weekday}`);
+    expect(at("Place 1")).toEqual(["first saturday", "final saturday"]);
+    // Moved in the first pass, and kept on Thursday in the final pass, so the Visit day names one weekday.
+    expect(at("Place 6")).toEqual(["first thursday", "final thursday"]);
+    expect(partnerHoursColumn(sheet).cell(ps[5]!).hours).toBe("Thu 9 am to 9 pm");
+    // Saturday's stops all lie inside its short morning; the hop from the south area to the north one allows its travel.
+    for (const v of visits.filter((x) => x.weekday === "saturday")) expect(toMin(v.end), v.start).toBeLessThanOrEqual(12 * 60 + 30);
   });
 
   it("drops a first pass a holiday would leave a day short rather than pile two days' stops onto one", () => {

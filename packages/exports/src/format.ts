@@ -366,6 +366,9 @@ export function partnerOtherState(p: Pick<Partner, "address">, label: string): s
   return own && area && own !== area ? own : null;
 }
 
+/** The area words for a partner from the search around the venue (no area of its own), on paper and in the files. */
+export const NEAR_VENUE = "near venue";
+
 /** `partnerAreaLabel` for paper and files: "Kenilworth, DC (place in MD)" when the address is over a state line. */
 export function partnerAreaText(p: Pick<Partner, "tileGeohash" | "tileName" | "address">, tiles: ReadonlyMap<string, LiftTile>): string {
   const label = partnerAreaLabel(p, tiles);
@@ -603,11 +606,16 @@ export function countsAreWhatIf(sheet: Pick<StreetSheet, "mode" | "hypothetical"
   return sheet.mode === "fixture" && sheet.hypothetical === true;
 }
 
-/** "1.5 km", "0.2 km", "<0.1 km"; "" when unknown. Every distance on the sheet and in the files is in km. */
+/**
+ * "1.5 km", "0.2 km", "<0.1 km"; "" when unknown. Every distance on the sheet and in the files is in km. Under 1 km
+ * it rounds the distance the plan page shows (to 10 m, "950 m") rather than the raw metres, so 949.7 m is "1.0 km"
+ * here as 950 m is there.
+ */
 export function formatKm(metres: number | null | undefined): string {
   if (metres === null || metres === undefined || !Number.isFinite(metres) || metres < 0) return "";
   if (metres < 50) return "<0.1 km";
-  return `${(Math.round(metres / 100) / 10).toFixed(1)} km`;
+  const shown = metres < 1000 ? Math.round(metres / 10) * 10 : metres;
+  return `${(Math.round(shown / 100) / 10).toFixed(1)} km`;
 }
 
 const CART_OR_STAND = /\b(carts?|kiosks?|food trucks?|stands?)\b/i;
@@ -622,15 +630,17 @@ export function isCartOrStand(place: { name: string; category?: string | null })
 }
 
 /**
- * The before-and-after spots the sheet lists: no carts, kiosks, stands or food trucks, nearest to the venue first
- * (spots without a distance last, in the sheet's order). The same list on the web, the print view and the PDF.
+ * The before-and-after spots the sheet lists: no carts, kiosks, stands or food trucks; the local spots nearest to the
+ * venue first, then the national chains nearest first, as the card's chain sentence says ("listed last"). Spots
+ * without a distance go last in their group, in the sheet's order. The same list on the web, the print view and the PDF.
  */
-export function sheetSpots<T extends { entity: { name: string; distanceM?: number | null }; category?: string | null }>(spots: readonly T[]): T[] {
+export function sheetSpots<T extends { entity: { name: string; distanceM?: number | null }; category?: string | null; chain?: boolean }>(spots: readonly T[]): T[] {
   const far = (s: T) => (typeof s.entity.distanceM === "number" && Number.isFinite(s.entity.distanceM) ? s.entity.distanceM : Number.POSITIVE_INFINITY);
+  const chain = (s: T) => (s.chain === true ? 1 : 0);
   return spots
     .map((s, i) => ({ s, i }))
     .filter(({ s }) => !isCartOrStand({ name: s.entity.name, category: s.category }))
-    .sort((a, b) => far(a.s) - far(b.s) || a.i - b.i)
+    .sort((a, b) => chain(a.s) - chain(b.s) || far(a.s) - far(b.s) || a.i - b.i)
     .map(({ s }) => s);
 }
 

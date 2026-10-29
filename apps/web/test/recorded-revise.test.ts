@@ -128,7 +128,8 @@ describe("normalising and matching overrides", () => {
   });
 
   it("rebuilds a stored revision's overrides from its own tool calls, checked against the parent", () => {
-    expect(revisionOverrides(AGES.sheet!.revision!, parent)).toEqual({ allAges: true, excludeCategories: [...bars].sort() });
+    // All ages already leaves every bar type out, so the stored "no bars" call adds no change of its own.
+    expect(revisionOverrides(AGES.sheet!.revision!, parent)).toEqual({ allAges: true });
     expect(revisionOverrides({ toolCalls: [{ tool: "set_radius", input: { km: 500 }, summary: "" }] }, parent)).toBeNull();
     expect(revisionOverrides({ toolCalls: [{ tool: "ask_operator", input: { question: "Which?" }, summary: "" }] }, parent)).toBeNull();
     expect(revisionOverrides({ toolCalls: [], question: "Which?" }, parent)).toBeNull();
@@ -139,8 +140,10 @@ describe("normalising and matching overrides", () => {
     expect(findReadyMade(parent, { excludeCategories: bars, allAges: true }, stored)?.planId).toBe("rec-rev-ages");
     expect(findReadyMade(parent, { streetTeamDays: [oneDay] }, stored)?.planId).toBe("rec-rev-day");
     expect(findReadyMade(parent, { excludeAreas: [firstArea.toUpperCase()] }, stored)?.planId).toBe("rec-rev-skip");
-    // All ages alone is not "all ages, no bars"; another area is not the stored one; no change finds nothing.
-    expect(findReadyMade(parent, { allAges: true }, stored)).toBeNull();
+    // All ages alone already leaves bars out, so it is "all ages, no bars"; bars alone, without all ages, is not.
+    expect(findReadyMade(parent, { allAges: true }, stored)?.planId).toBe("rec-rev-ages");
+    expect(findReadyMade(parent, { excludeCategories: bars }, stored)).toBeNull();
+    // Another area is not the stored one; no change finds nothing.
     expect(findReadyMade(parent, { excludeAreas: [otherArea] }, stored)).toBeNull();
     expect(findReadyMade(parent, { streetTeamDays: [...parentDays] }, stored)).toBeNull();
     // A revision of another sheet never answers.

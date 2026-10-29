@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-/** An unknown plan id: the page's own metadata titles the tab "Plan not found". */
+/**
+ * The served 404 for an unknown plan id. Next renders a page's notFound() from this boundary, and the head it serves
+ * takes its title from here (with the layouts), not from the page's generateMetadata; without it the tab read as
+ * the home page.
+ */
+export const metadata: Metadata = { title: "Plan not found" };
+
+/** An unknown plan id. */
 export default function PlanNotFound() {
   return (
     <div className="wrap py-16">

@@ -4,9 +4,9 @@ import { AGE_BUCKETS } from "@walkup/contracts";
 import type { AgeBucket, CompareTag, DemographicsBlock, QlooEntity, StreetSheet } from "@walkup/contracts";
 import { formatDistance, formatInt, formatPct, formatSigned } from "../../lib/format";
 import { CATEGORY_LABEL, STATUS_WORD, categoryLabel, subtypeLabel } from "../../lib/labels";
-import { ageLabel, baselineName, sourceLine, tagIndex, tagName } from "../../lib/sheet-utils";
+import { baselineName, sourceLine, tagIndex, tagLabel, tagName } from "../../lib/sheet-utils";
 import { spotIsFanFacing } from "@walkup/exports/audience";
-import { DECLARED_UNRANKED, sheetSpots, spotSharesDiffer, spotsShareNote } from "@walkup/exports/format";
+import { DECLARED_UNRANKED, sheetAgeLabel, sheetSpots, spotSharesDiffer, spotsShareNote } from "@walkup/exports/format";
 import { TrustTable } from "./LiftCard";
 import { PlanCard } from "./PlanCard";
 import { chipText } from "./model";
@@ -68,11 +68,16 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
   const [caps, setCaps] = useState<Record<string, number>>(() => Object.fromEntries(env.results.map((s) => [s.entity.entityId, s.assumedCapacity])));
   const attendance = sheet.operator.capacity;
   // The shared spot list (`sheetSpots`, the same as the PDF, the print view and the CSVs): no carts, kiosks, stands
-  // or food trucks, nearest to the venue first.
+  // or food trucks, local spots nearest to the venue first, then national chains.
   const spots = sheetSpots(env.results);
   // The same fan-facing rule as the PDF and the CSVs: the show's age policy and the operator's all-ages setting.
   const rows = spots.filter((s) => !fanFacing || spotIsFanFacing(s, sheet));
-  const age = ageLabel(sheet.bill.legalAgeEnforced);
+  // The PDF's and print view's age line (sheetAgeLabel): Ticketmaster's policy, then the operator's all-ages setting
+  // when that adds a rule. On a 21+ show the setting is what hides bars from fans, so "that policy" must name it.
+  const age =
+    sheet.bill.legalAgeEnforced === null
+      ? `not on the listing, so treated as all ages${sheet.operator.allAges === true ? ". The operator set this sheet to all ages: no bars" : ""}`
+      : sheetAgeLabel(sheet.bill, sheet.operator).long;
   const hidden = spots.length - rows.length;
   // Every spot with the same share says nothing per row (and neither do the guests it implies): the Share and Guests
   // columns are left out and the share goes in the note under the table instead, as on the PDF.
@@ -83,9 +88,9 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
   return (
     <PlanCard id="prepost" title="Before and after the show" envelope={env}>
       <p className="mb-3">
-        Age policy: {age.long}.
+        Age policy: {age}.
         {fanFacing && hidden > 0 ? ` ${hidden} ${hidden === 1 ? "spot is" : "spots are"} hidden from fans under that policy.` : ""}{" "}
-        <button type="button" className="text-button text-sm" aria-pressed={fanFacing} onClick={() => setFanFacing((v) => !v)}>
+        <button type="button" className="text-button text-sm no-print" aria-pressed={fanFacing} onClick={() => setFanFacing((v) => !v)}>
           {fanFacing ? "Show every spot" : "Show what fans see"}
         </button>
       </p>
@@ -169,7 +174,7 @@ export function PrePostCard({ sheet }: { sheet: StreetSheet }) {
           : <>
               {spotsShareNote(spots.map((s) => s.assumedCapacity))}{" "}
               {attendance !== null
-                ? `Guests is the assumed ${formatInt(attendance)} times the share, capped at the capacity; change a capacity to see it move.`
+                ? <>Guests is the assumed {formatInt(attendance)} times the share, capped at the capacity<span className="no-print">; change a capacity to see it move</span>.</>
                 : "Capacity isn't entered, so there is no Guests column."}
             </>}
       </p>
@@ -248,7 +253,7 @@ export function CopyHooksCard({ sheet }: { sheet: StreetSheet }) {
             </div>
             <button
               type="button"
-              className="btn btn-ghost min-h-0 px-3 py-1 text-sm whitespace-nowrap"
+              className="no-print btn btn-ghost min-h-0 px-3 py-1 text-sm whitespace-nowrap"
               aria-label={copied === i ? "Copied" : "Copy this line"}
               onClick={async () => {
                 try {
@@ -286,14 +291,6 @@ function avgAge(blocks: DemographicsBlock[], b: AgeBucket): number | null {
   const vals = blocks.map((x) => x.age[b]).filter((v): v is number => typeof v === "number");
   if (vals.length === 0) return null;
   return vals.reduce((a, c) => a + c, 0) / vals.length;
-}
-
-/** A tag name in sentence case, as the rest of the sheet writes them: "VERSATILE" and "work-life balance" read alike. */
-function tagLabel(name: string): string {
-  const n = name.trim();
-  const shouted = n.length > 3 && /[A-Z]{3}/.test(n) && n === n.toUpperCase();
-  const s = shouted ? n.toLowerCase() : n;
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function TagColumn({ title, tags }: { title: string; tags: CompareTag[] }) {
@@ -366,7 +363,7 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
           {r.shared.length > 0 ? (
             <p className="mt-4">
               <span className="text-muted">Both rank high: </span>
-              {r.shared.map((t) => lower(t.name)).join(", ")}.
+              {r.shared.map((t) => lower(tagLabel(t.name))).join(", ")}.
               {r.fromTagDiff ? <span className="text-muted"> Worked out from two tag lists ranked against each other.</span> : null}
             </p>
           ) : null}

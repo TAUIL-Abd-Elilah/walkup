@@ -18,15 +18,26 @@ const ENDPOINTS: { id: string; shape: string; decides: string; calls: string }[]
     calls: "1 per 25 ids checked, plus 1 per Spotify-matched act Qloo drops. A 200 is reused for a week; a 400 isn't cached",
   },
   { id: "Venue lookup", shape: "GET /search types=urn:entity:place near the venue", decides: "The venue, else the Ticketmaster map point", calls: "1" },
-  { id: "The room's usual acts", shape: "GET /entities for the venue's Ticketmaster roster", decides: "The room's usual crowd (its top 12 headliners)", calls: "1 to 3 per venue a week" },
+  {
+    id: "The room's usual acts",
+    shape: "GET /entities for the venue's Ticketmaster roster, then typed /search for up to 6 headliners it missed",
+    decides: "The room's usual crowd (its top 12 headliners)",
+    calls: "Up to 7 per venue a week (1 lookup, then up to 6 searches); 7 on each live sheet",
+  },
   { id: "Heatmap, bill", shape: "GET /v2/insights filter.type=urn:heatmap", decides: "Where this bill's crowd is, per area", calls: "1" },
   { id: "Heatmap, usual crowd", shape: "The same heatmap with the room's usual acts", decides: "Where the usual crowd is, per area", calls: "0 or 1" },
   { id: "Heatmap, popularity check", shape: "The same heatmap with a generic tag", decides: "A check only: does lift just follow general popularity", calls: "0 or 1" },
   { id: "Map check", shape: "The bill and usual-crowd heatmaps again, each for one half of the acts", decides: "Whether the map holds up when the bill is split in two", calls: "up to 4" },
   { id: "Age mix", shape: "GET /v2/insights filter.type=urn:demographics", decides: "Age mix, this bill and the usual crowd", calls: "1" },
   { id: "Crowd compare", shape: "GET /v2/analysis/compare (bill and usual crowd)", decides: "How this crowd differs; copy-line candidates", calls: "1, or 3 if it falls back to two tag lists" },
-  { id: "Partner search", shape: "filter.type=urn:entity:place per numbered area, stacked filters, explainability", decides: "The partners", calls: "3, one per partner area" },
-  { id: "Partner search, usual crowd", shape: "Each partner search again with the usual crowd's signal (same area, radius and filters)", decides: "The usual-crowd rank on partner rows", calls: "3, one per partner area" },
+  { id: "Partner search", shape: "filter.type=urn:entity:place per numbered area, stacked filters, explainability", decides: "The partners", calls: "1 to 3, one per partner area, plus 1 or 2 for an area that returns fewer than 8 places (searched again at 3,500 m, then with more place types); 3 or 4 on the live sheets" },
+  { id: "Partner search, usual crowd", shape: "Each partner search again with the usual crowd's signal (same area, radius and filters)", decides: "The usual-crowd rank on partner rows", calls: "0 to 3, one per partner area that gave places (none when there is no usual crowd to compare with)" },
+  {
+    id: "Partner search, popularity",
+    shape: "Each partner search again with no signal and no explainability (Qloo answers in popularity order)",
+    decides: "The popularity check only: how many partners a popularity list of the same length would miss",
+    calls: "0 to 3, one per partner area that gave partners; 2 or 3 on the live sheets",
+  },
   { id: "Spots near the venue", shape: "Places within 1.5 km of the venue, and the same for the usual crowd", decides: "Spots for before and after the show, and how the usual crowd ranks them", calls: "1, plus 1 a week" },
   { id: "Your partners", shape: "filter.results.entities with the operator's list", decides: "Call order for your own partners", calls: "1" },
   { id: "Podcasts", shape: "filter.type=urn:entity:podcast with signal.location", decides: "Podcasts for a host read", calls: "1" },
@@ -53,7 +64,7 @@ const VERIFIED: { shape: string; usedFor: string; result: string; status: "verif
   { shape: "Pinned category tags", usedFor: "Partner and spot categories", result: "11 of 14 pinned (5 to 10 places within 25 km, each carrying the tag); record store, Irish pub and place of worship dropped.", status: "verified, changed" },
   { shape: "filter.results.entities with the bill as the signal", usedFor: "Call order for your partners", result: "A 10-entity shortlist came back fully scored.", status: "verified" },
   { shape: "Podcasts with signal.location", usedFor: "Podcasts", result: "15 rows with a usable seed; the day-one errors came from a seed Qloo had no taste data for. Location effect not shown, so labelled national.", status: "verified" },
-  { shape: "Brands with signal.location", usedFor: "Sponsor", result: "15 rows with a usable seed. No alcohol brand tag found to exclude, so a name and tag filter keeps those brands off shows that aren't 21+.", status: "verified, changed" },
+  { shape: "Brands with signal.location", usedFor: "Sponsor", result: "15 rows with a usable seed. No alcohol brand tag found to exclude, so a name and tag filter keeps those brands off shows that aren't 21+ or that the operator marked all ages.", status: "verified, changed" },
   { shape: "urn:tag with tag types and diversify.by=subtype", usedFor: "Copy-line tags", result: "At most 5 tags per namespace.", status: "verified" },
   { shape: "GET /v2/tags", usedFor: "Pinning tag ids at build time", result: "Answers as expected.", status: "verified" },
   { shape: "POST /v2/insights with weighted signals", usedFor: "Weighting an act against its stand-ins", result: "HTTP 400.", status: "removed" },
@@ -107,7 +118,12 @@ export default function SystemCardPage() {
         address is on that street, and each area carries its own state. Each revision&apos;s change list was rebuilt over the five numbered areas. One
         spot listed as a restaurant, SWIG, is a bar by its Qloo tags (a bar and grill, with dive-bar tags), so it left the two &ldquo;All ages, no
         bars&rdquo; revisions at The Salt Shed, which now list 7 spots. FLO&apos;s &ldquo;Within 10 km&rdquo; revision, which changed nothing, was
-        removed. No Qloo or Ticketmaster answer, ranking, partner list or ledger changed.
+        removed. A second pass on Oct 29 gave Thurst Lounge on FLO&apos;s sheet back the kind its run picked it under, a bar (a later re-read of its
+        stored tags, which the data policy had already trimmed of the bar tags, called it a restaurant, a third in U Street / Shaw), dropped four
+        partner website links that no longer work (checked Oct 29), showed four places&apos; own websites whose domain shortens the name, made
+        &ldquo;and N more&rdquo; in chain lists count places, had the Summary and Checks steps say when fixed wording replaced Claude&apos;s lines,
+        and removed a repeated label from 16 Ticketmaster roster receipts. No Qloo or Ticketmaster answer, ranking, partner list or ledger number
+        changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>

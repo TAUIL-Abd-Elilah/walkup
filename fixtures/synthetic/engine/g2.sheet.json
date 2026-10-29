@@ -329,7 +329,8 @@
               "name": "Virginia Beach",
               "zctas": [
                 "23455"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9dyp",
@@ -343,7 +344,8 @@
               "name": "Hampton",
               "zctas": [
                 "23666"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9cgx",
@@ -357,7 +359,8 @@
               "name": "Virginia Beach",
               "zctas": [
                 "23455"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq99u8",
@@ -371,7 +374,8 @@
               "name": "Suffolk (Huntersville)",
               "zctas": [
                 "23435"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq99sz",
@@ -385,7 +389,8 @@
               "name": "Suffolk",
               "zctas": [
                 "23435"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9dyr",
@@ -399,7 +404,8 @@
               "name": "Hampton",
               "zctas": [
                 "23669"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9f52",
@@ -413,7 +419,8 @@
               "name": "Virginia Beach",
               "zctas": [
                 "23455"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9cgr",
@@ -427,7 +434,8 @@
               "name": "Virginia Beach",
               "zctas": [
                 "23455"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq99t5",
@@ -441,7 +449,8 @@
               "name": "Suffolk (Green Meadow Point)",
               "zctas": [
                 "23321"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9e44",
@@ -455,7 +464,8 @@
               "name": "Newport News",
               "zctas": [
                 "23602"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq98gc",
@@ -469,7 +479,8 @@
               "name": "Chesapeake",
               "zctas": [
                 "23323"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9du5",
@@ -483,7 +494,8 @@
               "name": "Hampton",
               "zctas": [
                 "23601"
-              ]
+              ],
+              "state": "VA"
             },
             {
               "geohash": "dq9e41",
@@ -497,7 +509,8 @@
               "name": "Newport News",
               "zctas": [
                 "23602"
-              ]
+              ],
+              "state": "VA"
             }
           ],
           "diagnostics": {
@@ -4225,7 +4238,7 @@
           "The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
           "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales."
         ],
-        "reason": "2 areas had fewer than 8 places within 2 km, so the search widened to 3.5 km."
+        "reason": "2 areas had fewer than 8 places within 2 km, so the search widened to 3.5 km. Record stores show up on sample sheets only: live runs don't search them yet."
       },
       "declared": {
         "status": "ok",
@@ -6329,91 +6342,91 @@
       "partnerLines": [
         {
           "entityId": "0000a88e-32d1-4622-a7f0-f0cb25c50051",
-          "text": "A bar in Virginia Beach, 1st on that area's list for this crowd."
+          "text": "A bar near Virginia Beach, 1st on that area's list for this crowd."
         },
         {
           "entityId": "00007fe2-907e-4971-aa3d-f0cb25d00041",
-          "text": "A barbershop in Virginia Beach, 2nd on that area's list for this crowd."
+          "text": "A barbershop near Virginia Beach, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "00000f2d-d276-4d7a-ad9a-f0cb25c50041",
-          "text": "A barbershop in Virginia Beach, 3rd on that area's list for this crowd."
+          "text": "A barbershop near Virginia Beach, 3rd on that area's list for this crowd."
         },
         {
           "entityId": "000012c0-6312-4e2b-a078-f0cb25d00051",
-          "text": "A bar in Virginia Beach, 9th on that area's list for this crowd."
+          "text": "A bar near Virginia Beach, 9th on that area's list for this crowd."
         },
         {
           "entityId": "0000a8cc-77e2-491b-ad93-f0cb257a03a1",
-          "text": "A beauty salon in Virginia Beach, 8th on that area's list for this crowd."
+          "text": "A beauty salon near Virginia Beach, 8th on that area's list for this crowd."
         },
         {
           "entityId": "00009d2f-e32a-4008-ab9b-f0cb256f0311",
-          "text": "A restaurant in Virginia Beach, 12th on that area's list for this crowd."
+          "text": "A restaurant near Virginia Beach, 12th on that area's list for this crowd."
         },
         {
           "entityId": "0000619f-aea7-4e5c-a012-f0cb256f0061",
-          "text": "A restaurant in Virginia Beach, 15th on that area's list for this crowd."
+          "text": "A restaurant near Virginia Beach, 15th on that area's list for this crowd."
         },
         {
           "entityId": "00004af9-a3f1-49a8-ad1f-f0cb257a0471",
-          "text": "A record store in Virginia Beach, 14th on that area's list for this crowd."
+          "text": "A record store near Virginia Beach, 14th on that area's list for this crowd."
         },
         {
           "entityId": "000082ef-de69-463b-ac00-f0cb25b400c1",
-          "text": "A bar in Hampton, 2nd on that area's list for this crowd."
+          "text": "A bar near Hampton, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "000032db-95fd-4203-acb6-f0cb25b400a1",
-          "text": "A barbershop in Hampton, 3rd on that area's list for this crowd."
+          "text": "A barbershop near Hampton, 3rd on that area's list for this crowd."
         },
         {
           "entityId": "0000bb98-876f-4ab7-a580-f0cb25b100a1",
-          "text": "A barbershop in Hampton, 1st on that area's list for this crowd."
+          "text": "A barbershop near Hampton, 1st on that area's list for this crowd."
         },
         {
           "entityId": "000084ca-3ac6-4dfe-a2c3-f0cb25b10151",
-          "text": "A bar in Hampton, 5th on that area's list for this crowd."
+          "text": "A bar near Hampton, 5th on that area's list for this crowd."
         },
         {
           "entityId": "0000bd17-8b21-4307-a74f-f0cb259e0351",
-          "text": "A restaurant in Hampton, 6th on that area's list for this crowd."
+          "text": "A restaurant near Hampton, 6th on that area's list for this crowd."
         },
         {
           "entityId": "000047fd-78ee-4f30-a113-f0cb25b10071",
-          "text": "A restaurant in Hampton, 7th on that area's list for this crowd."
+          "text": "A restaurant near Hampton, 7th on that area's list for this crowd."
         },
         {
           "entityId": "00003c00-03ee-4e73-aa01-f0cb253a0051",
-          "text": "A bar in Suffolk (Huntersville), 6th on that area's list for this crowd."
+          "text": "A bar near Suffolk (Huntersville), 6th on that area's list for this crowd."
         },
         {
           "entityId": "00006755-7b31-42f7-a7a6-f0cb253a0111",
-          "text": "A bar in Suffolk (Huntersville), 5th on that area's list for this crowd."
+          "text": "A bar near Suffolk (Huntersville), 5th on that area's list for this crowd."
         },
         {
           "entityId": "0000d5ee-3bf4-4629-a55b-f0cb25380161",
-          "text": "A record store in Suffolk (Huntersville), 10th on that area's list for this crowd."
+          "text": "A record store near Suffolk (Huntersville), 10th on that area's list for this crowd."
         },
         {
           "entityId": "0000d4ce-3a69-4acd-a0c1-f0cb25380101",
-          "text": "A beauty salon in Suffolk (Huntersville), 7th on that area's list for this crowd."
+          "text": "A beauty salon near Suffolk (Huntersville), 7th on that area's list for this crowd."
         },
         {
           "entityId": "000098ab-bb14-4b3e-a95e-f0cb253b0241",
-          "text": "A restaurant in Suffolk (Huntersville), 8th on that area's list for this crowd."
+          "text": "A restaurant near Suffolk (Huntersville), 8th on that area's list for this crowd."
         },
         {
           "entityId": "0000e56f-f63c-4de2-aa9d-f0cb253a01c1",
-          "text": "A barbershop in Suffolk (Huntersville), 2nd on that area's list for this crowd."
+          "text": "A barbershop near Suffolk (Huntersville), 2nd on that area's list for this crowd."
         },
         {
           "entityId": "0000aec3-b0cf-4326-a426-f0cb253802e1",
-          "text": "A barbershop in Suffolk (Huntersville), 3rd on that area's list for this crowd."
+          "text": "A barbershop near Suffolk (Huntersville), 3rd on that area's list for this crowd."
         },
         {
           "entityId": "00002586-33a8-4763-a8a0-f0cb252d0351",
-          "text": "A beauty salon in Suffolk (Huntersville), 12th on that area's list for this crowd."
+          "text": "A beauty salon near Suffolk (Huntersville), 12th on that area's list for this crowd."
         }
       ],
       "templated": true

@@ -137,6 +137,14 @@ describe("buildMessage", () => {
     expect(m.text).toContain("What this sheet doesn't show");
   });
 
+  it("marks a national chain partner, as the plan page and the paper do", () => {
+    const sheet = makeSheet();
+    sheet.cards.partners.results = sheet.cards.partners.results.map((p, i) => (i === 0 ? { ...p, chain: true } : p));
+    const m = buildMessage(sheet, [], opts);
+    expect(m.text).toContain("1. Synthetic Shop 1, coffee, national chain, 1 Example Ave, Nashville.");
+    expect(m.text).toContain("2. Synthetic Shop 2, record store, 2 Example Ave, Nashville.");
+  });
+
   it("escapes HTML and strips line breaks from the subject", () => {
     const sheet = makeSheet();
     sheet.bill.acts = [{ name: "<b>Act</b>\r\nBcc: x@example.com", role: "headliner" }];

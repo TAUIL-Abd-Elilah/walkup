@@ -296,7 +296,10 @@ describe("spots, media, summary and checks", () => {
     ];
     expect(guardDropCounts(reasons)).toEqual({ citation: 0, notPartner: 13, alcohol: 2, other: 0 });
     const s = guardStep({ dropped: 15, denied: 63, alcoholHeld: 3, reasons, ledgerRefs: [] });
-    expect(s.decision).toBe("Dropped 15 lines: 13 about places that aren't partners on this sheet and 2 with alcohol words on a show that isn't 21+.");
+    // The line the template replaced is not a dropped one, and is said after the drops.
+    expect(s.decision).toBe(
+      "Dropped 15 lines: 13 about places that aren't partners on this sheet and 2 with alcohol words on a show that isn't 21+; fixed wording replaced 1 of Claude's area and partner lines.",
+    );
     expect(s.decision).not.toMatch(/didn't return/);
     expect(guardStep({ dropped: 1, denied: 0, alcoholHeld: 0, reasons: ["partnerLines[3]: not a partner"], ledgerRefs: [] }).decision).toBe(
       "Dropped 1 line about a place that isn't a partner on this sheet.",

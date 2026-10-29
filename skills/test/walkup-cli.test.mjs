@@ -165,6 +165,8 @@ function handle(req, res, body) {
   }
   if (req.method === "GET" && url === "/api/sheet/plan_abc123/pdf") return send(res, 200, "%PDF-1.4\n% synthetic\n", "application/pdf");
   if (req.method === "GET" && url === "/healthz") return send(res, 200, { mode: "fixture", qloo: "no key" });
+  // The web app's own 404 reason ends with a full stop.
+  if (req.method === "GET" && url === "/api/sheet/plan_gone") return send(res, 404, { status: "error", reason: "No plan with id plan_gone." });
   return send(res, 404, { status: "error", reason: "no such route or plan" });
 }
 
@@ -241,7 +243,9 @@ test("plan posts only the event and operator what-ifs, and prints the sheet", as
   assert.deepEqual(body.operator, { seatsLeft: 1850, streetTeamDays: ["thursday", "saturday"] });
   assert.match(r.stdout, /FIXTURE/);
   assert.match(r.stdout, /HYPOTHETICAL COUNT/);
-  assert.match(r.stdout, /Synthetic Records \(record_store, Tile A\) \[Q9\]/);
+  // Category keys read as words, as on the web page and in the MCP text.
+  assert.match(r.stdout, /Synthetic Records \(record store, Tile A\) \[Q9\]/);
+  assert.doesNotMatch(r.stdout, /record_store/);
   assert.match(r.stdout, /Guard: 0 claim\(s\) dropped, 2 tag\(s\) denied by policy/);
   assert.match(r.stdout, /3 entries, 2 Qloo calls \(1 from cache\)/);
   assert.match(r.stdout, /does not show that it sells tickets/);
@@ -385,6 +389,13 @@ test("an unknown plan id reports 404 and exits 1", async () => {
   const r = await run(["sheet", "missing"]);
   assert.equal(r.code, 1);
   assert.match(r.stderr, /HTTP 404/);
+});
+
+test("a server reason that ends with a full stop is not followed by a second one", async () => {
+  const r = await run(["sheet", "plan_gone"]);
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /\(HTTP 404\): No plan with id plan_gone\. Check the plan id/);
+  assert.doesNotMatch(r.stderr, /\.\./);
 });
 
 test("health prints the server's status", async () => {

@@ -65,7 +65,7 @@ describe("toPdf", () => {
       expect(text).toContain("Long Drive Radio Hour");
       expect(text).toContain("Cumberland Lemonade Co.");
       expect(text).toContain("Americana and string bands, one night.");
-      expect(text).toContain("30% · $750");
+      expect(text).toContain("30.0% · $750");
       expect(text).toContain("Street-team days and times are in street-team.ics; ad ZIPs and pins in zips.csv and pins.csv.");
       expect(text).toContain("Suggested, not affiliated: no partner has agreed to anything.");
       // Receipts are one quiet group per row, no brackets.
@@ -164,6 +164,25 @@ describe("toPdf", () => {
       expect(text).toContain("No top pick on this sheet: both rules compare this crowd with the room's usual crowd, and this run has no usual crowd to compare with.");
       expect(text).not.toContain("ranks no partner");
       expect(text).not.toContain("Start with this place");
+      // The media status already says why there is no sponsor: said once, not again under the podcasts.
+      expect(countOccurrences(text, "No sponsor brand came back.")).toBe(1);
+    },
+    SLOW,
+  );
+
+  it(
+    "lists three podcasts and counts a fourth beside the heading, so no podcast is dropped without a word",
+    async () => {
+      const s = makeSheet();
+      const pod = s.cards.media.results[0]!;
+      const pods = ["One", "Two", "Three", "Four"].map((n, i) => ({ ...pod, entity: { ...pod.entity, entityId: `syn-pod-x${i}`, name: `${n} Pod` } }));
+      s.cards = { ...s.cards, media: { ...s.cards.media, results: [...pods, ...s.cards.media.results.filter((m) => m.kind === "sponsor")] } };
+      const res = await renderStreetSheetPdf(s);
+      expect(res.pages).toBe(1);
+      const text = pdfPlainText(res.buffer);
+      for (const n of ["One Pod", "Two Pod", "Three Pod"]) expect(text).toContain(n);
+      expect(text).not.toContain("Four Pod");
+      expect(text).toContain("+1 more podcast on the plan page");
     },
     SLOW,
   );

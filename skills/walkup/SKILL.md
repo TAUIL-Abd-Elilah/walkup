@@ -53,7 +53,7 @@ A revision makes a new sheet under a new plan id and lists what changed (`revisi
 
 | Command | What it does | Server endpoint |
 |---|---|---|
-| `plan <ticketmaster-event-url \| "Artist @ Venue, Date">` | Builds a Street Sheet for the show. A fresh run makes 15 to 30 Qloo calls, so give it time. Options: `--seats-left`, `--capacity`, `--radius-km` (default 40), `--street-days`, `--pick "<input>=<id>"` | `POST /api/plan` |
+| `plan <ticketmaster-event-url \| "Artist @ Venue, Date">` | Builds a Street Sheet for the show. A fresh run makes about 30 Qloo calls, so give it time. Options: `--seats-left`, `--capacity`, `--radius-km` (default 40), `--street-days`, `--pick "<input>=<id>"` | `POST /api/plan` |
 | `rank-partners <event> <partner names...>` | Ranks the user's own partner list (up to 20 names) by this bill's crowd. Names not in Qloo's catalog come back unranked ("not in Qloo's catalog, kept in your order") | `POST /api/rank-partners` |
 | `sheet <plan-id>` | Fetches an existing sheet's summary. `--pdf` saves the one-page PDF (`--out <file>` to choose where) | `GET /api/sheet/<plan-id>`, `GET /api/sheet/<plan-id>/pdf` |
 | `health` | Server mode (live, fixture or recorded) and reachability | `GET /healthz` |
@@ -127,10 +127,10 @@ In full: the event text or URL, partner names, any what-if numbers you pass (sea
 | Music bills in large US metros | Densest signal | Full sheet, usually `ok` |
 | Comedy bills | Thinner; one-word stage names collide | `needs_input` pickers, proxy seeds shown in receipts, `partial` badges |
 | Venues that opened recently | Often not in the catalog yet | The Ticketmaster coordinates are used; "venue not in catalog yet" |
-| Smaller metros | Fewer heatmap cells and places | Radius widens to 60 km; "thin signal: treat as a starting list" |
+| Smaller metros | Fewer heatmap cells and places | Radius widens to 60 km; "Thin signal: treat as a starting list." |
 | Partner categories | Bars, pubs, restaurants, cafes, book stores, clothing stores, barber shops and beauty salons (the categories pinned in `config/tags.json`; record stores could not be pinned) | Categories come from pinned tags only |
 | Podcasts | Ranked by this bill's crowd | Labelled "national, not local" unless location is shown to move the ranking |
-| Sponsors | One brand, labelled national | Alcohol, tobacco and gambling excluded on shows that aren't 21+ |
+| Sponsors | One brand, labelled national | Alcohol, tobacco and gambling excluded on shows that aren't 21+ or that the operator marked all ages |
 | The user's own partners | Up to 20 names | Not in the catalog: "not in Qloo's catalog, kept in your order" |
 | Outside the US | Not covered yet | Neighbourhood names and adult counts come from US Census data |
 | Political candidates and campaigns | Refused | Error |

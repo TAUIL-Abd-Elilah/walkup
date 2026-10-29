@@ -290,6 +290,16 @@ function rosterBody(venueId: string, from: string): unknown {
   return { _embedded: { events }, page: { size: 60, totalElements: events.length, totalPages: 1, number: 0 } };
 }
 
+/**
+ * The note on the parent's roster receipt when a revision reuses it. The run's ledger names the node itself ("node Q3
+ * house roster (Ticketmaster)"), so the parent's node name is left off here: only its own detail and the reuse are
+ * added. Exported for the test.
+ */
+export function reusedRosterNote(parentEntry: Pick<LedgerEntry, "note" | "startedAt">): string {
+  const detail = (parentEntry.note ?? "").replace(/^node [^;]*(?:; )?/, "");
+  return `${detail ? `${detail}; ` : ""}the parent sheet's answer (${parentEntry.startedAt.slice(0, 10)}), reused so the room's usual crowd stays the same`;
+}
+
 /** Ticketmaster for a revision: the event itself live, the room's roster answered as the parent saw it. */
 function replayTm(parent: StreetSheet, apiKey: string): PlanDeps["tm"] {
   const counter = createMemoryCounterStore();
@@ -299,11 +309,7 @@ function replayTm(parent: StreetSheet, apiKey: string): PlanDeps["tm"] {
       add(entry) {
         if (entry.kind === "tm" && entry.endpoint === "/discovery/v2/events.json" && t2) {
           const { id: _id, ...kept } = t2;
-          return ledger.add({
-            ...kept,
-            cacheHit: true,
-            note: `${kept.note ?? "node Q3 house roster (Ticketmaster)"}; the parent sheet's answer (${kept.startedAt.slice(0, 10)}), reused so the room's usual crowd stays the same`,
-          });
+          return ledger.add({ ...kept, cacheHit: true, note: reusedRosterNote(kept) });
         }
         return ledger.add(entry);
       },

@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-29T03:00:20.859Z",
+  "generatedAt": "2026-10-29T09:16:00.638Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -414,7 +414,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a"
         },
@@ -807,7 +807,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-b"
         },
@@ -1228,7 +1228,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "partial (expected partial): 2 areas had fewer than 8 places within 2 km, so the search widened to 3.5 km.",
+          "detail": "partial (expected partial): 2 areas had fewer than 8 places within 2 km, so the search widened to 3.5 km. Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g2"
         },
@@ -1628,7 +1628,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "partial (expected partial): No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list.",
+          "detail": "partial (expected partial): No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g3"
         },
@@ -2037,7 +2037,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "partial (expected partial): 2 areas had fewer than 8 places within 2 km, so the search widened to 3.5 km.",
+          "detail": "partial (expected partial): 2 areas had fewer than 8 places within 2 km, so the search widened to 3.5 km. Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g2 resumed"
         },
@@ -2370,7 +2370,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, empty compare"
         },
@@ -2992,7 +2992,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "partial (expected partial): No area stood out, so partners are picked near the venue. Found 8 partners; the list aims for 15. The signal is thin, so treat this as a starting list.",
+          "detail": "partial (expected partial): No area stood out, so partners are picked near the venue. Found 8 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, lift weak"
         },
@@ -4076,7 +4076,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok or partial)",
+          "detail": "ok (expected ok or partial): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, closed places"
         },
@@ -4346,7 +4346,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok or partial)",
+          "detail": "ok (expected ok or partial): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, unknown hours"
         },
@@ -4672,7 +4672,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a from cache under the guard"
         },
@@ -5202,7 +5202,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, 429 once"
         },
@@ -6824,7 +6824,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-b after g1-a (warm venue)"
         },
@@ -7508,7 +7508,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, no model"
         },
@@ -7774,7 +7774,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, model error"
         },
@@ -8019,7 +8019,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "ok (expected ok)",
+          "detail": "ok (expected ok): Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g1-a, off-schema draft"
         },

@@ -6,8 +6,10 @@
  *
  * Keys come from the environment (QLOO_API_KEY, TICKETMASTER_API_KEY, ...);
  * without them the server runs in fixture mode on the synthetic world. Plans go
- * to WALKUP_DATA_DIR (default: <repo>/.cache). WALKUP_URL, when set,
- * is the web app that serves share links (/s/<planId>) from the same data dir.
+ * to WALKUP_DATA_DIR (default: <repo>/apps/web/.cache, the folder `npm run dev`
+ * keeps its plans in, since it runs in apps/web and resolves ./.cache there).
+ * WALKUP_URL, when set, is the web app that serves share links (/s/<planId>)
+ * from the same data dir.
  * --unlimited lifts the fresh-run caps (only for a server on your own keys).
  */
 import { fileURLToPath } from "node:url";
@@ -22,9 +24,10 @@ async function main(): Promise<void> {
   const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
   const { createServicesFromEnv, createWalkupMcpServer, createUnlimitedFreshRunLimiter } = await import("./index");
   const unlimited = process.argv.slice(2).includes("--unlimited");
-  const repoCache = fileURLToPath(new URL("../../../.cache", import.meta.url));
+  // The dev server's own data dir, so a share link opens on `npm run dev` without setting WALKUP_DATA_DIR.
+  const webCache = fileURLToPath(new URL("../../../apps/web/.cache", import.meta.url));
   const services = createServicesFromEnv(process.env, {
-    dataDirFallback: repoCache,
+    dataDirFallback: webCache,
     // Fixture runs on the synthetic world cost nothing; live runs keep the caps unless --unlimited.
     policy: { fixtureEventRuns: true, capFixtureRuns: false },
     ...(unlimited ? { limiter: createUnlimitedFreshRunLimiter() } : {}),

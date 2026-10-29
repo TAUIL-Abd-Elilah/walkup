@@ -8,9 +8,6 @@ import CHAIN_FILE from "../../../config/chains.json";
 
 export const CHAINS: ChainIndex = compileChains(CHAIN_FILE as ChainList);
 
-/** The card limit when the list matched any candidate. */
-export const CHAIN_LIMIT = "National chains are spotted by name from a hand-kept list; a chain not on it is listed like a local place.";
-
 /** The card's one line when the rule moved a chain, e.g. "National chains are listed after local places (3 moved down)." */
 export function chainLine(moved: number, offList: number): string | null {
   if (moved <= 0) return null;

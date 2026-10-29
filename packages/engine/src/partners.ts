@@ -169,7 +169,7 @@ export interface PartnerScoringReport {
   penalized: number;
   nonBarAdded: number;
   nonBarSwaps: number;
-  /** Eligible candidates (distinct) on the chain list. 0 without a list. */
+  /** Eligible candidates (distinct) that `chainSignals` flags as chains. 0 without a list. */
   chains: number;
   /** Chains on the list the same pass makes without the chain rule that the rule moved (off the list, or below a lower-scored local of their area). */
   chainsMovedDown: number;

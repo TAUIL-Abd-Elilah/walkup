@@ -22,7 +22,7 @@ vi.mock("next/link", () => ({
 }));
 
 const { default: SheetPage, generateMetadata } = await import("../app/s/[id]/page");
-const { resetEngineForTests } = await import("../lib/server/engine");
+const { resetEngineForTests, stores } = await import("../lib/server/engine");
 const { resetRunsForTests } = await import("../lib/server/runs");
 const { loadPlan } = await import("../lib/server/service");
 const { vettedSheet } = await import("../lib/vetted");
@@ -123,6 +123,42 @@ describe("print view", () => {
     }
   });
 
+  it("prints every cell in full and keeps each partner row and the footer whole on paper", async () => {
+    for (const id of ["g1-a", "g2", "g3"]) {
+      const html = renderToStaticMarkup(await SheetPage(params(id)));
+      const sheet = /<article[\s\S]*<\/article>/.exec(html)?.[0] ?? "";
+      expect(sheet, id).not.toBe("");
+      // Paper has no tooltip to show the rest, so nothing on the sheet is cut with "…" or clamped to two lines.
+      expect(sheet, id).not.toMatch(/class="[^"]*\b(truncate|line-clamp-\d)\b/);
+      // No extra lift on the tables' receipts: with it they sat over the line above.
+      expect(sheet, id).not.toContain("_.fn]:align");
+      // A row never splits across the page break, which left a phone number alone at the top of page 2.
+      const partners = /<section[^>]*aria-labelledby="sec-partners"[\s\S]*?<\/section>/.exec(sheet)?.[0] ?? "";
+      const rows = [...((/<tbody>[\s\S]*?<\/tbody>/.exec(partners)?.[0] ?? "").matchAll(/<tr [^>]*>/g))].map((m) => m[0]);
+      expect(rows.length, id).toBeGreaterThan(0);
+      for (const r of rows) expect(r, id).toContain("print:break-inside-avoid");
+      expect(sheet, id).toMatch(/<footer class="print-avoid-break /);
+      // On paper the Q numbers open nothing, so the paper says they point to the request.
+      const text = (s: string) => s.replace(/<[^>]+>/g, "");
+      const paper = text(sheet.replace(/<span class="print:hidden">[^<]*<\/span>/g, ""));
+      const screen = text(sheet.replace(/<span class="hidden print:inline">[^<]*<\/span>/g, ""));
+      expect(paper, id).toContain("The small Q numbers after each line point to the request behind it.");
+      expect(screen, id).toContain("The small Q numbers after each line open the request behind it.");
+    }
+  });
+
+  it("offers the one-page PDF in US Letter and A4, and does not promise one page for this view", async () => {
+    const html = renderToStaticMarkup(await SheetPage(params("g2")));
+    const text = html.replace(/<[^>]+>/g, "");
+    expect(html).toContain('href="/api/sheet/g2/pdf"');
+    expect(html).toContain('href="/api/sheet/g2/pdf?size=a4"');
+    expect(text).toContain("Download PDF: US Letter · A4");
+    expect(text).toContain("The PDF is one page. Printing this view can take two.");
+    expect(text).not.toContain("US Letter or A4");
+    // The page's own description does not call this view one page either.
+    for (const id of ["g1-a", "g2", "g3"]) expect(String((await generateMetadata(params(id))).description), id).not.toMatch(/one-page/i);
+  });
+
   it("describes its own sheet, not the home page", async () => {
     const v = await loadPlan("g1-a", { view: "api" });
     if (v?.kind !== "sheet") throw new Error("g1-a");
@@ -133,5 +169,20 @@ describe("print view", () => {
     expect(meta.description).toBe(summary ? summary : expect.stringContaining(v.sheet.bill.venue.name));
     expect(String(meta.description)).not.toMatch(/^For one booked show/);
     expect((await generateMetadata(params("no-such-plan"))).title).toBe("Sheet not found");
+  });
+
+  it("counts the podcasts past its list of 4, as the PDF does past its 3, and says nothing when all fit", async () => {
+    const v = await loadPlan("g1-a", { view: "api" });
+    if (v?.kind !== "sheet") throw new Error("g1-a");
+    const pods = v.sheet.cards.media.results.filter((m) => m.kind === "podcast");
+    expect(pods).toHaveLength(4);
+    const planId = "00000000-0000-4000-8000-00000000f1ve";
+    const extra = { ...pods[0]!, entity: { ...pods[0]!.entity, entityId: "fifth-podcast", name: "The Fifth Podcast" } };
+    const sheet: StreetSheet = { ...structuredClone(v.sheet), planId };
+    sheet.cards.media.results = [...sheet.cards.media.results, extra];
+    await stores().plans.put({ planId, createdAt: sheet.createdAt, mode: "fixture", status: "complete", request: { planId }, sheet });
+    const text = (html: string) => html.replace(/<[^>]+>/g, "");
+    expect(text(renderToStaticMarkup(await SheetPage(params(planId))))).toContain("+1 more podcast on the plan page and in sheet.json.");
+    expect(text(renderToStaticMarkup(await SheetPage(params("g1-a"))))).not.toContain("more podcast");
   });
 });

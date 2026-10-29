@@ -205,9 +205,11 @@ restarts, especially during PDF exports, and go back to 2 GB if they appear.
 Live runs can be paused: for judging, and in any case when the Qloo hackathon key ends on Nov 2 2026. While they are
 paused, the site serves the sheets it recorded on live runs and makes nothing new. The web app calls this **recorded** mode:
 
-- Each preset (`g1-a`, `g1-b`, `g2`, `g3`) shows its latest stored live run made with the preset's own inputs, skipping
+- Each preset with a live show (`g1-a`, `g1-b`, `g4-a`, `g4-b`) shows its latest stored live run made with the preset's own inputs, skipping
   a run on which Qloo refused the key (401, or 403 with no fresh Qloo call answered; answers from the Qloo cache do not
-  count) and one with at least half of its cards failed. A preset with no such run shows its bundled sample sheet, labelled "Sample sheet".
+  count) and one with at least half of its cards failed. `g1-a` and `g1-b` with no such run show their bundled sample sheet,
+  labelled "Sample sheet"; `g4-a` and `g4-b` have no sample sheet, so their pages answer 404 until a run is stored.
+  `g2` and `g3` have no live show and always show their sample sheet.
 - Any stored live sheet still opens at `/plan/<id>`, `/s/<id>` and `/api/sheet/<id>`, with its downloads. Sample
   sheets stored earlier stay labelled sample. The send step stays as it is (confirm first, test inbox by default).
   A recorded sheet's envelope (`/api/sheet/<id>`, MCP `get_sheet`) says `"mode": "recorded"`; the sheet inside keeps
@@ -238,19 +240,19 @@ Qloo has rejected the configured key and the plan store holds a live sheet. A re
 falls back to fixture mode (the synthetic sample world), as before. The stored sheets live in `/data/plans.sqlite` on
 the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
 
-1. **Before Nov 2, record each preset live on the host.** Only a preset with a live show (its `live` block: g1-a and g1-b)
+1. **Before Nov 2, record each preset live on the host.** Only a preset with a live show (its `live` block: g1-a, g1-b, g4-a and g4-b)
    can be recorded; one without stops with "This preset has no live show yet." and records nothing. While the
-   server is live, a preset page shows the bundled sample until a live run of that preset's live show is stored. Start one per preset with the preset's own inputs (no what-ifs,
+   server is live, a preset page shows the bundled sample (a 404 for `g4-a` and `g4-b`, which have none) until a live run of that preset's live show is stored. Start one per preset with the preset's own inputs (no what-ifs,
    no partner list, no picks sent up front). Each is a fresh run and counts against the caps (3 per network and 15 per
    day), so run the fourth from another network or the next day; answering a pick does not count again.
 
    ```bash
-   for p in g1-a g1-b g2; do      # g3 the same way, from another network or the next day
+   for p in g1-a g1-b g4-a; do      # g4-b the same way, from another network or the next day
      curl -sS -X POST https://walkup-agent.fly.dev/api/plan -H 'content-type: application/json' -d "{\"presetId\":\"$p\"}" | head -c 400; echo
    done
    ```
 
-   A preset that stops at `needs_input` (G2's one-word act) lists its candidates under `pending`. Pick one, as an
+   A run that stops at `needs_input` (an act name with more than one match) lists its candidates under `pending`. Pick one, as an
    operator would, with the `planId` it returned:
 
    ```bash
@@ -258,14 +260,15 @@ the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
      -d '{"picks":[{"input":"<the pending input>","entityId":"<one of its candidates>"}],"wait":"complete"}'
    ```
 
-   Then check that every preset has its recording:
+   Then check that every preset with a live show (g1-a, g1-b, g4-a, g4-b) has its recording:
 
    ```bash
    curl -s https://walkup-agent.fly.dev/healthz    # "recorded": {"presets": {"g1-a": {"planId": ..., "createdAt": ...}, ...}}
    ```
 
-   A preset that shows `null` has no usable live run yet. Open each `/plan/<preset>` and read the sheet before the key
-   goes: this is what visitors will see until Dec 31.
+   One of those four that shows `null` has no usable live run yet; g2 and g3 always show `null`, since they have no
+   live show. Open each `/plan/<preset>` and read the sheet before the key goes: this is what visitors will see until
+   Dec 31.
 
    **Re-recording.** Once a preset has a stored run, `POST /api/plan {"presetId": ...}` serves that run; there is no
    public way to replace it. After a code change or a show change, the operator re-records with a token held in Fly
@@ -297,7 +300,7 @@ the volume; raw Qloo bodies (`WALKUP_RECORD`) are not needed for this.
    show the synthetic sample world instead.
 4. **Check.** `curl -s https://walkup-agent.fly.dev/healthz` shows `"mode":"recorded"`, `"qloo":{"keyRejected":...,"until":...}`
    and a `planId` for each recorded preset. Open each preset: the strip at the top, "Recorded <date>" in the header,
-   and no "Run it again" or "Change something".
+   no "Run it again", and "Change something" only on a sheet with revisions recorded for it, listing its ready-made changes.
 
 If neither variable is set, the first fresh run after the key is switched off sees Qloo refuse it (401, or 403 on every
 call), records that in `/data/qloo-key-status.json`, and the server switches to recorded mode from then on (fixture

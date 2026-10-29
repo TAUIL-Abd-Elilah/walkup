@@ -26,7 +26,7 @@ Shape (JSON Schema: [`tags.schema.json`](tags.schema.json)):
 |---|---|
 | `categories[]` | Place categories: `bar`, `pub`, `sports_bar`, `irish_pub`, `restaurant`, `cafe`, `record_store`, `book_store`, `barber_shop`, `beauty_salon`, `clothing_store`, `night_club`, `place_of_worship`, `soul_food` |
 | `baselines[]` | Genre-tag baselines for Q5 when the room's roster resolves fewer than 5 acts, keyed by a lower-cased Ticketmaster genre. Validated by heatmap cells, not rows (`validation.baselineMinCells`, 200, near a hero room). Comedy never gets one: the stand-up comedy tag heatmap came back with 0 cells on Oct 15 (probe 19), and the code ignores a comedy baseline even if one is pinned. `validatedRows` holds the cell count |
-| `sponsorExclusions[]` | Brand tags excluded from the sponsor card (Q13) when the show is not 21+: `alcohol`, `tobacco`, `gambling` |
+| `sponsorExclusions[]` | Brand tags excluded from the sponsor card (Q13) when the show is not 21+ or the operator marked it all ages: `alcohol`, `tobacco`, `gambling` |
 | `personChecks[]` | Tags checked on person entities: `comedian` (Q1 admits a person on a comedy bill only with it) |
 | `denied` | Copy of `DENIED_TAG_PREFIXES` and `DENIED_TAG_KEYWORDS` from [`packages/contracts`](../packages/contracts/src/index.ts). A test fails if the two drift apart. Code should import the constants from contracts; this copy exists so the policy is readable next to the pins |
 | `validation` | The rule a tag must pass before it is pinned (see below); `baselineMinCells` and `baselineAnchor` for baselines |
@@ -49,7 +49,7 @@ Each entry:
 
 **Runtime rule.** Code uses a tag only when `status` is `pinned`. A category that is `unpinned` or `dropped` is skipped, and the card that needed it is marked `partial` with the reason. Nothing falls back to a free-text tag.
 
-**Policy notes.** `night_club` is used only as an exclusion on shows that are not 21+ (age policy comes from Ticketmaster `ageRestrictions`, never from Qloo). `place_of_worship` exists only so an operator can pick a congregation they declared themselves from a search pick list; it is never used to discover or rank places on its own. `soul_food` is a cuisine and joins the partner category set only when the operator selects it. No pinned URN may start with a denied prefix; a test checks this.
+**Policy notes.** `night_club` is used only as an exclusion, on shows that are not 21+ or that the operator marked all ages (age policy comes from Ticketmaster `ageRestrictions`, never from Qloo). `place_of_worship` exists only so an operator can pick a congregation they declared themselves from a search pick list; it is never used to discover or rank places on its own. `soul_food` is a cuisine: it joins the partner category set when the operator selects it, or on the "more categories" retry when an area still returns fewer than 8 places. No pinned URN may start with a denied prefix; a test checks this.
 
 ## Pinning on key day
 

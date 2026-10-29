@@ -108,7 +108,8 @@ describe("recorded mode copy (live runs paused)", () => {
 
   it("credits the data in the footer without claiming sample data or a live call", () => {
     const recorded = dataSourcesLine("recorded");
-    expect(recorded).toBe("Affinity data from Qloo, events and age rules from Ticketmaster, recorded on live runs. Live runs are paused for judging.");
+    // Scoped to recorded sheets: the footer can't see the sheet, and a sample sheet on the same server is made up.
+    expect(recorded).toBe("Recorded sheets: affinity data from Qloo, events and age rules from Ticketmaster, recorded on live runs. Live runs are paused for judging.");
     // Google Places is no longer a source, so no credit names it.
     expect(recorded).not.toMatch(/\bsample\b|made-up/i);
     for (const m of ["live", "fixture", "recorded"] as const) expect(dataSourcesLine(m)).not.toMatch(/Google|Places/);

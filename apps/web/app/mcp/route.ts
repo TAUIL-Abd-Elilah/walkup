@@ -1,12 +1,14 @@
 /**
  * /mcp: the Walkup MCP server over Streamable HTTP (stateless, JSON
- * responses). Tools: plan_show, rank_partners, bill_vs_house, get_sheet, each
- * returning the same envelope as the JSON API. Keys stay on this server.
+ * responses). Tools: plan_show, rank_partners, bill_vs_house, get_sheet and
+ * revise_plan, each returning the same envelope as the JSON API. Keys stay on
+ * this server.
  *
  * It runs on the web app's own engine, so both front doors behave alike: the
  * same orchestrator deps and plan store (plans made here open at /s/<planId>),
  * the same preset sheets, the same per-IP fresh-run allowance, the same
- * fixture-mode rule (presets only), the same recorded-mode rule (live runs
+ * fixture-mode rule (presets only; g4-a and g4-b plan real shows only and are
+ * refused, with the reason POST /api/plan gives), the same recorded-mode rule (live runs
  * are paused: only the reading tools answer, and revise_plan names the
  * recorded version the revise route would open for the same note), and the
  * same quota and rejected-key bookkeeping after live runs.
@@ -127,5 +129,15 @@ export async function GET(request: Request): Promise<Response> {
 
 /** Stateless server: no session to end (405). */
 export async function DELETE(request: Request): Promise<Response> {
+  return handle(request);
+}
+
+/** Not part of the transport: the same JSON-RPC 405 as GET and DELETE, not an empty one. */
+export async function PUT(request: Request): Promise<Response> {
+  return handle(request);
+}
+
+/** Not part of the transport: the same JSON-RPC 405 as GET and DELETE, not an empty one. */
+export async function PATCH(request: Request): Promise<Response> {
   return handle(request);
 }

@@ -4,7 +4,9 @@
  * receipts, pending picks, the reason, the limits). Built only from the
  * envelope; it adds no places or numbers of its own.
  */
-import type { DeclaredPartnerScore, StreetSheet } from "@walkup/contracts";
+import type { DeclaredPartnerScore, LiftTile, StreetSheet } from "@walkup/contracts";
+import { areaLabel } from "@walkup/exports/format";
+import { numberedTiles } from "@walkup/orchestrator";
 import { recordedDay, type ToolEnvelope } from "./envelope";
 import { TM_EVENT_SUBTYPE } from "./event";
 import type { BillVsHouse } from "./tools";
@@ -38,9 +40,17 @@ function ref(r: string | undefined): string {
   return r ? ` [${r}]` : "";
 }
 
-function tileLines(tiles: { geohash: string; name?: string; lift: number }[], provenance: string | undefined): string[] {
-  return tiles.slice(0, MAX_TILES).map((t, i) => `  ${i + 1}. ${t.name ?? `tile ${t.geohash}`} (lift ${t.lift.toFixed(2)})${ref(provenance)}`);
+/**
+ * The sheet's numbered areas 1-5, as the Street Sheet page, the PDF and the CSVs list them: lift 1.3 and up, highest
+ * first, none within 3 km of another or sharing its ZIP (numberedTiles), each named with its own state (areaLabel).
+ * Never the map's first five squares, which can be one area twice.
+ */
+function areaLines(tiles: readonly LiftTile[], provenance: string | undefined): string[] {
+  return numberedTiles(tiles, MAX_TILES).map((t, i) => `  ${i + 1}. ${t.name ? areaLabel(t) : `tile ${t.geohash}`} (lift ${t.lift.toFixed(2)})${ref(provenance)}`);
 }
+
+/** Said when the map has squares but none reached the lift floor, as the page says it. */
+const NO_NUMBERED_AREA = "No area reached a lift of 1.3, so the sheet numbers none.";
 
 function sheetLines(s: StreetSheet): string[] {
   const out: string[] = [];
@@ -49,8 +59,9 @@ function sheetLines(s: StreetSheet): string[] {
   const lift = s.cards.liftMap;
   if (lift.results.tiles.length > 0 && lift.results.diagnostics.baseline !== "none") {
     const base = lift.results.diagnostics.baseline === "house" ? "the room's usual crowd" : "a genre baseline";
-    out.push(`Where this crowd over-indexes vs ${base}:`);
-    out.push(...tileLines(lift.results.tiles, lift.provenance[0]));
+    const areas = areaLines(lift.results.tiles, lift.provenance[0]);
+    out.push(areas.length > 0 ? `Numbered areas on the sheet, where this crowd over-indexes vs ${base}:` : NO_NUMBERED_AREA);
+    out.push(...areas);
   }
   const partners = s.cards.partners.results;
   if (partners.length > 0) {
@@ -84,8 +95,9 @@ function billVsHouseLines(r: BillVsHouse, provenance: string[]): string[] {
     }`,
   );
   if (r.tiles.length > 0) {
-    out.push("Top lift tiles:");
-    out.push(...tileLines(r.tiles, provenance[0]));
+    const areas = areaLines(r.tiles, provenance[0]);
+    out.push(areas.length > 0 ? "Numbered areas on the sheet (highest lift first):" : NO_NUMBERED_AREA);
+    out.push(...areas);
   }
   const distinct = r.whatsDifferent.a.slice(0, 5).map((t) => t.name);
   if (distinct.length > 0) out.push(`Distinctive to this bill: ${distinct.join(", ")}`);

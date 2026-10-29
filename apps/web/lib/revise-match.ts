@@ -5,13 +5,15 @@
  * tools, or the fixed rules without a model key) and turns it into operator overrides. A stored revision of the
  * same parent answers it when its own tool calls give the same overrides after normalising: the same fields,
  * place types and areas compared as sets, days in the order given (partner hours are checked against the first),
- * repeats dropped, the radius to 0.1 km, and fields left as the parent already had them
- * dropped. Nothing else (the note's wording, who read it) has to match.
+ * repeats dropped, the radius to 0.1 km, fields left as the parent already had them dropped, and on a sheet that ends
+ * up all ages the bar types all ages already leaves out dropped. Nothing else (the note's wording, who read it) has to
+ * match.
  *
  * Pure: no server or Next imports, so the precompute script (scripts/precompute-revisions.ts) checks its notes with
  * the same functions. Never import it from a client component (it loads the orchestrator).
  */
 import { WEEKDAYS, type OperatorInputs, type SheetRevision, type StreetSheet, type Weekday } from "@walkup/contracts";
+import { DEFAULT_BAR_CATEGORIES } from "@walkup/engine";
 import { checkReviseCall, type ReviseCall } from "@walkup/narrator";
 import { overridesFor, reviseSummary } from "@walkup/orchestrator";
 
@@ -54,14 +56,23 @@ function sameValue(a: unknown, b: unknown): boolean {
 /**
  * The overrides as they differ from the parent: every field normalised, and a field set to what the parent already
  * had left out (so "within 40 km, only Saturday" on a 40 km sheet is the same change as "only Saturday").
+ *
+ * On a sheet that ends up all ages the bar place types are no change of their own: all ages already leaves every bar
+ * type out (the orchestrator's `excludedCategoriesFor`), so "All ages" is the same change as "All ages, no bars".
  */
 export function normaliseOverrides(overrides: Partial<OperatorInputs>, parent: Partial<OperatorInputs>): NormalOverrides {
   const out: NormalOverrides = {};
+  const bars = new Set<string>((overrides.allAges ?? parent.allAges) === true ? DEFAULT_BAR_CATEGORIES : []);
+  const withoutBars = <T>(v: T): T => (Array.isArray(v) ? (v.filter((c) => !bars.has(c)) as T) : v);
   for (const key of FIELDS) {
     if (!(key in overrides) || overrides[key] === undefined) continue;
-    const value = normalField(key, overrides[key]);
+    let value = normalField(key, overrides[key]);
     if (value === undefined) continue;
-    const before = normalField(key, parent[key] ?? (key === "excludeCategories" || key === "excludeAreas" ? [] : key === "allAges" ? false : undefined));
+    let before = normalField(key, parent[key] ?? (key === "excludeCategories" || key === "excludeAreas" ? [] : key === "allAges" ? false : undefined));
+    if (key === "excludeCategories") {
+      value = withoutBars(value);
+      before = withoutBars(before);
+    }
     if (before !== undefined && sameValue(value, before)) continue;
     (out as Record<string, unknown>)[key] = value;
   }

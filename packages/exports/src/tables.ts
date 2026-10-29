@@ -20,7 +20,7 @@ import {
   DECLARED_UNRANKED,
   FIXTURE_NOTICE,
   hoursWeekday,
-  partnerAreaLabel,
+  NEAR_VENUE,
   partnerAreaText,
   partnerWhyLong,
   PHONE_NOT_LISTED,
@@ -131,13 +131,16 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
       order,
       "suggested",
       p.entity.name,
-      categoryLabel(p.category),
-      partnerAreaText(p, tiles),
+      // "Cafe, national chain", as the plan page and the paper say it.
+      p.chain === true ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category),
+      // The paper's words for a partner from the search around the venue (no area): never a blank cell.
+      partnerAreaText(p, tiles) || NEAR_VENUE,
       tile ? round(tile.lift, 2) : null,
       p.address ?? prop(p.entity, "address"),
       visit ? visit.weekdays.map(weekdayShort).join("; ") : "",
       visit ? visit.days.map((d) => dayHoursText(d.hours, d.weekday)).join("; ") : closedAll ? `Closed ${streetDaysText(streetDays)}: not on the calendar` : dayHoursText(p.hoursOnDay, day),
-      visit ? visit.dates.join("; ") : "",
+      // A date the day's route had no time left for says so, as the calendar's first event that day does.
+      visit ? visit.dates.map((d) => (visit.notTimed.includes(d) ? `${d} (no time left on the route: call to arrange)` : d)).join("; ") : "",
       // A blank is said out loud, as on the paper. The website is the cleaned one only (`Partner.website`), the same
       // as the plan page and the PDF: a site the engine's rule dropped is not written here either.
       notListed(p.phone ?? prop(p.entity, "phone"), PHONE_NOT_LISTED),
@@ -205,11 +208,10 @@ export function partnersCsv(sheet: StreetSheet, opts: PartnersCsvOptions = {}): 
 // ---------------------------------------------------------------------------
 
 /**
- * Weight per numbered area, summing to 1 and never rising with the area number (area 1 gets the most), so every
- * file agrees with the order the sheet recommends (in zips.csv, an area's ZIPs add up to its weight). The values are
- * the sheet's budget split when it covers every
- * area (the largest share goes to area 1, the next to area 2, ...), otherwise proportional to lift (already in
- * area order). Same "heuristic, not a forecast" status as the budget split.
+ * Weight per numbered area, summing to 1 (in zips.csv, an area's ZIPs add up to its weight). When the sheet's budget
+ * split covers every area, each area keeps its own stored share, the same numbers the plan page and the area text
+ * show; otherwise the weights are proportional to lift (already in area order). Same "heuristic, not a forecast"
+ * status as the budget split.
  */
 export function tileWeights(sheet: StreetSheet, tiles: readonly LiftTile[]): Map<string, number> {
   const out = new Map<string, number>();
@@ -221,8 +223,7 @@ export function tileWeights(sheet: StreetSheet, tiles: readonly LiftTile[]): Map
   });
   const raw = tiles.map((t) => (fromSplit ? (split.get(t.geohash) as number) : Math.max(0, Number.isFinite(t.lift) ? t.lift : 0)));
   const total = raw.reduce((a, b) => a + b, 0);
-  const ordered = [...raw].sort((a, b) => b - a);
-  tiles.forEach((t, i) => out.set(t.geohash, total > 0 ? (ordered[i] ?? 0) / total : 1 / tiles.length));
+  tiles.forEach((t, i) => out.set(t.geohash, total > 0 ? (raw[i] ?? 0) / total : 1 / tiles.length));
   return out;
 }
 
@@ -289,8 +290,8 @@ export interface ZipOptions extends TileSelectOptions {
 /**
  * One row per residential 5-digit ZCTA in the numbered areas' `zctas`, in area order. A ZIP in several areas is
  * listed once, under the first. Each area's weight (`tileWeights`, the sheet's budget split) is split evenly over the
- * ZIPs listed under it, so an area's rows add up to its share and the area totals fall with the area number as the
- * sheet's budget split does; the rows are then scaled to sum to 1. Areas without a residential ZIP drop out.
+ * ZIPs listed under it, so an area's rows add up to its share in the budget split; the rows are then scaled to sum
+ * to 1. Areas without a residential ZIP drop out.
  */
 export function zipRows(sheet: StreetSheet, opts: ZipOptions = {}): ZipRow[] {
   const tiles = topTiles(sheet, opts);
@@ -467,11 +468,13 @@ export function offerCodeRows(sheet: StreetSheet, opts: OfferCodeOptions = {}): 
   } as const;
   const rows: OfferCodeRow[] = [];
   for (const p of sheet.cards.partners.results) {
-    const tileText = partnerAreaLabel(p, tiles);
+    // The same area words as partners.csv and the paper ("Kenilworth, DC (place in MD)", "near venue").
+    const tileText = partnerAreaText(p, tiles) || NEAR_VENUE;
     rows.push({
       ...base,
       code: make(p.entity.name, "PARTNER"),
-      description: `${fx}Street team code for ${p.entity.name}${tileText ? ` (${tileText})` : ""}`,
+      // "(Kenilworth, DC, place in MD)": one pair of brackets in the description.
+      description: `${fx}Street team code for ${p.entity.name} (${tileText.replace(/ \((place in [A-Z]{2})\)$/, ", $1")})`,
       channel: "partner",
       assignedTo: p.entity.name,
       tile: tileText,

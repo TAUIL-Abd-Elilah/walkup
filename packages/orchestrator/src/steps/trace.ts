@@ -25,6 +25,7 @@ import {
   popularityStep,
   prePostStep,
   resolveStep,
+  summaryReplaced,
   ubiquityDrops,
   usualCrowdStep,
 } from "@walkup/engine";
@@ -394,7 +395,13 @@ export function mediaTrace(ctx: RunContext, card: StreetSheetCards["media"]): Tr
 }
 
 export function narrateTrace(copy: CopyResult): TraceStep {
-  return narrateStep({ templated: copy.templated, hooks: copy.card.results.length, hooksStatus: copy.card.status, ledgerRefs: copy.card.provenance });
+  return narrateStep({
+    templated: copy.templated,
+    hooks: copy.card.results.length,
+    hooksStatus: copy.card.status,
+    summaryReplaced: summaryReplaced(copy.guardReasons),
+    ledgerRefs: copy.card.provenance,
+  });
 }
 
 /** Alcohol tags the copy step held back (from its own guard reason). */

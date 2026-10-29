@@ -22,7 +22,7 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | **Q3** house set | venue's next 60 Ticketmaster events -> attraction Spotify IDs | `GET /entities?external.spotify.ids=` (batched) | lookup | `Resolution[]` (role `house`) | `tm` -> `qloo` |
 | Q3 | unresolved headliners (at most 6) | typed `GET /search` | lookup | `Resolution[]` (role `house`) | `qloo` |
 | Q3 | | `results[].entity_id` | output | house set: top 12 by recency and frequency | `engine` |
-| Q3 | fewer than 5 resolved | pinned genre/category tag (`config/tags.json`) | signal | `liftMap.results.diagnostics.baseline = "tag"`; status `degraded` | `engine` |
+| Q3 | fewer than 5 resolved | pinned genre tag (`config/tags.json` `baselines`) | signal | `liftMap.results.diagnostics.baseline = "tag"`; status `degraded`. No genre tag is pinned yet and comedy never gets one, so today such a sheet has `baseline = "none"` and no lift map | `engine` |
 | **Q4** bill heat | resolved bill entity IDs | `signal.interests.entities` | signal | n/a | `qloo` |
 | Q4 | `Act.role` (headliner 1.0, co 0.6, support 0.3) | none: POST `{entity, weight}` returned 400 on Oct 15 (probe 14) and was removed; every call is a GET with plain ids | n/a | n/a | n/a |
 | Q4 | `Venue.lon`, `Venue.lat` | `filter.location=POINT(lon lat)` | filter | n/a | `qloo` |
@@ -52,10 +52,10 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q8 | generic or empty result | two `filter.type=urn:tag` calls, diffed by rank | output | `CompareResult.fromTagDiff = true`; status `degraded` | `engine` |
 | **Q9** partners | resolved bill entity IDs | `signal.interests.entities` | signal | n/a | `qloo` |
 | Q9 | `LiftTile.lon`, `LiftTile.lat` (top 3 tiles) | `filter.location=POINT(lon lat)`, `filter.location.radius=2000` (3500 on fallback) | filter | `Partner.tileGeohash`, `.tileName` | `engine` -> `qloo` |
-| Q9 | category set from `config/tags.json` (`bar`, `restaurant`, `cafe`, `record_store`, `book_store`, `clothing_store`; `barber_shop`, `beauty_salon` if pinned; `soul_food` only when the operator selects it) | `filter.tags`, `operator.filter.tags=union` | filter | `Partner.category` | `qloo` |
+| Q9 | `categories` from the request or preset, else the default set (`bar`, `restaurant`, `cafe`, `record_store`, `book_store`, `clothing_store`, `barber_shop`, `beauty_salon`); only keys whose `config/tags.json` status is `pinned` are sent, so `record_store` (dropped Oct 15) is skipped and the card says so; a pool that returns fewer than 8 places is asked again with the pinned `pub`, `sports_bar` and `soul_food` added ("more categories") | `filter.tags`, `operator.filter.tags=union` | filter | `Partner.category` | `qloo` |
 | Q9 | `OperatorInputs.streetTeamDays` | `filter.hours=<weekday>` | filter | `Partner.hoursOnDay` (double-checked against `properties.hours`) | `qloo` -> `engine` |
 | Q9 | fixed | `filter.price_level.max=3` | filter | n/a | `qloo` |
-| Q9 | `Bill.legalAgeEnforced` not true (Ticketmaster `ageRestrictions`) | `filter.exclude.tags=<night_club URN>` | filter | n/a | `qloo` |
+| Q9 | `Bill.legalAgeEnforced` not true (Ticketmaster `ageRestrictions`), or `OperatorInputs.allAges` | `filter.exclude.tags=<night_club URN>` | filter | n/a | `qloo` |
 | Q9 | `Venue.qlooEntityId` | `filter.exclude.entities` | filter | n/a | `qloo` |
 | Q9 | | `feature.explainability=true`, `take=50` | option | n/a | `qloo` |
 | Q9 | | `results.entities[].entity_id`, `name`, `subtype`, `popularity`, `tags` | output | `Partner.entity` (`QlooEntity`) | `qloo` |
@@ -66,7 +66,7 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q9 | | `results.entities[].query.distance` | output | `QlooEntity.distanceM` (tie-break) | `qloo` -> `engine` |
 | Q9 | | `results.entities[].query.explainability["signal.interests.entities"][]` `{entity_id, score}` | output | `QlooEntity.explainability` (`ExplainContribution[]`); balance check | `qloo` -> `engine` |
 | Q9 | | position in the response | output | `Partner.qlooRank` -> `Partner.score`; `Partner.chips[].ledgerRef = "Q9"` | `engine` |
-| Q9 | [`config/chains.json`](../config/chains.json) (hand-kept chain names) | none | n/a | `Partner.chain` when `results.entities[].name` is on the list: listed after every local place of its area | `engine` |
+| Q9 | [`config/chains.json`](../config/chains.json) (hand-kept chain names) | `results.entities[].name`, `properties.short_description` (else `.description`) and `properties.website`, over every place the run saw | output | `Partner.chain` when `chainSignals` flags the place: its name is on the list, Qloo's description calls it a chain or a franchise, its website is a store locator, or the same name or website is at 3 or more places the run saw. Chains are listed after every local place of their area | `engine` |
 | **Q9 popularity twin** | the pool's final request (after any widening), per pool that gave partners | the same `filter.*`, `operator.filter.tags` and `take=50`; no `signal.interests.entities`, no `feature.explainability` | filter | n/a | `qloo` |
 | Q9 popularity twin | | `results.entities[]` order (popularity order, probe 1 / KG1, Oct 15) | output | `StreetSheet.popularityCheck` (`partners`, `notInPopularTop`, `perArea[]` with `ledgerRef`, `ledgerRefs`): partners not among the first k eligible places, k = partners in the area | `qloo` -> `engine` |
 | **Q10** pre/post | resolved bill entity IDs | `signal.interests.entities` | signal | n/a | `qloo` |
@@ -75,7 +75,7 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q10 | `Bill.weekday` | `filter.hours=<show weekday>` | filter | n/a | `qloo` |
 | Q10 | house set entity IDs (weekly twin call) | `signal.interests.entities` | signal | `PrePostSpot.deltaRank` | `qloo` -> `engine` |
 | Q10 | | `results.entities[]` (as Q9) | output | `PrePostSpot.entity`, `.chips` | `qloo` |
-| Q10 | `config/chains.json` | none | n/a | `PrePostSpot.chain`: chains go after the local spots before the list is cut to 8 | `engine` |
+| Q10 | `config/chains.json` | the same fields as the Q9 chain row | output | `PrePostSpot.chain` (the same `chainSignals` as Q9): chains go after the local spots before the list is cut to 8 | `engine` |
 | Q10 | operator-editable capacities; attendance what-if | none | n/a | `PrePostSpot.expectedShare`, `.assumedCapacity` (load balancer) | `engine` |
 | Q10 | `Bill.legalAgeEnforced` + category | none | n/a | `PrePostSpot.fanFacingAllowed` | `engine` |
 | **Q11** declared partners | `DeclaredPartner.label` | `GET /search?query=` (pick list, typed) | lookup | `DeclaredPartner.qlooEntityId` (operator picks) | `apps/web` -> `qloo` |
@@ -89,7 +89,7 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q12 | | `filter.type=urn:entity:podcast`, `feature.explainability=true`, `take=15` | filter, option | n/a | `qloo` |
 | Q12 | | `results.entities[]` | output | `MediaPick` `{kind: "podcast"}`; `scope` is `local` only if the probe shows location moves ranking | `qloo` -> `engine` |
 | **Q13** sponsor | resolved bill entity IDs; venue point | `signal.interests.entities`, `signal.location=POINT(lon lat)` | signal | n/a | `qloo` |
-| Q13 | `Bill.legalAgeEnforced` not true | `filter.exclude.tags=<sponsorExclusions URNs>` | filter | n/a | `qloo` |
+| Q13 | `Bill.legalAgeEnforced` not true, or `OperatorInputs.allAges` | `filter.exclude.tags=<sponsorExclusions URNs>` (none is pinned yet, so the parameter is not sent) | filter | n/a | `qloo` |
 | Q13 | | `filter.type=urn:entity:brand`, `feature.explainability=true`, `take=15` | filter, option | n/a | `qloo` |
 | Q13 | | `results.entities[]` (denylist applied to tags) | output | one `MediaPick` `{kind: "sponsor"}`, or `empty` | `qloo` -> `engine` |
 | **Q14** copy allowlist | resolved bill entity IDs | `signal.interests.entities` | signal | n/a | `qloo` |
@@ -106,4 +106,4 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 
 ## Never sent to Qloo
 
-Operator contact emails, "already reached" ZIP counts, viewer data of any kind, free-text tags, and anything the operator typed other than the show, the venue, the date, partner names (for the pick list) and a declared group-sales segment (Q15, only when enabled).
+Operator contact emails, "already reached" ZIP counts, viewer data of any kind, free-text tags, and anything the operator typed other than the show, the venue, the date and partner names (for the pick list).

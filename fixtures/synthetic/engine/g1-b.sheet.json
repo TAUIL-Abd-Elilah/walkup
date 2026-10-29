@@ -283,7 +283,8 @@
               "name": "Brentwood",
               "zctas": [
                 "37027"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6m8m",
@@ -299,7 +300,8 @@
                 "37212",
                 "37203",
                 "37208"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6jw0",
@@ -313,7 +315,8 @@
               "name": "Nashville",
               "zctas": [
                 "37205"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6jmz",
@@ -327,7 +330,8 @@
               "name": "Nashville",
               "zctas": [
                 "37209"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6jw4",
@@ -341,7 +345,8 @@
               "name": "Nashville",
               "zctas": [
                 "37218"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6mbe",
@@ -356,7 +361,8 @@
               "zctas": [
                 "37208",
                 "37228"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6jw1",
@@ -370,7 +376,8 @@
               "name": "Nashville",
               "zctas": [
                 "37209"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6kdq",
@@ -384,7 +391,8 @@
               "name": "Brentwood",
               "zctas": [
                 "37027"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6q7p",
@@ -398,7 +406,8 @@
               "name": "Goodlettsville",
               "zctas": [
                 "37115"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6jub",
@@ -412,7 +421,8 @@
               "name": "Nashville",
               "zctas": [
                 "37209"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6mq4",
@@ -426,7 +436,8 @@
               "name": "Hermitage",
               "zctas": [
                 "37076"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6mqh",
@@ -440,7 +451,8 @@
               "name": "Hermitage",
               "zctas": [
                 "37076"
-              ]
+              ],
+              "state": "TN"
             },
             {
               "geohash": "dn6mqk",
@@ -454,7 +466,8 @@
               "name": "Hermitage",
               "zctas": [
                 "37076"
-              ]
+              ],
+              "state": "TN"
             }
           ],
           "diagnostics": {
@@ -4454,7 +4467,8 @@
           "Suggested, not affiliated: no partner has agreed to anything.",
           "The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score.",
           "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales."
-        ]
+        ],
+        "reason": "Record stores show up on sample sheets only: live runs don't search them yet."
       },
       "declared": {
         "status": "ok",
@@ -6897,99 +6911,99 @@
       "partnerLines": [
         {
           "entityId": "0000ead4-d2ed-4d25-a4cc-f0ca1a4905d1",
-          "text": "A beauty salon in Brentwood, 4th on that area's list for this crowd."
+          "text": "A beauty salon near Brentwood, 4th on that area's list for this crowd."
         },
         {
           "entityId": "0000d8b1-6e12-4abc-a1bd-f0ca1a4c00d1",
-          "text": "A barbershop in Brentwood, 3rd on that area's list for this crowd."
+          "text": "A barbershop near Brentwood, 3rd on that area's list for this crowd."
         },
         {
           "entityId": "0000c117-0bf0-4501-a89c-f0ca1a4c0211",
-          "text": "A record store in Brentwood, 5th on that area's list for this crowd."
+          "text": "A record store near Brentwood, 5th on that area's list for this crowd."
         },
         {
           "entityId": "000070a9-9253-4932-acdd-f0ca1a4c0191",
-          "text": "A clothing store in Brentwood, 1st on that area's list for this crowd."
+          "text": "A clothing store near Brentwood, 1st on that area's list for this crowd."
         },
         {
           "entityId": "0000a742-72f7-4438-a16b-f0ca1a4c00e1",
-          "text": "A restaurant in Brentwood, 14th on that area's list for this crowd."
+          "text": "A restaurant near Brentwood, 14th on that area's list for this crowd."
         },
         {
           "entityId": "00005cc5-809c-44fc-ac32-f0ca1a4c0391",
-          "text": "A beauty salon in Brentwood, 12th on that area's list for this crowd."
+          "text": "A beauty salon near Brentwood, 12th on that area's list for this crowd."
         },
         {
           "entityId": "00009e6a-afee-4d67-ace1-f0ca1a4c03e1",
-          "text": "A restaurant in Brentwood, 7th on that area's list for this crowd."
+          "text": "A restaurant near Brentwood, 7th on that area's list for this crowd."
         },
         {
           "entityId": "00002215-b272-47b8-a2ad-f0ca1a4c0121",
-          "text": "A record store in Brentwood, 2nd on that area's list for this crowd."
+          "text": "A record store near Brentwood, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "0000462e-2d19-4876-a8f5-f0ca1a6800f1",
-          "text": "A clothing store in West Nashville, 2nd on that area's list for this crowd."
+          "text": "A clothing store near West Nashville, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "00003768-633b-4e1a-a056-f0ca1a6803e1",
-          "text": "A clothing store in West Nashville, 1st on that area's list for this crowd."
+          "text": "A clothing store near West Nashville, 1st on that area's list for this crowd."
         },
         {
           "entityId": "0000cd80-ec1e-4a42-ace9-f0ca1a680281",
-          "text": "A cafe in West Nashville, 3rd on that area's list for this crowd."
+          "text": "A cafe near West Nashville, 3rd on that area's list for this crowd."
         },
         {
           "entityId": "00001b88-67bb-4448-aa5f-f0ca1a6802e1",
-          "text": "A barbershop in West Nashville, 11th on that area's list for this crowd."
+          "text": "A barbershop near West Nashville, 11th on that area's list for this crowd."
         },
         {
           "entityId": "00006d8a-e366-4f5b-a2b6-f0ca1a6801b1",
-          "text": "A barbershop in West Nashville, 12th on that area's list for this crowd."
+          "text": "A barbershop near West Nashville, 12th on that area's list for this crowd."
         },
         {
           "entityId": "0000b940-4f28-4dc2-aa6d-f0ca1a680361",
-          "text": "A cafe in West Nashville, 6th on that area's list for this crowd."
+          "text": "A cafe near West Nashville, 6th on that area's list for this crowd."
         },
         {
           "entityId": "0000fe1f-0040-4387-a794-f0ca1a680231",
-          "text": "A bookstore in West Nashville, 5th on that area's list for this crowd."
+          "text": "A bookstore near West Nashville, 5th on that area's list for this crowd."
         },
         {
           "entityId": "000081b7-0289-41d6-a45f-f0ca1a680101",
-          "text": "A restaurant in West Nashville, 18th on that area's list for this crowd."
+          "text": "A restaurant near West Nashville, 18th on that area's list for this crowd."
         },
         {
           "entityId": "0000a8ed-7c35-4b47-a6bc-f0ca1a3c02e1",
-          "text": "A clothing store in Nashville, 1st on that area's list for this crowd."
+          "text": "A clothing store near Nashville, 1st on that area's list for this crowd."
         },
         {
           "entityId": "0000f0aa-17d1-4086-a6ab-f0ca1a3c0061",
-          "text": "A clothing store in Nashville, 5th on that area's list for this crowd."
+          "text": "A clothing store near Nashville, 5th on that area's list for this crowd."
         },
         {
           "entityId": "000036fd-6477-4cd8-ac76-f0ca1a360181",
-          "text": "A cafe in Nashville, 2nd on that area's list for this crowd."
+          "text": "A cafe near Nashville, 2nd on that area's list for this crowd."
         },
         {
           "entityId": "00007b07-7b47-427a-a684-f0ca1a360301",
-          "text": "A cafe in Nashville, 10th on that area's list for this crowd."
+          "text": "A cafe near Nashville, 10th on that area's list for this crowd."
         },
         {
           "entityId": "0000c168-91f0-4b74-ab32-f0ca1a360211",
-          "text": "A restaurant in Nashville, 20th on that area's list for this crowd."
+          "text": "A restaurant near Nashville, 20th on that area's list for this crowd."
         },
         {
           "entityId": "00004d19-7399-4d44-a379-f0ca1a3600f1",
-          "text": "A restaurant in Nashville, 6th on that area's list for this crowd."
+          "text": "A restaurant near Nashville, 6th on that area's list for this crowd."
         },
         {
           "entityId": "000068ea-5b6d-4f2c-aa63-f0ca1a3c0021",
-          "text": "A record store in Nashville, 11th on that area's list for this crowd."
+          "text": "A record store near Nashville, 11th on that area's list for this crowd."
         },
         {
           "entityId": "0000db03-9ff4-4147-a6d9-f0ca1a360021",
-          "text": "A bar in Nashville, 16th on that area's list for this crowd."
+          "text": "A bar near Nashville, 16th on that area's list for this crowd."
         }
       ],
       "templated": true

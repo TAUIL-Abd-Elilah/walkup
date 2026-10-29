@@ -327,7 +327,9 @@ export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyRes
   if (status === "ok" && fromPartnersOnly) status = "partial";
   if (hooks.length < 3) reasons.push(`${plural(hooks.length, "line")} passed the checks`);
   const summary =
-    hooks.length > 0 ? `${plural(hooks.length, "line")}, each built only from approved Qloo tags${fromPartnersOnly ? " (from the partners' tags)" : ""}.` : "No copy lines.";
+    hooks.length > 0
+      ? `${plural(hooks.length, "line")}, ${hooks.length === 1 ? "built" : "each built"} only from approved Qloo tags${fromPartnersOnly ? " (from the partners' tags)" : ""}.`
+      : "No copy lines.";
   const card = envelope(status, summary, hooks, [...provenance, ...narration.ledgerRefs], status === "ok" ? undefined : `${capFirst(reasons.join("; "))}.`, [
     "No jokes, no artist voice, no artist marks in partner copy.",
   ]);

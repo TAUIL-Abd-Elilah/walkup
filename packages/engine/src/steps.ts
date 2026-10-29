@@ -341,8 +341,8 @@ export interface PartnersStepInput {
   ledgerRefs: string[];
 }
 
-/** At most this many chain names in a trace line; the rest are counted. */
-const CHAIN_NAMES_SHOWN = 4;
+/** At most this many chain names in a trace line; the rest are counted as places, like the total. */
+export const CHAIN_NAMES_SHOWN = 4;
 
 /**
  * The chain rule's trace line, matching the list: how many chains are listed (last, after the local places), and
@@ -356,7 +356,9 @@ export function chainsCause(kept: number | undefined, offList: readonly string[]
   const counts = new Map<string, number>();
   for (const name of off) counts.set(name, (counts.get(name) ?? 0) + 1);
   const named = [...counts].map(([name, n]) => (n > 1 ? `${name} (${n})` : name));
-  const shown = named.length > CHAIN_NAMES_SHOWN ? [...named.slice(0, CHAIN_NAMES_SHOWN), `${named.length - CHAIN_NAMES_SHOWN} more`] : named;
+  // "and 9 more" counts places, as the total and the "(2)" do: the names shown and the rest add up to the total.
+  const rest = [...counts.values()].slice(CHAIN_NAMES_SHOWN).reduce((sum, n) => sum + n, 0);
+  const shown = named.length > CHAIN_NAMES_SHOWN ? [...named.slice(0, CHAIN_NAMES_SHOWN), `${rest} more`] : named;
   const parts: string[] = [];
   if (k > 0) parts.push(`Listed ${countOf(k, "national chain")} last, after the local ${local}: no local ${local === "spots" ? "spot" : "place"} filled ${k === 1 ? "its" : "their"} slot`);
   if (off.length > 0) {
@@ -364,6 +366,22 @@ export function chainsCause(kept: number | undefined, offList: readonly string[]
     parts.push(`${k > 0 ? "left off" : "Left off"} ${countOf(off.length, "national chain")}${why}: ${joinAnd(shown)}`);
   }
   return parts.join("; ");
+}
+
+/** A chain line's names and tail: the names shown (none with a comma, colon or semicolon), then "and 7 more". */
+const CHAIN_TAIL_RE = new RegExp(`([Ll]eft off )([\\d,]+)( national chains(?:, at most \\d+ per list)?: )((?:[^,:;]+, ){${CHAIN_NAMES_SHOWN - 1}}[^,:;]+?) and ([\\d,]+) more\\b`, "g");
+
+/**
+ * A chain line written when "and 7 more" counted brands ("Left off 14 national chains: Starbucks Coffee Company (2),
+ * Walker Bros. Original Pancake House, Rosati's Pizza, Buona and 7 more"): the tail recounted as places, as
+ * `chainsCause` now writes it (14 less the 5 places the names stand for: "and 9 more"). Other text is returned as is.
+ */
+export function chainTailInPlaces(text: string): string {
+  return text.replace(CHAIN_TAIL_RE, (whole: string, head: string, total: string, mid: string, names: string) => {
+    const shown = names.split(", ").reduce((sum, n) => sum + Number(/\((\d+)\)$/.exec(n)?.[1] ?? 1), 0);
+    const rest = Number(total.replace(/,/g, "")) - shown;
+    return rest > 0 ? `${head}${total}${mid}${names} and ${rest.toLocaleString("en-US")} more` : whole;
+  });
 }
 
 export function partnersStep(i: PartnersStepInput): TraceStep {
@@ -575,12 +593,26 @@ export interface NarrateStepInput {
   templated: boolean;
   hooks: number;
   hooksStatus: EnvelopeStatus;
+  /** True when the checks set Claude's summary aside and the template's stands in (`summaryReplaced`). */
+  summaryReplaced?: boolean;
   ledgerRefs: string[];
+}
+
+/** A guard reason that says Claude's summary was dropped or replaced: the template's summary stands in for it. */
+const SUMMARY_REPLACED_RE = /^(?:replaced by the template: )?summary: /;
+
+/** True when the guard's reasons say the template's summary stands in for Claude's draft. */
+export function summaryReplaced(reasons: readonly string[]): boolean {
+  return reasons.some((r) => SUMMARY_REPLACED_RE.test(r));
 }
 
 export function narrateStep(i: NarrateStepInput): TraceStep {
   const lines = i.hooks > 0 ? ` and ${countOf(i.hooks, "fan copy line")}` : "";
-  const decision = i.templated ? `Wrote the summary${lines} from a fixed template; no model was called` : `Claude wrote the summary${lines} from this run's results`;
+  const decision = i.templated
+    ? `Wrote the summary${lines} from a fixed template; no model was called`
+    : i.summaryReplaced
+      ? `Claude wrote a draft summary${lines} from this run's results; fixed wording replaced the summary (see Checks)`
+      : `Claude wrote the summary${lines} from this run's results`;
   const cause = i.hooks === 0 ? "No copy line passed the tag allowlist and the checks." : i.hooksStatus !== "ok" ? `Only ${countOf(i.hooks, "copy line")} passed the tag allowlist and the checks.` : undefined;
   return traceStep("narrate", "narrate", "Summary", decision, i.hooks === 0 ? "partial" : "ok", i.ledgerRefs, cause);
 }
@@ -641,8 +673,32 @@ function droppedDecision(dropped: number, reasons: readonly string[] | undefined
   return `Dropped ${lines}: ${joinAnd(parts.map(([n, why]) => `${n.toLocaleString("en-US")} ${why}`))}`;
 }
 
+/** A guard reason for a line the template's line replaced: its slot ("summary", "tileWhy[1]", "partnerLines[4]"). */
+const REPLACED_SLOT_RE = /^replaced by the template: (summary|tileWhy\[\d+\]|partnerLines\[\d+\]): /;
+
+/**
+ * The lines fixed wording replaced (a replaced line is not a dropped one: its slot keeps a checked line), in words:
+ * "fixed wording replaced Claude's summary and 1 of its area and partner lines", as the Checks list says it. Null when
+ * none was replaced.
+ */
+export function replacedLines(reasons: readonly string[]): string | null {
+  const slots = new Set(reasons.map((r) => REPLACED_SLOT_RE.exec(r)?.[1]).filter((s): s is string => !!s));
+  const summary = slots.has("summary");
+  const lines = (slots.size - (summary ? 1 : 0)).toLocaleString("en-US");
+  if (summary && lines !== "0") return `fixed wording replaced Claude's summary and ${lines} of its area and partner lines`;
+  if (summary) return "fixed wording replaced Claude's summary";
+  if (lines !== "0") return `fixed wording replaced ${lines} of Claude's area and partner lines`;
+  return null;
+}
+
 export function guardStep(i: GuardStepInput): TraceStep {
-  const decision = i.dropped === 0 ? "Checked every line against this run's requests; nothing had to go" : droppedDecision(i.dropped, i.reasons);
+  const replaced = replacedLines(i.reasons ?? []);
+  const decision =
+    i.dropped === 0
+      ? replaced
+        ? `Checked every line against this run's requests; none was dropped, and ${replaced}`
+        : "Checked every line against this run's requests; nothing had to go"
+      : `${droppedDecision(i.dropped, i.reasons)}${replaced ? `; ${replaced}` : ""}`;
   const cause = joinSentences([
     i.denied > 0 ? `Held back ${countOf(i.denied, "tag")} by policy: none of them appears in copy or on this sheet` : null,
     i.alcoholHeld > 0

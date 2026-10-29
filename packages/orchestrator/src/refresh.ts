@@ -25,10 +25,12 @@ import type { LedgerEntry, LiftTile, MediaPick, Partner, PrePostSpot, QlooEntity
 import { annotateTile, stateFromZctas } from "@walkup/gazetteer";
 import { vetNarration } from "@walkup/narrator";
 import {
+  activationFor,
   backCatalogueLabel,
   barsExcluded,
   brandDisplayName,
   BACK_CATALOGUE_CHIP,
+  chainTailInPlaces,
   cleanWebsite,
   DEFAULT_BAR_CATEGORIES,
   explainPartner,
@@ -39,11 +41,15 @@ import {
   isNonVenue,
   isUsualCrowdChip,
   LIFT_DEFAULTS,
+  narrateStep,
+  PARTNER_DEFAULTS,
   partnerTagCounts,
   pickDiscovery,
   normalizeChainName,
   pickPodcasts,
+  propString,
   resolveCategory,
+  summaryReplaced,
   usualCrowdChipLabel,
   type ExplainContext,
 } from "@walkup/engine";
@@ -52,7 +58,7 @@ import { REVISE_STEP_ID, RULES_CHOSEN_READER } from "./revise/step";
 import { splitBudget } from "./steps/budget";
 import { partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
 import { guardTrace } from "./steps/trace";
-import { PARTNER_TILES } from "./steps/partners";
+import { PARTNER_TILES, PARTNERS_COUNT_LINE_RE, partnersCountLine } from "./steps/partners";
 import { disambiguateNames, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, numberedTiles, spreadTiles } from "./steps/heat";
 import { categoryTagMap, loadTagPins, type TagPins } from "./tags";
 import type { GazetteerLike } from "./types";
@@ -64,6 +70,8 @@ export interface RefreshOptions {
   pins?: TagPins;
   /** The parent sheet (already refreshed) of a revision, to rebuild its change list. */
   parent?: StreetSheet | null;
+  /** The kinds the show's other recorded runs gave a place (see `RecheckOptions`). */
+  recordedKinds?: (entityId: string) => readonly string[];
 }
 
 export interface RefreshReport {
@@ -141,6 +149,27 @@ function relabelChips<T extends { chips: { label: string; ledgerRef: string }[] 
       return { ...c, label: usualCrowdChipLabel(null, top ? Number(top[1]) : (twinSize(c.ledgerRef) ?? 0)) };
     });
   return { ...row, chips };
+}
+
+/** Most partners of one kind in one area: select()'s cap, which the sheet states ("at most 2 of a kind per area"). */
+const KIND_CAP_PER_AREA = PARTNER_DEFAULTS.maxPerCategoryPerTile;
+
+/** Areas listing more partners of one kind than the cap allows, in words ("dqcjrm: 3 restaurant"). Empty when none. */
+export function kindsOverCap(sheet: Pick<StreetSheet, "cards">): string[] {
+  const count = new Map<string, number>();
+  for (const p of sheet.cards.partners.results) {
+    const key = `${p.tileGeohash ?? "near the venue"}: ${p.category}`;
+    count.set(key, (count.get(key) ?? 0) + 1);
+  }
+  return [...count].filter(([, n]) => n > KIND_CAP_PER_AREA).map(([key, n]) => key.replace(": ", `: ${n} `));
+}
+
+/**
+ * A partner's website by today's rule (`cleanWebsite`), read as a new run reads it: from the place's own record, else
+ * the link the sheet holds. A link the rule no longer accepts (not the place's own, or a dead site or page) goes.
+ */
+function partnerWebsite(p: Pick<Partner, "website" | "entity">): string | null {
+  return cleanWebsite(propString(p.entity, "website", "url") ?? p.website ?? null, p.entity.name);
 }
 
 function asOfYear(sheet: StreetSheet): number {
@@ -240,14 +269,27 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
   const twinSizeOf = (ref: string) => resultCount(ref);
   const partnersIn = sheet.cards.partners.results;
   const kept: Partner[] = [];
+  // Kinds per area as the run picked them (select() lists at most 2 of a kind per area).
+  const kindKey = (p: Partner, kind: string) => `${p.tileGeohash ?? "near"}\u0000${kind}`;
+  const kinds = new Map<string, number>();
+  for (const p of partnersIn) kinds.set(kindKey(p, p.category), (kinds.get(kindKey(p, p.category)) ?? 0) + 1);
   for (const p of partnersIn) {
-    const category = resolveCategory(p.entity, { categoryTags });
+    // The kind read again from the stored tags, unless that would list a third of a kind in the area: the run picked
+    // the place under its stored kind, and the stored tags may lack what made it that kind (the data policy removes
+    // some tags before storage).
+    const reread = resolveCategory(p.entity, { categoryTags });
+    let category = p.category;
+    if (reread !== p.category && (kinds.get(kindKey(p, reread)) ?? 0) < KIND_CAP_PER_AREA) {
+      kinds.set(kindKey(p, p.category), (kinds.get(kindKey(p, p.category)) ?? 0) - 1);
+      kinds.set(kindKey(p, reread), (kinds.get(kindKey(p, reread)) ?? 0) + 1);
+      category = reread;
+    }
     const why = keepPlace(p.entity, category);
     if (why) {
       report.droppedPartners.push({ name: p.entity.name, why });
       continue;
     }
-    const website = cleanWebsite(p.website ?? null, p.entity.name);
+    const website = partnerWebsite(p);
     if (p.website && !website) report.droppedWebsites.push({ name: p.entity.name, website: p.website });
     const row: Partner = relabelChips({ ...p, category, website }, multiAct, twinSizeOf);
     if (p.tileGeohash && tileName.has(p.tileGeohash)) row.tileName = tileName.get(p.tileGeohash) as string;
@@ -297,10 +339,8 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
     );
     return { ...p, explain };
   });
-  const partnerCount = explained.length;
-  const areaCount = new Set(explained.map((p) => p.tileGeohash ?? "near")).size;
   sheet.cards.partners.results = explained;
-  sheet.cards.partners.summary = sheet.cards.partners.summary.replace(/^\d+ partners? in \d+ areas?/, `${partnerCount} ${partnerCount === 1 ? "partner" : "partners"} in ${areaCount} ${areaCount === 1 ? "area" : "areas"}`);
+  sheet.cards.partners.summary = sheet.cards.partners.summary.replace(PARTNERS_COUNT_LINE_RE, partnersCountLine(explained));
   if (sheet.popularityCheck) {
     sheet.popularityCheck = {
       ...sheet.popularityCheck,
@@ -420,7 +460,7 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
   if (sheet.revision && !opts.parent) sheet.revision = mapStrings(sheet.revision, rename);
   // The checks a stored sheet is held to again (tile states, "near" the area, the narration guard, the Checks step,
   // the change list against the parent): the same pass the recorded plans get on their own.
-  const checked = recheckSheet(sheet, { gazetteer: gaz, parent: opts.parent ?? null });
+  const checked = recheckSheet(sheet, { gazetteer: gaz, parent: opts.parent ?? null, ...(opts.recordedKinds ? { recordedKinds: opts.recordedKinds } : {}) });
   return { sheet: checked.sheet, report };
 }
 
@@ -433,8 +473,24 @@ export interface RecheckReport {
   replaced: string[];
   /** Partner lines that now say "near <area>" instead of "in" or "on" it. */
   nearArea: number;
+  /** Partners whose kind went back to the one a run recorded, so no area lists more than 2 of a kind. */
+  kinds: { name: string; from: string; to: string }[];
+  /** Areas that still list more than 2 of a kind ("dqcjrm: 3 restaurant"): a recorded sheet must have none. */
+  overCap: string[];
+  /** Partner websites the rule now keeps or drops ("dropped: The Sweet Lobby", "kept: Avenue Ale House"). */
+  websites: string[];
   /** What else changed, in words ("partners reason", "guard step", "revise step", "change list"). */
   rewritten: string[];
+}
+
+export interface RecheckOptions {
+  gazetteer?: GazetteerLike;
+  parent?: StreetSheet | null;
+  /**
+   * The kinds other recorded runs of the same show gave a place (by entity id): its parent's and the other changes'.
+   * Used only for an area that lists more than 2 of a kind (see `recheckSheet`).
+   */
+  recordedKinds?: (entityId: string) => readonly string[];
 }
 
 /**
@@ -447,15 +503,63 @@ export interface RecheckReport {
  *    the counts the sheet states following the list;
  *  - partner lines say "near <area>" (`partnerLinesNearArea`), then the narration guard (`vetNarration`) runs and a
  *    failing line is replaced by the template's, with the reason added to the guard's reasons, as a new run does;
- *  - the partners card's "aren't searched yet" line, the spots step's counts (from the list), the Checks step (by why
- *    each line went), the revise step's reader on a sheet whose note the rules read on purpose, and a revision's
- *    change list against its parent.
+ *  - at most 2 of a kind per area, as select() picked them: a place whose kind was read again after the run (from
+ *    stored tags the data policy had already trimmed) gets back the kind another recorded run of the same show gave
+ *    it (`opts.recordedKinds`), with that kind's ask; an area still over the cap is reported in `overCap`;
+ *  - partner websites by today's rule (`cleanWebsite`): a dead site or page on the checked list goes, and a place's
+ *    own site the rule now recognises comes back from its own record;
+ *  - the partners card's opening count and "aren't searched yet" line, the spots step's counts (from the list), the
+ *    Summary step (when fixed wording replaced Claude's summary), the Checks step (by why each line went and what was
+ *    replaced), chain lists whose "and 7 more" counted brands (now places), a ledger note that repeats its node's
+ *    name, the revise step's reader on a sheet whose note the rules read on purpose, and a revision's change list
+ *    against its parent.
  */
-export function recheckSheet(input: StreetSheet, opts: { gazetteer?: GazetteerLike; parent?: StreetSheet | null } = {}): { sheet: StreetSheet; report: RecheckReport } {
+export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { sheet: StreetSheet; report: RecheckReport } {
   const gaz = opts.gazetteer ?? DEFAULT_GAZETTEER;
   const sheet: StreetSheet = structuredClone(input);
-  const report: RecheckReport = { states: [], droppedSpots: [], droppedPartners: [], replaced: [], nearArea: 0, rewritten: [] };
+  const report: RecheckReport = { states: [], droppedSpots: [], droppedPartners: [], replaced: [], nearArea: 0, kinds: [], overCap: [], websites: [], rewritten: [] };
   const op = sheet.operator;
+
+  // ---- Ledger notes: a note that repeats its node's name ("node Q3 house roster (Ticketmaster); node Q3 house roster
+  // (Ticketmaster); the parent sheet's answer ...") says it once ----------------------------------------------------
+  let notes = 0;
+  sheet.ledger = sheet.ledger.map((e) => {
+    const note = e.note?.replace(/^(node [^;]+)(?:; \1)+(?=;|$)/, "$1");
+    if (note === undefined || note === e.note) return e;
+    notes++;
+    return { ...e, note };
+  });
+  if (notes > 0) report.rewritten.push(`ledger note${notes === 1 ? "" : "s"} (${notes})`);
+
+  // ---- At most 2 of a kind per area ----------------------------------------------------------------
+  const adultsOnly = sheet.bill.legalAgeEnforced === true && op.allAges !== true;
+  const kindKey = (p: Pick<Partner, "tileGeohash">, kind: string) => `${p.tileGeohash ?? "near"}\u0000${kind}`;
+  const kindCount = new Map<string, number>();
+  for (const p of sheet.cards.partners.results) kindCount.set(kindKey(p, p.category), (kindCount.get(kindKey(p, p.category)) ?? 0) + 1);
+  if ([...kindCount.values()].some((n) => n > KIND_CAP_PER_AREA)) {
+    // The run picked the higher-scored places first, so the lowest-scored of a kind over the cap is the one to fix.
+    const order = sheet.cards.partners.results.map((p, i) => ({ p, i })).sort((a, b) => a.p.score - b.p.score || b.i - a.i);
+    for (const { p, i } of order) {
+      if ((kindCount.get(kindKey(p, p.category)) ?? 0) <= KIND_CAP_PER_AREA) continue;
+      const to = (opts.recordedKinds?.(p.entity.entityId) ?? []).find((k) => k !== p.category && (kindCount.get(kindKey(p, k)) ?? 0) < KIND_CAP_PER_AREA);
+      if (!to) continue;
+      const row: Partner = { ...p, category: to };
+      if (p.explain && p.explain.activation === activationFor(p.category, { adultsOnly })) row.explain = { ...p.explain, activation: activationFor(to, { adultsOnly }) };
+      sheet.cards.partners.results[i] = row;
+      kindCount.set(kindKey(p, p.category), (kindCount.get(kindKey(p, p.category)) ?? 0) - 1);
+      kindCount.set(kindKey(p, to), (kindCount.get(kindKey(p, to)) ?? 0) + 1);
+      report.kinds.push({ name: p.entity.name, from: p.category, to });
+    }
+  }
+  report.overCap = kindsOverCap(sheet);
+
+  // ---- Websites by today's rule -----------------------------------------------------------------------
+  sheet.cards.partners.results = sheet.cards.partners.results.map((p) => {
+    const website = partnerWebsite(p);
+    if (website === (p.website ?? null)) return p;
+    report.websites.push(`${website ? "kept" : "dropped"}: ${p.entity.name}`);
+    return { ...p, website };
+  });
 
   // ---- Tile states from their own points ---------------------------------------------------------
   sheet.cards.liftMap.results.tiles = sheet.cards.liftMap.results.tiles.map((t) => {
@@ -487,14 +591,16 @@ export function recheckSheet(input: StreetSheet, opts: { gazetteer?: GazetteerLi
     });
     if (report.droppedPartners.length > 0) {
       sheet.cards.partners.results = partners;
-      const areas = new Set(partners.map((p) => p.tileGeohash ?? "near")).size;
-      sheet.cards.partners.summary = sheet.cards.partners.summary.replace(
-        /^\d+ partners? in \d+ areas?/,
-        `${partners.length} ${partners.length === 1 ? "partner" : "partners"} in ${areas} ${areas === 1 ? "area" : "areas"}`,
-      );
       const keep = new Set(partners.map((p) => p.entity.entityId));
       if (sheet.narration) sheet.narration = { ...sheet.narration, partnerLines: sheet.narration.partnerLines.filter((l) => keep.has(l.entityId)) };
     }
+  }
+
+  // ---- The partners card's opening count follows the list (a near-venue list is not an area) ---------------
+  const counted = sheet.cards.partners.summary.replace(PARTNERS_COUNT_LINE_RE, partnersCountLine(sheet.cards.partners.results));
+  if (counted !== sheet.cards.partners.summary) {
+    sheet.cards.partners.summary = counted;
+    report.rewritten.push("partners count");
   }
 
   // ---- The partners card's skipped-kinds line -----------------------------------------------------
@@ -523,16 +629,37 @@ export function recheckSheet(input: StreetSheet, opts: { gazetteer?: GazetteerLi
     }
   }
 
-  // ---- Steps: the spots step follows the list; Checks by why each line went; the reader of a note the rules read
-  // on purpose --------------------------------------------------------------------------------------------
+  // ---- The copy lines card: one line is not "each" -------------------------------------------------------
+  const hooksSummary = sheet.cards.copyHooks.summary.replace(/^1 line, each built only /, "1 line, built only ");
+  if (hooksSummary !== sheet.cards.copyHooks.summary) {
+    sheet.cards.copyHooks.summary = hooksSummary;
+    report.rewritten.push("copy lines count");
+  }
+
+  // ---- Steps: the spots step follows the list; Summary and Checks by what the checks replaced and why each line
+  // went; chain lists counted in places; the reader of a note the rules read on purpose ----------------------------
   if (syncPrePostStep(sheet)) report.rewritten.push("spots step");
   if (sheet.steps) {
+    const hooks = sheet.cards.copyHooks;
     const steps = sheet.steps.map((s) => {
       if (s.id === "guard") {
         const g = guardTrace(sheet.guard, sheet.guard.reasons, op.allAges === true);
         if (g.decision === s.decision) return s;
         report.rewritten.push("guard step");
         return { ...s, decision: g.decision };
+      }
+      if (s.id === "narrate" && sheet.narration && !sheet.narration.templated && summaryReplaced(sheet.guard.reasons)) {
+        // Only the wording written before the step said so: "Claude wrote the summary and 3 fan copy lines ...".
+        const step = (replaced: boolean) => narrateStep({ templated: false, hooks: hooks.results.length, hooksStatus: hooks.status, summaryReplaced: replaced, ledgerRefs: s.ledgerRefs });
+        if (s.decision !== step(false).decision) return s;
+        report.rewritten.push("summary step");
+        return { ...s, decision: step(true).decision };
+      }
+      if ((s.id === "partners" || s.id === "prepost") && s.cause) {
+        const cause = chainTailInPlaces(s.cause);
+        if (cause === s.cause) return s;
+        report.rewritten.push(`${s.id === "partners" ? "partners" : "spots"} step chain count`);
+        return { ...s, cause };
       }
       if (s.id === REVISE_STEP_ID && s.cause && sheet.revision?.interpreter === "rules" && sheet.ledger.some((e) => e.kind === "anthropic")) {
         // A model was set up (the sheet's own ledger holds a Claude call): the rules read the note by choice.

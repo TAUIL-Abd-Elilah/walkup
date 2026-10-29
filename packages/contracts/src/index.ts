@@ -366,7 +366,8 @@ export interface Partner {
    */
   ubiquityPenalty?: number;
   /**
-   * True when the name is on the hand-kept list of national chains (config/chains.json): listed after every local
+   * True when `chainSignals` flags the place as a national chain (the hand-kept list in config/chains.json, Qloo's
+   * description, a store-locator website, or the same name or website at 3 or more places): listed after every local
    * place of its area. Absent otherwise, and on sheets made before the list existed.
    */
   chain?: boolean;
@@ -391,7 +392,7 @@ export interface PrePostSpot {
   fanFacingAllowed: boolean; // false for bars on all-ages shows
   /** Pinned category key, as on Partner (e.g. "bar", "coffee"). Optional for older sheets. */
   category?: string;
-  /** True when the name is on the hand-kept chain list: listed after the local spots. Absent otherwise. */
+  /** True when `chainSignals` flags the spot as a national chain (as on Partner): listed after the local spots. Absent otherwise. */
   chain?: boolean;
   chips: Chip[];
 }

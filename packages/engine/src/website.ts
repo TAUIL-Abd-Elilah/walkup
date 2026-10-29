@@ -5,13 +5,43 @@
  *  - the place's own domain: a word of its name (4+ letters, not a generic word such as "restaurant" or
  *    "kitchen"), or its words run together, appears in the host ("stabledc.com" for "Stable DC",
  *    "stores.barnesandnoble.com" for "Barnes & Noble"), or the host's name appears in the place's name
- *    run together ("bowlero.com" for "Bowlero Bethesda");
+ *    run together ("bowlero.com" for "Bowlero Bethesda"); or the site's own name starts with the initials the
+ *    name gives in brackets ("alkchicago.com" for "About Last Knife (ALK)"), or is spelled from the start of every
+ *    word of the name in order ("avealehouse.com" for "Avenue Ale House", "qtwbbq.com" for "QS Tips and Wings BBQ");
  *  - a page on a social or listing site (Facebook, Instagram, Yelp, Google Maps, Tripadvisor, OpenTable, Resy,
  *    Toast, Linktree and the like) when it points at a page, not the site's front door.
  * Dropped: anything else (an agency's or developer's server with the place in a sub-path, a staging copy, a
- * bare IP address), links that are not http(s), and malformed URLs.
+ * bare IP address), a site or page on the dead list (DEAD_SITES), links that are not http(s), and malformed URLs.
  * Tracking parameters (utm_*, also when percent-encoded into the path) are removed from what is kept.
  */
+
+/**
+ * Partner sites that no longer work, each checked by hand with one plain GET on the date given. A link to one of
+ * these hosts is dropped like a link that isn't the place's own; nothing here calls the network. An entry with a
+ * `path` names one page on the host (a chain's location page) and leaves the rest of the host alone. Add an entry
+ * only after checking it, and take it off once the site works again.
+ */
+export const DEAD_SITES: readonly { host: string; path?: string; checked: string; found: string }[] = [
+  { host: "tortugadc.com", checked: "2026-10-29", found: "redirects to https, whose certificate has expired" },
+  { host: "sweetlobby.com", checked: "2026-10-29", found: "redirects to thesweetlobby.com, which answers 404" },
+  { host: "mcgeesjukeboxlounge.com", checked: "2026-10-29", found: "the https handshake fails" },
+  {
+    host: "buffalowildwings.com",
+    path: "/locations/us/il/chicago/2650-north-narragansett-avenue-c9/sports-bar-1422",
+    checked: "2026-10-29",
+    found: "the page answers 404",
+  },
+];
+
+/**
+ * True when the host (without "www.") is on DEAD_SITES or under one; for an entry with a `path`, only when the
+ * link's path (without a trailing slash) is that page.
+ */
+export function isDeadSite(host: string, pathname = "/"): boolean {
+  const h = host.toLowerCase().replace(/^www\./, "");
+  const path = pathname.replace(/\/+$/, "");
+  return DEAD_SITES.some((d) => (h === d.host || h.endsWith(`.${d.host}`)) && (d.path === undefined || path === d.path));
+}
 
 const LISTING_HOSTS = [
   "facebook.com",
@@ -123,7 +153,33 @@ export function hostMatchesName(host: string, name: string): boolean {
   // The first two words run together ("salsitaliankitchen" for "Sal's Italian Kitchen": "sals" + "italian").
   if (w.length >= 2 && (w[0] as string).length + (w[1] as string).length >= 5 && hostText.includes(`${w[0]}${w[1]}`)) return true;
   // The host's own name inside the place's name ("bowlero" in "bowlerobethesda").
-  return parts.some((p) => p.length >= 4 && joined.includes(p.replace(/-/g, "")));
+  if (parts.some((p) => p.length >= 4 && joined.includes(p.replace(/-/g, "")))) return true;
+  // The site's own name: the label just before the top-level domain ("avealehouse" in "www.avealehouse.com").
+  const site = ((labels.length > 1 ? labels[labels.length - 2] : labels[0]) as string).replace(/-/g, "");
+  // The initials the name gives in brackets, at the start of the site's name ("alkchicago" for "About Last Knife (ALK)").
+  // A bracketed word that is not the initials of the words before it ("Joe's Pizza (NYC)", "Smoke Shack (BBQ)") is not
+  // the place's short form, so a site named after it ("nycgo.com", "bbqjoints.com") is not kept for it.
+  const short = [...name.toLowerCase().matchAll(/\(([a-z0-9]{3,})\)/g)]
+    .filter((m) => m[1] === words(name.slice(0, m.index)).map((x) => x[0]).join(""))
+    .map((m) => m[1] as string);
+  if (short.some((s) => site.startsWith(s))) return true;
+  // The site's name spelled from the start of every word in order, "and" and "the" optional: "avealehouse" (ave + ale +
+  // house), "pieropizza" for "Piero's Pizza", "qtwbbq" for "QS Tips and Wings BBQ" (q + t + w + bbq).
+  return w.length >= 2 && site.length >= 5 && spelledFromWords(site, w);
+}
+
+/** True when `label` is a run of non-empty starts of `ws`, every word used once and in order ("and" and "the" may be skipped). */
+function spelledFromWords(label: string, ws: readonly string[], at = 0, i = 0, failed = new Set<string>()): boolean {
+  if (i === ws.length) return at === label.length;
+  const key = `${at}:${i}`;
+  if (failed.has(key)) return false;
+  const word = ws[i] as string;
+  if ((word === "and" || word === "the") && spelledFromWords(label, ws, at, i + 1, failed)) return true;
+  for (let n = Math.min(word.length, label.length - at); n >= 1; n--) {
+    if (label.startsWith(word.slice(0, n), at) && spelledFromWords(label, ws, at + n, i + 1, failed)) return true;
+  }
+  failed.add(key);
+  return false;
 }
 
 /** The link without tracking parameters (utm_*, fbclid, gclid), as written when there were none. */
@@ -154,6 +210,7 @@ export function cleanWebsite(raw: string | null | undefined, name: string | null
   if (url.protocol !== "http:" && url.protocol !== "https:") return null;
   const host = hostOf(url);
   if (!host.includes(".") || /^\d+(\.\d+){3}$/.test(host) || /^\[/.test(url.hostname)) return null;
+  if (isDeadSite(host, url.pathname)) return null;
   if (isListing(host)) {
     const path = url.pathname.replace(/\/+$/, "");
     const pointsSomewhere = path !== "" || url.searchParams.has("q") || url.searchParams.has("cid") || url.searchParams.has("place_id");

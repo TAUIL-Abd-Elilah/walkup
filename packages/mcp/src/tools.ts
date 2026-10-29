@@ -25,7 +25,6 @@ import {
   presetById,
   presetFor,
   presetShowOf,
-  PRESET_IDS,
   questionRevision,
   readInstruction,
   runRevision,
@@ -40,7 +39,7 @@ import { baseLimits, cardStatuses, errorEnvelope, planUrlFor, sheetUrlFor, worst
 import { lookupEvent } from "./event";
 import { callerKey, type CapDecision } from "./limits";
 import { inputProblem } from "./policy";
-import type { PlanRefArgs, PlanShowArgs, RankPartnersArgs, RevisePlanArgs } from "./schemas";
+import { presetIdsFor, type PlanRefArgs, type PlanShowArgs, type RankPartnersArgs, type RevisePlanArgs } from "./schemas";
 import type { McpServices } from "./services";
 import { envelopeOfView, viewOfResult, viewOfStored, type PlanView } from "./views";
 
@@ -102,8 +101,30 @@ function operatorOverrides(op: PlanShowArgs["operator"]): Partial<OperatorInputs
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+/**
+ * A server on the synthetic world only (fixture deps, no recorded sheets): what the web app calls sample mode. There
+ * g4-a and g4-b, which plan real shows only, are refused and left out of every preset list.
+ */
+export function sampleOnly(services: Pick<McpServices, "mode"> & { policy: Pick<McpServices["policy"], "recorded"> }): boolean {
+  return services.mode === "fixture" && !services.policy.recorded;
+}
+
+/**
+ * Why a preset that plans a real show only (g4-a, g4-b: the fixture world has no copy of their room) is refused on a
+ * sample-mode server, in the words of the web app's POST /api/plan, or null. A run there would plan another room's
+ * sample bill under its id and hand out a share link the web app does not open.
+ */
+function liveOnlyReason(services: McpServices, presetId: string): string | null {
+  return sampleOnly(services) && presetById(presetId)?.fixtureSameAs ? `${presetId} plans a real show only, and this copy of Walkup runs without keys.` : null;
+}
+
+function liveOnlyRefusal(services: McpServices, presetId: string): ToolOutcome<null> | null {
+  const reason = liveOnlyReason(services, presetId);
+  return reason ? fail(services, 503, reason) : null;
+}
+
 function unknownPreset(services: McpServices, id: string): ToolOutcome<null> {
-  return fail(services, 404, `Unknown preset "${id}". Presets: ${PRESET_IDS.join(", ")}.`);
+  return fail(services, 404, `Unknown preset "${id}". Presets: ${presetIdsFor(sampleOnly(services)).join(", ")}.`);
 }
 
 /** Deps for one caller: the services' store and a pick cache of this caller's own (none for shared preset plans). */
@@ -156,6 +177,9 @@ async function presetView(services: McpServices, presetId: string, view: "page" 
     const hosted = await services.presetView(presetId, view);
     if (hosted) return hosted;
   }
+  // Never a stored or fresh fixture run of a real-show-only preset (the tools refuse it before this; this holds it).
+  const liveOnly = liveOnlyReason(services, presetId);
+  if (liveOnly) return { kind: "error", planId: null, mode: services.mode, reason: liveOnly };
   const stored = await services.store.get(presetId);
   if (stored && isCurrentPresetRun(services, presetId, stored)) return viewOfStored(stored);
   // Recorded state never runs the planner, not even for a preset.
@@ -204,6 +228,8 @@ async function resumePreset(services: McpServices, presetId: string, picks: Pick
 function showFor(services: McpServices, preset: Preset): { show: PresetShow } | { outcome: ToolOutcome<null> } {
   // Recorded state refuses before this (recordedRefusal); a recorded server has no show to run.
   if (services.policy.recorded || services.mode === "recorded") return { outcome: fail(services, 503, services.policy.recorded ?? NO_LIVE_SHOW) };
+  const liveOnly = liveOnlyRefusal(services, preset.id);
+  if (liveOnly) return { outcome: liveOnly };
   const show = presetFor(preset, services.mode);
   return show ? { show } : { outcome: fail(services, 404, NO_LIVE_SHOW) };
 }
@@ -355,6 +381,8 @@ export async function planShowTool(services: McpServices, caller: Caller, args: 
   if (args.presetId !== undefined) {
     const preset = presetById(args.presetId);
     if (!preset) return unknownPreset(services, args.presetId);
+    const liveOnly = liveOnlyRefusal(services, preset.id);
+    if (liveOnly) return liveOnly;
     if (overrides) {
       const shown = showFor(services, preset);
       if ("outcome" in shown) return shown.outcome;
@@ -371,7 +399,11 @@ export async function planShowTool(services: McpServices, caller: Caller, args: 
   if (args.planId !== undefined) {
     if (overrides) return fail(services, 400, "Operator what-ifs start a new plan: pass them with event or presetId, not planId.");
     const preset = presetById(args.planId);
-    if (preset) return args.picks ? resumePreset(services, preset.id, args.picks, caller) : recordedOr(services, caller, await presetView(services, preset.id, "page"));
+    if (preset) {
+      const liveOnly = liveOnlyRefusal(services, preset.id);
+      if (liveOnly) return liveOnly;
+      return args.picks ? resumePreset(services, preset.id, args.picks, caller) : recordedOr(services, caller, await presetView(services, preset.id, "page"));
+    }
     const stored = await services.store.get(args.planId);
     if (!stored) return fail(services, 404, `No plan with id ${args.planId}.`);
     if (!args.picks || stored.status === "complete") return ok(envelopeOfView(viewOfStored(stored), caller.origin, rec));
@@ -534,6 +566,8 @@ export function billVsHouseOf(sheet: StreetSheet): BillVsHouse {
 
 export async function billVsHouseTool(services: McpServices, caller: Caller, args: PlanRefArgs): Promise<ToolOutcome> {
   // Reads a stored sheet only, so it works in the recorded state too.
+  const liveOnly = liveOnlyRefusal(services, args.planId);
+  if (liveOnly) return liveOnly;
   const v = await readView(services, args.planId);
   if (!v) return fail(services, 404, `No plan with id ${args.planId}.`);
   if (v.kind !== "sheet") {
@@ -568,6 +602,8 @@ export async function billVsHouseTool(services: McpServices, caller: Caller, arg
 }
 
 export async function getSheetTool(services: McpServices, caller: Caller, args: PlanRefArgs): Promise<ToolOutcome> {
+  const liveOnly = liveOnlyRefusal(services, args.planId);
+  if (liveOnly) return liveOnly;
   const v = await readView(services, args.planId);
   if (!v) return fail(services, 404, `No plan with id ${args.planId}.`);
   // Recorded state: a live sheet is a recording, and its envelope says so.
@@ -599,6 +635,7 @@ function sameNote(a: string, b: string): boolean {
  * when its note is the same words (case, spacing and punctuation aside) or when the host's reader
  * (services.recordedMatch, the one the web page's box uses) reads the note as the change that revision made. Without
  * that reading, a revision for other words is not called a different change: the agent is told to read its note.
+ * An id with no plan behind it answers 404 "No plan with id ...", never the paused text alone.
  */
 async function withRecordedRevisions(services: McpServices, caller: Caller, planId: string, instruction: string, off: ToolOutcome<null>): Promise<ToolOutcome<null>> {
   const asked = noteText(instruction);
@@ -611,7 +648,9 @@ async function withRecordedRevisions(services: McpServices, caller: Caller, plan
   let parentId = planId;
   try {
     const parent = await readView(services, planId);
-    parentId = parent?.kind === "sheet" ? parent.sheet.planId : planId;
+    // An id with no plan behind it is said to be unknown, as get_sheet and POST /api/plan/<id>/revise say it.
+    if (!parent) return fail(services, 404, `No plan with id ${planId}.`);
+    parentId = parent.kind === "sheet" ? parent.sheet.planId : planId;
     const recent = await services.store.listComplete({ mode: "live" }, RECORDED_REVISION_LOOKBACK);
     // Up to six: a hosted hero sheet has up to five ready-made changes, and an agent should see each one.
     revisions = recent.filter((p) => p.sheet?.revision?.parentPlanId === parentId).slice(0, 6);
@@ -671,6 +710,8 @@ export async function revisePlanTool(services: McpServices, caller: Caller, args
   if (off) return withRecordedRevisions(services, caller, args.planId, args.instruction, off);
   const problem = inputProblem([{ field: "instruction", value: args.instruction }]);
   if (problem) return fail(services, 400, problem.reason);
+  const liveOnly = liveOnlyRefusal(services, args.planId);
+  if (liveOnly) return liveOnly;
   const v = await readView(services, args.planId);
   if (!v) return fail(services, 404, `No plan with id ${args.planId}.`);
   if (v.kind !== "sheet") {

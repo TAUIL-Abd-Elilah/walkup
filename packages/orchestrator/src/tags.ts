@@ -22,7 +22,7 @@ export interface TagPins {
   genericHeatTag: string | null;
 }
 
-/** The Q9 category set (barber_shop and beauty_salon only when pinned). */
+/** The Q9 category set; only pinned keys are sent (record_store is dropped in config/tags.json). */
 export const DEFAULT_PARTNER_CATEGORIES = [
   "bar",
   "restaurant",

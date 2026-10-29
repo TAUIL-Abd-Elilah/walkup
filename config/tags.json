@@ -165,7 +165,7 @@
       "status": "pinned",
       "pinnedAt": "2026-10-15T13:05:00Z",
       "validatedRows": 8,
-      "note": "Exclusion only: sent as filter.exclude.tags when the show is not 21+ (Ticketmaster ageRestrictions)."
+      "note": "Exclusion only: sent as filter.exclude.tags when the show is not 21+ (Ticketmaster ageRestrictions) or the operator marked it all ages."
     },
     {
       "key": "place_of_worship",
@@ -192,7 +192,7 @@
       "status": "pinned",
       "pinnedAt": "2026-10-15T12:07:08Z",
       "validatedRows": 10,
-      "note": "Cuisine tag. Added to the partner category set only when the operator selects it."
+      "note": "Cuisine tag. Added to the partner category set when the operator selects it, or on the \"more categories\" retry when a pool returns fewer than 8 places."
     }
   ],
   "baselines": [
@@ -225,7 +225,7 @@
       "status": "dropped",
       "pinnedAt": "2026-10-15T12:07:08Z",
       "validatedRows": 0,
-      "note": "Sponsor exclusion on shows that are not 21+. Dropped Oct 15: the /v2/tags lookup for \"alcohol\" on brands returned no candidate. Until one is pinned, the sponsor card relies on its own name and tag filter for adult-only brands."
+      "note": "Sponsor exclusion on shows that are not 21+ or that the operator marked all ages. Dropped Oct 15: the /v2/tags lookup for \"alcohol\" on brands returned no candidate. Until one is pinned, the sponsor card relies on its own name and tag filter for adult-only brands."
     },
     {
       "key": "tobacco",
@@ -238,7 +238,7 @@
       "status": "unpinned",
       "pinnedAt": null,
       "validatedRows": null,
-      "note": "Sponsor exclusion on shows that are not 21+."
+      "note": "Sponsor exclusion on shows that are not 21+ or that the operator marked all ages."
     },
     {
       "key": "gambling",
@@ -251,7 +251,7 @@
       "status": "unpinned",
       "pinnedAt": null,
       "validatedRows": null,
-      "note": "Sponsor exclusion on shows that are not 21+."
+      "note": "Sponsor exclusion on shows that are not 21+ or that the operator marked all ages."
     }
   ],
   "personChecks": [

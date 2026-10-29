@@ -32,6 +32,7 @@ import {
   ledgerRanges,
   LESS_SURE_NOTE,
   mapReachKm,
+  NEAR_VENUE,
   partnerAreaText,
   partnerLessSure,
   partnerWhyLine,
@@ -59,7 +60,7 @@ import {
 } from "./format";
 import { areaZips } from "./area-zips";
 import { partnerVisits, type PartnerVisit } from "./ics";
-import { areaBudget, declaredInCallOrder } from "./tables";
+import { apportion, areaBudget, declaredInCallOrder } from "./tables";
 
 /**
  * "operator": the street sheet as the operator uses it. "fan": the fan-facing
@@ -74,7 +75,7 @@ export interface SheetModelOptions {
   maxPartners?: number; // 25
   maxDeclared?: number; // 12
   maxSpots?: number; // 8
-  maxPodcasts?: number; // 3
+  maxPodcasts?: number; // 4
   maxHooks?: number; // 3
   maxLimits?: number; // 8
   /** Top tiles on the map and in the list. Default 5. */
@@ -182,9 +183,15 @@ export interface DeclaredRow {
 
 export interface SpotRow {
   name: string;
-  /** Every fact in one line: "Bar · 1.5 km · 2.7% of the crowd · ranks 3 places higher here than for the room's usual crowd". */
+  /**
+   * Every fact in one line: "Bar · 1.5 km · 2.7% of the crowd · ranks 3 places higher here than for the room's usual
+   * crowd" ("Cafe · national chain · 0.9 km · ..." on a chain).
+   */
   detail: string;
-  /** The same facts one by one, for a table: "Bar" (", not for fans" on an operator-only spot), "1.5 km", "2.7%". */
+  /**
+   * The same facts one by one, for a table: "Bar" (", national chain" on a chain, ", not for fans" on an operator-only
+   * spot), "1.5 km", "2.7%".
+   */
   category: string;
   distance: string;
   /** "" when every spot gets the same share (the column is then left out). */
@@ -364,7 +371,16 @@ export interface SheetModel {
     showVsUsual: boolean;
     empty: string | null;
   };
-  panel5: { title: string; status: string | null; podcasts: MediaRow[]; sponsor: MediaRow | null; sponsorNote: string | null };
+  panel5: {
+    title: string;
+    status: string | null;
+    podcasts: MediaRow[];
+    /** Podcasts past the cap (the plan page and sheet.json list them): the paper says how many. */
+    podcastsOmitted: number;
+    sponsor: MediaRow | null;
+    /** Why there is no sponsor; null when there is one, or when the status line above already says it. */
+    sponsorNote: string | null;
+  };
   panel6: { title: string; status: string | null; hooks: string[]; withheld: number; note: string };
   footer: {
     budgetTitle: string;
@@ -459,6 +475,11 @@ function sentence(s: string): string {
   const t = s.trim();
   if (t === "") return "";
   return /[.!?]$/.test(t) ? t : `${t}.`;
+}
+
+/** "+1 more podcast on the plan page and in sheet.json.": the podcasts past the paper's cap, counted. */
+export function podcastsOmittedText(n: number): string {
+  return `+${n} more ${n === 1 ? "podcast" : "podcasts"} on the plan page and in sheet.json.`;
 }
 
 /** Said once in the header when the signal is thin (the same words as the web sheet). */
@@ -702,10 +723,11 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       n: String(i + 1),
       entityId: p.entity.entityId,
       name: p.entity.name,
-      category: categoryLabel(p.category),
+      // "Cafe, national chain", as the plan page's partner table says it.
+      category: p.chain === true ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category),
       house: houseShort(p),
       tileRank: p.tileGeohash && topRank.has(p.tileGeohash) ? (topRank.get(p.tileGeohash) as number) : null,
-      tile: partnerAreaText(p, tileByHash) || "near venue",
+      tile: partnerAreaText(p, tileByHash) || NEAR_VENUE,
       tileLift: tile ? formatLift(tile.lift) : "",
       address: (p.address ?? (typeof p.entity.properties?.address === "string" ? (p.entity.properties.address as string) : "")).replace(/, [A-Z]{2}$/, ""),
       hours: h.hours,
@@ -743,7 +765,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   // The shared fan-facing rule (./audience): alcohol rules come from Ticketmaster's age policy (the operator's
   // all-ages setting can only add to them). On a show not known to be 21+, bars and places with a drinking word
   // in the name are operator-only (B2B); the fan version leaves them out. The plan page uses the same rule.
-  // No carts, kiosks, stands or food trucks; nearest to the venue first (`sheetSpots`, the same list as the web).
+  // No carts, kiosks, stands or food trucks; local spots nearest to the venue first, then national chains
+  // (`sheetSpots`, the same list as the web).
   const maxSpots = opts.maxSpots ?? 8;
   let withheld = 0;
   const spots: SpotRow[] = [];
@@ -761,6 +784,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     }
     if (spots.length >= maxSpots) continue;
     const category = sp.category ? categoryLabel(sp.category) : "";
+    // Marked as on the plan page: the card's chain sentence says why a chain was kept.
+    const chain = sp.chain === true ? "national chain" : "";
     const distance = formatKm(sp.entity.distanceM);
     const share = showShare ? formatPct(sp.expectedShare, 1) : "";
     // "3 places higher" here than for the room's usual crowd (the table's short form of `spotVsUsual`).
@@ -775,6 +800,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     const notForFans = operatorOnly && audience === "operator";
     const bits = [
       category,
+      chain,
       distance,
       share ? `${share} of the crowd` : "",
       spotVsUsual(sp.deltaRank, usualRanked),
@@ -783,7 +809,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     spots.push({
       name: sp.entity.name,
       detail: bits.join(" · "),
-      category: [category, notForFans ? "not for fans" : ""].filter((x) => x !== "").join(", "),
+      category: [category, chain, notForFans ? "not for fans" : ""].filter((x) => x !== "").join(", "),
       distance,
       share,
       vsUsual: moved,
@@ -794,9 +820,9 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   }
 
   // Panel 5 ----------------------------------------------------------------
-  const maxPodcasts = opts.maxPodcasts ?? 3;
-  const podcasts: MediaRow[] = cards.media.results
-    .filter((m) => m.kind === "podcast")
+  const maxPodcasts = opts.maxPodcasts ?? 4;
+  const allPodcasts = cards.media.results.filter((m) => m.kind === "podcast");
+  const podcasts: MediaRow[] = allPodcasts
     .slice(0, maxPodcasts)
     .map((m) => ({ name: m.entity.name, scope: m.scope === "local" ? "local" : "national", refs: refsOf(m.chips) }));
   const sponsorPick = cards.media.results.find((m) => m.kind === "sponsor");
@@ -806,6 +832,9 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
     sponsor = null;
     sponsorNote = "Sponsor left out: an alcohol brand on a show that is not 21+.";
   }
+  // Said once: a status line that already gives the reason ("Partial: No sponsor brand came back.") needs no note.
+  const mediaStatus = statusOf(cards.media);
+  if (sponsorNote && mediaStatus?.includes(sponsorNote)) sponsorNote = null;
 
   // Panel 6 ----------------------------------------------------------------
   // Copy hooks are fan-facing whatever the audience: on a show not known to be
@@ -824,11 +853,14 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
   const hookRefs = receiptGroup(cards.copyHooks.provenance);
 
   // Footer -----------------------------------------------------------------
-  // By area number, the largest share to area 1 (`areaBudget`, the same weights as zips.csv).
-  const budget: BudgetRow[] = areaBudget(sheet, { maxTiles: opts.maxTiles ?? 5 }).map((b) => ({
+  // By area number, each area with its own share of the budget split (`areaBudget`, the same weights as zips.csv and
+  // the plan page). Shares to one decimal, as the area text says them ("14.3%"), adding up to 100.0%.
+  const areaShares = areaBudget(sheet, { maxTiles: opts.maxTiles ?? 5 });
+  const pct = apportion(areaShares.map((b) => ({ key: b.tile.geohash, w: b.share })), 1000);
+  const budget: BudgetRow[] = areaShares.map((b) => ({
     rank: b.rank,
     name: areaLabel(b.tile),
-    share: formatPct(b.share),
+    share: formatPct(pct.get(b.tile.geohash) ?? b.share, 1),
     usd: sheet.operator.mediaBudgetUsd !== null && Number.isFinite(sheet.operator.mediaBudgetUsd) ? formatUsd(sheet.operator.mediaBudgetUsd * b.share) : null,
   }));
   // The real limits only: lines about where the data came from (sample data, approximate venue points) belong in
@@ -921,7 +953,14 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       showVsUsual: usualRanked,
       empty: spots.length === 0 ? "No spots on this sheet." : null,
     },
-    panel5: { title: "Podcasts and a sponsor", status: statusOf(cards.media), podcasts, sponsor, sponsorNote },
+    panel5: {
+      title: "Podcasts and a sponsor",
+      status: mediaStatus,
+      podcasts,
+      podcastsOmitted: Math.max(0, allPodcasts.length - podcasts.length),
+      sponsor,
+      sponsorNote,
+    },
     panel6: {
       title: "Copy lines",
       status: statusOf(cards.copyHooks),
@@ -967,6 +1006,7 @@ export function sheetModelText(m: SheetModel): string[] {
   out.push(m.panel3.title, ...m.panel3.rows.flatMap((r) => [r.rank, r.label, r.note, r.refs]));
   out.push(m.panel4.title, ...m.panel4.rows.flatMap((r) => [r.name, r.detail, r.refs]), m.panel4.ageLine);
   out.push(m.panel5.title, ...m.panel5.podcasts.flatMap((p) => [p.name, p.scope, p.refs]));
+  if (m.panel5.podcastsOmitted > 0) out.push(podcastsOmittedText(m.panel5.podcastsOmitted));
   if (m.panel5.sponsor) out.push(m.panel5.sponsor.name);
   if (m.panel5.sponsorNote) out.push(m.panel5.sponsorNote);
   out.push(m.panel6.title, ...m.panel6.hooks, m.panel6.note);

@@ -83,7 +83,9 @@ describe("the summary opens with the show, and the checks' fixes are said under 
     expect(text).not.toMatch(/Fixed wording:|made a claim/);
     // The summary text comes before the note on who wrote it.
     expect(summary.indexOf(s.narration!.summary.slice(0, 30).replace(/'/g, "&#x27;"))).toBeLessThan(summary.indexOf('data-testid="summary-note"'));
-    expect(text).toContain("Summary in fixed wording. Claude wrote the area and partner lines under checks that let it cite only names and numbers from this run; what the checks changed is under Checks.");
+    expect(text).toContain(
+      "Summary in fixed wording, in place of Claude's draft. Claude wrote the area and partner lines under checks that let it cite only names and numbers from this run; what the checks changed is under Checks.",
+    );
     expect(summary).toContain('href="#checks"');
   });
 

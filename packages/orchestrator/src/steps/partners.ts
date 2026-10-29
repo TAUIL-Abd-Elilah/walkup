@@ -31,7 +31,7 @@ import {
   usualCrowdChipLabel,
 } from "@walkup/engine";
 import { errorStatus } from "@walkup/qloo";
-import { categoryTagMap, categoryUrns, DEFAULT_PARTNER_CATEGORIES, WIDEN_CATEGORIES } from "../tags";
+import { categoryTagMap, categoryUrns, DEFAULT_PARTNER_CATEGORIES, loadTagPins, WIDEN_CATEGORIES, type TagPins } from "../tags";
 import { CHAINS } from "../chains";
 import { cite, clean, droppedFrom, droppedReason, envelope, failure, node, plural, signal, venuePoint, type DroppedCheck, type HouseSet, type RunContext, type Seed } from "../context";
 import { houseFor } from "./heat";
@@ -125,6 +125,40 @@ function houseTwinSignal(house: HouseSet | null): { entities: string[]; tags: st
 export function skippedCategoriesReason(keys: readonly string[]): string {
   const words = joinAnd(keys.map((k) => categoryWord(k, true)));
   return `${words.charAt(0).toUpperCase()}${words.slice(1)} aren't searched yet: Qloo has no tag to find them by.`;
+}
+
+/**
+ * The card's opening count, as the Partners step says it: "17 partners in 3 areas, at most 2 of a kind per area.";
+ * with no area standing out, "6 partners near the venue, at most 2 of a kind." (the near-venue list is not an area);
+ * with both, "17 partners: 12 in 3 areas and 5 near the venue, at most 2 of a kind per area."
+ */
+export function partnersCountLine(partners: readonly Pick<Partner, "tileGeohash">[]): string {
+  const n = partners.length;
+  const near = partners.filter((p) => !p.tileGeohash).length;
+  const areas = new Set(partners.filter((p) => p.tileGeohash).map((p) => p.tileGeohash)).size;
+  if (n > 0 && near === n) return `${plural(n, "partner")} near the venue, at most 2 of a kind.`;
+  if (near === 0) return `${plural(n, "partner")} in ${plural(areas, "area")}, at most 2 of a kind per area.`;
+  return `${plural(n, "partner")}: ${(n - near).toLocaleString("en-US")} in ${plural(areas, "area")} and ${near.toLocaleString("en-US")} near the venue, at most 2 of a kind per area.`;
+}
+
+/** Any opening count `partnersCountLine` writes (and the older "6 partners in 1 area, ..." for a near-venue list). */
+export const PARTNERS_COUNT_LINE_RE =
+  /^[\d,]+ partners?(?: in [\d,]+ areas?, at most 2 of a kind per area\.| near the venue, at most 2 of a kind\.|: [\d,]+ in [\d,]+ areas? and [\d,]+ near the venue, at most 2 of a kind per area\.)/;
+
+/**
+ * On sample data only: the kinds of place on the list that a live run asks for but can't search (config/tags.json
+ * has no pin for them, so a live sheet says they "aren't searched yet"), in one line: "Record stores show up on sample
+ * sheets only: live runs don't search them yet." Null when there are none, or when config/tags.json can't be read.
+ */
+export function sampleOnlyKindsLine(partners: readonly Pick<Partner, "category">[], livePins: TagPins): string | null {
+  if (livePins.source !== "config/tags.json") return null;
+  // Only the kinds a live run asks for, and names in its "aren't searched yet" line. A wider kind (bakery, pub) can
+  // still come back on a live sheet from another kind's search.
+  const searched: readonly string[] = DEFAULT_PARTNER_CATEGORIES;
+  const keys = [...new Set(partners.map((p) => p.category))].filter((k) => searched.includes(k) && !livePins.categories[k]).sort();
+  if (keys.length === 0) return null;
+  const words = joinAnd(keys.map((k) => categoryWord(k, true)));
+  return `${words.charAt(0).toUpperCase()}${words.slice(1)} show up on sample sheets only: live runs don't search them yet.`;
 }
 
 export function partnerCategories(ctx: RunContext): string[] {
@@ -393,9 +427,8 @@ export async function runPartners(
     },
   });
   const cleaned = partners.map((p) => ({ ...p, entity: clean(ctx, p.entity) }));
-  const tileCount = new Set(cleaned.map((p) => p.tileGeohash ?? "near-venue")).size;
   const dayName = streetDay(ctx).charAt(0).toUpperCase() + streetDay(ctx).slice(1, 3);
-  let summary = `${plural(cleaned.length, "partner")} in ${plural(tileCount, "area")}, at most 2 of a kind per area.`;
+  let summary = partnersCountLine(cleaned);
   if (report.droppedClosed > 0) summary += ` Dropped ${plural(report.droppedClosed, "place")} marked closed.`;
   if (report.droppedHoursClosed > 0) summary += ` Dropped ${plural(report.droppedHoursClosed, "place")} closed on the street-team day.`;
   if (report.droppedNotVenue > 0) summary += ` Left out ${plural(report.droppedNotVenue, "place")} that ${report.droppedNotVenue === 1 ? "isn't a business" : "aren't businesses"} (a mall, plaza, station or park).`;
@@ -407,6 +440,11 @@ export async function runPartners(
   if (report.belowMinimum) reasons.push(`Found ${cleaned.length} partners; the list aims for 15. The signal is thin, so treat this as a starting list.`);
   if (rebalanced) reasons.push("The headliner was dominating the ranking, so the list was rebalanced with the co-bill.");
   if (twinFailures.length > 0) reasons.push(`The usual-crowd search failed for ${twinFailures.join(", ")}, so those places have no usual-crowd rank.`);
+  // The sample world pins every kind of place; a kind config/tags.json doesn't pin is said on the sample's card.
+  if (ctx.mode === "fixture") {
+    const sampleOnly = sampleOnlyKindsLine(cleaned, loadTagPins());
+    if (sampleOnly) reasons.push(sampleOnly);
+  }
   if (report.penalized > 0) {
     summary += ` ${report.penalized.toLocaleString("en-US")} of ${plural(cleaned.length, "pick")} also rank for the room's usual crowd, so their scores were marked down (more when the two ranks are close).`;
   }

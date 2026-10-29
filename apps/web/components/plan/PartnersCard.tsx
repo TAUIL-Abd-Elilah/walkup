@@ -18,7 +18,7 @@ const tagWord = (name: string) =>
     .map((w) => ((w.match(/[A-Z]/g)?.length ?? 0) >= 2 ? w : w.toLowerCase()))
     .join(" ");
 
-/** The Type cell: the kind of place, and "national chain" when the name is on the hand-kept list. */
+/** The Type cell: the kind of place, and "national chain" when `partner.chain` is set (any of the four chain signals). */
 const typeWords = (p: Partner) => (p.chain ? `${categoryLabel(p.category)}, national chain` : categoryLabel(p.category));
 
 /** The state of the place's own address when it differs from its area's (the same rule as the print view and files). */
@@ -194,6 +194,7 @@ export function PartnersCard({
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
   const [openWhy, setOpenWhy] = useState<Set<string>>(() => new Set());
   const rows = env.results.filter((p) => areaFilter === null || p.tileGeohash === areaFilter);
+  const filteredTo = areaFilter === null ? undefined : areas.find((a) => a.geohash === areaFilter);
   const anyWhy = env.results.some((p) => p.explain);
   const notes = env.limits.some((l) => /not affiliated/i.test(l)) ? env.limits : ["Suggested, not affiliated: no partner has agreed to anything.", ...env.limits];
   // Partners this revision added: "new" at the end of their Why cell, no coloured row.
@@ -276,8 +277,9 @@ export function PartnersCard({
             {note ? <span className="text-muted"> {note}</span> : null}
           </span>
         ) : null}
+        {/* Controls stay on screen: a printed sheet has no button to press. */}
         {p.explain ? (
-          <span className="mt-1 block">
+          <span className="no-print mt-1 block">
             <button
               type="button"
               className="text-sm text-muted underline underline-offset-2 hover:text-ink"
@@ -306,18 +308,26 @@ export function PartnersCard({
                   flyerOnly.length === 1 ? `area ${flyerOnly[0]} is` : `areas ${flyerOnly.slice(0, -1).join(", ")} and ${flyerOnly[flyerOnly.length - 1]} are`
                 } for flyering only.`
               : ""}
-            {areas.length > 1 ? " Show:" : ""}
+            {areas.length > 1 ? <span className="no-print"> Show:</span> : null}
+            {/* The area buttons don't print, so a filtered list says on paper that it is filtered. */}
+            {filteredTo ? (
+              <span className="hidden print:inline">
+                {` Only ${rows.length === 1 ? "the 1 partner" : `the ${rows.length} partners`} in ${
+                  filteredTo.marker > 0 ? `area ${filteredTo.marker} (${filteredTo.name})` : filteredTo.name
+                } ${rows.length === 1 ? "is" : "are"} listed here. The other areas were hidden on screen.`}
+              </span>
+            ) : null}
           </span>
           {areas.length > 1 ? (
             <>
-              <button type="button" className="text-button" aria-pressed={areaFilter === null} onClick={() => setAreaFilter(null)}>
+              <button type="button" className="text-button no-print" aria-pressed={areaFilter === null} onClick={() => setAreaFilter(null)}>
                 all
               </button>
               {areas.map((a) => (
                 <button
                   key={a.geohash}
                   type="button"
-                  className="text-button"
+                  className="text-button no-print"
                   aria-pressed={areaFilter === a.geohash}
                   onClick={() => setAreaFilter((f) => (f === a.geohash ? null : a.geohash))}
                 >
@@ -407,10 +417,10 @@ export function PartnersCard({
           </tbody>
         </table>
       )}
-      {anyThin && rows.length > 0 ? <p className="mt-3 max-w-[760px] text-sm text-muted">{LESS_SURE_NOTE} &ldquo;Why this place&rdquo; gives the reason.</p> : null}
+      {anyThin && rows.length > 0 ? <p className="mt-3 max-w-[760px] text-sm text-muted">{LESS_SURE_NOTE}<span className="no-print"> &ldquo;Why this place&rdquo; gives the reason.</span></p> : null}
       {allThin && rows.length > 0 ? (
         <p className="mt-3 max-w-[760px] text-sm text-muted" data-testid="all-less-sure">
-          Every pick on this list is less certain: the signal for this bill is thin. Call before you go. &ldquo;Why this place&rdquo; gives the reason.
+          Every pick on this list is less certain: the signal for this bill is thin. Call before you go.<span className="no-print"> &ldquo;Why this place&rdquo; gives the reason.</span>
         </p>
       ) : null}
       {/* Qloo with the bill vs Qloo without a signal, same searches: absent when a twin failed or came back empty. */}
@@ -439,7 +449,7 @@ export function PartnersCard({
       <p className="mt-4 max-w-[760px]">
         {notes.join(" ")} Call before you drop posters.
         {areas.length > 0 ? ` ${AREA_REACH_NOTE}` : ""}
-        {anyWhy ? " Open “Why this place” for what to ask and how sure the pick is." : ""}
+        {anyWhy ? <span className="no-print"> Open “Why this place” for what to ask and how sure the pick is.</span> : null}
       </p>
     </PlanCard>
   );

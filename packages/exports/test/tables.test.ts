@@ -180,16 +180,17 @@ describe("tile weights", () => {
     expect([...w.values()].reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
   });
 
-  it("follows the area order: the largest share goes to area 1, the next to area 2, ...", () => {
+  it("keeps each area's own stored share, as the plan page and the area text do", () => {
     const sheet = makeSheet();
-    // A stored split whose shares don't fall with the area number.
+    // A stored split whose shares don't fall with the area number (a recorded split's last share takes the rounding,
+    // 0.143 then 0.144): each area keeps its own.
     const shares = [0.4, 0.1, 0.1, 0.25, 0.15];
     sheet.budgetSplit = TILES.slice(0, 5).map((t, i) => ({ geohash: t.geohash, share: shares[i]!, label: "heuristic, not a forecast" as const }));
     const top = topTiles(sheet);
     const w = top.map((t) => tileWeights(sheet, top).get(t.geohash)!);
-    expect(w).toEqual([0.4, 0.25, 0.15, 0.1, 0.1].map((x) => expect.closeTo(x, 10)));
+    expect(w).toEqual(shares.map((x) => expect.closeTo(x, 10)));
     // The sheet's budget split says the same, by area number.
-    expect(areaBudget(sheet).map((b) => [b.rank, b.tile.geohash, Math.round(b.share * 100)])).toEqual(top.map((t, i) => [i + 1, t.geohash, [40, 25, 15, 10, 10][i]]));
+    expect(areaBudget(sheet).map((b) => [b.rank, b.tile.geohash, Math.round(b.share * 100)])).toEqual(top.map((t, i) => [i + 1, t.geohash, [40, 10, 10, 25, 15][i]]));
     expect(areaBudget(makeSheet({ budgetSplit: undefined }))).toEqual([]);
   });
 
@@ -282,15 +283,17 @@ describe("zips.csv", () => {
     for (let i = 1; i < totals.length; i++) expect(totals[i - 1]!).toBeGreaterThanOrEqual(totals[i]!);
   });
 
-  it("agrees with the area order even when a stored budget split does not", () => {
+  it("gives each area its own stored share, even when the split does not fall with the area number", () => {
     const s = makeSheet();
     const shares = [0.1, 0.4, 0.1, 0.25, 0.15];
     s.budgetSplit = TILES.slice(0, 5).map((t, i) => ({ geohash: t.geohash, share: shares[i]!, label: "heuristic, not a forecast" as const }));
     const rows = zipRows(s, allHomes);
-    const totals = [...areaTotals(rows).entries()].sort((a, b) => a[0] - b[0]).map(([, w]) => w);
-    for (let i = 1; i < totals.length; i++) expect(totals[i - 1]!).toBeGreaterThanOrEqual(totals[i]!);
+    const totals = areaTotals(rows);
+    // Area 4 has no ZIP to list, so the others are scaled up together: each keeps its own share of what is left.
+    const listed = [...totals.keys()].reduce((a, area) => a + shares[area - 1]!, 0);
+    for (const [area, w] of totals) expect(w, `area ${area}`).toBeCloseTo(shares[area - 1]! / listed, 3);
+    expect(totals.get(2)!).toBeGreaterThan(totals.get(1)!);
     expect(rows[0]).toMatchObject({ zip: "37206", area: 1 });
-    expect(rows[0]!.suggestedWeight).toBeGreaterThan(rows.at(-1)!.suggestedWeight);
   });
 
   it("drops ZIPs that are not homes (P.O. boxes, one organisation, a campus), and an area left with none", () => {
@@ -393,5 +396,33 @@ describe("offer-codes.csv", () => {
 
   it("applies the operator's prefix", () => {
     expect(offerCodeRows(sheet, { codePrefix: "fall-26" })[0]?.code).toBe("FALL26LOWHUM01");
+  });
+
+  it("names a partner's area in the same words as partners.csv and the paper, never a blank cell", () => {
+    // A place over the state line from its area: "(place in MD)", as partners.csv, the print view and the PDF say.
+    const s = makeSheet();
+    s.cards.partners.results = [
+      { ...s.cards.partners.results[0]!, address: "5508 Kenilworth Ave, Hyattsville, MD 20781" },
+      // A partner from the search around the venue, with no area of its own.
+      { ...s.cards.partners.results[1]!, tileGeohash: null, tileName: undefined },
+    ];
+    const codes = offerCodeRows(s).filter((r) => r.channel === "partner");
+    const csv = parseCsvObjects(partnersCsv(s)).filter((r) => r.list === "suggested");
+    expect(codes.map((r) => r.tile)).toEqual(["East Bank, TN (place in MD)", "near venue"]);
+    expect(csv.map((r) => r.tile)).toEqual(codes.map((r) => r.tile));
+    expect(codes.map((r) => r.tile)).toEqual(buildSheetModel(s).panel2.rows.map((r) => r.tile));
+    expect(codes[0]!.description).toBe("Street team code for Low Hum Records (East Bank, TN, place in MD)");
+    expect(codes[1]!.description).toBe('Street team code for Spins, "Wax" & Co. (near venue)');
+    // No area means no lift to show.
+    expect(csv[1]!.tile_lift).toBe("");
+  });
+
+  it("marks a national chain partner's category in partners.csv, as the paper and the plan page do", () => {
+    const s = makeSheet();
+    s.cards.partners.results = s.cards.partners.results.map((p, i) => (i === 5 ? { ...p, chain: true } : p));
+    const csv = parseCsvObjects(partnersCsv(s));
+    expect(csv[5]!.category).toBe("Cafe, national chain");
+    expect(csv[5]!.category).toBe(buildSheetModel(s).panel2.rows[5]!.category);
+    expect(csv[0]!.category).toBe("Record store");
   });
 });

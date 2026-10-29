@@ -8,7 +8,7 @@ Server-side only: it runs `@walkup/orchestrator`, which loads `better-sqlite3`.
 
 | Tool | Input (strict: unknown keys are rejected) | `results` |
 |---|---|---|
-| `plan_show` | exactly one of `event` (a Ticketmaster event link, or `"Artist @ Venue, Date"`), `presetId` (`g1-a`, `g1-b`, `g2`, `g3`, `g4-a`, `g4-b`) or `planId` (resume a paused plan); optional `operator` what-ifs (`seatsLeft`, `capacity`, `mediaBudgetUsd`, `radiusKm`, `streetTeamDays`) and `picks` (`[{input, entityId}]`) | the Street Sheet, ledger included |
+| `plan_show` | exactly one of `event` (a Ticketmaster event link, or `"Artist @ Venue, Date"`), `presetId` (`g1-a`, `g1-b`, `g2`, `g3`, `g4-a`, `g4-b`; a sample-mode server, with no live Qloo key and no recorded sheets, serves the first four only) or `planId` (resume a paused plan); optional `operator` what-ifs (`seatsLeft`, `capacity`, `mediaBudgetUsd`, `radiusKm`, `streetTeamDays`) and `picks` (`[{input, entityId}]`) | the Street Sheet, ledger included |
 | `rank_partners` | exactly one of `planId`, `event` or `presetId`, plus `partnerNames` (1 to 20 names); optional `operator`, `picks` | the user's own list in call order (`DeclaredPartnerScore[]`; `rank: null` means not in Qloo's catalog, kept in your order) |
 | `bill_vs_house` | `planId` (a plan or preset id) | lift tiles, the baseline used (`house`, `tag` when a genre tag is pinned, or `none` when there is no lift map), what is distinctive to each side, age and gender skew, and the three card statuses |
 | `get_sheet` | `planId` | the Street Sheet, or the pending picks when the plan is waiting |
@@ -26,7 +26,7 @@ The envelope (`ToolEnvelope`, the same keys as `GET /api/sheet/<planId>`) has th
 
 Refusals and failures use the same envelope with `status: "error"` and `isError: true`. Input that fails the schema (a wrong type, an unknown key, more than 20 names) is rejected by the SDK before anything runs.
 
-The text block is a digest for agents that read only text. It holds the status and summary, the plan id and share link, the top lift tiles and partners with their receipts (`[Q9]`), each card's status and reason, pending candidates with the exact call to resume, and the limits. It adds no places or numbers of its own.
+The text block is a digest for agents that read only text. It holds the status and summary, the plan id and share link, the sheet's numbered areas (the same five the Street Sheet page numbers, never two squares of one area) and the top partners with their receipts (`[Q9]`), each card's status and reason, pending candidates with the exact call to resume, and the limits. It adds no places or numbers of its own.
 
 ### Ambiguity: resolve, confirm, then ask
 
@@ -38,11 +38,11 @@ Picks sent up front follow the same rule. With a preset (what-ifs, or `rank_part
 
 A preset with what-ifs, or `rank_partners` on a preset, runs the preset's event, date, what-ifs and seeds as a new plan under its own id. It is never stored as the preset itself, so one caller's partner names or seat counts never become the sheet a preset shows to everyone, and the quota guard's "serve the stored preset" fallback never answers such a run with a sheet that ignores the changes. If the guard does serve a stored sheet for a fresh run, the tool says the guard is on and gives the fresh run back.
 
-A live server runs a preset's live show: the real Ticketmaster bill in its `live` block (`presetFor` in `@walkup/orchestrator`; g1-a, g1-b, g4-a and g4-b have one, g2 and g3 do not; g4-a and g4-b have no sample show of their own). For a preset without one, preset what-ifs and `rank_partners` on it answer 404 "This preset has no live show yet." before any Ticketmaster or Qloo call and take no fresh run; a run of the preset itself stops with the same reason (a host's own preset loader still answers first). A stored run of the preset is served only while it is a run of the event the preset's show names now.
+A live server runs a preset's live show: the real Ticketmaster bill in its `live` block (`presetFor` in `@walkup/orchestrator`; g1-a, g1-b, g4-a and g4-b have one, g2 and g3 do not; g4-a and g4-b have no sample show of their own). A sample-mode server (no live Qloo key and no recorded sheets) refuses g4-a and g4-b with 503 "g4-a plans a real show only, and this copy of Walkup runs without keys.", as the web app's `POST /api/plan` does, and its instructions and tool descriptions leave them out. For a preset without a live show, preset what-ifs and `rank_partners` on it answer 404 "This preset has no live show yet." before any Ticketmaster or Qloo call and take no fresh run; a run of the preset itself stops with the same reason (a host's own preset loader still answers first). A stored run of the preset is served only while it is a run of the event the preset's show names now.
 
 ### Revising a sheet
 
-`revise_plan({planId, instruction})` changes a finished plan with the user's note, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". The orchestrator reads the note (`readInstruction`): the model with six strict tools when the server has a model key (OpenRouter or Anthropic), the fixed rules otherwise (`revision.interpreter` says which). If the note is unclear, the answer is `needs_input` with `question` and `reason`, and nothing runs or is stored: ask the user and call again. Otherwise the plan re-runs with the new operator inputs (`runRevision`) under a new plan id, stored like any plan, so it can be read with `get_sheet` and revised again. A preset is re-run by its event, never in the preset's slot. `revision.changes` lists settings, areas, partners and pre/post spots added or removed, each with receipts in the new sheet's ledger, and the text digest lists the tool calls and the first 12 changes. A plan that is waiting for a pick answers with its pause; a sheet made in the other mode answers 409. On a recorded server the note is not run (live runs are paused for judging); the refusal says so and names any recorded revision of the plan with its plan id and note. A revision is named as the caller's when its note is the same words (case, spacing and punctuation aside), or when the host's reader (`recordedMatch`; the web app passes the reader its revise box uses) reads the note as the change that revision made. Without that reading, a revision for other words is listed with its note to read, not called a different change.
+`revise_plan({planId, instruction})` changes a finished plan with the user's note, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". The orchestrator reads the note (`readInstruction`): the model with six strict tools when the server has a model key (OpenRouter or Anthropic), the fixed rules otherwise (`revision.interpreter` says which). If the note is unclear, the answer is `needs_input` with `question` and `reason`, and nothing runs or is stored: ask the user and call again. Otherwise the plan re-runs with the new operator inputs (`runRevision`) under a new plan id, stored like any plan, so it can be read with `get_sheet` and revised again. A preset is re-run by its event, never in the preset's slot. `revision.changes` lists settings, areas, partners and pre/post spots added or removed, each with receipts in the new sheet's ledger, and the text digest lists the tool calls and the first 12 changes. A plan that is waiting for a pick answers with its pause; a sheet made in the other mode answers 409. On a recorded server the note is not run (live runs are paused for judging); the refusal says so and names any recorded revision of the plan with its plan id and note. An id with no plan behind it answers 404 "No plan with id <id>.", as `get_sheet` does. A revision is named as the caller's when its note is the same words (case, spacing and punctuation aside), or when the host's reader (`recordedMatch`; the web app passes the reader its revise box uses) reads the note as the change that revision made. Without that reading, a revision for other words is listed with its note to read, not called a different change.
 
 ### Caps (docs/spec.md)
 
@@ -69,7 +69,7 @@ At `/mcp` the web app plugs in its own persistent per-IP limiter, so REST and MC
 **Streamable HTTP**, mounted by the web app at `/mcp` (`apps/web/app/mcp/route.ts`), runs in stateless mode.
 
 - Each POST gets its own server bound to the caller, and JSON responses (no SSE).
-- GET and DELETE answer 405, as the transport spec allows when there is no session.
+- GET and DELETE answer 405, as the transport spec allows when there is no session. PUT and PATCH get the same JSON-RPC 405 with `Allow: POST`.
 - Browser requests from another origin get 403. Bodies over 64 KB get 413.
 
 The route runs on the web app's engine:
@@ -77,7 +77,7 @@ The route runs on the web app's engine:
 - the same deps and plan store, so plans made over MCP open at `/s/<planId>`;
 - the same preset sheets;
 - the same per-IP limiter;
-- the same fixture-mode rule: without live keys only presets run, and preset what-ifs are free;
+- the same fixture-mode rule: without live keys only presets run (not g4-a or g4-b, which plan real shows only), and preset what-ifs are free;
 - the same recorded-mode rule: the hosted site serves sheets recorded from live Qloo and Ticketmaster runs (Oct 21 2026; most ready-made changes Oct 28 2026) and live runs are paused for judging, so `get_sheet`, `bill_vs_house` and `plan_show` for a preset or plan id read those sheets (envelope `mode: "recorded"`, the sheet's own mode stays `live`, and the text digest says the day each was recorded), and anything that would run answers 503 with `mode: "recorded"`;
 - the same quota and rejected-key bookkeeping after live runs.
 
@@ -85,10 +85,10 @@ The route runs on the web app's engine:
 
 **stdio**: `src/stdio.ts`, run with tsx.
 
-- Without keys it runs in fixture mode on the synthetic world. Free-form events resolve against the fixture world's calendar.
+- Without keys it runs in fixture mode on the synthetic world. Free-form events resolve against the fixture world's calendar. g4-a and g4-b are refused, as on the web app.
 - Fixture runs are free. Live runs keep the caps unless you pass `--unlimited` (only for a server on your own keys).
-- Plans go to `WALKUP_DATA_DIR`, default `<repo>/.cache/plans.sqlite`.
-- `WALKUP_URL` sets the share-link origin. The links open only when that web server uses the same data directory.
+- Plans go to `WALKUP_DATA_DIR`, default `<repo>/apps/web/.cache/plans.sqlite`.
+- `WALKUP_URL` sets the share-link origin. The links open only when that web server uses the same data directory. `npm run dev` runs in `apps/web`, so it keeps its plans in `<repo>/apps/web/.cache` (the root `.env`'s `WALKUP_DATA_DIR=./.cache` resolves there too), which is the stdio default and the folder the examples below use.
 
 ## Install
 
@@ -103,7 +103,7 @@ claude mcp add --transport http walkup <url>/mcp
 Or local over stdio (keys, if any, come from your environment):
 
 ```sh
-claude mcp add walkup -e WALKUP_DATA_DIR=/abs/path/walkup/.cache -- \
+claude mcp add walkup -e WALKUP_DATA_DIR=/abs/path/walkup/apps/web/.cache -- \
   node /abs/path/walkup/node_modules/tsx/dist/cli.mjs /abs/path/walkup/packages/mcp/src/stdio.ts
 ```
 
@@ -119,7 +119,7 @@ claude mcp add walkup -e WALKUP_DATA_DIR=/abs/path/walkup/.cache -- \
         "/abs/path/walkup/packages/mcp/src/stdio.ts"
       ],
       "env": {
-        "WALKUP_DATA_DIR": "/abs/path/walkup/.cache",
+        "WALKUP_DATA_DIR": "/abs/path/walkup/apps/web/.cache",
         "WALKUP_URL": "http://localhost:3000"
       }
     }
@@ -161,7 +161,7 @@ const res = await handleMcpHttpRequest(request, services, { origin, clientIp });
 - `createWalkupMcpServer`
 - `handleMcpHttpRequest`
 - `toCallResult`
-- `SERVER_INSTRUCTIONS`
+- `SERVER_INSTRUCTIONS` (a live or recorded server's), `serverInstructions(sample)`
 
 **Tool functions (REST twins)**
 
@@ -187,7 +187,7 @@ const res = await handleMcpHttpRequest(request, services, { origin, clientIp });
 - `viewOfStored`, `viewOfResult`, `envelopeOfView`
 - `PlanView`
 
-**Schemas**: `PlanShowInput`, `RankPartnersInput`, `PlanRefInput`, `RevisePlanInput`, `EnvelopeOutput`.
+**Schemas**: `PlanShowInput`, `RankPartnersInput`, `PlanRefInput`, `RevisePlanInput` (a live or recorded server's), `toolInputs(sample)` (the same fields, with a sample-mode server's preset lists), `presetIdsFor(sample)`, `EnvelopeOutput`. `sampleOnly(services)` says whether a server is in sample mode (fixture deps, no recorded sheets).
 
 **Limits**
 
@@ -219,6 +219,7 @@ The tests run on the fixture world with nothing on the network:
 - Host hooks and policy.
 - The Streamable HTTP transport through the SDK's own HTTP client: per-IP keys from proxy headers, 405, 403, 413, 406 and 429.
 - The stdio entry spawned with tsx.
+- `test/mcp-fixes.test.ts`: a sample-mode server refuses g4-a and g4-b and never lists them, a recorded one lists all six; the digest lists the sheet's numbered areas; `revise_plan` on a recorded server says an unknown id is unknown; PUT and PATCH get the JSON-RPC 405.
 - `revise_plan` (`test/revise.test.ts`): a revised preset with its change list and receipts, re-read and revised again, a question that runs and stores nothing, refusals, and caps taken only when it runs.
 
 ## Known limits

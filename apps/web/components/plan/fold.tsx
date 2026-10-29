@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 
 /**
  * The lower sections of a sheet (acts, your list, podcasts, copy lines, limits and checks, requests) keep their
@@ -8,12 +8,43 @@ import { createContext, useContext, type ReactNode } from "react";
  */
 export const FoldContext = createContext(false);
 
-/** The folded part of a section: a native disclosure that says "Show" closed and "Hide" open. */
+/**
+ * Opens a closed fold for printing and returns what puts it back: paper has no "Show", so the content prints.
+ * The print CSS opens folds too (::details-content); this covers browsers without it.
+ */
+export function openForPrint(d: { open: boolean }): () => void {
+  if (d.open) return () => {};
+  d.open = true;
+  return () => {
+    d.open = false;
+  };
+}
+
+/** The folded part of a section: a native disclosure that says "Show" closed and "Hide" open, and prints open. */
 export function FoldBody({ title, children }: { title: string; children: ReactNode }) {
   const fold = useContext(FoldContext);
+  const ref = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    let restore: (() => void) | null = null;
+    const before = () => {
+      restore = openForPrint(d);
+    };
+    const after = () => {
+      restore?.();
+      restore = null;
+    };
+    window.addEventListener("beforeprint", before);
+    window.addEventListener("afterprint", after);
+    return () => {
+      window.removeEventListener("beforeprint", before);
+      window.removeEventListener("afterprint", after);
+    };
+  }, [fold]);
   if (!fold) return <>{children}</>;
   return (
-    <details className="plain-details fold mt-2">
+    <details ref={ref} className="plain-details fold mt-2">
       <summary>
         <span className="fold-show">Show</span>
         <span className="fold-hide">Hide</span>

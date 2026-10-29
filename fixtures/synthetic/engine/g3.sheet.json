@@ -153,7 +153,7 @@
       },
       "partners": {
         "status": "partial",
-        "summary": "6 partners in 1 area, at most 2 of a kind per area.",
+        "summary": "6 partners near the venue, at most 2 of a kind.",
         "results": [
           {
             "entity": {
@@ -1044,7 +1044,7 @@
           "Suggested, not affiliated: no partner has agreed to anything.",
           "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales."
         ],
-        "reason": "No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list."
+        "reason": "No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet."
       },
       "declared": {
         "status": "empty",
@@ -1446,7 +1446,7 @@
       },
       "copyHooks": {
         "status": "partial",
-        "summary": "1 line, each built only from approved Qloo tags.",
+        "summary": "1 line, built only from approved Qloo tags.",
         "results": [
           {
             "text": "Ada Pell: Alternative rock at Super Funny Comedy Club, Friday, Dec 4.",

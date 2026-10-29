@@ -7,7 +7,7 @@ import type { ExplainContribution, GuardReport, LedgerEntry, StreetSheet } from 
 import { SampleStrip } from "../SampleStrip";
 import { actsLine, formatDayMonth, formatInt, formatShowDate, formatStamp, formatUsd, headlinerName, joinAnd, tMinusDays } from "../../lib/format";
 import { countsAreWhatIf, partnerLessSure, streetDaysText } from "@walkup/exports/format";
-import { entityIndex, footprintLine, guardNoteText, isThinSignal, runFootprint, sendStatus, sendSteps, sheetTitle, topTiles } from "../../lib/sheet-utils";
+import { entityIndex, footprintLine, guardNoteText, isThinSignal, replacedLineArea, runFootprint, sendStatus, sendSteps, sheetTitle, topTiles } from "../../lib/sheet-utils";
 import { FANBAR_HREF, FANBAR_NO_CLAIM, FANBAR_RESULT, lastSegment } from "../../lib/labels";
 import { CopyHooksCard, DeclaredCard, DifferentCard, MediaCard, PrePostCard } from "./MoreCards";
 import { LedgerSection } from "./LedgerSection";
@@ -95,7 +95,8 @@ export function summaryNote(sheet: StreetSheet, narrationReplaced = 0): string {
   if (sheet.narration?.templated) return "Written from a fixed template; no model was called.";
   const fixes = lineFixes(sheet) + narrationReplaced;
   const checks = "under checks that let it cite only names and numbers from this run";
-  if (summaryFixed(sheet)) return `Summary in fixed wording. Claude wrote the area and partner lines ${checks}; what the checks changed is under Checks.`;
+  // Claude did write a summary (the steps say so); the checks set that draft aside, so the note says whose words these are.
+  if (summaryFixed(sheet)) return `Summary in fixed wording, in place of Claude's draft. Claude wrote the area and partner lines ${checks}; what the checks changed is under Checks.`;
   return `Written by Claude ${checks}.${fixes > 0 ? ` ${fixes} ${fixes === 1 ? "line was" : "lines were"} replaced with fixed wording; see Checks.` : ""}`;
 }
 
@@ -139,7 +140,11 @@ function apiRevise(planId: string): ReviseHandler {
 const DOWNLOADS: { file: string; label: string; what: string }[] = [
   { file: "pdf", label: "Street sheet PDF", what: "one page to print or forward" },
   { file: "ics", label: "street-team.ics", what: "the street-team days for your calendar" },
-  { file: "partners.csv", label: "partners.csv", what: "the call list; called, outcome and notes are blank for your street team to fill in" },
+  {
+    file: "partners.csv",
+    label: "partners.csv",
+    what: "the call list; called, outcome and notes are blank for your street team to fill in, and contact_email is filled only from your own partner list",
+  },
   { file: "zips.csv", label: "zips.csv", what: "ZIP codes with lift and weight" },
   { file: "pins.csv", label: "pins.csv", what: "map pins with a radius" },
   { file: "offer-codes.csv", label: "offer-codes.csv", what: "codes to create in your ticketing platform" },
@@ -254,41 +259,52 @@ export function unbackedDrops(guard: GuardReport): number {
 /**
  * "Checks removed 0 claims. 4 tags were left out under the data policy (ethnicity, inclusivity, credit card)." A line
  * left out for a wording or policy rule (an alcohol word on an all-ages show, a line about a place that isn't a partner)
- * is not a claim: "Checks left out 15 lines, none for a claim the run didn't back."
+ * is not a claim: "Checks left out 15 lines, none for a claim the run didn't back." When nothing was left out but the
+ * checks swapped lines for fixed wording (the run's "replaced by the template" notes, plus `viewReplaced` lines swapped
+ * at view time), it says "Checks left out no line." and the next line says what was replaced, never "removed 0 claims".
  */
-export function checksLine(guard: GuardReport): string {
+export function checksLine(guard: GuardReport, viewReplaced = 0): string {
   const by = guard.deniedByNamespace;
   const classes = by ? Object.keys(by).filter((k) => (by[k] ?? 0) > 0).map((k) => k.replace(/_/g, " ")) : [];
   const n = guard.deniedTagCount;
   const unbacked = unbackedDrops(guard);
   const other = guard.dropped - unbacked;
+  const swapped = guard.reasons.filter((r) => /^replaced by the template: /.test(r)).length + viewReplaced;
   const lines = (x: number) => `${x} ${x === 1 ? "line" : "lines"}`;
+  // A failed line with no fixed wording for its slot ("... (dropped)") was left out, though `dropped` does not count it.
+  const swapDrops = guard.reasons.filter((r) => /^replaced by the template: .*\(dropped\)$/.test(r)).length;
   const claims =
-    other === 0
-      ? `Checks removed ${guard.dropped} ${guard.dropped === 1 ? "claim" : "claims"}.`
-      : unbacked === 0
-        ? `Checks left out ${lines(guard.dropped)}, none for a claim the run didn't back.`
-        : `Checks left out ${lines(guard.dropped)}: ${unbacked} for a claim the run didn't back, ${other} for a wording or policy rule.`;
+    guard.dropped === 0 && swapDrops > 0
+      ? `Checks left out ${lines(swapDrops)}.`
+      : guard.dropped === 0 && swapped > 0
+      ? "Checks left out no line."
+      : other === 0
+        ? `Checks removed ${guard.dropped} ${guard.dropped === 1 ? "claim" : "claims"}.`
+        : unbacked === 0
+          ? `Checks left out ${lines(guard.dropped)}, none for a claim the run didn't back.`
+          : `Checks left out ${lines(guard.dropped)}: ${unbacked} for a claim the run didn't back, ${other} for a wording or policy rule.`;
   if (n === 0) return `${claims} No tag was left out under the data policy.`;
   return `${claims} ${n} ${n === 1 ? "tag was" : "tags were"} left out under the data policy${classes.length > 0 ? ` (${classes.join(", ")})` : ""}.`;
 }
 
 /**
  * The Checks list: each check note in plain words, the same note once with its count ("13 of Claude's partner lines
- * were left out: each was about a place that isn't a partner on this sheet.") rather than 13 times in a row.
+ * were left out: each was about a place that isn't a partner on this sheet.") rather than 13 times in a row. With the
+ * sheet, a replaced area line names the area its geohash is in (`replacedLineArea`), not its place in the list.
  */
-export function checkNotes(reasons: readonly string[]): string[] {
+export function checkNotes(reasons: readonly string[], sheet?: StreetSheet): string[] {
   const counts = new Map<string, number>();
+  const areaOfLine = sheet ? replacedLineArea(sheet) : undefined;
   for (const r of reasons) {
     // "partnerLines[22]: not a partner": Claude wrote a line for a spot, a podcast or the sponsor.
     const text = /^partnerLines\[\d+\]: not a partner$/.test(r)
       ? "One of Claude's partner lines was left out: it was about a place that isn't a partner on this sheet."
-      : guardNoteText(r);
+      : guardNoteText(r, areaOfLine);
     counts.set(text, (counts.get(text) ?? 0) + 1);
   }
   return [...counts].map(([text, n]) => {
     if (n === 1) return text;
-    const m = /^One of Claude's (partner|copy) lines was left out: (.+)$/.exec(text);
+    const m = /^One of Claude's (partner|copy|area) lines was left out: (.+)$/.exec(text);
     if (m) return `${n} of Claude's ${m[1]} lines were left out: ${m[2]!.replace(/^it was about a place that isn't/, "each was about a place that isn't").replace(/^it /, "each ")}`;
     return `${text} (${n} times)`;
   });
@@ -636,7 +652,7 @@ export function PlanView({
               <h3 id="checks" className="mt-6 scroll-mt-4 text-base">
                 Checks
               </h3>
-              <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard)}</p>
+              <p className="mt-1 max-w-[760px]">{checksLine(sheet.guard, narrationReplaced)}</p>
               {fixLine ? (
                 <p className="mt-1 max-w-[760px]" data-testid="checks-fix">
                   {fixLine}
@@ -644,7 +660,7 @@ export function PlanView({
               ) : null}
               {guardNotes.length > 0 ? (
                 <ul className="mt-1 max-w-[760px] list-disc space-y-1 pl-5 text-muted">
-                  {checkNotes(guardNotes).map((r) => (
+                  {checkNotes(guardNotes, sheet).map((r) => (
                     <li key={r}>{r}</li>
                   ))}
                 </ul>

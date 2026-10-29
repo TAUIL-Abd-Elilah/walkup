@@ -1,8 +1,9 @@
 /**
  * Streamable HTTP in stateless mode, on Web-standard Request/Response (a Next
  * route handler, or any fetch-style server). Each POST gets its own server and
- * transport bound to the caller's address; responses are plain JSON. GET and
- * DELETE answer 405: there is no session to stream to or to end.
+ * transport bound to the caller's address; responses are plain JSON. GET,
+ * DELETE and every other method answer the same JSON-RPC 405 (Allow: POST):
+ * there is no session to stream to or to end.
  */
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { callerKey, clientIpFrom } from "./limits";
@@ -41,10 +42,8 @@ function crossSite(req: Request, self: string | null): boolean {
 }
 
 export async function handleMcpHttpRequest(req: Request, services: McpServices, opts: HttpHandlerOptions = {}): Promise<Response> {
-  if (req.method === "GET" || req.method === "DELETE") {
-    return rpcError(405, -32000, "Method not allowed: this MCP server is stateless; send JSON-RPC with POST.", { allow: "POST" });
-  }
-  if (req.method !== "POST") return rpcError(405, -32000, "Method not allowed.", { allow: "POST" });
+  // GET, DELETE, PUT, PATCH and the rest: one JSON-RPC 405 that says what to send instead.
+  if (req.method !== "POST") return rpcError(405, -32000, "Method not allowed: this MCP server is stateless; send JSON-RPC with POST.", { allow: "POST" });
   const origin = opts.origin === undefined ? new URL(req.url).origin : opts.origin;
   if (crossSite(req, origin)) return rpcError(403, -32000, "Forbidden: cross-site requests are not accepted.");
 

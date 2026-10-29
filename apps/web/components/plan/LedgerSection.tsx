@@ -14,8 +14,9 @@ export function LedgerSection({ entries, exportHref, sample = false }: { entries
     <section id="ledger" aria-labelledby="ledger-title" className="section scroll-mt-4">
       <h2 id="ledger-title">Requests behind this sheet</h2>
       <p className="mt-1 max-w-[760px] text-sm text-muted">
+        {/* A sample run can reuse its own stand-in answers (a resumed run), so the cache count is said here too. */}
         {sample
-          ? `${entries.length} entries, ${qloo.length} of them in Qloo's format. Sample data: every answer came from Walkup's made-up stand-in, so nothing was timed or cached.`
+          ? `${entries.length} entries, ${qloo.length} of them in Qloo's format (${cached} from cache). Sample data: every answer came from Walkup's made-up stand-in, so nothing was timed.`
           : `${entries.length} entries, ${qloo.length} of them Qloo calls (${cached} from cache).`}{" "}
         Every footnote on this sheet points to one of
         these. Keys show only as environment variable names.{" "}

@@ -157,7 +157,8 @@ export function LiftMap({
   const note = state === "loading" ? "Simplified drawing while the street map loads." : SIMPLIFIED_NOTE;
 
   return (
-    <figure className="m-0">
+    // lift-figure: on paper the drawing, its caption and the key above it stay on one page (globals.css).
+    <figure className="lift-figure m-0">
       <div ref={frameRef} className={`relative w-full overflow-hidden rounded-[4px] border border-rule bg-[#f8f8f6] ${frameClass}`}>
         <StaticLiftMap
           tiles={tiles}

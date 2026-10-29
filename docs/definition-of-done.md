@@ -37,7 +37,7 @@ Clauses D1 to D4 are scored on the golden cases (C01 to C04). The same checks al
 | C01 | G1 bill A, cold room | D1 D2 D3 D4 S1 S2 S3 |
 | C02 | G1 bill B (all-ages) | D1 D2 D3 D4 S1 S2 S3 |
 | C03 | G2: pause, operator pick, proxy seeds, declared community channels, denied-tag receipt | D1 D2 D3 D4 S1 S2 S3 |
-| C04 | G3: tag baseline, 60 km widen, tag diff, thin-signal banner | D1 D2 D3 D4 S1 S2 S3 |
+| C04 | G3: no comedy baseline, so no lift map and an empty "What's different"; 60 km widen; partners near the venue; the unmatched support act reported, not guessed; thin-signal banner | D1 D2 D3 D4 S1 S2 S3 |
 | C05 | `needs_input` pause and resume, a pick that was not shown, a remembered pick | D4 S2 |
 | C06 | Empty compare, which falls back to a tag diff | S1 S2 |
 | C07 | Thin heatmap, which widens to 60 km | S1 S2 |
@@ -70,4 +70,4 @@ On recorded plans, only the golden cases (C01 to C04, C17, C18) run, and only wi
 - Fixture world: all four golden cases pass D1 to D4.
 - **Known gaps: none.** The gap the eval reported (C11, C12: pre/post spots with unknown hours presented as open on show night) is fixed in `packages/orchestrator` (`src/steps/prepost.ts`); those spots now say "call ahead". `evals/product/known-gaps.ts` is empty.
 - **Interpretation to confirm:** G1 bill A has two partners with no hours from Qloo. The sheet shows it as "call ahead", which passes D3 as read above. A strict reading (`--strict-hours`) fails it.
-- **CI (D5, D7):** `npm test` runs the eval in the CI `node` job (the root `vitest.config.ts` and `tsconfig.json` include `evals/product`). The `product-score` job commits `evals/product/out/score.json` and `score.md` on pushes to the default branch when the result changed. Both run on GitHub Actions: the `node` job on every push, `product-score` on every push to the default branch. The score file was last committed when the result changed, on Oct 21 2026.
+- **CI (D5, D7):** `npm test` runs the eval in the CI `node` job (the root `vitest.config.ts` and `tsconfig.json` include `evals/product`). The `product-score` job commits `evals/product/out/score.json` and `score.md` on pushes to the default branch when the result changed. Both run on GitHub Actions: the `node` job on every push, `product-score` on every push to the default branch. The committed score file reports 20 of 20 cases passed. CI commits it again whenever anything in it other than its timestamp changes (a check's detail text included), so the "Generated" date in `score.md` is the date of the last such change.

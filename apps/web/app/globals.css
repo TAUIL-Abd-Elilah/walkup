@@ -480,10 +480,16 @@
     --color-warn: #fff8db;
     --color-error-bg: #fdecea;
   }
+  /*
+   * Print the fills that carry meaning (map key swatches, the venue square, the area markers and rules, the yellow
+   * call-first rows) even with the print dialog's "Background graphics" off, which is its default.
+   */
   html,
   body {
     background: #fff !important;
     color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .no-print,
   .sample-strip,
@@ -497,12 +503,55 @@
     max-width: none !important;
     padding: 0 !important;
   }
-  .print-avoid-break {
+  /* A list item or table row (a partner, a request) never splits across a page: a phone stays with its name. */
+  .print-avoid-break,
+  li,
+  tr {
+    break-inside: avoid;
+  }
+  /* A lift map stays whole, with its caption and the key printed above it (the column that holds both). */
+  .lift-figure,
+  div:has(> .lift-figure) {
     break-inside: avoid;
   }
   a {
     color: inherit !important;
     text-decoration: none !important;
+  }
+  /* Paper has no tooltip to show the rest of a cut line, so a line cut with "…" on screen wraps, as on a phone. */
+  .truncate {
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  /*
+   * Paper has no "Show": every disclosure prints open (fold.tsx also opens folds on beforeprint for browsers
+   * without ::details-content). A fold's Show/Hide line is left off; other summaries print as plain labels.
+   */
+  details::details-content {
+    content-visibility: visible;
+  }
+  .fold > summary {
+    display: none !important;
+  }
+  summary {
+    list-style: none;
+    text-decoration: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  /*
+   * The requests table shows Source and Results from 768px on screen, and paper is narrower (748px on Letter, 726px
+   * on A4), so they would drop off. Unlike the partner table, no other line on the row repeats them: print them.
+   */
+  #ledger th.md\:table-cell,
+  #ledger td.md\:table-cell {
+    display: table-cell;
+  }
+  /* A copy line's Copy button does nothing on paper. */
+  #hooks li > button {
+    display: none !important;
   }
 }
 
@@ -515,6 +564,14 @@
     top: -0.45em;
     line-height: 0;
     font-size: max(0.7em, 12px);
+  }
+  /*
+   * The street sheet (/s, on screen and on paper): its text is 6.3pt to 14px, so the 12px floor would make a ref as
+   * large as the text, or 1.5x it on paper, and raise it into the line above. Three quarters of the text, like .fn.
+   */
+  .paper .fn-flat {
+    font-size: 0.75em;
+    top: -0.3em;
   }
   /* A tap area about 30px tall around each small receipt link; the padding and margin cancel out in the layout. */
   .fn-flat a {

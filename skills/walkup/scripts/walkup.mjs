@@ -284,7 +284,7 @@ async function request(base, method, path, body, accept = "application/json") {
     const error = /** @type {{ name?: string, cause?: { code?: string } } | undefined} */ (caught);
     if (error?.name === "TimeoutError" || error?.name === "AbortError") {
       throw new CliError(
-        `No answer from ${base} after ${TIMEOUT_MS / 1000} s. A fresh sheet makes 15 to 30 Qloo calls and can take a while; try again or open the web app.`,
+        `No answer from ${base} after ${TIMEOUT_MS / 1000} s. A fresh sheet makes about 30 Qloo calls and can take a while; try again or open the web app.`,
         EXIT.UNREACHABLE,
       );
     }
@@ -359,7 +359,7 @@ function httpError(res, data, base) {
   const reason = reasonOf(data);
   if (res.status === 429) {
     return new CliError(
-      `Limit reached: ${reason ?? "fresh runs are capped per IP and per day"}. Cached presets still open in the web app.`,
+      `Limit reached: ${withoutStop(reason ?? "fresh runs are capped per IP and per day")}. Cached presets still open in the web app.`,
       EXIT.LIMIT,
     );
   }
@@ -371,17 +371,17 @@ function httpError(res, data, base) {
   }
   if (res.status === 503 && isFixture(data)) {
     return new CliError(
-      `The server is in fixture mode: ${reason ?? "fresh runs are disabled"}. Sample presets still open in the web app.`,
+      `The server is in fixture mode: ${withoutStop(reason ?? "fresh runs are disabled")}. Sample presets still open in the web app.`,
       EXIT.FIXTURE,
     );
   }
   if (res.status === 404) {
     return new CliError(
-      `Not found at ${base} (HTTP 404)${reason ? `: ${reason}` : ""}. Check the plan id and that WALKUP_URL is a Walkup server.`,
+      `Not found at ${base} (HTTP 404)${reason ? `: ${withoutStop(reason)}` : ""}. Check the plan id and that WALKUP_URL is a Walkup server.`,
       EXIT.ERROR,
     );
   }
-  return new CliError(`Server error (HTTP ${res.status})${reason ? `: ${reason}` : ""}.`, EXIT.ERROR);
+  return new CliError(`Server error (HTTP ${res.status})${reason ? `: ${withoutStop(reason)}` : ""}.`, EXIT.ERROR);
 }
 
 // ---------------------------------------------------------------------------
@@ -442,7 +442,7 @@ function sheetLines(sheet) {
     if (partners.length) {
       lines.push(`Top partners (of ${partners.length}; suggested, not affiliated):`);
       partners.slice(0, 5).forEach((/** @type {Json} */ p, /** @type {number} */ i) => {
-        const where = [p.category, p.tileName].filter(Boolean).join(", ");
+        const where = [p.category ? String(p.category).replace(/_/g, " ") : null, p.tileName].filter(Boolean).join(", ");
         lines.push(`  ${i + 1}. ${p.entity?.name ?? "?"}${where ? ` (${where})` : ""}${refs(p.chips)}`);
       });
     }

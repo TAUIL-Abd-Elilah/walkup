@@ -262,11 +262,15 @@ export function genreLabel(classification: string | undefined, fallback: string)
   return lastSegment(classification) || fallback;
 }
 
-/** The footer's data credit for the runtime mode: sample data, recordings of live runs, or the live services. */
+/**
+ * The footer's data credit for the runtime mode: sample data, recordings of live runs, or the live services. The
+ * footer can't see the sheet on the page, so the recorded line speaks for recorded sheets only (a sample sheet on the
+ * same server says it is made up).
+ */
 export function dataSourcesLine(mode: "live" | "fixture" | "recorded"): string {
   if (mode === "fixture") return "Sample data shaped like Qloo and Ticketmaster responses; neither service is called.";
   if (mode === "recorded") {
-    return "Affinity data from Qloo, events and age rules from Ticketmaster, recorded on live runs. Live runs are paused for judging.";
+    return "Recorded sheets: affinity data from Qloo, events and age rules from Ticketmaster, recorded on live runs. Live runs are paused for judging.";
   }
   return "Affinity data from Qloo. Events and age rules from Ticketmaster.";
 }

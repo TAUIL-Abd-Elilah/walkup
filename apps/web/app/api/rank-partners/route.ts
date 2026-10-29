@@ -1,4 +1,4 @@
-import { contextOf, json, readJson, withSession } from "@/lib/server/http";
+import { contextOf, json, otherMethods, readJson, withSession } from "@/lib/server/http";
 import { startPlan } from "@/lib/server/service";
 
 export const dynamic = "force-dynamic";
@@ -15,3 +15,11 @@ export async function POST(request: Request): Promise<Response> {
   const res = await startPlan(body.value, ctx, { rankPartners: true });
   return withSession(json(res.body, res.status), ctx);
 }
+
+/** Any other method: 405 with a reason and Allow: POST, OPTIONS (Next's own 405 has no body and no Allow). */
+const other = otherMethods("POST");
+export const GET = other.refuse;
+export const PUT = other.refuse;
+export const PATCH = other.refuse;
+export const DELETE = other.refuse;
+export const OPTIONS = other.options;

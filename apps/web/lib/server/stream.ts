@@ -1,7 +1,7 @@
 /**
  * Server-sent events for one plan: GET /api/plan/<id>/stream.
  *
- *   event: start        {planId, mode, title, presetId?}
+ *   event: start        {planId, mode, title, presetId?}   (mode "recorded" for a live sheet on a recorded server)
  *   event: card         {index, key, envelope}       (spec order: resolution, liftMap, partners, ...)
  *   event: step         {index, step}                (one TraceStep of sheet.steps, as the run reaches it)
  *   event: needs_input  {planId, pending, resolution, bill}
@@ -13,6 +13,7 @@
  */
 import type { Envelope } from "@walkup/contracts";
 import { CARD_ORDER } from "@walkup/orchestrator";
+import { runtimeMode } from "../mode";
 import { getRun, subscribe, type RunEvent } from "./runs";
 import { loadPlan, type LoadedPlan } from "./service";
 
@@ -32,7 +33,8 @@ export const SSE_HEADERS = {
 /** The frames for a plan that is not running (cached, stored, paused or failed). */
 export function staticFrames(v: Exclude<LoadedPlan, { kind: "running" }>): string[] {
   const frames: string[] = [];
-  const mode = v.kind === "sheet" ? v.sheet.mode : v.mode;
+  // Recorded state: a live sheet is a recording, as GET /api/plan/<id> (planSnapshot) and the envelope report it.
+  const mode = v.kind === "sheet" ? (v.sheet.mode === "live" && runtimeMode().kind === "recorded" ? "recorded" : v.sheet.mode) : v.mode;
   frames.push(sseFrame("start", { planId: v.planId, mode, title: v.title, ...(v.kind !== "error" && v.presetId ? { presetId: v.presetId } : {}) }));
   if (v.kind === "sheet") {
     CARD_ORDER.forEach((key, index) => frames.push(sseFrame("card", { index, key, envelope: v.sheet.cards[key] as Envelope<unknown> })));

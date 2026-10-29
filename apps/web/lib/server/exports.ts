@@ -27,7 +27,7 @@ export const EXPORT_ROUTES: Readonly<Record<string, ExportKind>> = {
 export const EXPORT_LINKS: readonly { file: string; label: string; hint: string }[] = [
   { file: "pdf", label: "Street Sheet PDF", hint: "one page" },
   { file: "ics", label: "Street-team calendar", hint: ".ics" },
-  { file: "partners.csv", label: "partners.csv", hint: "call list; called, outcome and notes are for your street team to fill in" },
+  { file: "partners.csv", label: "partners.csv", hint: "call list; called, outcome and notes are for your street team to fill in; contact_email only from your own partner list" },
   { file: "zips.csv", label: "zips.csv", hint: "ZIP, lift, weight" },
   { file: "pins.csv", label: "pins.csv", hint: "lat, lon, radius" },
   { file: "offer-codes.csv", label: "offer-codes.csv", hint: "create in your ticketing platform" },

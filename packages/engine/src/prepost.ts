@@ -113,7 +113,7 @@ export interface PrePostReport {
   droppedAdult: number;
   capacityApplied: boolean;
   unplaced: number;
-  /** Eligible spots on the chain list. 0 without a list. */
+  /** Eligible spots that `chainSignals` flags as chains. 0 without a list. */
   chains: number;
   /** Chains on the list Qloo's order alone gives that the rule moved: now off the list, or after a local spot Qloo ranked lower. */
   chainsMovedDown: number;

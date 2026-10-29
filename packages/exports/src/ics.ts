@@ -14,6 +14,9 @@
  *   whose hours that day aren't listed gets a stop marked "call first". A
  *   partner closed on every street-team day is not scheduled; its area's first
  *   event says so. A numbered area with no partner to visit gets a flyer drop.
+ * - No two stops overlap, and each hop allows the travel time. A stop no day of
+ *   the pass has time left for is not timed; the day's first event lists it
+ *   (a day with no timed stop gets one all-day event that does).
  * - Lines end in CRLF and are folded at 75 octets (continuation lines start
  *   with one space; UTF-8 sequences are never split).
  * - TEXT values escape backslash, semicolon, comma and newlines.
@@ -113,10 +116,50 @@ export interface StreetTeamVisit {
   /** True when the partner's hours that day are not listed: call before going. */
   callFirst: boolean;
   /**
-   * Partners of this area left off the calendar because they are listed closed on every street-team day of the
-   * pass. Set on the area's earliest event of that pass (its flyer drop, or its first stop); [] elsewhere.
+   * Partners left off the calendar because they are listed closed on every street-team day of the pass. Set on
+   * their area's earliest event of that pass (its flyer drop, or its first stop); when the pass times no stop there,
+   * on the event that lists the area's stops with no time left, else on the earliest event of the area's day (else
+   * of the pass, else a `StreetTeamNote`); [] elsewhere.
    */
   closedAllDays: Partner[];
+  /**
+   * Stops of this day the route has no time left for, on no other street-team day of the pass either (a partner, or
+   * an area's flyer drop). They are never put on top of another stop: the day's earliest event lists them, to arrange
+   * by phone (a day with no timed event gets a `StreetTeamNote` instead). Set on that event only; [] elsewhere.
+   */
+  notTimed: NotTimedStop[];
+}
+
+/**
+ * A street-team day of a pass that has no timed stop, but stops with no time left (or partners closed on every
+ * street-team day) to say: the calendar gives it one all-day event that lists them, so nothing is dropped unsaid.
+ */
+export interface StreetTeamNote {
+  date: string;
+  weekday: Weekday;
+  pass: StreetTeamPass;
+  notTimed: NotTimedStop[];
+  closedAllDays: Partner[];
+}
+
+/** The street-team calendar's plan: the timed stops, and the days that only have something to say (`StreetTeamNote`). */
+export interface StreetTeamPlan {
+  visits: StreetTeamVisit[];
+  notes: StreetTeamNote[];
+}
+
+/** A stop the day's route has no time left for (`StreetTeamVisit.notTimed`). */
+export interface NotTimedStop {
+  /** The street-team day it was planned for. */
+  date: string;
+  weekday: Weekday;
+  /** The partner; null for an area's flyer drop. */
+  partner: Partner | null;
+  tile: LiftTile | null;
+  tileRank: number | null;
+  /** The partner's hours that day as listed; null when not listed (and on a flyer drop). */
+  hours: string | null;
+  callFirst: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -490,7 +533,6 @@ interface Item {
   /** Allowed [start, end) minute ranges for the stop. */
   windows: [number, number][];
   minutes: number;
-  closedAllDays: Partner[];
   pos: Point | null;
 }
 
@@ -640,18 +682,39 @@ function travelMinutes(from: Point | null, to: Point | null, gapMin: number): nu
   return Math.max(gapMin, Math.ceil((km * TRAVEL_MIN_PER_KM) / 5) * 5);
 }
 
+type Timed = { it: Item; t: number; end: number };
+
+/**
+ * Puts `it` in a free stretch between two of the day's stops (or before the first), travel included both ways and
+ * inside its own hours. False when no stretch is long enough.
+ */
+function fitBetween(placed: Timed[], it: Item, dayStart: number, gapMin: number): boolean {
+  const sorted = [...placed].sort((a, b) => a.t - b.t);
+  for (let i = 0; i < sorted.length; i++) {
+    const prev = sorted[i - 1];
+    const next = sorted[i]!;
+    const t = earliestFit(it, prev ? prev.end + travelMinutes(prev.it.pos, it.pos, gapMin) : dayStart);
+    if (t === null || t + it.minutes + travelMinutes(it.pos, next.it.pos, gapMin) > next.t) continue;
+    placed.push({ it, t, end: t + it.minutes });
+    return true;
+  }
+  return false;
+}
+
 /**
  * One day's stops in order. The day starts at the venue at `start` (earlier when a stop is open only before then).
  * Each step takes, among the stops that can start within 45 minutes of the soonest one (travel included), a stop in
  * the same area when there is one, else the nearest: a nearest-neighbour walk that keeps an area together and never
- * puts a stop outside its listed hours. A stop that can't fit after the others is still put inside its own hours
- * (it may then overlap another stop). Nothing runs past 23:59.
+ * puts a stop outside its listed hours. A stop that can't fit after the others goes in a free stretch between two
+ * stops when one is long enough, travel included; otherwise it is `unplaced` (never timed on top of another stop).
+ * Nothing runs past 23:59.
  */
-function scheduleDay(items: readonly Item[], start: number, gapMin: number, venue: Point | null): { it: Item; t: number; end: number }[] {
+function scheduleDay(items: readonly Item[], start: number, gapMin: number, venue: Point | null): { placed: Timed[]; unplaced: Item[] } {
   const left = [...items];
-  const placed: { it: Item; t: number; end: number }[] = [];
+  const placed: Timed[] = [];
   const early = left.filter((it) => earliestFit(it, start) === null && earliestFit(it, 0) !== null).map((it) => earliestFit(it, 0)!);
-  let cursor = Math.min(start, ...early);
+  const dayStart = Math.min(start, ...early);
+  let cursor = dayStart;
   let at = venue;
   let lastSlot = -1;
   let first = true;
@@ -661,14 +724,12 @@ function scheduleDay(items: readonly Item[], start: number, gapMin: number, venu
       .map((it) => ({ it, t: earliestFit(it, cursor + (first ? 0 : travelMinutes(at, it.pos, gapMin))), km: kmApart(at, it.pos) ?? Number.POSITIVE_INFINITY }))
       .filter((x): x is { it: Item; t: number; km: number } => x.t !== null);
     if (fits.length === 0) {
-      // No room after the others: still inside the item's own hours, as close to the cursor as they allow.
-      for (const it of left) {
-        const [a, b] = it.windows.reduce((best, win) => (win[1] - win[0] > best[1] - best[0] ? win : best), it.windows[0]!);
-        const len = Math.max(1, Math.min(it.minutes, b - a));
-        const t = Math.max(a, Math.min(cursor, b - len));
-        placed.push({ it, t, end: Math.min(b, t + len) });
+      // No room after the others: a free stretch between two stops, the closing-soonest stop first; else unplaced.
+      const unplaced: Item[] = [];
+      for (const it of [...left].sort((x, y) => deadline(x) - deadline(y) || x.slot - y.slot || x.order - y.order)) {
+        if (!fitBetween(placed, it, dayStart, gapMin)) unplaced.push(it);
       }
-      break;
+      return { placed, unplaced };
     }
     const soonest = Math.min(...fits.map((f) => f.t));
     const near = fits.filter((f) => f.t <= soonest + STAY_MINUTES);
@@ -692,7 +753,7 @@ function scheduleDay(items: readonly Item[], start: number, gapMin: number, venu
     lastSlot = pick.it.slot;
     first = false;
   }
-  return placed;
+  return { placed, unplaced: [] };
 }
 
 /**
@@ -703,25 +764,32 @@ function scheduleDay(items: readonly Item[], start: number, gapMin: number, venu
  * Days: the groups (each numbered area with its partners; partners outside them grouped by their own tile) are put
  * in nearest-neighbour order from the venue and cut into runs of about the same number of stops, one run per
  * street-team day of the pass, so each day covers one part of town and an area's partners share a day. An area
- * moves to another street-team day when more of its partners are open then.
+ * moves to another street-team day when more of its partners are open then and both days stay between half and one
+ * and a half times their share of stops.
  *
  * Partners: each is visited on its area's day when it is open then, else on another street-team day of that pass
  * when it is open, else on the first of those days its hours aren't listed ("call first"). A partner listed closed
- * on every street-team day is not visited; its area's earliest event of the pass says so. A numbered area with no
- * partner visited gets one flyer drop on its day.
+ * on every street-team day is not visited; its area's earliest event of the pass says so (see
+ * `StreetTeamVisit.closedAllDays` for an area the pass times no stop in). A numbered area with no partner visited
+ * gets one flyer drop on its day.
  *
  * Times: see `scheduleDay`. Hours are read for the day of the stop from the place's own week of hours
- * (`properties.hours`), so a Saturday stop is timed and labelled with Saturday's hours.
+ * (`properties.hours`), so a Saturday stop is timed and labelled with Saturday's hours. A stop its day has no time
+ * left for (travel included) moves to another street-team day of the pass where it fits whole inside that day's
+ * hours (a partner the first pass moves keeps that weekday in the final pass); with no such day it is not timed
+ * at all, and the day's earliest event lists it (`notTimed`; a day with no timed event gets a `StreetTeamNote`), so
+ * no two stops ever overlap and nothing is dropped unsaid.
  */
-export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}): StreetTeamVisit[] {
+export function planStreetTeam(sheet: StreetSheet, opts: IcsOptions = {}): StreetTeamPlan {
+  const none: StreetTeamPlan = { visits: [], notes: [] };
   const { days, notBefore, firstPassWeeksOut } = passOptions(sheet, opts);
   const dates = streetTeamPasses(sheet.bill.date, days, { notBefore, firstPassWeeksOut });
-  if (dates.length === 0) return [];
+  if (dates.length === 0) return none;
 
   const tiles = topTiles(sheet, opts);
   const allTiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
   const groups = stopGroups(sheet, tiles, allTiles);
-  if (groups.length === 0) return [];
+  if (groups.length === 0) return none;
   const venue = point(sheet.bill.venue.lat, sheet.bill.venue.lon);
   const route = nearestOrder(groups, (g) => g.pos, venue);
 
@@ -736,6 +804,11 @@ export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}):
 
   type Placed = StreetTeamVisit & { slot: number };
   const visits: Placed[] = [];
+  const untimed: { date: string; weekday: Weekday; pass: StreetTeamPass; items: Item[] }[] = [];
+  // Partners closed on every street-team day of a pass, by group, with the group's day.
+  const closedBy: { pass: StreetTeamPass; slot: number; date: string; weekday: Weekday; partners: Partner[] }[] = [];
+  // A partner the first pass moved to another day (its own day had no time left) keeps that weekday in the final pass.
+  const movedTo = new Map<string, Weekday>();
   for (const pass of ["first", "final"] as const) {
     // In the order of the week the pass stands for: a day moved off a holiday keeps the holiday's place, so day k is
     // the same weekday in both passes and a partner keeps its weekday (and that day's hours).
@@ -745,49 +818,101 @@ export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}):
     if (n === 0) continue;
     const minutes = pass === "final" ? finalMin : stopMin;
     const runs = splitRoute(route, n);
-    const byDate = new Map<string, Item[]>();
-    const add = (date: string, it: Item) => byDate.set(date, [...(byDate.get(date) ?? []), it]);
+    // Stops per day after the cut, weighed as splitRoute weighs them (an area with no partner counts one: its flyer
+    // drop). An area moves to another day only when both days stay inside the cut's band.
+    const stopsOf = (g: Group) => Math.max(1, g.partners.length);
+    const share = route.reduce((a, g) => a + stopsOf(g), 0) / n;
+    const load = Array.from({ length: n }, () => 0);
+    for (const g of route) load[runs.get(g.slot) ?? 0]! += stopsOf(g);
+    const dayItems: Item[][] = passDates.map(() => []);
+    // The same stop on the pass's other street-team days, nearest day first: where it goes when its own day has no
+    // time left for it.
+    const elsewhere = new Map<Item, { k: number; it: Item }[]>();
     for (const g of route) {
       const hours = g.partners.map((p) => passDates.map((d) => partnerHoursOn(p, d.weekday, listedDay)));
-      // The run's day, unless more of the area's partners are open on another street-team day.
+      // The run's day, unless more of the area's partners are open on another street-team day and both days stay
+      // between half and one and a half times their share of stops.
       const openOn = (k: number) => hours.filter((h) => hoursKnown(h[k])).length;
-      let home = runs.get(g.slot) ?? 0;
-      for (let k = 0; k < n; k++) if (openOn(k) > openOn(home)) home = k;
+      const run = runs.get(g.slot) ?? 0;
+      let home = run;
+      const inBand = (k: number) => load[k]! + stopsOf(g) <= share * 1.5 && load[run]! - stopsOf(g) >= share * 0.5;
+      for (let k = 0; k < n; k++) if (k !== run && openOn(k) > openOn(home) && inBand(k)) home = k;
+      if (home !== run) {
+        load[run]! -= stopsOf(g);
+        load[home]! += stopsOf(g);
+      }
       const order = Array.from({ length: n }, (_, k) => k).sort((a, b) => Math.abs(a - home) - Math.abs(b - home) || a - b);
       const visited: Item[] = [];
       const closed: Partner[] = [];
       g.partners.forEach((p, pi) => {
         const hs = hours[pi]!;
-        const pick = order.find((k) => hoursKnown(hs[k])) ?? order.find((k) => hs[k]!.status !== "closed");
-        if (pick === undefined) {
+        const listed = order.filter((k) => hoursKnown(hs[k]));
+        // Open with listed hours, else the first day its hours aren't listed (call first).
+        const open = listed.length > 0 ? listed : order.filter((k) => hs[k]!.status !== "closed");
+        const moved = movedTo.get(p.entity.entityId);
+        const can = [...open.filter((k) => passDates[k]!.weekday === moved), ...open.filter((k) => passDates[k]!.weekday !== moved)];
+        if (can.length === 0) {
           closed.push(p);
           return;
         }
-        const h = hs[pick]!;
-        const windows = hoursKnown(h) ? h.ranges.map(([a, b]) => [a, Math.min(b, LAST_MINUTE)] as [number, number]).filter(([a, b]) => b > a) : [];
-        const it: Item = {
-          slot: g.slot,
-          order: pi,
-          tile: p.tileGeohash ? (allTiles.get(p.tileGeohash) ?? null) : null,
-          rank: g.rank,
-          partner: p,
-          hours: h,
-          windows: windows.length > 0 ? windows : wide,
-          minutes,
-          closedAllDays: [],
-          pos: partnerPoint(p, allTiles) ?? g.pos,
+        const itemOn = (k: number): Item => {
+          const h = hs[k]!;
+          const windows = hoursKnown(h) ? h.ranges.map(([a, b]) => [a, Math.min(b, LAST_MINUTE)] as [number, number]).filter(([a, b]) => b > a) : [];
+          const win = windows.length > 0 ? windows : wide;
+          // Cut short only when the place is open for less than a whole stop and closes (never by the day's end, 23:59).
+          const [la, lb] = win.reduce((best, w) => (w[1] - w[0] > best[1] - best[0] ? w : best), win[0]!);
+          const short = windows.length > 0 && lb - la < minutes && lb < LAST_MINUTE ? Math.max(1, lb - la) : null;
+          return {
+            slot: g.slot,
+            order: pi,
+            tile: p.tileGeohash ? (allTiles.get(p.tileGeohash) ?? null) : null,
+            rank: g.rank,
+            partner: p,
+            hours: h,
+            windows: win,
+            minutes: short ?? minutes,
+            pos: partnerPoint(p, allTiles) ?? g.pos,
+          };
         };
+        const [pick, ...rest] = can;
+        const it = itemOn(pick!);
         visited.push(it);
-        add(passDates[pick]!.date, it);
+        dayItems[pick!]!.push(it);
+        elsewhere.set(
+          it,
+          rest.map((k) => ({ k, it: itemOn(k) })),
+        );
       });
       if (g.area && visited.length === 0) {
-        add(passDates[home]!.date, { slot: g.slot, order: -1, tile: g.tile, rank: g.rank, partner: null, hours: null, windows: wide, minutes: flyerMin, closedAllDays: closed, pos: g.pos });
-      } else if (closed.length > 0) {
-        for (const it of visited) it.closedAllDays = closed; // kept on the earliest one only, below
+        const flyers = (): Item => ({ slot: g.slot, order: -1, tile: g.tile, rank: g.rank, partner: null, hours: null, windows: wide, minutes: flyerMin, pos: g.pos });
+        const it = flyers();
+        dayItems[home]!.push(it);
+        elsewhere.set(
+          it,
+          order.filter((k) => k !== home).map((k) => ({ k, it: flyers() })),
+        );
+      }
+      if (closed.length > 0) closedBy.push({ pass, slot: g.slot, date: passDates[home]!.date, weekday: passDates[home]!.weekday, partners: closed });
+    }
+    const sched = dayItems.map((items) => scheduleDay(items, start, gapMin, venue));
+    // A stop its own day has no time left for goes to another street-team day of the pass where it fits whole, inside
+    // that day's hours, without leaving out a stop that day already had time for.
+    for (let k = 0; k < n; k++) {
+      for (const it of [...sched[k]!.unplaced]) {
+        for (const alt of elsewhere.get(it) ?? []) {
+          const trial = scheduleDay([...dayItems[alt.k]!, alt.it], start, gapMin, venue);
+          if (trial.unplaced.some((x) => x === alt.it || !sched[alt.k]!.unplaced.includes(x))) continue;
+          dayItems[alt.k]!.push(alt.it);
+          if (it.partner && pass === "first") movedTo.set(it.partner.entity.entityId, passDates[alt.k]!.weekday);
+          sched[alt.k] = trial;
+          dayItems[k] = dayItems[k]!.filter((x) => x !== it);
+          sched[k] = { placed: sched[k]!.placed, unplaced: sched[k]!.unplaced.filter((x) => x !== it) };
+          break;
+        }
       }
     }
-    for (const d of passDates) {
-      for (const { it, t, end } of scheduleDay(byDate.get(d.date) ?? [], start, gapMin, venue)) {
+    passDates.forEach((d, k) => {
+      for (const { it, t, end } of sched[k]!.placed) {
         visits.push({
           date: d.date,
           weekday: d.weekday,
@@ -798,23 +923,62 @@ export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}):
           tileRank: it.rank,
           partner: it.partner,
           partners: it.partner ? [it.partner] : [],
-          hours: hoursKnown(it.hours) || it.hours?.status === "open" ? (it.hours?.text ?? null) : null,
+          hours: dayHoursOf(it),
           callFirst: it.partner !== null && !hoursKnown(it.hours),
-          closedAllDays: it.closedAllDays,
+          closedAllDays: [],
+          notTimed: [],
           slot: it.slot,
         });
       }
-    }
+      const left = sched[k]!.unplaced;
+      if (left.length > 0) untimed.push({ date: d.date, weekday: d.weekday, pass, items: left });
+    });
   }
   visits.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.start < b.start ? -1 : a.start > b.start ? 1 : a.slot - b.slot));
-  // The closed-partner note is said once per area and pass: on its earliest event.
-  const seen = new Set<string>();
-  for (const v of visits) {
-    const key = `${v.pass}-${v.slot}`;
-    if (seen.has(key)) v.closedAllDays = [];
-    seen.add(key);
+  // What a pass could not time is said once, never dropped and never timed on top of another stop. A stop with no
+  // time left goes on its day's earliest event; a day with no timed event gets a note of its own.
+  const notes: StreetTeamNote[] = [];
+  const noteOn = (date: string, weekday: Weekday, pass: StreetTeamPass): StreetTeamNote => {
+    let n = notes.find((x) => x.date === date);
+    if (!n) {
+      n = { date, weekday, pass, notTimed: [], closedAllDays: [] };
+      notes.push(n);
+    }
+    return n;
+  };
+  type Host = { notTimed: NotTimedStop[]; closedAllDays: Partner[] };
+  const untimedHost = new Map<string, Host>();
+  for (const u of untimed) {
+    const host: Host = visits.find((v) => v.date === u.date) ?? noteOn(u.date, u.weekday, u.pass);
+    for (const it of u.items) {
+      host.notTimed.push({ date: u.date, weekday: u.weekday, partner: it.partner, tile: it.tile, tileRank: it.rank, hours: dayHoursOf(it), callFirst: it.partner !== null && !hoursKnown(it.hours) });
+      const key = `${u.pass}-${it.slot}`;
+      if (!untimedHost.has(key)) untimedHost.set(key, host);
+    }
   }
-  return visits.map(({ slot: _slot, ...v }) => v);
+  // Partners closed on every street-team day: on their area's earliest event of the pass, else with the area's stops
+  // with no time left, else on the earliest event of the area's day, else of the pass, else in a note on that day.
+  for (const c of closedBy) {
+    const host: Host =
+      visits.find((v) => v.pass === c.pass && v.slot === c.slot) ??
+      untimedHost.get(`${c.pass}-${c.slot}`) ??
+      visits.find((v) => v.date === c.date) ??
+      visits.find((v) => v.pass === c.pass) ??
+      noteOn(c.date, c.weekday, c.pass);
+    for (const p of c.partners) if (!host.closedAllDays.includes(p)) host.closedAllDays.push(p);
+  }
+  notes.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  return { visits: visits.map(({ slot: _slot, ...v }) => v), notes };
+}
+
+/** The timed street-team stops (`planStreetTeam` without its notes). */
+export function planStreetTeamVisits(sheet: StreetSheet, opts: IcsOptions = {}): StreetTeamVisit[] {
+  return planStreetTeam(sheet, opts).visits;
+}
+
+/** A stop's hours that day as listed, or null when not listed (and on a flyer drop). */
+function dayHoursOf(it: Item): string | null {
+  return hoursKnown(it.hours) || it.hours?.status === "open" ? (it.hours?.text ?? null) : null;
 }
 
 /** Where and when one partner is visited: the weekdays and dates of its stops, and its hours on each weekday. */
@@ -829,27 +993,37 @@ export interface PartnerVisit {
    * on the same weekday, as they do unless a holiday's stops moved to another day of its week.
    */
   days: { weekday: Weekday; hours: string | null }[];
+  /** Dates of `dates` the day's route had no time left for this partner (the calendar lists it on that day's first event). */
+  notTimed: string[];
 }
 
 /**
  * Each partner's street-team stops (keyed by entity id), from the same plan as street-team.ics, so the call list and
- * the sheet name the same days as the calendar. A partner closed on every street-team day has no entry.
+ * the sheet name the same days as the calendar. A stop the route had no time for keeps its day (the calendar lists it
+ * on that day's first event, or on the day's all-day note). A partner closed on every street-team day has no entry.
  */
 export function partnerVisits(sheet: StreetSheet, opts: IcsOptions = {}): Map<string, PartnerVisit> {
   const out = new Map<string, PartnerVisit>();
-  for (const v of planStreetTeamVisits(sheet, opts)) {
+  const plan = planStreetTeam(sheet, opts);
+  const stops = [
+    ...plan.visits.flatMap((v) => [{ ...v, timed: true }, ...v.notTimed.map((x) => ({ ...x, timed: false }))]),
+    ...plan.notes.flatMap((n) => n.notTimed.map((x) => ({ ...x, timed: false }))),
+  ];
+  stops.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  for (const v of stops) {
     if (!v.partner) continue;
     const id = v.partner.entity.entityId;
-    const cur = out.get(id);
+    let cur = out.get(id);
     if (!cur) {
-      out.set(id, { weekdays: [v.weekday], dates: [v.date], hours: v.hours, callFirst: v.callFirst, days: [{ weekday: v.weekday, hours: v.hours }] });
-      continue;
+      cur = { weekdays: [], dates: [], hours: v.hours, callFirst: v.callFirst, days: [], notTimed: [] };
+      out.set(id, cur);
     }
     if (!cur.weekdays.includes(v.weekday)) {
       cur.weekdays.push(v.weekday);
       cur.days.push({ weekday: v.weekday, hours: v.hours });
     }
     if (!cur.dates.includes(v.date)) cur.dates.push(v.date);
+    if (!v.timed && !cur.notTimed.includes(v.date)) cur.notTimed.push(v.date);
   }
   return out;
 }
@@ -898,7 +1072,7 @@ function stopArea(sheet: StreetSheet, v: StreetTeamVisit, tiles: ReadonlyMap<str
  * "First pass, 4 weeks out: ..." or "Final pass, show week: ...", said only when the calendar has both passes. A final
  * pass day moved off a holiday to the week before says "Final pass, 2 weeks out".
  */
-function passLine(sheet: StreetSheet, v: StreetTeamVisit): string {
+function passLine(sheet: StreetSheet, v: Pick<StreetTeamVisit, "date" | "pass" | "partner">): string {
   const daysOut = Math.round((Date.parse(`${sheet.bill.date}T12:00:00Z`) - Date.parse(`${v.date}T12:00:00Z`)) / 86_400_000);
   const weeks = Math.max(1, Math.round(daysOut / 7));
   const out = `${weeks} ${weeks === 1 ? "week" : "weeks"} out`;
@@ -948,13 +1122,90 @@ function visitDescription(
     const refs = receiptGroup(p.chips.map((c) => c.ledgerRef));
     if (refs) lines.push(`Receipts: ${refs}.`);
   } else {
-    lines.push("", v.closedAllDays.length > 0 ? `Every partner listed here is closed on ${streetDaysText(streetDays)}: flyer drop only.` : "No partners listed for this area: flyer drop only.");
+    // A flyer drop: the area has no partner visited this pass, so any partner listed in it is closed on every day.
+    const listed = v.tile !== null && sheet.cards.partners.results.some((x) => x.tileGeohash === v.tile!.geohash);
+    lines.push("", listed ? `Every partner listed here is closed on ${streetDaysText(streetDays)}: flyer drop only.` : "No partners listed for this area: flyer drop only.");
   }
+  lines.push(...unscheduledLines(sheet, v, tiles, streetDays));
+  lines.push("", `Plan ${sheet.planId}. The requests behind each line are in sheet.json.`);
+  return lines.join("\n");
+}
+
+/** What the event carries that the pass could not time: the partners closed on every street-team day, then the stops with no time left. */
+function unscheduledLines(
+  sheet: StreetSheet,
+  v: Pick<StreetTeamVisit, "closedAllDays" | "notTimed">,
+  tiles: ReadonlyMap<string, LiftTile>,
+  streetDays: readonly Weekday[],
+): string[] {
+  const lines: string[] = [];
   if (v.closedAllDays.length > 0) {
     lines.push("", `Not scheduled, closed on ${streetDaysText(streetDays)}: ${v.closedAllDays.map((c) => c.entity.name).join(", ")}. Call to ask about dropping flyers another day.`);
   }
-  lines.push("", `Plan ${sheet.planId}. The requests behind each line are in sheet.json.`);
-  return lines.join("\n");
+  if (v.notTimed.length > 0) lines.push("", notTimedLine(sheet, v.notTimed, tiles));
+  return lines;
+}
+
+/**
+ * The all-day event of a street-team day with nothing timed (`StreetTeamNote`): "Street team, first pass: no time
+ * left for 1 stop", its description listing the stops to arrange by phone.
+ */
+function noteEventLines(
+  sheet: StreetSheet,
+  n: StreetTeamNote,
+  ctx: { head: string; uid: string; dtstamp: string; tiles: ReadonlyMap<string, LiftTile>; streetDays: readonly Weekday[]; twoPasses: boolean; holidayNote: string | null },
+): string[] {
+  const count = n.notTimed.length;
+  const title = count > 0 ? `${ctx.head}: no time left for ${count} ${count === 1 ? "stop" : "stops"}` : `${ctx.head}: not scheduled, closed on ${streetDaysText(ctx.streetDays)}`;
+  const desc: string[] = [];
+  if (sheet.mode === "fixture") desc.push(FIXTURE_NOTICE);
+  if (ctx.twoPasses) desc.push(passLine(sheet, { date: n.date, pass: n.pass, partner: null }));
+  if (ctx.holidayNote) desc.push(ctx.holidayNote);
+  desc.push(...unscheduledLines(sheet, n, ctx.tiles, ctx.streetDays));
+  desc.push("", `Plan ${sheet.planId}. The requests behind each line are in sheet.json.`);
+  while (desc[0] === "") desc.shift();
+  return [
+    "BEGIN:VEVENT",
+    ctx.uid,
+    ctx.dtstamp,
+    `DTSTART;VALUE=DATE:${n.date.replace(/-/g, "")}`,
+    `DTEND;VALUE=DATE:${addDaysYmd(n.date, 1).replace(/-/g, "")}`,
+    textProp("SUMMARY", title),
+    textProp("DESCRIPTION", desc.join("\n")),
+    "CATEGORIES:Street team",
+    "STATUS:TENTATIVE",
+    "TRANSP:TRANSPARENT",
+    "END:VEVENT",
+  ];
+}
+
+/**
+ * "No time left on the Sat Dec 19 2026 route for: Jeffery Pub (area 3, South Shore, IL), 7041 S Jeffery Blvd Chicago,
+ * IL 60649, (773) 363-8555, open Sat 8 pm to 5 am; the flyer drop in area 4, Auburn Gresham, IL. Call the partners to
+ * arrange a drop-off, and do the flyer drop, another day." Said on the day's first event.
+ */
+function notTimedLine(sheet: StreetSheet, stops: readonly NotTimedStop[], tiles: ReadonlyMap<string, LiftTile>): string {
+  const byDate = new Map<string, NotTimedStop[]>();
+  for (const s of stops) byDate.set(s.date, [...(byDate.get(s.date) ?? []), s]);
+  return [...byDate]
+    .map(([date, xs]) => {
+      const what = xs.map((s) => {
+        const where = s.tile && s.tileRank !== null ? `area ${s.tileRank}, ${areaLabel(s.tile)}` : s.partner ? partnerAreaText(s.partner, tiles) || `near ${sheet.bill.venue.name}` : "";
+        if (!s.partner) return `the flyer drop in ${where}`;
+        const day = weekdayShort(s.weekday);
+        const hours = s.callFirst ? `hours for ${day} not listed` : `open ${day} ${formatHours(s.hours ?? "")}`;
+        return [`${s.partner.entity.name} (${where})`, s.partner.address?.trim() ?? "", s.partner.phone?.trim() ? formatPhone(s.partner.phone) : "", hours].filter((x) => x !== "").join(", ");
+      });
+      const partners = xs.some((s) => s.partner);
+      const drops = xs.filter((s) => !s.partner).length;
+      const todo = !drops
+        ? "Call to arrange a drop-off another day."
+        : !partners
+          ? `Do the flyer ${drops === 1 ? "drop" : "drops"} another day.`
+          : `Call the partners to arrange a drop-off, and do the flyer ${drops === 1 ? "drop" : "drops"}, another day.`;
+      return `No time left on the ${formatShowDate(date)} route for: ${what.join("; ")}. ${todo}`;
+    })
+    .join("\n");
 }
 
 /**
@@ -991,17 +1242,48 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
   ];
   if (tzid) lines.push(`X-WR-TIMEZONE:${tzid}`, ...vtimezoneLines(tzid));
 
-  const visits = planStreetTeamVisits(sheet, opts);
-  const twoPasses = visits.some((v) => v.pass === "first") && visits.some((v) => v.pass === "final");
+  const { visits, notes } = planStreetTeam(sheet, opts);
+  const passes = new Set([...visits, ...notes].map((v) => v.pass));
+  const twoPasses = passes.has("first") && passes.has("final");
   const tiles = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t]));
   const streetDays = WEEKDAYS.filter((d) => (opts.streetTeamDays ?? sheet.operator.streetTeamDays ?? []).includes(d));
   // Each pass's own days and its holidays (with the day their stops moved to), said on its earliest event.
   const po = passOptions(sheet, opts);
   const passDates = streetTeamPasses(sheet.bill.date, po.days, po);
-  const passDays = (pass: StreetTeamPass) => WEEKDAYS.filter((d) => passDates.some((x) => x.pass === pass && x.weekday === d));
+  const passDays = (pass: StreetTeamPass) => {
+    const days = WEEKDAYS.filter((d) => passDates.some((x) => x.pass === pass && x.weekday === d));
+    return days.length > 0 ? days : streetDays;
+  };
   const holidays = streetTeamHolidays(sheet.bill.date, po.days, po);
   const noted = new Set<StreetTeamPass>();
-  for (const v of visits) {
+  const holidayNoteFor = (pass: StreetTeamPass): string | null => {
+    const skipped = noted.has(pass) ? [] : holidays.filter((x) => x.pass === pass);
+    noted.add(pass);
+    return skipped.length > 0 ? skipped.map(holidayLine).join(" ") : null;
+  };
+  // In date order; a day's note (a day with nothing timed) has the day to itself.
+  const entries: ({ date: string; visit: StreetTeamVisit; note?: undefined } | { date: string; note: StreetTeamNote; visit?: undefined })[] = [
+    ...visits.map((visit) => ({ date: visit.date, visit })),
+    ...notes.map((note) => ({ date: note.date, note })),
+  ].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  for (const entry of entries) {
+    if (entry.note) {
+      const n = entry.note;
+      const head = `${fixture}Street team${twoPasses ? `, ${n.pass} pass` : ""}`;
+      lines.push(
+        ...noteEventLines(sheet, n, {
+          head,
+          uid: `UID:hl-${plan}-${n.date.replace(/-/g, "")}-no-time@${domain}`,
+          dtstamp,
+          tiles,
+          streetDays: passDays(n.pass),
+          twoPasses,
+          holidayNote: holidayNoteFor(n.pass),
+        }),
+      );
+      continue;
+    }
+    const v = entry.visit;
     const area = stopArea(sheet, v, tiles);
     const p = v.partner;
     const key = [v.tile ? uidSafe(v.tile.geohash) : "venue", p ? uidSafe(p.entity.entityId) : "flyers"].join("-");
@@ -1019,12 +1301,8 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
     );
     const geo = geoProp(p?.entity.location?.lat, p?.entity.location?.lon) ?? (v.tile ? geoProp(v.tile.lat, v.tile.lon) : null) ?? geoProp(sheet.bill.venue.lat, sheet.bill.venue.lon);
     if (geo) lines.push(geo);
-    const skipped = noted.has(v.pass) ? [] : holidays.filter((x) => x.pass === v.pass);
-    noted.add(v.pass);
-    const holidayNote = skipped.length > 0 ? skipped.map(holidayLine).join(" ") : null;
-    const days = passDays(v.pass);
     lines.push(
-      textProp("DESCRIPTION", visitDescription(sheet, v, tileCount, tiles, days.length > 0 ? days : streetDays, twoPasses, holidayNote)),
+      textProp("DESCRIPTION", visitDescription(sheet, v, tileCount, tiles, passDays(v.pass), twoPasses, holidayNoteFor(v.pass))),
       "CATEGORIES:Street team",
       "STATUS:TENTATIVE",
       "TRANSP:OPAQUE",
@@ -1032,7 +1310,7 @@ export function toIcs(sheet: StreetSheet, opts: IcsOptions = {}): string {
     );
   }
 
-  const includeShow = (opts.includeShow ?? true) || visits.length === 0;
+  const includeShow = (opts.includeShow ?? true) || entries.length === 0;
   if (includeShow && isYmd(sheet.bill.date)) {
     const v = sheet.bill.venue;
     lines.push("BEGIN:VEVENT", `UID:hl-${plan}-show@${domain}`, dtstamp);

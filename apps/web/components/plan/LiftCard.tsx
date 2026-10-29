@@ -213,7 +213,8 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
                         </span>
                       </span>
                     </td>
-                    <td className="num">{formatPct(s.share)}</td>
+                    {/* One decimal, as the narration quotes shares: the column then adds up to 100%. */}
+                    <td className="num">{formatPct(s.share, 1)}</td>
                     {budget !== null ? <td className="num">{formatUsd(budget * s.share)}</td> : null}
                   </tr>
                   );

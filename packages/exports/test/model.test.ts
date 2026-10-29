@@ -20,7 +20,7 @@ import { fanFacingSpots, isFanFacing, partnerIsFanFacing, spotIsFanFacing } from
 import { addressState, areaLabel, formatPhone, LESS_SURE_NOTE } from "../src/format";
 import { toIcs } from "../src/ics";
 import { pinRows, zipRows } from "../src/tables";
-import { makeExplainedSheet, makeMultiStateSheet, makeSheet, PARTNERS, place, SPOTS } from "./helpers";
+import { makeExplainedSheet, makeMultiStateSheet, makeSheet, MEDIA, PARTNERS, place, SPOTS } from "./helpers";
 
 describe("header", () => {
   it("reads like a day sheet: who on the left (headliner, then the rest), date, room and counts on the right", () => {
@@ -438,11 +438,31 @@ describe("panels", () => {
       { name: "Long Drive Radio Hour", scope: "national", refs: "Q12" },
       { name: "Tuesday Tape Club", scope: "local", refs: "Q12" },
     ]);
+    expect(m.panel5.podcastsOmitted).toBe(0);
     expect(m.panel5.sponsor?.name).toBe("Cumberland Lemonade Co.");
     expect(m.panel5.sponsorNote).toBeNull();
     const none = makeSheet();
     none.cards = { ...none.cards, media: { ...none.cards.media, results: none.cards.media.results.filter((x) => x.kind !== "sponsor") } };
     expect(buildSheetModel(none).panel5.sponsorNote).toBe("No sponsor brand came back.");
+    // Said once: when the status line already gives the reason, there is no second note under the list.
+    none.cards = { ...none.cards, media: { ...none.cards.media, status: "partial", reason: "No sponsor brand came back." } };
+    const p5 = buildSheetModel(none).panel5;
+    expect(p5.status).toBe("Partial: No sponsor brand came back.");
+    expect(p5.sponsorNote).toBeNull();
+    expect(sheetModelText(buildSheetModel(none)).filter((x) => x.includes("No sponsor brand came back."))).toHaveLength(0);
+  });
+
+  it("panel 5 lists four podcasts, and counts any past the cap", () => {
+    const s = makeSheet();
+    const pods = ["One", "Two", "Three", "Four"].map((n, i) => ({ ...MEDIA[0]!, entity: { ...MEDIA[0]!.entity, entityId: `syn-pod-x${i}`, name: `${n} Pod` } }));
+    s.cards = { ...s.cards, media: { ...s.cards.media, results: [...pods, MEDIA[2]!] } };
+    const p5 = buildSheetModel(s).panel5;
+    expect(p5.podcasts.map((p) => p.name)).toEqual(["One Pod", "Two Pod", "Three Pod", "Four Pod"]);
+    expect(p5.podcastsOmitted).toBe(0);
+    const three = buildSheetModel(s, { maxPodcasts: 3 });
+    expect(three.panel5.podcasts).toHaveLength(3);
+    expect(three.panel5.podcastsOmitted).toBe(1);
+    expect(sheetModelText(three)).toContain("+1 more podcast on the plan page and in sheet.json.");
   });
 
   it("panel 1 says what the map is compared with, and the split-half check when the sheet has one", () => {
@@ -485,8 +505,30 @@ describe("footer", () => {
 
   it("shows the budget heuristic with dollars", () => {
     expect(m.footer.budgetTitle).toBe("Budget split (a heuristic, not a forecast)");
-    expect(m.footer.budget[0]).toEqual({ rank: 1, name: "East Bank, TN", share: "30%", usd: "$750" });
+    expect(m.footer.budget[0]).toEqual({ rank: 1, name: "East Bank, TN", share: "30.0%", usd: "$750" });
     expect(m.footer.budget.map((b) => b.rank)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("gives each area its own stored share and dollars, to one decimal, adding up to 100.0%", () => {
+    // A recorded split's last share takes the rounding (0.143, 0.143, 0.143, 0.144 after 0.427): each area keeps its
+    // own, as the plan page and the area text ("a rough split of the budget of 14.4%") say.
+    const s = makeSheet();
+    const shares = [0.427, 0.143, 0.143, 0.143, 0.144];
+    s.budgetSplit = s.cards.liftMap.results.tiles.slice(0, 5).map((t, i) => ({ geohash: t.geohash, share: shares[i]!, label: "heuristic, not a forecast" as const }));
+    s.operator = { ...s.operator, mediaBudgetUsd: 6000 };
+    const rows = buildSheetModel(s).footer.budget;
+    expect(rows.map((b) => [b.share, b.usd])).toEqual([
+      ["42.7%", "$2,562"],
+      ["14.3%", "$858"],
+      ["14.3%", "$858"],
+      ["14.3%", "$858"],
+      ["14.4%", "$864"],
+    ]);
+    // Lift-proportional weights (no stored split for every area) still print shares that add up to 100.0%.
+    const lift = makeSheet();
+    lift.budgetSplit = [{ geohash: "zzzzzz", share: 1, label: "heuristic, not a forecast" }];
+    const pct = buildSheetModel(lift).footer.budget.map((b) => Number(b.share.replace("%", "")));
+    expect(pct.reduce((a, b) => a + b, 0)).toBeCloseTo(100, 6);
   });
 
   it("prints the sheet's limits", () => {
@@ -665,8 +707,8 @@ describe("one page, the same sections on paper and in print", () => {
     const m = buildSheetModel(makeSheet());
     expect(m.sections).toEqual(PAGE_SECTIONS);
     expect(m.sections).toEqual(["map", "spots", "partners", "media", "hooks", "budget", "declared", "limits", "requests"]);
-    // At most three podcasts and three copy lines, so the page stays one page.
-    expect(m.panel5.podcasts.length).toBeLessThanOrEqual(3);
+    // At most four podcasts (the PDF lists three and counts the rest) and three copy lines.
+    expect(m.panel5.podcasts.length).toBeLessThanOrEqual(4);
     expect(m.panel6.hooks.length).toBeLessThanOrEqual(3);
   });
 
@@ -731,6 +773,27 @@ describe("before and after the show", () => {
     expect(buildSheetModel(s).panel4.rows.map((r) => r.name)).toEqual(["Near Diner", "Mid Diner", "Far Diner", "No Distance Diner"]);
   });
 
+  it("lists national chains last, after every local spot, as the card's sentence says, and marks them", () => {
+    const s = makeSheet();
+    s.cards.prePost.results = [spot("a", "Chain Scoops", 100, { chain: true, category: "bakery" }), spot("b", "Far Local", 900), spot("c", "Near Local", 50), spot("d", "Chain Coffee", 800, { chain: true, category: "cafe" })];
+    const order = ["Near Local", "Far Local", "Chain Scoops", "Chain Coffee"];
+    expect(sheetSpots(s.cards.prePost.results).map((x) => x.entity.name)).toEqual(order);
+    const rows = buildSheetModel(s).panel4.rows;
+    expect(rows.map((r) => r.name)).toEqual(order);
+    // The page's "Bakery · national chain": the table cell and the one-line detail say it on paper too.
+    expect(rows[2]).toMatchObject({ category: "Bakery, national chain", distance: "0.1 km" });
+    expect(rows[2]!.detail.startsWith("Bakery · national chain · 0.1 km")).toBe(true);
+    expect(rows[0]!.category).not.toContain("chain");
+  });
+
+  it("marks a national chain partner's type, as the plan page's partner table does", () => {
+    const s = makeSheet();
+    s.cards.partners.results = s.cards.partners.results.map((p, i) => (i === 5 ? { ...p, chain: true } : p));
+    const rows = buildSheetModel(s).panel2.rows;
+    expect(rows[5]!.category).toBe("Cafe, national chain");
+    expect(rows[0]!.category).toBe("Record store");
+  });
+
   it("drops the share column and its note when every spot gets the same share", () => {
     const s = makeSheet();
     s.cards.prePost.results = SPOTS.map((x) => ({ ...x, expectedShare: 0.02, assumedCapacity: 120 }));
@@ -748,6 +811,10 @@ describe("before and after the show", () => {
     expect(formatKm(1500)).toBe("1.5 km");
     expect(formatKm(30)).toBe("<0.1 km");
     expect(formatKm(null)).toBe("");
+    // Under 1 km, the distance the plan page shows ("950 m") is what gets rounded: 949.7 m is 1.0 km, not 0.9 km.
+    expect(formatKm(949.7)).toBe("1.0 km");
+    expect(formatKm(944)).toBe("0.9 km");
+    expect(formatKm(1075)).toBe("1.1 km");
     expect(buildSheetModel(makeSheet()).panel4.rows.map((r) => r.distance)).toEqual(["0.2 km", "0.4 km", "1.2 km"]);
   });
 

@@ -8,9 +8,15 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { runtimeMode } from "@/lib/mode";
 
 export const metadata: Metadata = {
+  // Link previews need absolute image URLs; the hosted copy is the address people share.
+  metadataBase: new URL("https://walkup-eight.vercel.app"),
   title: { default: "Walkup · Fill the room, not the feed.", template: "%s · Walkup" },
   description:
     "For one booked show with seats left: the areas where this bill's crowd stands out from the room's usual crowd, the local places that crowd already likes, and a one-page sheet for your street team.",
+  // No title or description here: each page's own fill these in, so a shared sheet link names its show. The card image
+  // is app/opengraph-image.png (and twitter-image.png), on every page.
+  openGraph: { type: "website", siteName: "Walkup" },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

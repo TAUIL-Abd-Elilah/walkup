@@ -1,7 +1,9 @@
 /**
  * Tag pins for the fixture world. Live runs read pins from config/tags.json
- * (all unpinned until the key-day lookup); the world answers to these
- * synthetic URNs so the whole pipeline can run. They are labelled as such.
+ * (11 of its 14 kinds of place pinned; record stores, Irish pubs and places of
+ * worship were dropped); the world answers to these synthetic URNs so the whole
+ * pipeline can run. They are labelled as such, and a sample sheet's partners
+ * card names any kind on its list that a live run asks for but can't search.
  */
 import { categoryTagId, PLACE_CATEGORIES } from "./catalog-tags";
 

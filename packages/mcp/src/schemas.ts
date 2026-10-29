@@ -5,12 +5,20 @@
  * as envelopes with a reason.
  */
 import { WEEKDAYS } from "@walkup/contracts";
+import { PRESET_IDS, presetById } from "@walkup/orchestrator";
 import { z } from "zod";
 
-export const PlanIdSchema = z
-  .string()
-  .regex(/^[A-Za-z0-9_-]{1,64}$/, "Plan ids match ^[A-Za-z0-9_-]{1,64}$.")
-  .describe("A plan id returned by plan_show or rank_partners, or a preset id (g1-a, g1-b, g2, g3, g4-a, g4-b).");
+/**
+ * The preset ids a server serves, in order: every preset on a live or recorded server; on a sample-mode server (the
+ * synthetic world only) those with a sample show of their own, so g4-a and g4-b (real shows only) are left out.
+ */
+export function presetIdsFor(sample: boolean): string[] {
+  return PRESET_IDS.filter((id) => !(sample && presetById(id)?.fixtureSameAs));
+}
+
+const PlanIdBase = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/, "Plan ids match ^[A-Za-z0-9_-]{1,64}$.");
+
+export const PlanIdSchema = PlanIdBase.describe(`A plan id returned by plan_show or rank_partners, or a preset id (${presetIdsFor(false).join(", ")}).`);
 
 const EventSchema = z
   .string()
@@ -19,14 +27,12 @@ const EventSchema = z
   .max(500)
   .describe('A Ticketmaster event link (https://www.ticketmaster.com/.../event/<id>) or "Artist @ Venue, Date", e.g. "Hollis Creek String Band @ The Truth, Nov 20 2026".');
 
-const PresetSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(64)
-  .describe(
-    "A prewarmed preset: g1-a and g1-b, two bills in one room (live and recorded servers: Rhiannon Giddens and FLO at The Anthem, Washington DC; sample mode: The Truth, Nashville), g2 (Hampton Coliseum), g3 (Super Funny, Tacoma).",
-  );
+const PresetBase = z.string().trim().min(1).max(64);
+
+const PRESET_TEXT = {
+  all: "A prewarmed preset: g1-a and g1-b, two bills in one room (live and recorded servers: Rhiannon Giddens and FLO at The Anthem, Washington DC; sample mode: The Truth, Nashville), g2 (Hampton Coliseum), g3 (Super Funny, Tacoma), g4-a and g4-b, two bills in a second room (live and recorded servers only: Greensky Bluegrass and The Roots at The Salt Shed, Chicago).",
+  sample: "A prewarmed preset: g1-a and g1-b, two bills in one room (The Truth, Nashville), g2 (Hampton Coliseum), g3 (Super Funny, Tacoma).",
+} as const;
 
 export const OperatorSchema = z
   .strictObject({
@@ -51,41 +57,69 @@ export const PickSchema = z.strictObject({
 
 const PicksSchema = z.array(PickSchema).min(1).max(10).describe("Answers to an earlier needs_input: one pick per ambiguous input.");
 
-export const PlanShowInput = z.strictObject({
-  event: EventSchema.optional(),
-  presetId: PresetSchema.optional(),
-  planId: PlanIdSchema.optional().describe("Resume a plan that returned needs_input (with picks), or re-read a finished plan."),
-  operator: OperatorSchema.optional(),
-  picks: PicksSchema.optional(),
-});
+const InstructionSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(300)
+  .describe(`What to change, in the user's own words, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". No contact details.`);
+
+const PartnerNamesSchema = z
+  .array(z.string().trim().min(1).max(120))
+  .min(1)
+  .max(20)
+  .describe("The user's own partner businesses or channels, by name (at most 20). Names only: no emails, phones or contacts.");
+
+/**
+ * The tool input schemas, with the preset lists a server of this kind serves (sample: a server on the synthetic world
+ * only, which refuses g4-a and g4-b). Both kinds take the same fields.
+ */
+function inputSchemas(sample: boolean) {
+  const ids = presetIdsFor(sample).join(", ");
+  const planId = PlanIdBase.describe(`A plan id returned by plan_show or rank_partners, or a preset id (${ids}).`);
+  const presetId = PresetBase.describe(sample ? PRESET_TEXT.sample : PRESET_TEXT.all);
+  return {
+    planShow: z.strictObject({
+      event: EventSchema.optional(),
+      presetId: presetId.optional(),
+      planId: planId.optional().describe("Resume a plan that returned needs_input (with picks), or re-read a finished plan."),
+      operator: OperatorSchema.optional(),
+      picks: PicksSchema.optional(),
+    }),
+    rankPartners: z.strictObject({
+      planId: planId.optional().describe("Rank against this plan's bill (a finished plan or a preset id)."),
+      event: EventSchema.optional(),
+      presetId: presetId.optional(),
+      partnerNames: PartnerNamesSchema,
+      operator: OperatorSchema.optional(),
+      picks: PicksSchema.optional(),
+    }),
+    planRef: z.strictObject({ planId }),
+    revisePlan: z.strictObject({
+      planId: planId.describe(`The finished plan to change: a plan id from plan_show or revise_plan, or a preset id (${ids}).`),
+      instruction: InstructionSchema,
+    }),
+  };
+}
+
+const LIVE_INPUTS = inputSchemas(false);
+const SAMPLE_INPUTS = inputSchemas(true);
+
+/** The input schemas for a live or recorded server (every preset), or for a sample-mode server (sample: true). */
+export function toolInputs(sample: boolean): typeof LIVE_INPUTS {
+  return sample ? SAMPLE_INPUTS : LIVE_INPUTS;
+}
+
+export const PlanShowInput = LIVE_INPUTS.planShow;
 export type PlanShowArgs = z.infer<typeof PlanShowInput>;
 
-export const RankPartnersInput = z.strictObject({
-  planId: PlanIdSchema.optional().describe("Rank against this plan's bill (a finished plan or a preset id)."),
-  event: EventSchema.optional(),
-  presetId: PresetSchema.optional(),
-  partnerNames: z
-    .array(z.string().trim().min(1).max(120))
-    .min(1)
-    .max(20)
-    .describe("The user's own partner businesses or channels, by name (at most 20). Names only: no emails, phones or contacts."),
-  operator: OperatorSchema.optional(),
-  picks: PicksSchema.optional(),
-});
+export const RankPartnersInput = LIVE_INPUTS.rankPartners;
 export type RankPartnersArgs = z.infer<typeof RankPartnersInput>;
 
-export const PlanRefInput = z.strictObject({ planId: PlanIdSchema });
+export const PlanRefInput = LIVE_INPUTS.planRef;
 export type PlanRefArgs = z.infer<typeof PlanRefInput>;
 
-export const RevisePlanInput = z.strictObject({
-  planId: PlanIdSchema.describe("The finished plan to change: a plan id from plan_show or revise_plan, or a preset id (g1-a, g1-b, g2, g3, g4-a, g4-b)."),
-  instruction: z
-    .string()
-    .trim()
-    .min(1)
-    .max(300)
-    .describe(`What to change, in the user's own words, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". No contact details.`),
-});
+export const RevisePlanInput = LIVE_INPUTS.revisePlan;
 export type RevisePlanArgs = z.infer<typeof RevisePlanInput>;
 
 const CandidateOut = z.looseObject({

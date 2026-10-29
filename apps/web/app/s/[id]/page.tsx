@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Partner } from "@walkup/contracts";
 import { LESS_SURE_NOTE, LIFT_KEY } from "@walkup/exports/format";
-import { buildSheetModel, spotColumnWidths, type PartnerRow, type SheetModel, type SpotRow } from "@walkup/exports/sheet-model";
+import { buildSheetModel, podcastsOmittedText, spotColumnWidths, type PartnerRow, type SheetModel, type SpotRow } from "@walkup/exports/sheet-model";
 import { PrintButton } from "@/components/sheet/PrintButton";
 import { StaticLiftMap } from "@/components/StaticLiftMap";
 import { telHref } from "@/lib/format";
@@ -28,7 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     // A revision's title names the change, in the plan page's words (`sheetTitle`), so it differs from its parent's.
     title: `${m.headliner} at ${s.bill.venue.name}: street sheet${s.revision?.instruction?.trim() ? `, revised: “${s.revision.instruction.trim()}”` : ""}${s.mode === "fixture" ? " (sample)" : ""}`,
-    description: summary ? summary : `One-page street sheet for ${m.headliner} at ${s.bill.venue.name}, ${m.dateLine}.`,
+    // Not "one-page": this view prints on two pages for most sheets; the downloaded PDF is the one-page version.
+    description: summary ? summary : `Street sheet for ${m.headliner} at ${s.bill.venue.name}, ${m.dateLine}.`,
   };
 }
 
@@ -151,7 +152,7 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
           </li>
         ))}
       </ol>
-      <table className="table w-full table-fixed border-collapse text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[3px] [&_td]:pr-2 [&_td]:align-top [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em] print:[&_td]:py-[1px] [&_.fn]:align-[0.3em]">
+      <table className="table w-full table-fixed border-collapse text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[3px] [&_td]:pr-2 [&_td]:align-top [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em] print:[&_td]:py-[1px]">
         <caption className="sr-only">Partners, one row each, with a box to tick and a blank column for notes.</caption>
         <colgroup>
           <col style={{ width: "3%" }} />
@@ -177,41 +178,34 @@ function PartnersTable({ m, partners, discoveryId }: { m: SheetModel; partners: 
         </thead>
         <tbody>
           {rows.map((r) => (
+            // A row never splits across a printed page (its phone stays with its name).
             <tr
               key={r.entityId}
               id={`p-${r.entityId}`}
-              className={`h-[7mm] print:h-[5.6mm] ${discoveryId !== null && r.entityId === discoveryId ? "bg-subtle" : r.hoursMissing ? "bg-warn" : ""}`}
+              className={`h-[7mm] print:h-[5.6mm] print:break-inside-avoid ${discoveryId !== null && r.entityId === discoveryId ? "bg-subtle" : r.hoursMissing ? "bg-warn" : ""}`}
             >
               <td>
                 <span aria-hidden="true" className="inline-block size-[0.85em] translate-y-[1px] border border-ink" />
               </td>
               <td className="tabular text-muted">{r.n}</td>
-              <td>
-                <span className="block truncate" title={r.name}>
+              {/* Nothing in a row is cut: long names, addresses and why lines wrap, on screen and on paper. */}
+              <td className="wrap-break-word">
+                <span className="block">
                   <PartnerName row={r} partner={partners.get(r.entityId)} />
                   {r.category ? <span className="text-muted"> · {r.category}</span> : null}
                 </span>
-                {/* As in the PDF: the address on its own line (cut short when too long), then the phone on a line of
-                    its own, never cut, or "Phone not listed". */}
-                {r.address ? (
-                  <span className="block truncate text-muted" title={r.address}>
-                    {r.address}
-                  </span>
-                ) : null}
+                {/* The address on its own line, then the phone on a line of its own, or "Phone not listed". */}
+                {r.address ? <span className="block text-muted">{r.address}</span> : null}
                 <span className="block whitespace-nowrap text-muted">{r.phone ? <Phone row={r} /> : r.phoneText}</span>
               </td>
-              <td title={r.tile}>
-                <span className="line-clamp-2">
-                  {r.tileRank !== null ? <span className="tabular font-semibold">{r.tileRank} </span> : null}
-                  {r.tile}
-                </span>
+              <td className="wrap-break-word">
+                {r.tileRank !== null ? <span className="tabular font-semibold">{r.tileRank} </span> : null}
+                {r.tile}
               </td>
               <td>{r.hours}</td>
               <td>
-                <div className="line-clamp-2">
-                  {r.why}
-                  <Refs refs={r.refs} planId={m.planId} />
-                </div>
+                {r.why}
+                <Refs refs={r.refs} planId={m.planId} />
               </td>
               <td />
             </tr>
@@ -239,9 +233,10 @@ function SpotsTable({ rows, planId, showShare, showVsUsual }: { rows: SpotRow[];
           </li>
         ))}
       </ol>
-      <table className="table w-full table-fixed text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[2px] [&_td]:pr-2 [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em] [&_.fn]:align-[0.3em]">
-        <caption className="sr-only">Spots for before and after the show, nearest first{showShare ? ", with their share of the crowd" : ""}.</caption>
-        {/* The same widths as the PDF (`spotColumnWidths`). */}
+      <table className="table w-full table-fixed text-[0.94em] leading-[1.3] max-sm:hidden print:table [&_td]:py-[2px] [&_td]:pr-2 [&_th]:py-[2px] [&_th]:pr-2 [&_th]:text-[1em]">
+        <caption className="sr-only">Spots for before and after the show, nearest first, national chains last{showShare ? ", with their share of the crowd" : ""}.</caption>
+        {/* The same widths as the PDF (`spotColumnWidths`). Cells wrap rather than cut, so "not for fans" and the rank
+            change print in full in the narrower paper column. */}
         <colgroup>
           <col style={{ width: w.spot }} />
           <col style={{ width: w.type }} />
@@ -267,20 +262,14 @@ function SpotsTable({ rows, planId, showShare, showVsUsual }: { rows: SpotRow[];
         <tbody>
           {rows.map((r) => (
             <tr key={r.name}>
-              <td className="truncate" title={r.name}>
+              <td className="wrap-break-word">
                 <strong className="font-semibold">{r.name}</strong>
                 <Refs refs={r.refs} planId={planId} />
               </td>
-              <td className="truncate" title={r.category}>
-                {r.category}
-              </td>
+              <td className="wrap-break-word">{r.category}</td>
               <td className="num tabular">{r.distance}</td>
               {showShare ? <td className="num tabular">{r.share}</td> : null}
-              {showVsUsual ? (
-                <td className="truncate text-muted" title={r.vsUsual}>
-                  {r.vsUsual}
-                </td>
-              ) : null}
+              {showVsUsual ? <td className="wrap-break-word text-muted">{r.vsUsual}</td> : null}
             </tr>
           ))}
         </tbody>
@@ -343,11 +332,19 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
         <Link href={`/plan/${s.planId}`} className="link">
           Back to the plan
         </Link>
+        {/* The downloaded PDF fits one page (it may list fewer partners); this view prints on two pages for most sheets. */}
         <div className="flex flex-wrap items-center gap-3">
-          <span className="hint hidden sm:inline">The PDF is one page, US Letter or A4.</span>
-          <a href={`/api/sheet/${s.planId}/pdf`} download className="link">
-            Download PDF
-          </a>
+          <span className="hint hidden sm:inline">The PDF is one page. Printing this view can take two.</span>
+          <span>
+            Download PDF:{" "}
+            <a href={`/api/sheet/${s.planId}/pdf`} download className="link">
+              US Letter
+            </a>
+            {" · "}
+            <a href={`/api/sheet/${s.planId}/pdf?size=a4`} download className="link">
+              A4
+            </a>
+          </span>
           <PrintButton />
         </div>
       </div>
@@ -473,7 +470,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                   <ul>
                     {m.footer.budget.map((b, i) => (
                       <li key={`${b.name}-${i}`} className="flex justify-between gap-2">
-                        <span className="min-w-0 truncate">
+                        <span className="min-w-0">
                           {b.rank !== null ? <span className="tabular font-semibold">{b.rank} </span> : null}
                           {b.name}
                         </span>
@@ -502,7 +499,12 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
               {m.panel2.omitted > 0 ? <p className="mt-1 text-muted">+{m.panel2.omitted} more partners in partners.csv.</p> : null}
               {m.panel2.rows.some((r) => r.lessSure) || d?.lessSureNote ? <p className="mt-1 text-[0.92em] text-muted">{LESS_SURE_NOTE}</p> : null}
               <p className="mt-1.5">
-                <span className="font-semibold">{m.panel2.footer}</span> <span className="text-[0.92em] text-muted">The small Q numbers after each line open the request behind it.</span>
+                {/* On paper the numbers open nothing, so the paper says what they are. */}
+                <span className="font-semibold">{m.panel2.footer}</span>{" "}
+                <span className="text-[0.92em] text-muted">
+                  The small Q numbers after each line <span className="print:hidden">open</span>
+                  <span className="hidden print:inline">point to</span> the request behind it.
+                </span>
               </p>
             </SheetSection>
           </div>
@@ -518,6 +520,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                   </li>
                 ))}
                 {m.panel5.podcasts.length === 0 ? <li className="text-muted">No podcasts came back for this bill.</li> : null}
+                {m.panel5.podcastsOmitted > 0 ? <li className="text-muted">{podcastsOmittedText(m.panel5.podcastsOmitted)}</li> : null}
                 {m.panel5.sponsor ? (
                   <li className="pt-1">
                     <strong className="font-semibold">{m.panel5.sponsor.name}</strong>
@@ -544,7 +547,7 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* Foot: your list to call, what the sheet doesn't show, the requests behind it */}
-          <footer className="relative mt-4 grid gap-x-6 gap-y-3 border-t border-ink pt-2 text-[0.94em] sm:grid-cols-[1fr_1.4fr_1.1fr] print:mt-2.5 print:grid-cols-[0.9fr_1.4fr_1.1fr] print:gap-x-4">
+          <footer className="print-avoid-break relative mt-4 grid gap-x-6 gap-y-3 border-t border-ink pt-2 text-[0.94em] sm:grid-cols-[1fr_1.4fr_1.1fr] print:mt-2.5 print:grid-cols-[0.9fr_1.4fr_1.1fr] print:gap-x-4">
             <div>
               <h2 className="text-[1em] font-semibold">
                 {m.panel3.title}

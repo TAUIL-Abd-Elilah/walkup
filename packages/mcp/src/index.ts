@@ -7,10 +7,10 @@
  * plus a short text digest. Transports: Streamable HTTP (stateless, Web
  * Request/Response, mounted at /mcp by apps/web) and stdio (src/stdio.ts).
  */
-export { createWalkupMcpServer, toCallResult, SERVER_NAME, SERVER_VERSION, SERVER_INSTRUCTIONS } from "./server";
+export { createWalkupMcpServer, toCallResult, serverInstructions, SERVER_NAME, SERVER_VERSION, SERVER_INSTRUCTIONS } from "./server";
 export { handleMcpHttpRequest, MAX_MCP_BODY_BYTES } from "./http";
 export type { HttpHandlerOptions } from "./http";
-export { planShowTool, rankPartnersTool, billVsHouseTool, getSheetTool, revisePlanTool, billVsHouseOf, envelopeMode, PRESET_TTL_MS, NOT_AFFILIATED, REVISE_QUESTION_REASON } from "./tools";
+export { planShowTool, rankPartnersTool, billVsHouseTool, getSheetTool, revisePlanTool, billVsHouseOf, envelopeMode, sampleOnly, PRESET_TTL_MS, NOT_AFFILIATED, REVISE_QUESTION_REASON } from "./tools";
 export type { Caller, ToolOutcome, BillVsHouse } from "./tools";
 export { viewOfStored, viewOfResult, envelopeOfView } from "./views";
 export type { PlanView } from "./views";
@@ -43,7 +43,7 @@ export {
   recordedDay,
 } from "./envelope";
 export type { ToolEnvelope, PlanMode, Secret, PauseLike, PendingPick } from "./envelope";
-export { PlanShowInput, RankPartnersInput, PlanRefInput, RevisePlanInput, EnvelopeOutput, OperatorSchema, PickSchema, PlanIdSchema } from "./schemas";
+export { PlanShowInput, RankPartnersInput, PlanRefInput, RevisePlanInput, EnvelopeOutput, OperatorSchema, PickSchema, PlanIdSchema, presetIdsFor, toolInputs } from "./schemas";
 export type { PlanShowArgs, RankPartnersArgs, PlanRefArgs, RevisePlanArgs } from "./schemas";
 export {
   createMemoryFreshRunLimiter,

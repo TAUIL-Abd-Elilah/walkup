@@ -1,5 +1,5 @@
 import { PLAN_ID_RE } from "@/lib/api";
-import { json, sessionFrom } from "@/lib/server/http";
+import { json, otherMethods, sessionFrom } from "@/lib/server/http";
 import { planEventStream, SSE_HEADERS } from "@/lib/server/stream";
 
 export const dynamic = "force-dynamic";
@@ -13,3 +13,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!stream) return json({ reason: `No plan with id ${id}.` }, 404);
   return new Response(stream, { status: 200, headers: SSE_HEADERS });
 }
+
+/** Any other method: 405 with a reason and Allow: GET, HEAD, OPTIONS (Next's own 405 has no body and no Allow). */
+const other = otherMethods("GET");
+export const POST = other.refuse;
+export const PUT = other.refuse;
+export const PATCH = other.refuse;
+export const DELETE = other.refuse;
+export const OPTIONS = other.options;
