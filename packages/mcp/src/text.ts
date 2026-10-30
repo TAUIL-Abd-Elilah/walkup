@@ -99,7 +99,9 @@ function billVsHouseLines(r: BillVsHouse, provenance: string[]): string[] {
     out.push(areas.length > 0 ? "Numbered areas on the sheet (highest lift first):" : NO_NUMBERED_AREA);
     out.push(...areas);
   }
-  const distinct = r.whatsDifferent.a.slice(0, 5).map((t) => t.name);
+  // The plan page's "This bill leans toward" column: a tag both crowds rank high is listed under "Both rank high" only.
+  const both = new Set(r.whatsDifferent.shared.map((t) => t.id));
+  const distinct = r.whatsDifferent.a.filter((t) => !both.has(t.id)).slice(0, 5).map((t) => t.name);
   if (distinct.length > 0) out.push(`Distinctive to this bill: ${distinct.join(", ")}`);
   for (const [k, c] of Object.entries(r.cards)) out.push(`  ${k}: ${statusLine(c.status, c.reason)}`);
   return out;

@@ -4,7 +4,7 @@ import { AGE_BUCKETS } from "@walkup/contracts";
 import type { AgeBucket, CompareTag, DemographicsBlock, QlooEntity, StreetSheet } from "@walkup/contracts";
 import { formatDistance, formatInt, formatPct, formatSigned } from "../../lib/format";
 import { CATEGORY_LABEL, STATUS_WORD, categoryLabel, subtypeLabel } from "../../lib/labels";
-import { baselineName, sourceLine, tagInSentence, tagIndex, tagLabel, tagName } from "../../lib/sheet-utils";
+import { baselineName, crowdBaseline, crowdName, sourceLine, tagInSentence, tagIndex, tagLabel, tagName } from "../../lib/sheet-utils";
 import { spotIsFanFacing } from "@walkup/exports/audience";
 import { DECLARED_UNRANKED, SPOT_NOT_IN_USUAL, sheetAgeLabel, sheetSpots, spotSharesDiffer, spotsShareNote } from "@walkup/exports/format";
 import { TrustTable } from "./LiftCard";
@@ -338,13 +338,26 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
   const r = env.results;
   const demoWord = STATUS_WORD[demo.status];
   const word = STATUS_WORD[env.status];
-  const against = baselineName(sheet);
+  // The crowd these two compared with, which is not always the lift map's (a failed room heatmap leaves the genre on
+  // the map only): the room's usual acts, the genre's fans, or nobody.
+  const crowd = crowdName(sheet);
+  const vsTag = crowdBaseline(sheet) === "tag";
+  const against = crowd ?? baselineName(sheet);
+  const Against = `${against.charAt(0).toUpperCase()}${against.slice(1)}`;
   const { entries, sample = false } = useReceipts();
   const source = sourceLine(env.provenance, entries, sample);
   // A tag both crowds rank high is listed once, under "Both rank high", never in a lean column too.
   const sharedIds = new Set(r.shared.map((t) => t.id));
   const leansA = r.a.filter((t) => !sharedIds.has(t.id));
   const leansB = r.b.filter((t) => !sharedIds.has(t.id));
+  // No usual crowd and no genre stand-in: nothing to lean away from, so no columns that name one. The summary says why.
+  const noUsual = crowd === null;
+  const columns = !(noUsual && leansA.length === 0 && leansB.length === 0);
+  // The age table's second column is whoever the age blocks came from: the room's usual acts, or the genre's fans.
+  const ageVs = noUsual ? null : vsTag ? against : "the usual crowd";
+  const ageVsCol = ageVs === null ? null : vsTag ? Against : "Usual crowd";
+  // With no age block at all, a table of dashes says nothing the line above it doesn't.
+  const ageTable = demo.results.bill.length > 0 || demo.results.house.length > 0;
   return (
     <section id="different" aria-labelledby="different-title" className="section scroll-mt-4">
       <details className="plain-details">
@@ -370,10 +383,12 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
           ) : null}
           {env.summary ? <p className="mt-1 max-w-[760px]">{env.summary}</p> : null}
           {env.reason ? <p className="mt-1 max-w-[760px] text-muted">{env.reason.replace(/^(ok|empty|partial|degraded|error)\s*:\s*/i, "")}</p> : null}
-          <div className="mt-3 grid gap-8 sm:grid-cols-2">
-            <TagColumn title="This bill leans toward" tags={leansA} />
-            <TagColumn title={`${against.charAt(0).toUpperCase()}${against.slice(1)} ${against.endsWith("crowd") ? "leans" : "lean"} toward`} tags={leansB} />
-          </div>
+          {columns ? (
+            <div className="mt-3 grid gap-8 sm:grid-cols-2">
+              <TagColumn title="This bill leans toward" tags={leansA} />
+              <TagColumn title={`${Against} ${against.endsWith("crowd") ? "leans" : "lean"} toward`} tags={leansB} />
+            </div>
+          ) : null}
           {r.shared.length > 0 ? (
             <p className="mt-4">
               <span className="text-muted">Both rank high: </span>
@@ -385,7 +400,7 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
 
         <div className="mt-8">
           <div className="flex flex-wrap items-baseline gap-x-3">
-            <h3 className="text-base">Age mix, this bill and the usual crowd</h3>
+            <h3 className="text-base">{ageVs === null ? "Age mix" : `Age mix, this bill and ${ageVs}`}</h3>
             {demoWord ? <span className="text-sm text-muted">{demoWord}</span> : null}
           </div>
           <p className="hint mt-0.5">
@@ -393,36 +408,44 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
             <Refs ids={demo.provenance} />
             {demo.reason ? ` ${demo.reason}` : ""}
           </p>
-          <table className="table mt-2 max-w-[480px]">
-            <caption className="sr-only">Over or under index per age group, averaged across the bill&apos;s acts and the room&apos;s usual acts</caption>
-            <thead>
-              <tr>
-                <th scope="col">Age</th>
-                <th scope="col" className="num">
-                  This bill
-                </th>
-                <th scope="col" className="num">
-                  Usual crowd
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {AGE_BUCKETS.map((b) => {
-                const bill = avgAge(demo.results.bill, b);
-                const house = avgAge(demo.results.house, b);
-                return (
-                  <tr key={b}>
-                    <th scope="row" className="font-normal text-ink">
-                      {AGE_LABEL[b]}
+          {ageTable ? (
+            <>
+              <table className="table mt-2 max-w-[480px]">
+                <caption className="sr-only">
+                  Over or under index per age group, averaged across the bill&apos;s acts{ageVs === null ? "" : vsTag ? ` and ${against}` : " and the room's usual acts"}
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Age</th>
+                    <th scope="col" className="num">
+                      This bill
                     </th>
-                    <td className="num">{bill === null ? "–" : formatSigned(bill)}</td>
-                    <td className="num">{house === null ? "–" : formatSigned(house)}</td>
+                    {ageVsCol === null ? null : (
+                      <th scope="col" className="num">
+                        {ageVsCol}
+                      </th>
+                    )}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <p className="hint mt-2">Above 0 means the age group is more common in this crowd than in Qloo&apos;s audience overall. Use it for creative and timing only.</p>
+                </thead>
+                <tbody>
+                  {AGE_BUCKETS.map((b) => {
+                    const bill = avgAge(demo.results.bill, b);
+                    const house = avgAge(demo.results.house, b);
+                    return (
+                      <tr key={b}>
+                        <th scope="row" className="font-normal text-ink">
+                          {AGE_LABEL[b]}
+                        </th>
+                        <td className="num">{bill === null ? "–" : formatSigned(bill)}</td>
+                        {ageVsCol === null ? null : <td className="num">{house === null ? "–" : formatSigned(house)}</td>}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="hint mt-2">Above 0 means the age group is more common in this crowd than in Qloo&apos;s audience overall. Use it for creative and timing only.</p>
+            </>
+          ) : null}
         </div>
       </details>
     </section>

@@ -5,7 +5,7 @@ import { LiftLegend } from "../LiftLegend";
 import { LiftMap, squareSizeLine } from "../LiftMap";
 import { TileList } from "../TileList";
 import { formatPct, formatUsd } from "../../lib/format";
-import { allTiles, areaName, baselineName, liftWeak, plainText, spreadSentence, tileWhy, topTiles } from "../../lib/sheet-utils";
+import { allTiles, areaName, baselineName, crowdBaseline, liftWeak, plainText, spreadSentence, tileWhy, topTiles } from "../../lib/sheet-utils";
 import { PlanCard } from "./PlanCard";
 import { Refs } from "./receipts";
 
@@ -17,6 +17,11 @@ const LIFT_DEFINITION = /^Lift compares percentile ranks/;
 /** Said instead of the trust checks when the run built no lift map (no usual crowd, or no areas). */
 export const NO_LIFT_TRUST = "No lift map on this run, so there is nothing to check.";
 
+/** True when the split-half check had no second half (the run's note says so, as the sheet model reads it). */
+export function oneActSplit(note: string | undefined): boolean {
+  return /\bone act\b/.test(note ?? "");
+}
+
 /** True when the run built no lift map: nothing to compare with, or no areas at all. */
 export function noLiftMap(sheet: StreetSheet): boolean {
   return sheet.cards.liftMap.results.diagnostics.baseline === "none" || sheet.cards.liftMap.results.tiles.length === 0;
@@ -26,10 +31,14 @@ export function noLiftMap(sheet: StreetSheet): boolean {
  * How far to trust the map, in one sentence: "The map holds up when the bill is split in two (0.71) and isn't just
  * where people go anyway."
  */
-export function trustSentence(split: number | null | undefined, weak: boolean): string {
+export function trustSentence(split: number | null | undefined, weak: boolean, oneAct = true): string {
   const anyway = weak ? "but it mostly follows where people go anyway" : "and isn't just where people go anyway";
   if (split === undefined) return weak ? "The map mostly follows where people go anyway." : "The map isn't just where people go anyway.";
-  if (split === null) return `Too few acts to check the map by splitting the bill in two; it ${weak ? "mostly follows" : "isn't just"} where people go anyway.`;
+  if (split === null) {
+    // The check also comes back empty when a half's heatmap fails: only a one-act bill has too few acts.
+    const lead = oneAct ? "Too few acts to check the map by splitting the bill in two" : "The map couldn't be checked by splitting the bill in two this time";
+    return `${lead}; it ${weak ? "mostly follows" : "isn't just"} where people go anyway.`;
+  }
   if (split > 0.5) return `The map holds up when the bill is split in two (${split.toFixed(2)}) ${anyway}.`;
   return `The two halves of the bill point to different areas (${split.toFixed(2)}), so treat the map as rough, ${weak ? "and it mostly follows where people go anyway" : "though it isn't just where people go anyway"}.`;
 }
@@ -42,6 +51,7 @@ export function TrustTable({ sheet }: { sheet: StreetSheet }) {
   const weak = liftWeak(sheet);
   const against = baselineName(sheet);
   const overlap = extra ? extra.liftVsHeatSpearman : diag.spearmanLiftVsHeat;
+  const noLift = noLiftMap(sheet);
   return (
     <table className="table mt-2">
       <tbody>
@@ -54,7 +64,8 @@ export function TrustTable({ sheet }: { sheet: StreetSheet }) {
               ? "The room's own upcoming shows"
               : diag.baseline === "none"
                 ? "Nothing: too few of the room's headliners matched Qloo and no genre-wide map stands in"
-                : `${against.charAt(0).toUpperCase()}${against.slice(1)}: too few of the room's headliners matched Qloo`}
+                : // The genre stood in either because the room's own heatmap failed or because too few headliners matched.
+                  `${against.charAt(0).toUpperCase()}${against.slice(1)}: ${crowdBaseline(sheet) === "house" ? "the room's own crowd couldn't be mapped" : "too few of the room's headliners matched Qloo"}`}
           </td>
         </tr>
         {extra ? (
@@ -63,8 +74,12 @@ export function TrustTable({ sheet }: { sheet: StreetSheet }) {
               Split-half agreement
             </th>
             <td className="tabular">
-              {extra.splitHalfSpearman === null ? "Too few acts to split in two" : extra.splitHalfSpearman.toFixed(2)}
-              <span className="block text-sm text-muted">The bill split in two halves and mapped apart. Near 1 means the map holds up.</span>
+              {extra.splitHalfSpearman === null ? (oneActSplit(extra.note) ? "Too few acts to split in two" : "No result this time") : extra.splitHalfSpearman.toFixed(2)}
+              {/* With no number, say what the check does, not that it was done. */}
+              <span className="block text-sm text-muted">
+                {extra.splitHalfSpearman === null ? "The check splits the bill in two and maps each half apart." : "The bill split in two halves and mapped apart."} Near 1
+                means the map holds up.
+              </span>
             </td>
           </tr>
         ) : null}
@@ -73,9 +88,10 @@ export function TrustTable({ sheet }: { sheet: StreetSheet }) {
             Overlap with general popularity
           </th>
           <td className="tabular">
-            {rho(overlap)}
+            {/* With no lift map there are no areas to count, so the reason is the map, not too few areas. */}
+            {noLift ? "No lift map, so nothing to check" : rho(overlap)}
             {/* With no number there is nothing to read as high or low. */}
-            {overlap === null ? null : (
+            {overlap === null || noLift ? null : (
               <span className="block text-sm text-muted">
                 {weak ? "High: the map mostly shows where people go anyway." : "Near 0 or below: the map isn't just where people go anyway."}
               </span>
@@ -121,7 +137,13 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
   };
 
   return (
-    <PlanCard id="lift" title={`Where this crowd stands out, compared with ${against}`} envelope={{ ...env, limits: env.limits.filter((l) => !LIFT_DEFINITION.test(l)) }} wide>
+    // With no usual crowd there is nothing to name after "compared with" (the sheet model's heading, for /s and the PDF).
+    <PlanCard
+      id="lift"
+      title={env.results.diagnostics.baseline === "none" ? "Where this crowd stands out" : `Where this crowd stands out, compared with ${against}`}
+      envelope={{ ...env, limits: env.limits.filter((l) => !LIFT_DEFINITION.test(l)) }}
+      wide
+    >
       <div className="grid gap-x-8 gap-y-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {/* Under 1024px the numbered list comes first and the map draws the same rows under it. */}
         <div className="min-w-0 max-lg:order-2">
@@ -133,7 +155,7 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
             selected={selected}
             onSelect={toggle}
             idBase={`lift-${sheet.planId}`}
-            title={`Areas around ${sheet.bill.venue.name} by lift`}
+            title={noLift ? `The area around ${sheet.bill.venue.name}` : `Areas around ${sheet.bill.venue.name} by lift`}
             listId={listId}
             noLift={noLift}
             {...(square ? { captionLead: `${square} Walkup shows where this crowd stands out, never where one fan lives.` } : {})}
@@ -155,8 +177,8 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
               <TileList id={listId} tiles={top} selected={selected} onSelect={toggle} why={(gh) => tileWhy(sheet, gh)} />
               {spread ? <p className="mt-3">{spread}</p> : null}
               <p className="hint mt-3">
-                Lift compares where this bill&apos;s crowd ranks each area with where {against} ranks it; it isn&apos;t a count of people. Above 1.0, this
-                crowd ranks the area higher.
+                Lift compares where this bill&apos;s crowd ranks each area with where {against} {against.endsWith("crowd") ? "ranks" : "rank"} it; it
+                isn&apos;t a count of people. Above 1.0, this crowd ranks the area higher.
                 {/* Paper has no area to select. */}
                 {top.length > 0 ? <span className="no-print"> Select an area to find it on the map.</span> : null}
               </p>
@@ -168,13 +190,21 @@ export function LiftCard({ sheet, selected, onSelect }: { sheet: StreetSheet; se
       <div className="mt-8 grid gap-x-8 gap-y-8 lg:grid-cols-2">
         <div className="min-w-0">
           <h3 className="text-base">How far to trust this map</h3>
-          <p className="mt-1">{noLift ? NO_LIFT_TRUST : trustSentence(extra ? extra.splitHalfSpearman : undefined, weak)}</p>
+          <p className="mt-1">{noLift ? NO_LIFT_TRUST : trustSentence(extra ? extra.splitHalfSpearman : undefined, weak, oneActSplit(extra?.note))}</p>
           {extra?.note ? <p className="mt-2 text-base">{plainText(extra.note)}</p> : null}
           <p className="hint mt-1">
             <a href="#different" className="underline underline-offset-2 hover:text-ink">
               More about this crowd
             </a>{" "}
-            has the checks in full and the method.
+            {/* Promise only what that section has: with nothing to compare with, why (its "Compared with" row); with a
+                baseline but no areas, only what the map was compared with; without the map's diagnostics, no Method row. */}
+            {env.results.diagnostics.baseline === "none"
+              ? "says why there is no lift map."
+              : noLift
+                ? "says what the map was compared with."
+                : extra
+                  ? "has the checks in full and the method."
+                  : "has the checks in full."}
           </p>
         </div>
 

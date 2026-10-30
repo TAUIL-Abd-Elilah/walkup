@@ -3,7 +3,7 @@
  * @walkup/orchestrator on the fixture world, applies the universal checks
  * (checks.ts) to every sheet, and writes evals/product/out/score.json and
  * score.md. With --source recorded it re-checks stored plans (recorded live
- * runs or replays) instead: only the golden cases apply there.
+ * runs or replays) instead: only the golden cases and the two cases that re-check golden sheets (C17, C18) apply there.
  *
  *   npx tsx evals/product/run.ts                       # fixture world, writes out/
  *   npx tsx evals/product/run.ts --only C01,C05        # a subset
@@ -102,9 +102,9 @@ export interface RunOptions {
 }
 
 const CI_NOTES: Partial<Record<ClauseId, string>> = {
-  D5: "evals/product/product.eval.test.ts runs this eval under vitest; CI runs it once the root vitest include covers evals/product (see evals/product/README.md).",
+  D5: "npm test runs evals/product/product.eval.test.ts in the CI node job; the root vitest include covers evals/product.",
   D6: "The P1 analysis tests run in the Python CI job (python evals/p1/test_analyze.py); not part of this eval.",
-  D7: "Committing evals/product/out/score.json needs a CI step with write permission; not part of this eval.",
+  D7: "The CI job product-score re-runs this eval on pushes to the default branch and commits score.json and score.md when anything but the timestamp changed.",
 };
 
 // ---------------------------------------------------------------------------
@@ -376,7 +376,7 @@ export function scoreMarkdown(score: Score): string {
   }
   lines.push(
     "",
-    "Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.",
+    "Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners; core and venue calls both exclude the trust checks (split-half heatmaps, partner house and popularity twins). Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.",
     "",
   );
   return lines.join("\n");

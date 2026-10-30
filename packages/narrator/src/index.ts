@@ -90,7 +90,11 @@ export {
 export {
   vetNarration,
   vetCopyHooks,
+  vetSheetHooks,
   vetWhatsDifferent,
+  diffSummary,
+  anBeforeNumber,
+  liftFigureStyle,
   vetHookList,
   vetGeneratedLines,
   isAudienceTag,

@@ -88,6 +88,15 @@ export function MapCaption({
   );
 }
 
+/**
+ * The screen line when the street map fails and the drawing stands in. It points to the area list only when the list
+ * numbers areas: with no lift map there is no list, and with no numbered area the drawing is all there is.
+ */
+export function mapFallbackLine(why: string, opts: { noLift?: boolean; numbered: boolean }): string {
+  const rest = opts.noLift ? "The drawing shows the venue." : opts.numbered ? "The list has the same areas." : "The drawing has the same areas.";
+  return ["The street map didn't load.", why.trim(), rest].filter(Boolean).join(" ");
+}
+
 /** The frame's inner size in px, measured after hydration (null on the server and before the first layout). */
 function useFrameSize(): [RefObject<HTMLDivElement | null>, { w: number; h: number } | null] {
   const ref = useRef<HTMLDivElement>(null);
@@ -201,9 +210,7 @@ export function LiftMap({
         <figcaption className="mt-1.5 text-sm leading-snug text-muted">
           {interactive && state === "fallback" ? (
             // Paper always prints the drawing, never the street map, so this line is for the screen only.
-            <span className="no-print block">
-              The street map didn&apos;t load. {why} The list has the same areas.
-            </span>
+            <span className="no-print block">{mapFallbackLine(why, { noLift, numbered: ranked.length > 0 })}</span>
           ) : null}
           {caption ? <MapCaption source={source} lead={captionLead} /> : null}
         </figcaption>

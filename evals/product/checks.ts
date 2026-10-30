@@ -203,7 +203,7 @@ export function classifyGuardReasons(reasons: readonly string[]): GuardBreakdown
 // ---------------------------------------------------------------------------
 
 export interface BudgetBounds {
-  /** Bill-level fresh calls, not counting coded fallbacks and typed-partner lookups. */
+  /** Bill-level fresh calls, not counting coded fallbacks, typed-partner lookups and trust checks. */
   coreMax: number;
   venueMin: number;
   venueMax: number;

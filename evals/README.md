@@ -60,7 +60,7 @@ npx vitest run evals/p1/arms                   # the arm runner, on a fake world
 
 ## Product eval (20 cases)
 
-The definition of done as code: four goldens and sixteen scenario cases run end to end through `@walkup/orchestrator` on the fixture world, with grounding, ledger, budget and policy checks on every sheet. See [`product/README.md`](product/README.md) and [`docs/definition-of-done.md`](../docs/definition-of-done.md).
+The definition of done as code: four goldens and sixteen scenario cases run end to end through `@walkup/orchestrator` on the fixture world, with grounding, ledger, budget and policy checks. See [`product/README.md`](product/README.md) and [`docs/definition-of-done.md`](../docs/definition-of-done.md).
 
 ```bash
 npx tsx evals/product/run.ts                   # writes evals/product/out/score.json and score.md

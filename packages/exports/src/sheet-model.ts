@@ -342,6 +342,8 @@ export interface SheetModel {
     venue: { lat: number; lon: number; name: string };
     /** The map key's caption, naming what the shading is compared with. */
     legendCaption: string;
+    /** True when the map has no lift squares (no tiles, or no usual crowd to compare with): the key shows the venue only. */
+    noLift: boolean;
     /** What the map is compared with and how far it holds up; "" when there is no baseline (`status` and `empty` say so). */
     baseline: string;
     empty: string | null;
@@ -959,6 +961,7 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       topTiles: top,
       venue: { lat: venue.lat, lon: venue.lon, name: venue.name },
       legendCaption: noBaseline ? "No usual crowd to compare with" : baselineIsTag ? `Fans compared with ${genre}` : "Fans compared with the room's usual crowd",
+      noLift: noBaseline || cards.liftMap.results.tiles.length === 0,
       baseline,
       empty: tiles.length === 0 ? (noBaseline ? "No lift map: there is no usual crowd to compare this bill with." : "No area reaches a lift of 1.3x on this sheet.") : null,
     },

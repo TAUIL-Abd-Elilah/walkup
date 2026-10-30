@@ -18,6 +18,7 @@
  */
 import { createHash } from "node:crypto";
 import { createMemoryLedger, type DeclaredPartnerScore, type EnvelopeStatus, type OperatorInputs, type Resolution, type StreetSheet } from "@walkup/contracts";
+import { diffSummary, vetWhatsDifferent } from "@walkup/narrator/vet";
 import {
   NO_LIVE_SHOW,
   parentRequest,
@@ -547,20 +548,26 @@ export interface BillVsHouse {
   cards: Record<"liftMap" | "whatsDifferent" | "demographics", { status: EnvelopeStatus; summary: string; reason?: string }>;
 }
 
+/**
+ * The comparison as the plan page shows it: "How this crowd differs" without repeats, audience or identity tags
+ * (`vetWhatsDifferent`), and its summary counted from those lists (`diffSummary`).
+ */
 export function billVsHouseOf(sheet: StreetSheet): BillVsHouse {
   const { liftMap, whatsDifferent, demographics } = sheet.cards;
   const head = (c: { status: EnvelopeStatus; summary: string; reason?: string }) => ({ status: c.status, summary: c.summary, ...(c.reason ? { reason: c.reason } : {}) });
   const venue: BillVsHouse["bill"]["venue"] = { name: sheet.bill.venue.name, city: sheet.bill.venue.city };
   if (sheet.bill.venue.state) venue.state = sheet.bill.venue.state;
+  const stored = whatsDifferent.results;
+  const diff = { ...stored, a: vetWhatsDifferent(stored.a), b: vetWhatsDifferent(stored.b), shared: vetWhatsDifferent(stored.shared) };
   return {
     planId: sheet.planId,
     bill: { acts: sheet.bill.acts.map((a) => ({ name: a.name, role: a.role })), venue, date: sheet.bill.date, weekday: sheet.bill.weekday },
     baseline: liftMap.results.diagnostics.baseline,
     tiles: liftMap.results.tiles,
     diagnostics: liftMap.results.diagnostics,
-    whatsDifferent: whatsDifferent.results,
+    whatsDifferent: diff,
     demographics: demographics.results,
-    cards: { liftMap: head(liftMap), whatsDifferent: head(whatsDifferent), demographics: head(demographics) },
+    cards: { liftMap: head(liftMap), whatsDifferent: { ...head(whatsDifferent), summary: diffSummary(whatsDifferent.summary, diff) }, demographics: head(demographics) },
   };
 }
 

@@ -31,7 +31,7 @@ the parents.
 After that, on Oct 28 and 29 2026, all 23 sheets in `plans.json`, the four parents included, were re-checked offline
 with no API call (`recheckSheet` in `packages/orchestrator/src/refresh.ts`, run by
 `scripts/refresh-recorded-plans.ts --recheck`; the README's "Re-checked offline, Oct 28 and 29 2026" lists what
-changed). Each area gained its state, partner lines were reworded, four Claude sentences became template wording,
+changed). Each area gained its state, partner lines were reworded, 14 Claude sentences became template wording,
 "isn't searched yet" became "aren't", and the Checks step and each revision's change list were rebuilt. SWIG, a bar by
 its Qloo tags, left the two "All ages, no bars" revisions at The Salt Shed. No Qloo or Ticketmaster answer, ranking,
 partner list or ledger number changed. The same pass removed FLO's "Within 10 km of the room" version (below). A second
@@ -39,7 +39,11 @@ pass on Oct 29 gave one FLO partner back its run's kind, dropped four dead partn
 own websites, made chain lists count places, said partner chains are last in their area, fixed the Summary and Checks
 steps' wording, wrote "partner lines" for "line(s)" and "1 of 1 act" for "1 of 1 acts", named every chain signal in the chain note and removed a repeated
 label from 16 ledger notes. A third pass on Oct 29 made every "about N times" follow one rule (the 2-decimal lift,
-rounded half up); four stored lines changed.
+rounded half up); four stored lines changed. A fourth pass on Oct 29 held Claude's lines to newer checks (ten of the
+14 template swaps above: partner lines that called a partner a before- or after-show stop, an area's places called
+spots, an unbacked "stands out most", a wrong percentile, an equal budget split the sheet doesn't show), wrote "an 82nd"
+for "a 82nd", wrote "about 2.0 times" for "about 2 times" where 2.0 is the area's figure, and dropped two fan copy
+lines that called the room "cozy" or "intimate" from a taste tag.
 
 FLO has no "Within 10 km of the room" change. Fewer than 200 map squares come back near The Anthem for FLO's crowd,
 so the map widens to 60 km either way, and the version recorded for that note changed nothing on the sheet. It was

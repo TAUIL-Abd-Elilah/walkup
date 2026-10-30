@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-29T21:13:02.715Z",
+  "generatedAt": "2026-10-29T23:47:41.911Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -96,7 +96,7 @@
       "pass": 0,
       "fail": 0,
       "skip": 0,
-      "note": "evals/product/product.eval.test.ts runs this eval under vitest; CI runs it once the root vitest include covers evals/product (see evals/product/README.md)."
+      "note": "npm test runs evals/product/product.eval.test.ts in the CI node job; the root vitest include covers evals/product."
     },
     {
       "id": "D6",
@@ -122,7 +122,7 @@
       "pass": 0,
       "fail": 0,
       "skip": 0,
-      "note": "Committing evals/product/out/score.json needs a CI step with write permission; not part of this eval."
+      "note": "The CI job product-score re-runs this eval on pushes to the default branch and commits score.json and score.md when anything but the timestamp changed."
     },
     {
       "id": "S1",
@@ -328,7 +328,7 @@
           "subject": "g1-a"
         },
         {
-          "name": "paired with bill B for the swap",
+          "name": "paired with bill B, the other bill in the same room",
           "status": "pass",
           "detail": "\"g1-b\"",
           "clause": "S4",
@@ -721,7 +721,7 @@
           "subject": "g1-b"
         },
         {
-          "name": "paired with bill A for the swap",
+          "name": "paired with bill A, the other bill in the same room",
           "status": "pass",
           "detail": "\"g1-a\"",
           "clause": "S4",
@@ -1628,7 +1628,7 @@
         {
           "name": "card partners status",
           "status": "pass",
-          "detail": "partial (expected partial): No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet.",
+          "detail": "partial (expected partial): There is no lift map on this run, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet.",
           "clause": "S2",
           "subject": "g3"
         },
@@ -1796,7 +1796,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The popularity check runs the same Qloo search near the venue without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g3"
         },
@@ -3118,7 +3118,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search near the venue without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, lift weak"
         },
@@ -5098,7 +5098,7 @@
     {
       "id": "C14",
       "slug": "rate-limit-429-retry",
-      "title": "HTTP 429 then success: retried, logged, same sheet",
+      "title": "HTTP 429 then success: retried, logged, same partners",
       "covers": "Global rules (at most 2 retries on 429/5xx)",
       "clauses": [
         "S1",
@@ -6600,7 +6600,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The popularity check runs the same Qloo search near the venue without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g3, budget split"
         },
@@ -6685,7 +6685,7 @@
     {
       "id": "C18",
       "slug": "bill-swap-specificity",
-      "title": "The other bill in the same room: same room, different crowd (top-8 overlap at most 5 of 8)",
+      "title": "The other bill in the same room: a different crowd (top-8 overlap at most 5 of 8)",
       "covers": "Proof plan P2 specificity; the other bill in the same room; venue baseline cached",
       "clauses": [
         "S4",
@@ -6700,56 +6700,56 @@
           "status": "pass",
           "detail": "1 venue call(s), 9 cached",
           "clause": "S1",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "bill B fresh calls with the venue cached (about 14-18, not counting trust checks)",
           "status": "pass",
           "detail": "15 (allowed 12-18)",
           "clause": "S1",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
-          "name": "bill B trust-check calls (split-half heatmaps, house and popularity twins)",
+          "name": "bill B trust-check calls (split-half heatmaps, partner house and popularity twins)",
           "status": "pass",
           "detail": "8 (allowed 0-10)",
           "clause": "S1",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "top-8 partner overlap at most 5 of 8",
           "status": "pass",
           "detail": "0 of 8",
           "clause": "S4",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "P2 specificity: Jaccard of the top-8 lists at most 5/11",
           "status": "pass",
           "detail": "Jaccard 0.000",
           "clause": "S4",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "top-5 lift tiles differ",
           "status": "pass",
           "detail": "0 of 5 shared",
           "clause": "S4",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "same room",
           "status": "pass",
           "detail": "[\"The Truth\",36.1612,-86.7745]",
           "clause": "S4",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "each sheet points at the other",
           "status": "pass",
           "detail": "[\"g1-b\",\"g1-a\"]",
           "clause": "S4",
-          "subject": "swap"
+          "subject": "other bill"
         },
         {
           "name": "plan status",
@@ -7273,7 +7273,7 @@
         {
           "name": "partners are suggested, not affiliated",
           "status": "pass",
-          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
+          "detail": "Suggested, not affiliated: no partner has agreed to anything. | The usual-crowd rank comes from the same Qloo search run for the room's usual crowd. A place that ranks as high for them loses up to half its score. | The popularity check runs the same Qloo search near the venue without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.",
           "clause": "S3",
           "subject": "g1-a, house heat fails"
         },

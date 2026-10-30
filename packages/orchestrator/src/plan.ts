@@ -296,7 +296,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const budgetSplit: BudgetShare[] = splitBudget(heat.spread);
 
   const partners: PartnersResult = await safe(
-    () => runPartners(ctx, seeds, heat.spread, heat.liftWeak, resolved.venueEntityId, resolved.house),
+    () =>
+      runPartners(ctx, seeds, heat.spread, heat.liftWeak, resolved.venueEntityId, resolved.house, heat.card.results.diagnostics.baseline === "none" || heat.card.results.tiles.length === 0),
     (err) => ({ card: failure(err, [], "Partners"), partners: [], report: null, pools: [], poolSpecs: [], categories: [] }),
   );
   // "Why this place" on every partner, before the card streams.
@@ -369,6 +370,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   // Citation check: every cited entity traces to a ledger entry of this run.
   const worded = honestWording(copy.narration, {
     tagBaseline: cards.liftMap.results.diagnostics.baseline === "tag",
+    noLiftMap: cards.liftMap.results.diagnostics.baseline === "none" || cards.liftMap.results.tiles.length === 0,
     genre,
     localSponsor: media.results.some((m) => m.kind === "sponsor" && m.scope === "local"),
   });

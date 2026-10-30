@@ -95,14 +95,9 @@ function caseTitle(title: string): string {
     .replace(/\s*\((?:hero sheet|honesty demo|degraded: [^)]*|partial: [^)]*)\)/gi, "")
     .replace(/^needs_input: /, "Pick needed: ")
     .replace(/^Golden /, "Sample sheet ")
-    // The "Swap the bill" link is now the line "The other bill at {venue}".
-    .replace(/^Swap the bill: /, "The other bill in the same room: ")
-    // C12 checks partners, which say "call first"; only spots near the venue say "call ahead".
-    .replace(/^A place with unknown hours is kept and marked call ahead$/, "A partner with no listed hours is kept and marked call first")
     .replace(/deterministic template/, "fixed template")
     .replace(/a tag diff/, "comparing two tag lists")
     .replace(/the genre tag baseline stands in/, "fans of the genre stand in")
-    .replace(/the genre tag baseline/, "fans of the genre")
     .replace(/spread top tiles/, "the numbered areas");
 }
 
@@ -574,8 +569,9 @@ export default function EvalPage() {
           . Score file last updated {dateOf(score.generatedAt)}; CI re-runs the cases on every push.
         </p>
         <p className="mt-2 text-muted">
-          Each case runs one plan end to end and checks the sheet it produces: every card has a status and says why when it is not ok, every receipt
-          is in that run&apos;s ledger, the policy rules hold, and the sheet fits one page. It checks that Walkup behaves as described. It says nothing
+          Each case runs one or more plans end to end and checks the sheets they produce: every card has a status and says why when it is not ok,
+          every receipt is in that run&apos;s ledger, and the policy rules hold. The four sample sheets must also fit one page as a PDF. It checks that
+          Walkup behaves as described. It says nothing
           about whether Qloo&apos;s picks are better than another list, and nothing about ticket sales.
         </p>
 

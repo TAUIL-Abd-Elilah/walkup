@@ -225,7 +225,10 @@ function tileMap(m: SheetModel, width: number, height: number): El {
   return h(Svg, { width, height, viewBox: `0 0 ${width} ${height}` }, ...kids);
 }
 
-/** The map key, one line under the map: the same four steps as the web legend, then the venue square. */
+/**
+ * The map key, one line under the map: the same four steps as the web legend, then the venue square. A map with no
+ * lift squares (`noLift`) shows the venue square only, as the plan page leaves its legend out.
+ */
 function legend(m: SheetModel, st: Styles): El {
   const swatch = (color: string, label: string) =>
     view(
@@ -238,7 +241,7 @@ function legend(m: SheetModel, st: Styles): El {
     text(st.small, m.panel1.legendCaption),
     view(
       { flexDirection: "row", flexWrap: "wrap", marginTop: st.fs(1) },
-      ...LIFT_KEY.map((k) => swatch(liftFill(k.sample), k.label)),
+      ...(m.panel1.noLift ? [] : LIFT_KEY.map((k) => swatch(liftFill(k.sample), k.label))),
       view({ flexDirection: "row", alignItems: "center" }, view({ width: st.fs(4), height: st.fs(4), backgroundColor: INK, marginRight: st.fs(1.5) }), text(st.small, "venue")),
     ),
   );

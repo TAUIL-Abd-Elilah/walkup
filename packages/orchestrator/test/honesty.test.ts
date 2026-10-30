@@ -48,7 +48,12 @@ describe("baseline wording", () => {
     expect(s.cards.liftMap.results.tiles).toEqual([]);
     const text = [s.narration?.summary ?? "", ...(s.narration?.tileWhy ?? []).map((t) => t.text)].join(" ");
     expect(text).not.toMatch(/house crowd|house percentile|versus the house\b|usual crowd|comedy fans in general/);
-    expect(text).toMatch(/No area stands out on this run/);
+    // With no lift map there was no area to stand out: the summary, the partner card and the popularity check say so.
+    expect(text).toMatch(/There is no lift map on this run, so partners are picked near the venue\./);
+    expect(text).not.toMatch(/No area stands out/);
+    expect(s.cards.partners.reason).toMatch(/^There is no lift map on this run, so partners are picked near the venue\./);
+    expect(s.cards.partners.limits.join(" ")).toContain("runs the same Qloo search near the venue without the bill");
+    expect(s.steps?.find((x) => x.id === "partners-popular")?.cause).toMatch(/^The same search near the venue without the bill/);
   });
 
   it("keeps the room's-usual-crowd wording when the roster baseline ran", async () => {

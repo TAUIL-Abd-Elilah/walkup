@@ -1,7 +1,7 @@
 # Product eval score
 
 Source: fixture world (synthetic stand-in for Qloo and Ticketmaster; seed `houselights-world-v1`). No live API was called.
-Generated: 2026-10-29T21:13:02.715Z
+Generated: 2026-10-29T23:47:41.911Z
 
 **20 passed, 0 failed (0 on known product gaps only, 0 unexpected), 0 skipped, of 20 cases.**
 
@@ -15,9 +15,9 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 | D2. Zero guard drops in a citation field. | verified (outside the goldens: 66 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
 | D3. Every partner is open on the street-team day per the hours Qloo returns for it. | verified (partners with no hours from Qloo, passed as "call first" (--strict-hours fails them): g1-a: 2; outside the goldens: 50 pass, 0 fail) | C01, C02, C03, C04 | 12 / 0 / 0 |
 | D4. Every cited ID appears in this run's ledger (ID validator). | verified (outside the goldens: 117 pass, 0 fail) | C01, C02, C03, C04 | 20 / 0 / 0 |
-| D5. The CI job re-runs the 20-case eval on fixtures. | ci (evals/product/product.eval.test.ts runs this eval under vitest; CI runs it once the root vitest include covers evals/product (see evals/product/README.md).) | - | 0 / 0 / 0 |
+| D5. The CI job re-runs the 20-case eval on fixtures. | ci (npm test runs evals/product/product.eval.test.ts in the CI node job; the root vitest include covers evals/product.) | - | 0 / 0 / 0 |
 | D6. The CI job re-runs the P1 analysis on fixtures. | ci (The P1 analysis tests run in the Python CI job (python evals/p1/test_analyze.py); not part of this eval.) | - | 0 / 0 / 0 |
-| D7. The CI job commits the score file. | ci (Committing evals/product/out/score.json needs a CI step with write permission; not part of this eval.) | - | 0 / 0 / 0 |
+| D7. The CI job commits the score file. | ci (The CI job product-score re-runs this eval on pushes to the default branch and commits score.json and score.md when anything but the timestamp changed.) | - | 0 / 0 / 0 |
 | S1. A fresh run stays within the Qloo call budget; every coded fallback call is shown on its card. | verified | C01, C02, C03, C04, C06, C07, C08, C13, C14, C15, C18, C19 | 60 / 0 / 0 |
 | S2. Every node has a typed status and its coded fallback; a non-ok card says why. | verified | C01, C02, C03, C04, C05, C06, C07, C08, C11, C12, C13, C14, C15, C16, C17, C19, C20 | 252 / 0 / 0 |
 | S3. Policy: aggregate affinities only, denied tags never in copy or stored data, alcohol rules from Ticketmaster only, partners suggested and not affiliated, no show-status words. | verified | C01, C02, C03, C04, C09, C10, C15, C16, C17, C19 | 260 / 0 / 0 |
@@ -40,11 +40,11 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 | C11 Places marked closed are dropped and counted | passed | 32 / 0 / 0 | D3, S2 |
 | C12 A partner with no listed hours is kept and marked call first | passed | 33 / 0 / 0 | D3, S2 |
 | C13 Month quota guard: fresh calls stop, presets come from the store or cache | passed | 74 / 0 / 0 | S1, S2 |
-| C14 HTTP 429 then success: retried, logged, same sheet | passed | 41 / 0 / 0 | S1, S2 |
+| C14 HTTP 429 then success: retried, logged, same partners | passed | 41 / 0 / 0 | S1, S2 |
 | C15 Declared partners: catalog places ranked, the rest kept in your order | passed | 38 / 0 / 0 | S1, S2, S3 |
 | C16 Partner diversity caps hold, even on a bar-heavy category set | passed | 39 / 0 / 0 | S2, S3 |
 | C17 Budget split: shares sum to 1 over spread top tiles, labelled a heuristic | passed | 82 / 0 / 0 | S2, S3 |
-| C18 The other bill in the same room: same room, different crowd (top-8 overlap at most 5 of 8) | passed | 43 / 0 / 0 | S4, S1 |
+| C18 The other bill in the same room: a different crowd (top-8 overlap at most 5 of 8) | passed | 43 / 0 / 0 | S4, S1 |
 | C19 House heatmap fails: the genre tag baseline stands in (degraded: tag baseline) | passed | 37 / 0 / 0 | S1, S2, S3 |
 | C20 Narration falls back to the deterministic template (no model, model error, off-schema draft) | passed | 122 / 0 / 0 | D2, D4, S2 |
 
@@ -79,4 +79,4 @@ Clauses D1-D4 are scored on the golden cases; S1-S4 on every case.
 | C20 | g1-a, model error | 24 | 8 | - | - | 32 | 14 | 6 | 0 | 0 | 0 |
 | C20 | g1-a, off-schema draft | 24 | 8 | - | - | 32 | 14 | 6 | 0 | 0 | 0 |
 
-Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners. Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.
+Core bill-level calls exclude coded fallbacks (shown on their cards) and the per-name lookups of typed partners; core and venue calls both exclude the trust checks (split-half heatmaps, partner house and popularity twins). Grounding checks every partner and pre/post spot against the place data Qloo returned for it (closed flag and hours, as stored on the sheet); it is not an independent source.

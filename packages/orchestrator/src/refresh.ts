@@ -23,7 +23,7 @@
  */
 import { aboutTimes, type LedgerEntry, type LiftTile, type MediaPick, type Partner, type PrePostSpot, type QlooEntity, type SheetDiscovery, type StreetSheet } from "@walkup/contracts";
 import { annotateTile, stateFromZctas } from "@walkup/gazetteer";
-import { vetNarration } from "@walkup/narrator";
+import { anBeforeNumber, liftFigureStyle, vetNarration, vetSheetHooks } from "@walkup/narrator";
 import {
   activationFor,
   backCatalogueLabel,
@@ -506,7 +506,11 @@ export interface RecheckOptions {
  *    failing line is replaced by the template's, with the reason added to the guard's reasons, as a new run does;
  *  - "about N times" in the template's area lines and summary and in the heat step's "Put X first" follows the one
  *    rule (`aboutTimes`: the sheet's 2-decimal lift, half up), so an area never reads two figures; Claude's lines
- *    are left to the guard (`liftFiguresByRule`);
+ *    are left to the guard (`liftFiguresByRule`), apart from two text-only fixes narrate() now makes: "an 82nd" for
+ *    "a 82nd", and "about 2.0 times" for "about 2 times" where 2.0 is the area's figure (`modelLineWording`);
+ *  - Claude's fan copy held to the copy checks narrate()'s guard runs: a line that calls the room small from a taste
+ *    tag ("a cozy room") is dropped and counted, and the copy card and the Summary step say how many lines are left
+ *    (`dropCopyHooks`);
  *  - at most 2 of a kind per area, as select() picked them: a place whose kind was read again after the run (from
  *    stored tags the data policy had already trimmed) gets back the kind another recorded run of the same show gave
  *    it (`opts.recordedKinds`), with that kind's ask; an area still over the cap is reported in `overCap`;
@@ -663,6 +667,12 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
 
   // ---- "About N times" by the one rule (`aboutTimes`), in the lines the code wrote: template lines and the heat step --
   report.rewritten.push(...liftFiguresByRule(sheet));
+  // ---- Claude's lines as a run now writes them: "an 82nd", "about 2.0 times" --------------------------------------
+  report.rewritten.push(...modelLineWording(sheet));
+
+  // ---- Fan copy: the lines narrate()'s guard now drops ("a cozy room" from a taste tag), dropped as a run would ---
+  const hooksBefore = { n: sheet.cards.copyHooks.results.length, status: sheet.cards.copyHooks.status };
+  report.rewritten.push(...dropCopyHooks(sheet));
 
   // ---- The copy lines card: one line is not "each" -------------------------------------------------------
   const hooksSummary = sheet.cards.copyHooks.summary.replace(/^1 line, each built only /, "1 line, built only ");
@@ -690,12 +700,24 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
         report.rewritten.push("guard step");
         return { ...s, decision: g.decision };
       }
-      if (s.id === "narrate" && sheet.narration && !sheet.narration.templated && summaryReplaced(sheet.guard.reasons)) {
-        // Only the wording written before the step said so: "Claude wrote the summary and 3 fan copy lines ...".
-        const step = (replaced: boolean) => narrateStep({ templated: false, hooks: hooks.results.length, hooksStatus: hooks.status, summaryReplaced: replaced, ledgerRefs: s.ledgerRefs });
-        if (s.decision !== step(false).decision) return s;
-        report.rewritten.push("summary step");
-        return { ...s, decision: step(true).decision };
+      if (s.id === "narrate" && sheet.narration && !sheet.narration.templated) {
+        // Only the step's own wording ("Claude wrote the summary and 3 fan copy lines ..."), said again with the copy
+        // lines left now and, when fixed wording replaced Claude's summary, saying so.
+        const step = (n: number, status: typeof hooks.status, replaced: boolean) =>
+          narrateStep({ templated: false, hooks: n, hooksStatus: status, summaryReplaced: replaced, ledgerRefs: s.ledgerRefs });
+        const was = [false, true].find((r) => step(hooksBefore.n, hooksBefore.status, r).decision === s.decision);
+        if (was === undefined) return s;
+        const replacedNow = was || summaryReplaced(sheet.guard.reasons);
+        const hooksDropped = hooks.results.length !== hooksBefore.n;
+        if (replacedNow === was && !hooksDropped) return s;
+        if (replacedNow !== was) report.rewritten.push("summary step");
+        if (!hooksDropped) return { ...s, decision: step(hooksBefore.n, hooksBefore.status, true).decision };
+        report.rewritten.push("copy lines step");
+        const now = step(hooks.results.length, hooks.status, replacedNow);
+        const out: typeof s = { ...s, decision: now.decision, status: now.status };
+        if (now.cause) out.cause = now.cause;
+        else delete out.cause;
+        return out;
       }
       if ((s.id === "partners" || s.id === "prepost") && s.cause) {
         let cause = chainTailInPlaces(s.cause);
@@ -800,6 +822,61 @@ function liftFiguresByRule(sheet: StreetSheet): string[] {
     });
   }
   return out;
+}
+
+/**
+ * The wording narrate() now gives Claude's lines, text only: "a 82nd percentile" reads "an 82nd percentile"
+ * (`anBeforeNumber`), and an area line's "about 2 times" for an area at 2.04 reads "about 2.0 times", the figure the
+ * sheet and the calendar print (`liftFigureStyle`). No number, name or claim changes. Returns what changed.
+ */
+function modelLineWording(sheet: StreetSheet): string[] {
+  const n = sheet.narration;
+  if (!n || n.templated) return [];
+  const lifts = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t.lift]));
+  let articles = 0;
+  let figures = 0;
+  const an = (text: string) => {
+    const out = anBeforeNumber(text);
+    if (out !== text) articles++;
+    return out;
+  };
+  const tileWhy = n.tileWhy.map((w) => {
+    const text = an(w.text);
+    const styled = liftFigureStyle(text, lifts.get(w.geohash) ?? Number.NaN);
+    if (styled !== text) figures++;
+    return styled === w.text ? w : { ...w, text: styled };
+  });
+  const summary = an(n.summary);
+  const partnerLines = n.partnerLines.map((l) => {
+    const text = an(l.text);
+    return text === l.text ? l : { ...l, text };
+  });
+  if (articles === 0 && figures === 0) return [];
+  sheet.narration = { ...n, summary, tileWhy, partnerLines };
+  return [...(articles > 0 ? [`"an" before a number (${articles})`] : []), ...(figures > 0 ? [`"about N.0 times" (${figures})`] : [])];
+}
+
+/**
+ * Claude's fan copy held to the copy checks narrate()'s guard runs now (`vetSheetHooks`): a line that calls the room
+ * small from a taste tag ("a cozy room") is dropped, with the guard's reason added to the guard's reasons and counted
+ * as dropped, and the card says what a run with that many lines says ("2 lines, each built only from approved Qloo
+ * tags.", partial below 3). Kept lines are left as stored. A sheet the template wrote, or one that would keep no
+ * line, is left as it is (the page then shows its one fallback line). Returns what changed.
+ */
+function dropCopyHooks(sheet: StreetSheet): string[] {
+  if (!sheet.narration || sheet.narration.templated) return [];
+  const card = sheet.cards.copyHooks;
+  const { reasons } = vetSheetHooks(sheet);
+  const gone = new Set(reasons.map((r) => Number(/^copyHooks\[(\d+)\]/.exec(r)?.[1] ?? Number.NaN)).filter(Number.isInteger));
+  if (gone.size === 0 || gone.size >= card.results.length) return [];
+  const kept = card.results.filter((_h, i) => !gone.has(i));
+  const n = kept.length;
+  const status = n >= 3 && card.status === "ok" ? "ok" : "partial";
+  const summary = card.summary.replace(/^\d+ lines?, (?:each )?built only /, `${n} ${n === 1 ? "line, built" : "lines, each built"} only `);
+  sheet.cards.copyHooks = { ...card, status, summary, results: kept };
+  if (status !== "ok" && !card.reason) sheet.cards.copyHooks.reason = `${n} ${n === 1 ? "line" : "lines"} passed the checks.`;
+  sheet.guard = { ...sheet.guard, dropped: sheet.guard.dropped + gone.size, reasons: [...sheet.guard.reasons, ...reasons.filter((r) => /^copyHooks\[\d+\]/.test(r))] };
+  return [`copy lines dropped (${gone.size})`];
 }
 
 /**

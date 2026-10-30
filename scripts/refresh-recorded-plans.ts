@@ -11,10 +11,9 @@
  * changed and anything only a live re-record can fix. Never prints place details beyond names.
  *
  * --recheck runs `recheckSheet` instead: only the checks that change nothing the run found (tile states, "near" the
- * area, the narration guard, the Checks step, the change lists, the "about N times" the code itself wrote), no
- * rename, re-scoring or re-categorising. A place
- * whose kind was read again after its run gets back the kind the show's other recorded runs gave it (`recordedKinds`)
- * when its area lists more than 2 of a kind.
+ * area, the narration guard, the fan copy checks, the Checks step, the change lists, the "about N times" the code
+ * itself wrote), no rename, re-scoring or re-categorising. A place whose kind was read again after its run gets
+ * back the kind the show's other recorded runs gave it (`recordedKinds`) when its area lists more than 2 of a kind.
  * --drop removes a plan first (a ready-made change that changed nothing); a revision of it can't stay.
  * Nothing is written when a sheet still lists more than 2 of a kind in an area.
  */

@@ -189,7 +189,9 @@ describe("partner lines keep their own am and pm (outputs-humanTimes-double-meri
   it.skipIf(!HAVE_PLANS || !plan("18aa3a6e") || !plan("1e0da01d"))("18aa3a6e and 1e0da01d: the lines keep their stored times", () => {
     const a = flat(renderPlan(plan("18aa3a6e")!.sheet).html);
     expect(a).toContain("Pub near South Shore, open Thursday 9:30 pm to 4 am, sharing nightlife and burgers tags with this crowd.");
-    expect(a).toContain("open Thursday 7:30 am to 3 pm");
+    // Round 5: the coffeehouse line ("7:30 am to 3 pm ... a before-show stop") is replaced at view time (the place is
+    // not on the spots list), so a range that shares one suffix stands in for it.
+    expect(a).toContain("open Thursday 4 to 8 pm");
     expect(a).toContain("open Thursday 4:30 am to 5 pm");
     expect(flat(renderPlan(plan("1e0da01d")!.sheet).html)).toContain("is open Saturday from 11:30 am to 11 pm.");
   });

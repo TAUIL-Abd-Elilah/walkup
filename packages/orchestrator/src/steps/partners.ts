@@ -51,6 +51,12 @@ export const HOUSE_TWIN_LIMIT =
 export const POPULARITY_TWIN_NODE = "Q9 popularity twin";
 export const POPULARITY_LIMIT =
   "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.";
+/** The same limit when every partner was picked near the venue: there were no areas to search. */
+export const POPULARITY_LIMIT_NEAR_VENUE =
+  "The popularity check runs the same Qloo search near the venue without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales.";
+/** The card's reason when no area was searched: no area stood out, or the run has no lift map at all. */
+export const NO_AREA_PARTNERS_REASON = "No area stood out, so partners are picked near the venue.";
+export const NO_LIFT_PARTNERS_REASON = "There is no lift map on this run, so partners are picked near the venue.";
 
 /** The card limit when any candidate was a national chain. Names every signal `chainSignals` reads. */
 export const CHAIN_DETECT_LIMIT =
@@ -306,6 +312,7 @@ export async function runPartners(
   liftWeak: boolean,
   venueEntityId: string | null,
   house: HouseSet | null = houseFor(ctx),
+  noLiftMap = false,
 ): Promise<PartnersResult> {
   const keys = partnerCategories(ctx);
   const cats = categoryUrns(ctx.pins, keys);
@@ -318,7 +325,7 @@ export async function runPartners(
   const specs: PoolSpec[] = tiles.map((t) => ({ tileGeohash: t.geohash, point: { lat: t.lat, lon: t.lon }, radiusM: TILE_RADIUS_M, tags: cats.urns }));
   // Fewer usable tiles than pools: the rest of the list comes from near the room.
   if (tiles.length < PARTNER_TILES) specs.push({ tileGeohash: null, point: venuePoint(ctx), radiusM: TILE_RADIUS_WIDE_M, tags: cats.urns });
-  if (tiles.length === 0) reasons.push("No area stood out, so partners are picked near the venue.");
+  if (tiles.length === 0) reasons.push(noLiftMap ? NO_LIFT_PARTNERS_REASON : NO_AREA_PARTNERS_REASON);
   else if (tiles.length < PARTNER_TILES) reasons.push(`Only ${plural(tiles.length, "area")} stood out, so the rest of the list is near the venue.`);
 
   const pools: PartnerPool[] = [];
@@ -478,7 +485,7 @@ export async function runPartners(
   const limits = ["Suggested, not affiliated: no partner has agreed to anything."];
   if (twinByPool.size > 0) limits.push(HOUSE_TWIN_LIMIT);
   if (report.chains > 0) limits.push(CHAIN_DETECT_LIMIT);
-  if (popularity.check) limits.push(POPULARITY_LIMIT);
+  if (popularity.check) limits.push(tiles.length === 0 ? POPULARITY_LIMIT_NEAR_VENUE : POPULARITY_LIMIT);
   base.card = envelope(status, summary, cleaned, provenance, reasons.length > 0 ? reasons.join(" ") : undefined, limits);
   base.partners = cleaned;
   base.report = report;

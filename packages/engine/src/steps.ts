@@ -487,7 +487,9 @@ export interface PopularityStepInput {
 
 /** The popularity check: the partner list against the same searches without the bill (popularity order). */
 export function popularityStep(i: PopularityStepInput): TraceStep {
-  const how = "The same search in each area without the bill as the signal returns places in popularity order; each area's list is cut to as many places as it has partners";
+  const how = i.nearVenueOnly
+    ? "The same search near the venue without the bill as the signal returns places in popularity order; the list is cut to as many places as there are partners"
+    : "The same search in each area without the bill as the signal returns places in popularity order; each area's list is cut to as many places as it has partners";
   if (i.partners === null || i.notInPopularTop === null) {
     const why = i.failed.length > 0 ? `The search without the bill failed or came back empty for ${joinAnd(i.failed)}, so there is no number` : "No search without the bill ran, so there is no number";
     return traceStep("partners-popular", "partners", "Popularity check", "Skipped the popularity check", "partial", i.ledgerRefs, joinSentences([why]));
@@ -546,7 +548,7 @@ export function prePostStep(i: PrePostStepInput): TraceStep {
   let decision: string;
   if (i.spots === 0) decision = `No spot${within} came back open on show night`;
   else if (i.unknownHours === 0) decision = `Picked ${countOf(i.spots, "spot")}${within}, open on show night`;
-  else decision = `Picked ${countOf(i.spots, "spot")}${within}; ${i.unknownHours} ${i.unknownHours === 1 ? "lists" : "list"} no hours for show night, so call first`;
+  else decision = `Picked ${countOf(i.spots, "spot")}${within}; ${i.unknownHours} ${i.unknownHours === 1 ? "lists" : "list"} no hours for show night, so call ahead`;
   const cause = joinSentences([
     i.widened && i.radiusM !== null ? `Fewer than ${i.widened.minSpots} came back inside ${kmFromM(i.widened.fromM)} km, so the search widened to ${kmFromM(i.radiusM)} km` : null,
     i.typeDrops && i.typeDrops.count > 0 ? `Left out ${countOf(i.typeDrops.count, "place")} by type (${i.typeDrops.reason})` : null,

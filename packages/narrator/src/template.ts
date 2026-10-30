@@ -35,8 +35,9 @@ function pct(v: number): number {
  * @walkup/engine, the calendar and the plan page share. It reads the sheet's
  * 2-decimal lift, as the guard's facts hold it, so the one printed decimal
  * always matches a cited number. Ratios like "1.84x" belong in tables, never in
- * prose. The orchestrator swaps the baseline phrase for "the genre baseline"
- * when the run fell back to a genre tag.
+ * prose. The orchestrator swaps the baseline phrase for the genre's fans
+ * ("country fans in general", genreBaselinePhrase) when the run fell back to
+ * a genre tag.
  */
 export function liftWords(lift: number): string {
   return liftAgainst(lift, "the room's usual crowd");
@@ -53,7 +54,7 @@ function withArticle(word: string): string {
 }
 
 /** 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st ... */
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   const i = Math.round(n);
   const m100 = Math.abs(i) % 100;
   const m10 = Math.abs(i) % 10;

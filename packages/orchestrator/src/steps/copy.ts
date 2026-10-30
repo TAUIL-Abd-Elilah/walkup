@@ -112,17 +112,24 @@ export function tidyAreaPhrases(text: string, areaNames: readonly string[]): str
   return out;
 }
 
+/** The template summary's sentence when no area was narrated, and what it says on a run with no lift map. */
+export const NO_AREA_SUMMARY = "No area stands out on this run, so partners are picked near the venue.";
+export const NO_LIFT_SUMMARY = "There is no lift map on this run, so partners are picked near the venue.";
+
 /**
  * The narrator's template (and its model prompt) compares against "the house
  * crowd" and calls the sponsor "local". The sheet must say what actually ran:
  * on a genre tag baseline there is no house crowd behind the numbers, and a
  * sponsor is "local" only when the signal.location probe verified it.
+ * With no lift map at all, the template's "No area stands out on this run" names a comparison that never ran: it says
+ * there is no lift map, as the partner card does.
  * Words only: no id or number changes, so the guards' results still hold.
  */
-export function honestWording(n: Narration, o: { tagBaseline: boolean; localSponsor: boolean; genre?: string }): Narration {
+export function honestWording(n: Narration, o: { tagBaseline: boolean; localSponsor: boolean; genre?: string; noLiftMap?: boolean }): Narration {
   const g = o.genre ?? "the genre baseline";
   const fix = (s: string) => {
     let out = s;
+    if (o.noLiftMap) out = out.replace(NO_AREA_SUMMARY, NO_LIFT_SUMMARY);
     if (o.tagBaseline) {
       out = out
         .replace(/\bthe room's usual crowd\b/g, g)

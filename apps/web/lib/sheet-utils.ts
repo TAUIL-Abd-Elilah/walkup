@@ -207,11 +207,34 @@ export function ageLabel(legalAgeEnforced: boolean | null): { short: string; inl
  * keeps its case, as the run's steps write it); "the room's usual crowd" otherwise.
  */
 export function baselineName(sheet: StreetSheet): string {
-  if (sheet.cards.liftMap.results.diagnostics?.baseline !== "tag") return "the room's usual crowd";
+  return sheet.cards.liftMap.results.diagnostics?.baseline === "tag" ? genreFansName(sheet) : "the room's usual crowd";
+}
+
+/** "comedy fans in general", whatever the lift map was compared with. */
+function genreFansName(sheet: Pick<StreetSheet, "bill">): string {
   const raw = sheet.bill.classification ?? "";
   const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
   if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
   return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
+}
+
+/**
+ * Who the age mix and "How this crowd differs" compared this bill with: the room's usual acts ("house"), a genre's
+ * fans ("tag") or nobody ("none"). Usually the lift map's baseline. But when the room's own heatmap failed, the genre
+ * stood in for the map only: the room's usual acts still fed those two, as their age blocks (or the map's reason) show.
+ */
+export function crowdBaseline(sheet: Pick<StreetSheet, "cards">): "house" | "tag" | "none" {
+  const lift = sheet.cards.liftMap.results.diagnostics?.baseline ?? "house";
+  if (lift !== "tag") return lift;
+  const blocks = sheet.cards.demographics.results.house;
+  if (blocks.length > 0) return blocks.every((b) => b.entityId.startsWith("urn:tag:")) ? "tag" : "house";
+  return /room's own crowd couldn't be mapped/.test(sheet.cards.liftMap.reason ?? "") ? "house" : "tag";
+}
+
+/** `crowdBaseline` in words: "the room's usual crowd", "country fans in general", or null with no one to compare with. */
+export function crowdName(sheet: Pick<StreetSheet, "bill" | "cards">): string | null {
+  const b = crowdBaseline(sheet);
+  return b === "none" ? null : b === "tag" ? genreFansName(sheet) : "the room's usual crowd";
 }
 
 /** 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st ... */

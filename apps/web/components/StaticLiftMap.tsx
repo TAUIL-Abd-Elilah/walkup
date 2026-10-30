@@ -47,6 +47,9 @@ export const NO_LIFT_DESC = "No lift map for this bill.";
 /** What the drawing is, said once inside it. */
 export const SIMPLIFIED_NOTE = "Simplified drawing: areas to scale, no streets.";
 
+/** The same, for a drawing with no lift map: it has no areas to draw to scale, only the venue. */
+export const NO_LIFT_NOTE = "Simplified drawing: the venue only, no streets.";
+
 const KM_PER_DEG_LAT = 110.57;
 const INK = "#111111";
 const MUTED = "#555555";
@@ -95,7 +98,10 @@ export function StaticLiftMap({
 }: StaticLiftMapProps) {
   const paper = theme === "paper";
   const bg = paper ? PAPER_BG : WEB_BG;
-  const noteText = note === undefined ? (paper ? null : SIMPLIFIED_NOTE) : note;
+  // With no lift map there are no areas, so the drawing's own note doesn't promise them.
+  const simplified = noLift ? NO_LIFT_NOTE : SIMPLIFIED_NOTE;
+  const given = note === undefined ? (paper ? null : SIMPLIFIED_NOTE) : note;
+  const noteText = given === SIMPLIFIED_NOTE ? simplified : given;
   const shown = rankedOnly ? tiles.filter((t) => ranked.includes(t.geohash)) : tiles;
   const boxes = shown.map((t) => ({ t, b: decodeBbox(t.geohash) }));
   // Frame the ranked tiles and the venue (or the shared frame); other tiles outside it are clipped.
@@ -168,9 +174,9 @@ export function StaticLiftMap({
     { x: vx - venueLabelW / 2, y: vy + 8, w: venueLabelW, h: labelSize + 4 },
     { x: barX, y: barY - 10, w: barPx + 8 + textWidth(barLabel, smallSize), h: 18 },
   ];
-  // A screen-only note ("... while the street map loads") gives way to SIMPLIFIED_NOTE on paper, where the drawing
-  // is always what prints: the street map never does.
-  const paperNote = noteText && noteText !== SIMPLIFIED_NOTE && !paper ? SIMPLIFIED_NOTE : null;
+  // A screen-only note ("... while the street map loads") gives way to SIMPLIFIED_NOTE (or NO_LIFT_NOTE) on paper,
+  // where the drawing is always what prints: the street map never does.
+  const paperNote = noteText && noteText !== simplified && !paper ? simplified : null;
   if (noteText) obstacles.push({ x: 10, y: 8, w: Math.max(textWidth(noteText, smallSize), paperNote ? textWidth(paperNote, smallSize) : 0) + 4, h: smallSize + 8 });
 
   // Number markers sit beside their tile (right, then left, above, below) so the tile stays visible, and never

@@ -280,9 +280,12 @@ function SpotsTable({ rows, planId, showShare, showVsUsual }: { rows: SpotRow[];
   );
 }
 
-/** The map key in one line: the four steps the maps use, then the venue square, under the caption that names the baseline. */
-function MapKey({ caption }: { caption: string }) {
-  const steps: [string, number][] = LIFT_KEY.map((k) => [k.label, k.sample]);
+/**
+ * The map key in one line: the four steps the maps use, then the venue square, under the caption that names the baseline.
+ * A map with no lift (no areas, or nothing to compare with) has only the venue on it, so the key has only the venue.
+ */
+function MapKey({ caption, noLift }: { caption: string; noLift: boolean }) {
+  const steps: [string, number][] = noLift ? [] : LIFT_KEY.map((k) => [k.label, k.sample]);
   return (
     <div className="mt-1 text-[0.9em] text-muted">
       <p>{caption}</p>
@@ -327,6 +330,8 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
   const d = m.discovery;
   const discoveryId = d?.entityId && partners.has(d.entityId) ? d.entityId : null;
   const p1 = m.panel1;
+  // No lift map on this run (nothing to compare with, or no areas): the drawing has only the venue, and so has its key.
+  const noLift = p1.allTiles.length === 0 || s.cards.liftMap.results.diagnostics.baseline === "none";
 
   return (
     <div className="py-6 sm:py-8 print:p-0">
@@ -431,11 +436,11 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
                     width={420}
                     height={280}
                     idBase={`sheet-${s.planId}`}
-                    title={`Areas where this crowd stands out, around ${p1.venue.name}`}
+                    title={noLift ? `The area around ${p1.venue.name}` : `Areas where this crowd stands out, around ${p1.venue.name}`}
                     className="h-auto w-full border border-rule"
-                    noLift={p1.allTiles.length === 0 || s.cards.liftMap.results.diagnostics.baseline === "none"}
+                    noLift={noLift}
                   />
-                  <MapKey caption={p1.legendCaption} />
+                  <MapKey caption={p1.legendCaption} noLift={noLift} />
                 </div>
                 {p1.tiles.length > 0 ? (
                   <ol className="space-y-1.5 print:space-y-1">

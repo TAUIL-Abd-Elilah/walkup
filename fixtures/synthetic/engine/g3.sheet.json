@@ -1042,9 +1042,9 @@
         ],
         "limits": [
           "Suggested, not affiliated: no partner has agreed to anything.",
-          "The popularity check runs the same Qloo search in each area without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales."
+          "The popularity check runs the same Qloo search near the venue without the bill as the signal, which returns places in popularity order. It compares two lists, not ticket sales."
         ],
-        "reason": "No area stood out, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet."
+        "reason": "There is no lift map on this run, so partners are picked near the venue. Found 6 partners; the list aims for 15. The signal is thin, so treat this as a starting list. Record stores show up on sample sheets only: live runs don't search them yet."
       },
       "declared": {
         "status": "empty",
@@ -1465,7 +1465,7 @@
       }
     },
     "narration": {
-      "summary": "Ada Pell and Margo Vint at Super Funny Comedy Club, Friday, Dec 4. No area stands out on this run, so partners are picked near the venue. The sheet suggests 6 partners of 5 kinds; none has agreed to anything. It also lists 2 spots for before and after the show and 3 podcasts.",
+      "summary": "Ada Pell and Margo Vint at Super Funny Comedy Club, Friday, Dec 4. There is no lift map on this run, so partners are picked near the venue. The sheet suggests 6 partners of 5 kinds; none has agreed to anything. It also lists 2 spots for before and after the show and 3 podcasts.",
       "tileWhy": [],
       "partnerLines": [
         {
@@ -2104,7 +2104,7 @@
         "ledgerRefs": [
           "Q10"
         ],
-        "cause": "The same search in each area without the bill as the signal returns places in popularity order; each area's list is cut to as many places as it has partners. It says nothing about ticket sales."
+        "cause": "The same search near the venue without the bill as the signal returns places in popularity order; the list is cut to as many places as there are partners. It says nothing about ticket sales."
       },
       {
         "id": "prepost",

@@ -20,7 +20,7 @@ const pageText = () =>
 describe("/eval case titles use the product's words", () => {
   it("names the other bill and the partners' call-first mark", () => {
     const text = pageText();
-    expect(text).toContain("The other bill in the same room: same room, different crowd");
+    expect(text).toContain("The other bill in the same room: a different crowd");
     expect(text).toContain("A partner with no listed hours is kept and marked call first");
     expect(text).not.toMatch(/Swap the bill|marked call ahead/);
   });

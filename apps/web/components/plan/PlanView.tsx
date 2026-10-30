@@ -11,7 +11,7 @@ import { entityIndex, footprintLine, guardNoteText, isThinSignal, replacedLineAr
 import { FANBAR_HREF, FANBAR_NO_CLAIM, FANBAR_RESULT, lastSegment } from "../../lib/labels";
 import { CopyHooksCard, DeclaredCard, DifferentCard, MediaCard, PrePostCard } from "./MoreCards";
 import { LedgerSection } from "./LedgerSection";
-import { LiftCard } from "./LiftCard";
+import { LiftCard, noLiftMap } from "./LiftCard";
 import { discoveryTarget, type ReviseHandler } from "./model";
 import { PartnersCard } from "./PartnersCard";
 import { ReceiptContext } from "./receipts";
@@ -151,10 +151,13 @@ const DOWNLOADS: { file: string; label: string; what: string }[] = [
   { file: "sheet.json", label: "sheet.json", what: "the whole sheet as recorded, before the view-time checks, with its ledger" },
 ];
 
-/** The "On this sheet" links, in page order. Parts a sheet may not have are left out. */
-function contentsFor(opts: { revise: boolean; steps: boolean }): { href: string; label: string }[] {
+/**
+ * The "On this sheet" links, in page order. Parts a sheet may not have are left out; a sheet with no lift map has no
+ * areas, so its first link names the map.
+ */
+function contentsFor(opts: { revise: boolean; steps: boolean; noLift: boolean }): { href: string; label: string }[] {
   return [
-    { href: "#lift", label: "Areas" },
+    { href: "#lift", label: opts.noLift ? "Map" : "Areas" },
     { href: "#partners", label: "Partners" },
     { href: "#downloads", label: "Downloads" },
     ...(opts.revise ? [{ href: "#revise", label: "Change something" }] : []),
@@ -428,7 +431,7 @@ export function PlanView({
   const status = sendStatus(entries);
   const requestCount = entries.filter((e) => e.kind !== "action").length;
   const steps = useMemo(() => [...(sheet.steps ?? []), ...sendSteps(entries)], [sheet.steps, entries]);
-  const contents = contentsFor({ revise: revise !== null, steps: steps.length > 0 });
+  const contents = contentsFor({ revise: revise !== null, steps: steps.length > 0, noLift: noLiftMap(sheet) });
   const others = sheet.bill.acts.filter((a) => a.name !== headlinerName(sheet.bill)).map((a) => a.name);
   const partnersFound = sheet.cards.partners.results.length;
 

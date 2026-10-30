@@ -12,20 +12,28 @@
  *   or comes from ("draws a crowd from outer suburbs") always fail. A superlative ("the most", "largest",
  *   "highest", "strongest") passes only when it is about lift, bill percentile, adult population or the budget
  *   split and the area it is about really has the maximum. The room's usual crowd placed in areas ("sits closer
- *   to Oak Park") passes only for areas below a lift of 1; "the South Side of <city>" always fails.
+ *   to Oak Park") passes only for areas below a lift of 1; "the South Side of <city>" always fails. "Stands out
+ *   most in A, B and C" passes only when no area left out of the list stands out more than one in it.
+ * - An area's own numbers: a percentile an area line cites must be one of that area's two (for this crowd, for
+ *   the room's usual crowd, as the template rounds them), "about N times" its lift, a budget percent its share. A
+ *   figure written just after another area's name or set against another ("more than 2 times") is not the area's
+ *   own; in the summary, only figures within a few words of the one area a sentence names are. An "equal" or "same"
+ *   budget split must be equal on the sheet ("about evenly" and "the other four areas": within half a point). "The
+ *   Midlothian spots" fails: an area's places are partners, and the sheet's spots are near the room.
  * - Partner lines: may name only the tags the partner panel shows as "Tags it shares" (`explain.tags`; the
  *   place's own tags on sheets without them). Any genre or audience word known to the sheet that is not one
  *   of them fails the line, as does a weekday other than the street-team day, "close to the room" for a place
- *   more than 2 km from it (3.5 km for the near-venue list), and opening hours that are not one of the place's
- *   own spans for the day.
+ *   more than 2 km from it (3.5 km for the near-venue list), opening hours that are not one of the place's
+ *   own spans for the day, and a before- or after-show stop for a place not on the sheet's spots list.
  *
- * Fan copy: audience and identity tags never appear, and every line names the act.
+ * Fan copy: audience and identity tags never appear, no line calls the room small or close ("an intimate room"),
+ * and every line names the act.
  */
-import type { CopyHook, LiftTile, Partner, StreetSheet } from "@walkup/contracts";
+import { aboutTimes, type CopyHook, type LiftTile, type Partner, type StreetSheet } from "@walkup/contracts";
 import { audienceWordIn, isAudienceTag, normalizeWords } from "./audience";
 import { displayDate, headlinerName, type PreparedRun } from "./facts";
 import { blankProtected, isDeniedTag } from "./policy";
-import { templatePartnerLine, templateSummary, templateTileWhy } from "./template";
+import { ordinal, templatePartnerLine, templateSummary, templateTileWhy } from "./template";
 import type { NarrateInput } from "./types";
 
 export { isAudienceTag } from "./audience";
@@ -323,6 +331,8 @@ interface VetContext {
   /** The areas the narration is about (the summary's majority rule uses these). */
   top: LiftTile[];
   partners: Map<string, Partner>;
+  /** The spots list (before and after the show), by entity id and by lower-case name. */
+  spots: Set<string>;
   protectedNames: string[];
   /** Normalized genre and audience words (" country ", " rhythm and blues "). */
   vocab: string[];
@@ -353,6 +363,10 @@ function buildVocab(tags: Iterable<TagLike>): string[] {
 function partnerShared(p: Partner): string[] {
   const tags: ReadonlyArray<TagLike> = p.explain ? p.explain.tags : (p.entity?.tags ?? []);
   return tags.map((t) => normalizeWords(t.name ?? "")).filter((s) => s.trim().length > 0);
+}
+
+function spotKeys(spots: ReadonlyArray<{ entity?: { entityId?: string; name?: string } }> | undefined): Set<string> {
+  return new Set((spots ?? []).flatMap((s) => [s.entity?.entityId ?? "", (s.entity?.name ?? "").trim().toLowerCase()]).filter(Boolean));
 }
 
 function entityNames(...lists: ReadonlyArray<ReadonlyArray<{ entity?: { name?: string } }> | undefined>): string[] {
@@ -389,24 +403,63 @@ function isMax(ctx: VetContext, t: LiftTile, m: Metric): boolean {
  */
 const RANK_CLAIM_RE = /\b(?:ranked|ranks?|ranking)\s+(?:first|1st|top|number one|highest|best)\b|\b(?:first|top)\s+(?:on|of)\s+the\s+(?:sheet|list)\b/i;
 
-/** "differs most", "stands out most", "most different": a superlative about lift in other words. */
-const MOST_RE = /\b(?:differs?|stands?\s+out|lifts?|over-?index(?:es)?)\s+(?:the\s+)?most\b|\bmost\s+different\b/gi;
+/** "differs most", "stands out most", "most different", "most strongly": a superlative about lift in other words. */
+const MOST_RE = /\b(?:differs?|stands?\s+out|lifts?|over-?index(?:es)?)\s+(?:the\s+)?most\b|\bmost\s+(?:different|strongly)\b/gi;
+
+/** Area names in a list right after a phrase ("in the Kenilworth, H Street NE and U Street / Shaw areas"), in order. */
+function listedAreas(ctx: VetContext, text: string): string[] {
+  const names = [...new Set(ctx.pool.map((t) => t.name?.trim() ?? "").filter((n) => n.length >= 3))].sort((a, b) => b.length - a.length);
+  let rest = text.replace(/^\s*(?:in|across|around)?\s*(?:the\s+)?/i, "");
+  const out: string[] = [];
+  for (;;) {
+    const name = names.find((n) => rest.slice(0, n.length).toLowerCase() === n.toLowerCase() && !/[A-Za-z0-9]/.test(rest.charAt(n.length)));
+    if (!name) break;
+    out.push(name);
+    rest = rest.slice(name.length);
+    const sep = /^\s*(?:,\s*(?:and\s+)?|and\s+)(?:the\s+)?/i.exec(rest);
+    if (!sep) break;
+    rest = rest.slice(sep[0].length);
+  }
+  return out;
+}
 
 /**
- * "then work Laurel and Bowie, where the crowd differs most": the areas such a phrase is about (named just after
- * it, else in the same clause before it) must have the highest lift on the sheet.
+ * The first area the sheet shows that stands out more than one of `names` and is not among them (by each name's
+ * strongest square, at the sheet's 2 decimals), or null when the names are the top of the map.
+ */
+function outranking(ctx: VetContext, names: readonly string[]): LiftTile | null {
+  const key = (s: string | undefined) => (s ?? "").trim().toLowerCase();
+  const inList = new Set(names.map(key));
+  const best = (name: string) => Math.max(-Infinity, ...ctx.pool.filter((t) => key(t.name) === key(name) && finite(t.lift)).map((t) => t.lift));
+  const floor = Math.min(...names.map(best));
+  const above = ctx.pool.filter((t) => !inList.has(key(t.name)) && finite(t.lift) && Math.round(t.lift * 100) > Math.round(floor * 100));
+  return above.sort((a, b) => b.lift - a.lift)[0] ?? null;
+}
+
+/**
+ * "then work Laurel and Bowie, where the crowd differs most", "stands out most in Kenilworth, H Street NE and U Street
+ * / Shaw": the areas such a phrase is about (listed just after it, else named before the next comma, else in the same
+ * clause before it) must be the top of the map: no area left out of them stands out more. A bare "most strongly" is
+ * about lift only when a list of areas follows it ("most strongly in Hilltop and Riverbend"); "leans most strongly
+ * toward soul" or "ranks most strongly among bars" is not.
  */
 function mostProblem(ctx: VetContext, sentence: string): string | null {
   for (const m of sentence.matchAll(MOST_RE)) {
     const at = m.index ?? 0;
-    const after = sentence.slice(at + m[0].length).split(/[,;]/)[0] ?? "";
-    let about = tilesNamedIn(ctx, after.slice(0, 60));
-    if (about.length === 0) {
+    const rest = sentence.slice(at + m[0].length);
+    const namesOf = (ts: LiftTile[]) => [...new Set(ts.map((t) => t.name?.trim() ?? "").filter(Boolean))];
+    let names = listedAreas(ctx, rest);
+    if (names.length === 0 && /^most\s+strongly$/i.test(m[0])) continue;
+    if (names.length === 0) names = namesOf(tilesNamedIn(ctx, (rest.split(/[,;]/)[0] ?? "").slice(0, 60)));
+    if (names.length === 0) {
       const before = sentence.slice(0, at);
       const clause = before.split(/,\s*(?:then|and then|then\s+work)\b|[;:]/i).pop() ?? before;
-      about = tilesNamedIn(ctx, clause);
+      names = namesOf(tilesNamedIn(ctx, clause));
     }
-    if (about.length === 0 || !about.every((t) => isMax(ctx, t, "lift"))) return `"${m[0].toLowerCase()}" not backed by the sheet's numbers`;
+    const above = names.length > 0 ? outranking(ctx, names) : null;
+    if (names.length === 0 || above) {
+      return `"${m[0].toLowerCase()}" not backed by the sheet's numbers${above ? ` (${above.name ?? "an unnamed area"} stands out more)` : ""}`;
+    }
   }
   return null;
 }
@@ -475,8 +528,265 @@ function summaryProblem(ctx: VetContext, summary: string): string | null {
     if (share) return share;
     const placed = usualCrowdPlacedProblem(ctx, sentence) ?? citySideProblem(ctx, sentence);
     if (placed) return placed;
+    const equal = equalSplitProblem(ctx, sentence, undefined) ?? areaSpotsProblem(ctx, sentence);
+    if (equal) return equal;
+    // A sentence about one area holds that area's numbers (any of its squares, when a name has more than one), for the
+    // figures written within a few words of its name: "Five areas sit at the 73rd percentile or higher, led by U Street /
+    // Shaw" is about the five.
+    const one = new Set(named.map((t) => t.name?.trim().toLowerCase()));
+    if (named.length > 0 && one.size === 1) {
+      const masked = maskProtected(sentence, ctx.protectedNames);
+      const problem = (t: LiftTile) => ownNumbersProblem(ctx, sentence, masked, t, true);
+      if (!named.some((t) => problem(t) === null)) return problem(named[0]!);
+    }
   }
   return null;
+}
+
+/** `blankProtected` with each name replaced by as many spaces, so a position in the result is the same in `text`. */
+function maskProtected(text: string, names: ReadonlyArray<string>): string {
+  let out = text;
+  const sorted = [...new Set(names.filter((s) => s.trim().length > 1))].sort((a, b) => b.length - a.length);
+  for (const s of sorted) {
+    const body = escapeRe(s);
+    out = out.replace(new RegExp(s.trim().length <= 3 ? `(?<![A-Za-z0-9])${body}(?![A-Za-z0-9])` : body, "gi"), (m) => " ".repeat(m.length));
+  }
+  return out;
+}
+
+/** The sentences of `text` (as `splitSentences` cuts them) with where each starts. */
+function sentencesAt(text: string): { s: string; start: number }[] {
+  const out: { s: string; start: number }[] = [];
+  let cursor = 0;
+  for (const part of text.split(/(?<=[.!?])\s+/)) {
+    const at = text.indexOf(part, cursor);
+    cursor = at + part.length;
+    const s = part.trim();
+    if (s) out.push({ s, start: at + (part.length - part.trimStart().length) });
+  }
+  return out;
+}
+
+/** An area name written in a line: where, and whether it is the line's own area. */
+interface Mention {
+  at: number;
+  end: number;
+  own: boolean;
+}
+
+/** The names an area goes by in a line: its name, and the part before a comma ("Des Plaines, 19 km northwest"). */
+function nameForms(t: LiftTile | undefined): string[] {
+  const name = t?.name?.trim() ?? "";
+  return dedupeStrings([name, name.split(",")[0] ?? ""]).filter((n) => n.length >= 3);
+}
+
+/** Each area name of the sheet written in `text`, in order (longest name first where two overlap). */
+function areaMentions(ctx: VetContext, text: string, own: LiftTile | undefined): Mention[] {
+  const ownForms = new Set(nameForms(own).map((n) => n.toLowerCase()));
+  const names = dedupeStrings(ctx.pool.flatMap((t) => nameForms(t))).sort((a, b) => b.length - a.length);
+  const out: Mention[] = [];
+  for (const name of names) {
+    for (const m of text.matchAll(new RegExp(`(?<![A-Za-z0-9])${escapeRe(name)}(?![A-Za-z0-9])`, "gi"))) {
+      const at = m.index ?? 0;
+      const end = at + m[0].length;
+      if (out.some((x) => at < x.end && end > x.at)) continue;
+      out.push({ at, end, own: ownForms.has(name.toLowerCase()) });
+    }
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+
+function wordCount(s: string): number {
+  return s.split(/\s+/).filter(Boolean).length;
+}
+
+/** Words that set a figure against another: "more than 2 times", "over 40%", "clears the 1.3x cutoff". */
+const COMPARED_BEFORE_RE =
+  /\b(?:(?:more|less|fewer|higher|lower)\s+than|over|under|nearly|almost|above|below|at\s+least|up\s+to|clears?|clearing|past|beyond|exceeds?|exceeding)\s+(?:the\s+)?(?:about\s+|around\s+|roughly\s+)?$/i;
+const COMPARED_AFTER_RE = /^\s*(?:percentile\s+)?(?:or|and)\s+(?:higher|above|more|over|up|better|lower|below|less|under)\b/i;
+/** A figure that is a threshold, not the area's own: "the 1.3x line", "the 1.3x cutoff for a numbered area". */
+const THRESHOLD_AFTER_RE = /^\s*(?:line|cutoff|cut-off|threshold|bar|mark|floor|minimum|limit)\b/i;
+/** The words between a figure and another area's name that make the figure that area's: "42.7% for U Street / Shaw". */
+const FIGURE_OF_NEXT_RE = /^[\s,]*(?:(?:percentile|of\s+the\s+(?:budget|split)|the\s+room's\s+usual\s+crowd)\s+)?(?:for|in|at)\s+(?:the\s+)?$/i;
+
+/**
+ * Which figures in an area line are the area's own: not one set against another ("more than 2 times", "the 73rd
+ * percentile or higher"), not a threshold ("clears the 1.3x cutoff"), and not one written just after another area's
+ * name ("behind U Street / Shaw at about 2.8 times", "U Street / Shaw gets 42.7%") or just before it ("against 42.7%
+ * for U Street / Shaw"). With `near` (a summary sentence), only a figure within a few words of the area's own name.
+ * `masked` is `text` with the protected names blanked (`maskProtected`), so positions match.
+ */
+function ownFigure(ctx: VetContext, text: string, masked: string, tile: LiftTile, near: boolean): (at: number, len: number) => boolean {
+  const mentions = areaMentions(ctx, text, tile);
+  const unbroken = (a: number, b: number) => !/[.;!?]/.test(masked.slice(a, b));
+  return (at, len) => {
+    if (COMPARED_BEFORE_RE.test(masked.slice(Math.max(0, at - 40), at)) || COMPARED_AFTER_RE.test(masked.slice(at + len, at + len + 40))) return false;
+    if (THRESHOLD_AFTER_RE.test(masked.slice(at + len, at + len + 20))) return false;
+    const prev = mentions.filter((m) => m.end <= at).pop();
+    if (prev && !prev.own && unbroken(prev.end, at) && wordCount(masked.slice(prev.end, at)) <= 5) return false;
+    const next = mentions.find((m) => m.at >= at + len);
+    if (next && !next.own && FIGURE_OF_NEXT_RE.test(masked.slice(at + len, next.at))) return false;
+    if (!near) return true;
+    return mentions.some(
+      (m) => m.own && ((m.at >= at + len && unbroken(at + len, m.at) && wordCount(masked.slice(at + len, m.at)) <= 4) || (m.end <= at && unbroken(m.end, at) && wordCount(masked.slice(m.end, at)) <= 8)),
+    );
+  };
+}
+
+/** The area's own percentiles, lift and budget share, for the figures that are its own (`ownFigure`). */
+function ownNumbersProblem(ctx: VetContext, text: string, masked: string, tile: LiftTile, near: boolean): string | null {
+  const keep = ownFigure(ctx, text, masked, tile, near);
+  return percentileProblem(masked, tile, keep) ?? liftFigureProblem(masked, tile, keep) ?? budgetShareProblem(ctx, masked, tile, keep);
+}
+
+/** Percentile on a 0..100 scale, as the template prints it. */
+function pct100(v: number): number {
+  return Math.round(v <= 1 ? v * 100 : v);
+}
+
+/** An ordinal used as a percentile: "81st percentile", "the 5th for the usual crowd", "a 82nd percentile bill rank". */
+const ORDINAL_RE = /\b(\d{1,3})(?:st|nd|rd|th)\b/g;
+
+/** The words straight after an ordinal that make it this crowd's percentile ("percentile for this bill", "for this crowd"). */
+const BILL_PCT_RE = /^\s*(?:percentile\s*(?:rank\s*)?,?\s*)?(?:(?:for|among|in|of)\s+(?:this|the)\s+(?:bill|crowd|show)\b|bill\b)/i;
+/** ...and the room's usual crowd's ("percentile for the room's usual crowd", "for the usual crowd"). */
+const HOUSE_PCT_RE = /^\s*(?:percentile\s*(?:rank\s*)?,?\s*)?(?:for|among|in|of)\s+(?:(?:the|this)\s+)?(?:\s*'s\s+)?(?:room|usual|house|venue|regular)/i;
+
+/**
+ * "at the 81st percentile for this bill" for an area at the 80th: a percentile an area line cites must be one of the
+ * area's own two, rounded as the template prints them. The words straight after it say whose it is ("percentile for
+ * this bill" for this crowd's; "for the room's usual crowd" for the room's); either when they only say "percentile".
+ * An ordinal followed by neither ("2nd for lift") is not a percentile.
+ */
+function percentileProblem(text: string, tile: LiftTile, keep: (at: number, len: number) => boolean = () => true): string | null {
+  if (!finite(tile.billPct) || !finite(tile.housePct)) return null;
+  const bill = pct100(tile.billPct);
+  const house = pct100(tile.housePct);
+  for (const { s, start } of sentencesAt(text)) {
+    if (!/\bpercentile/i.test(s)) continue;
+    for (const m of s.matchAll(ORDINAL_RE)) {
+      const after = s.slice((m.index ?? 0) + m[0].length);
+      const whose = BILL_PCT_RE.test(after) ? "bill" : HOUSE_PCT_RE.test(after) ? "house" : /^\s*percentile\b/i.test(after) ? null : undefined;
+      if (whose === undefined || !keep(start + (m.index ?? 0), m[0].length)) continue;
+      const n = Number(m[1]);
+      if (whose === "bill" ? n === bill : whose === "house" ? n === house : n === bill || n === house) continue;
+      if (whose && n === (whose === "bill" ? house : bill)) {
+        return whose === "bill"
+          ? `says the ${m[0]} percentile for this crowd, which is the room's usual crowd's; this crowd's is ${ordinal(bill)}`
+          : `says the ${m[0]} percentile for the room's usual crowd, which is this crowd's; the room's is ${ordinal(house)}`;
+      }
+      return `says the ${m[0]} percentile, the area's are ${ordinal(bill)} for this crowd and ${ordinal(house)} for the room's usual crowd`;
+    }
+  }
+  return null;
+}
+
+/**
+ * "about 2.4 times the room's usual crowd" for an area at 2.2: a lift an area line cites must round to the area's own
+ * at the precision written ("about 2 times" for 2.04 is the same figure, "about 2.2" for 2.15 is the sheet's rule).
+ */
+function liftFigureProblem(text: string, tile: LiftTile, keep: (at: number, len: number) => boolean = () => true): string | null {
+  if (!finite(tile.lift)) return null;
+  for (const m of text.matchAll(/\b(\d+(?:\.(\d{1,2}))?)\s*(?:times\b|x\b)/gi)) {
+    if (m[1] === aboutTimes(tile.lift) || !keep(m.index ?? 0, m[0].length)) continue;
+    const step = 10 ** -(m[2]?.length ?? 0);
+    if (Math.abs(Number(m[1]) - tile.lift) > step / 2 + 0.006) return `says about ${m[1]} times, the area's lift is about ${aboutTimes(tile.lift)} times`;
+  }
+  return null;
+}
+
+/** "a rough split of the budget of 14.3%": a percent in a budget sentence must round to the area's own share. */
+function budgetShareProblem(ctx: VetContext, text: string, tile: LiftTile, keep: (at: number, len: number) => boolean = () => true): string | null {
+  const share = ctx.budget.get(tile.geohash);
+  if (!finite(share)) return null;
+  for (const { s, start } of sentencesAt(text)) {
+    if (!/\bbudget\b|\bsplit\b/i.test(s)) continue;
+    for (const m of s.matchAll(/\b(\d+(?:\.(\d+))?)\s*(?:%|per ?cent\b)/gi)) {
+      if (!keep(start + (m.index ?? 0), m[0].length)) continue;
+      const step = 10 ** -(m[2]?.length ?? 0);
+      if (Math.abs(Number(m[1]) - share * 100) > step / 2 + 1e-6) return `says ${m[1]}% of the budget, the area's share is ${roundShare(share)}%`;
+    }
+  }
+  return null;
+}
+
+function roundShare(share: number): string {
+  return String(Math.round(share * 1000) / 10);
+}
+
+/**
+ * "equal to the other Chicago-area tiles", "the same rough split as Bowie", "split evenly": a claim the shares are equal.
+ * "part of the same rough split of the budget" names the sheet's one split, not equal shares; "the same rough split of
+ * the budget as Bowie" still claims them.
+ */
+const EQUAL_SPLIT_RE =
+  /\b(?:split|share|part|portion|budget)\b[^.;]{0,60}?\b(?:equal(?:ly)?|evenly|the same as|identical|matching)\b|\b(?:equal|identical|matching)\s+(?:\w+\s+){0,2}?(?:split|share|part|portion)\b|(?<!\b(?:part\s+of|in|within|from|under)\s+the\s+)\bsame\s+(?:\w+\s+){0,2}?(?:split|share|part|portion)\b|\bsame\s+(?:\w+\s+){0,2}?(?:split|share|part|portion)\b(?:\s+of\s+the\s+budget)?\s+as\b|\b(?:equally|evenly)\b[^.;]{0,40}?\b(?:split|share|budget)\b/i;
+
+/** "about evenly", "roughly equal": a split said to be near equal, not equal. */
+const ROUGHLY_EQUAL_RE = /\b(?:about|roughly|nearly|almost|close\s+to|more\s+or\s+less|fairly|broadly|largely)\s+(?:even(?:ly)?|equal(?:ly)?|the\s+same)\b/i;
+/** "the other four areas", "the remaining tiles", "the rest": the areas a sentence doesn't name. */
+const REST_RE = /\bthe\s+(?:other|remaining)\s+(?:(\d+|two|three|four|five|six|seven|eight|nine|ten)\s+)?(?:[\w-]+\s+){0,3}(?:areas?|tiles?|squares?|neighbou?rhoods?)\b|\bthe\s+rest\b/i;
+
+/**
+ * An equal budget split the sheet doesn't show: the areas named beside `subject` (or, when none is named, every area
+ * in the split) must have the subject's share; with no subject, every share must be the same. A sentence about "the
+ * other four areas" or "the rest" covers the areas it doesn't name (the four whose shares are closest, when it gives a
+ * count); with that wording, or "about evenly", shares within half a point count as equal.
+ */
+function equalSplitProblem(ctx: VetContext, sentence: string, subject: LiftTile | undefined): string | null {
+  const plain = blankProtected(sentence, ctx.protectedNames);
+  if (!EQUAL_SPLIT_RE.test(plain)) return null;
+  const sameName = (t: LiftTile) => !!subject?.name && t.name?.trim().toLowerCase() === subject.name.trim().toLowerCase();
+  const named = tilesNamedIn(ctx, sentence).filter((t) => ctx.budget.has(t.geohash));
+  const others = named.filter((t) => t.geohash !== subject?.geohash && !sameName(t));
+  const share = (geohash: string) => {
+    const s = ctx.budget.get(geohash);
+    return finite(s) ? Math.round(s * 1000) : null;
+  };
+  const rest = REST_RE.exec(plain);
+  let shares: (number | null)[];
+  if (rest) {
+    const left = [...ctx.budget.keys()].filter((g) => g !== subject?.geohash && !named.some((t) => t.geohash === g)).map(share);
+    const count = Math.min(left.length, (rest[1] ? (COUNT_WORDS[rest[1].toLowerCase()] ?? Number(rest[1])) : 0) || left.length);
+    const own = subject ? share(subject.geohash) : null;
+    const known = left.filter((s): s is number => s !== null);
+    // The `count` shares a claim could be about: closest to the subject's, or the tightest run of them.
+    const picked =
+      own !== null
+        ? [...known].sort((a, b) => Math.abs(a - own) - Math.abs(b - own)).slice(0, count)
+        : [...known].sort((a, b) => a - b).reduce<number[]>((best, _s, i, all) => {
+            const run = all.slice(i, i + count);
+            return run.length === count && (best.length === 0 || run[run.length - 1]! - run[0]! < best[best.length - 1]! - best[0]!) ? run : best;
+          }, []);
+    shares = own !== null ? [own, ...picked] : picked;
+  } else if (subject) {
+    shares = others.length > 0 ? [subject, ...others].map((t) => share(t.geohash)) : [...ctx.budget.keys()].map(share);
+  } else {
+    // No subject (a summary sentence): the areas it says split equally. Those named before the claim ("Midlothian,
+    // South Shore, Auburn Gresham and Englewood split most of the budget equally, with less for Des Plaines"), else
+    // every area it names, else every area in the split.
+    const claimAt = EQUAL_SPLIT_RE.exec(sentence)?.index ?? sentence.length;
+    const before = named.filter((t) => new RegExp(`(?<![A-Za-z0-9])${escapeRe(t.name?.trim() ?? "")}(?![A-Za-z0-9])`, "i").exec(sentence.slice(0, claimAt)));
+    const areas = before.length >= 2 ? before : named.length >= 2 ? named : null;
+    shares = areas ? areas.map((t) => share(t.geohash)) : [...ctx.budget.keys()].map(share);
+  }
+  const slack = rest || ROUGHLY_EQUAL_RE.test(plain) ? 5 : 0;
+  const known = shares.filter((s): s is number => s !== null);
+  if (known.length >= 2 && known.length === shares.length && Math.max(...known) - Math.min(...known) <= slack) return null;
+  return "claims an equal budget split the sheet doesn't show";
+}
+
+/**
+ * "Start with the Bronzeville partners and the Midlothian and South Shore spots": the sheet's spots are its list for
+ * before and after the show, near the room; an area's places are partners. An area name (or a list of them) put
+ * straight before "spots" fails.
+ */
+function areaSpotsProblem(ctx: VetContext, sentence: string): string | null {
+  const names = [...new Set(ctx.pool.map((t) => t.name?.trim() ?? "").filter((n) => n.length >= 3))].sort((a, b) => b.length - a.length).map(escapeRe);
+  if (names.length === 0) return null;
+  const one = `(?:${names.join("|")})`;
+  const re = new RegExp(`(?<![A-Za-z0-9])${one}(?:\\s*(?:,\\s*(?:and\\s+)?|and\\s+)${one})*\\s+spots?\\b`, "i");
+  return re.test(sentence) ? "calls an area's places spots; the sheet's spots are near the room" : null;
 }
 
 const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
@@ -504,6 +814,13 @@ function tileProblem(ctx: VetContext, text: string, tile: LiftTile | undefined):
       if (n !== have) return `says ${m[1]} ${n === 1 ? "partner" : "partners"}, the sheet has ${have} in this area`;
     }
   }
+  // The area's own percentiles, lift and budget share; an equal split only when the shares are equal.
+  const own = tile ? ownNumbersProblem(ctx, text, maskProtected(text, ctx.protectedNames), tile, false) : null;
+  if (own) return own;
+  for (const sentence of splitSentences(text)) {
+    const equal = equalSplitProblem(ctx, sentence, tile) ?? areaSpotsProblem(ctx, sentence);
+    if (equal) return equal;
+  }
   return null;
 }
 
@@ -523,11 +840,26 @@ function dietTypeProblem(text: string, partner: Partner | undefined): string | n
   return own.includes(word) ? null : `calls the place a "${m[0].toLowerCase()}" from a shared tag`;
 }
 
+/**
+ * "a good before-show stop", "also a before-show spot", "a daytime before or after stop": the sheet's places for before
+ * and after the show are its spots list (near the room, open on show night). A partner is where the street team leaves
+ * flyers, with hours for the street-team day; a line may call it a stop before or after the show only when it is also
+ * on that list.
+ */
+const SPOT_CLAIM_RE =
+  /\b(?:before|after|pre|post)(?:\s+(?:or|and)\s+(?:before|after))?(?:[- ]?(?:show|concert|gig))?\s+(?:stop|spot)s?\b|\b(?:stop|spot)s?\s+(?:for\s+)?(?:before|after)(?:\s+(?:or|and)\s+(?:before|after))?\s+(?:the\s+)?(?:show|concert|gig)\b/i;
+
+function spotClaimProblem(ctx: VetContext, text: string, partner: Partner | undefined): string | null {
+  if (!SPOT_CLAIM_RE.test(blankProtected(text, ctx.protectedNames))) return null;
+  if (partner && (ctx.spots.has(partner.entity.entityId) || ctx.spots.has((partner.entity.name ?? "").trim().toLowerCase()))) return null;
+  return "calls the place a stop before or after the show; it is not on the sheet's spots list";
+}
+
 function partnerProblem(ctx: VetContext, text: string, partner: Partner | undefined): string | null {
   const tile = partner?.tileGeohash ? ctx.pool.find((t) => t.geohash === partner.tileGeohash) : undefined;
   const claim = claimProblem(ctx, text, tile ? [tile] : []);
   if (claim) return claim;
-  const diet = dietTypeProblem(text, partner);
+  const diet = dietTypeProblem(text, partner) ?? spotClaimProblem(ctx, text, partner);
   if (diet) return diet;
   const near = nearRoomProblem(ctx, text, partner) ?? hoursProblem(text, partner);
   if (near) return near;
@@ -605,12 +937,22 @@ function vetLines(ctx: VetContext, n: Lines): { lines: Lines; replaced: string[]
 // Contexts: a stored sheet (view time) or a narrate() input (generation time)
 // ---------------------------------------------------------------------------
 
-/** The sheet's own words for what ran: a genre baseline and non-local sponsors (as the orchestrator's honestWording). */
+/** The template summary's sentence when no area was narrated, and what it says on a run with no lift map. */
+const NO_AREA_SUMMARY = "No area stands out on this run, so partners are picked near the venue.";
+const NO_LIFT_SUMMARY = "There is no lift map on this run, so partners are picked near the venue.";
+
+/**
+ * The sheet's own words for what ran: a genre baseline, non-local sponsors and a run with no lift map (as the
+ * orchestrator's honestWording).
+ */
 function honestFor(sheet: StreetSheet): (s: string) => string {
-  const tagBaseline = sheet.cards?.liftMap?.results?.diagnostics?.baseline === "tag";
+  const lift = sheet.cards?.liftMap?.results;
+  const tagBaseline = lift?.diagnostics?.baseline === "tag";
+  const noLiftMap = lift?.diagnostics?.baseline === "none" || (lift?.tiles ?? []).length === 0;
   const localSponsor = (sheet.cards?.media?.results ?? []).some((m) => m.kind === "sponsor" && m.scope === "local");
   return (s) => {
     let out = s;
+    if (noLiftMap) out = out.replace(NO_AREA_SUMMARY, NO_LIFT_SUMMARY);
     if (tagBaseline) out = out.replace(/\bthe room's usual crowd\b/g, "the genre baseline");
     if (!localSponsor) out = out.replace(/\b(\d+) local sponsor(s?)\b/g, "$1 sponsor brand$2");
     return out;
@@ -645,9 +987,12 @@ function sheetContext(sheet: StreetSheet, narration: Narration | undefined): Vet
   // names only those, as the run's own template would ("michigan" is a distinctive tag no copy line could use).
   const hookTags = new Set((c?.copyHooks?.results ?? []).flatMap((h) => h.tagIds ?? []));
   const allowed = wdA.filter((t) => hookTags.has(t.id));
+  // The template summary counts and names the run's numbered areas (the budget split's order), as the run's own template
+  // did, even when Claude left one of them without a line.
+  const numbered = (sheet.budgetSplit ?? []).map((b) => pool.find((x) => x.geohash === b.geohash)).filter((t): t is LiftTile => !!t);
   const input: NarrateInput = {
     bill: sheet.bill,
-    tiles: top,
+    tiles: numbered.length > 0 ? numbered : top,
     partners,
     prePost: c?.prePost?.results ?? [],
     media: c?.media?.results ?? [],
@@ -665,6 +1010,7 @@ function sheetContext(sheet: StreetSheet, narration: Narration | undefined): Vet
     pool,
     top,
     partners: new Map(partners.map((p) => [p.entity.entityId, p])),
+    spots: spotKeys(c?.prePost?.results),
     protectedNames: dedupeStrings([
       ...sheet.bill.acts.map((a) => a.name),
       sheet.bill.venue.name,
@@ -709,6 +1055,7 @@ function inputContext(input: NarrateInput, prepared: PreparedRun): VetContext {
     pool: input.tiles,
     top: input.tiles,
     partners: new Map(input.partners.map((p) => [p.entity.entityId, p])),
+    spots: spotKeys(input.prePost),
     protectedNames: dedupeStrings([
       ...bill.acts.map((a) => a.name),
       bill.venue.name,
@@ -761,6 +1108,25 @@ export function vetGeneratedLines(
   return { summary: out.summary, tileWhy: out.tileWhy, partnerLines: out.partnerLines, replaced };
 }
 
+/**
+ * "with a 82nd percentile bill rank" -> "with an 82nd percentile bill rank": "an" before a number said with a vowel
+ * sound (8, 11, 18, 80 to 89, 800 to 899, with or without an ordinal ending). Nothing else in the text changes.
+ */
+export function anBeforeNumber(text: string): string {
+  return text.replace(/\b([Aa]) (?=(?:8\d*|11|18)(?:st|nd|rd|th)?\b)/g, "$1n ");
+}
+
+/**
+ * "about 2 times the room's usual crowd" for an area at 2.04 reads "about 2.0 times": the figure the sheet, the
+ * calendar and the template print for it (`aboutTimes`). Only a whole number that is that figure changes.
+ */
+export function liftFigureStyle(text: string, lift: number): string {
+  if (!finite(lift)) return text;
+  const figure = aboutTimes(lift);
+  if (!figure.endsWith(".0")) return text;
+  return text.replace(new RegExp(`(?<![\\d.,])${figure.slice(0, -2)} times\\b`, "g"), `${figure} times`);
+}
+
 /** Act names in billing order, headliner first. */
 function actsOf(bill: { acts?: ReadonlyArray<{ name: string; role: string }> }): string[] {
   const order: Record<string, number> = { headliner: 0, co: 1, support: 2 };
@@ -788,8 +1154,16 @@ export const HOOK_CLAIM_RE =
   /\b(?:returns?|returning|is back|comes back|back again|once again|sold[- ]out|selling fast|last chance|limited tickets|few tickets|tickets? going fast|don't miss|farewell|final show)\b/i;
 
 /**
- * Drops hooks that cite an audience, identity or denied tag, use an audience word or make a claim the sheet can't
- * back (`HOOK_CLAIM_RE`), puts the headliner in
+ * A size or closeness word put on the room ("an intimate room", "a cozy, welcoming venue"). The ambience tags a copy
+ * line is built from describe this crowd's taste, not the room, and the sheet prints the room's capacity. "A lively
+ * room" and "a cozy, lively feel" stay.
+ */
+export const HOOK_ROOM_SIZE_RE =
+  /\b(?:intimate|cozy|cosy|small|tiny|snug)(?:[\s,]+(?:and\s+)?[a-z][a-z-]*){0,2}?[\s-]+(?:rooms?|venues?|halls?|clubs?|spaces?|settings?|theat(?:er|re)s?)\b/i;
+
+/**
+ * Drops hooks that cite an audience, identity or denied tag, use an audience word, make a claim the sheet can't
+ * back (`HOOK_CLAIM_RE`) or call the room small (`HOOK_ROOM_SIZE_RE`), puts the headliner in
  * front of a line that names no act ("<Act>: <line>"), and drops repeats. No fallback line.
  */
 export function vetHookList(hooks: ReadonlyArray<CopyHook>, opts: HookVetOptions): { hooks: CopyHook[]; reasons: string[] } {
@@ -808,6 +1182,8 @@ export function vetHookList(hooks: ReadonlyArray<CopyHook>, opts: HookVetOptions
     }
     const claim = HOOK_CLAIM_RE.exec(blankProtected(text, opts.protectedNames));
     if (claim) return void reasons.push(`${where}: claim the sheet can't back ("${claim[0].toLowerCase()}")`);
+    const size = HOOK_ROOM_SIZE_RE.exec(blankProtected(text, opts.protectedNames));
+    if (size) return void reasons.push(`${where}: a room size from a taste tag ("${size[0].toLowerCase()}")`);
     const lower = text.toLowerCase();
     const named = acts.length === 0 || acts.some((a) => lower.includes(a));
     // "<Act>: <line>", or "<Act>. <line>" when the line has a colon of its own (never two colons in one line).
@@ -819,11 +1195,11 @@ export function vetHookList(hooks: ReadonlyArray<CopyHook>, opts: HookVetOptions
 }
 
 /**
- * Fan copy for a sheet (default: the copy card's lines). Drops any line that cites an audience or identity
- * tag or uses an audience word, and makes every remaining line name the act. When nothing is left, one
- * line built only from the act, the venue and the date: "<Act> at <Venue>, <Weekday, Mon D>."
+ * `vetHookList` on a sheet's fan copy (default: the copy card's lines), with the sheet's acts, venue, city and tag
+ * names: the lines that pass and, for each line dropped, the reason narrate()'s guard gives ("copyHooks[0]: a room
+ * size from a taste tag ("intimate room")"). No fallback line. The offline re-check uses it to drop the same lines.
  */
-export function vetCopyHooks(sheet: StreetSheet, hooks?: CopyHook[]): CopyHook[] {
+export function vetSheetHooks(sheet: StreetSheet, hooks?: ReadonlyArray<CopyHook>): { hooks: CopyHook[]; reasons: string[] } {
   const list = hooks ?? sheet.cards?.copyHooks?.results ?? [];
   const tags = sheetTags(sheet);
   const tagNames = new Map<string, string>();
@@ -831,15 +1207,25 @@ export function vetCopyHooks(sheet: StreetSheet, hooks?: CopyHook[]): CopyHook[]
   // Names of the sheet's audience tags ("Passionate", "Youthful") also mark a line as describing the crowd.
   const extraAudienceWords = dedupeStrings(tags.filter((t) => t.id.startsWith("urn:tag:audience:") && t.name).map((t) => t.name ?? ""));
   const acts = actsOf(sheet.bill);
-  const headliner = headlinerName(sheet.bill);
   const venue = sheet.bill.venue?.name?.trim() ?? "";
-  const { hooks: out } = vetHookList(list, {
+  return vetHookList(list, {
     acts,
-    headliner,
+    headliner: headlinerName(sheet.bill),
     protectedNames: dedupeStrings([...acts, venue, sheet.bill.venue?.city ?? ""]),
     tagNames,
     extraAudienceWords,
   });
+}
+
+/**
+ * Fan copy for a sheet (default: the copy card's lines). Drops any line that cites an audience or identity
+ * tag or uses an audience word, and makes every remaining line name the act. When nothing is left, one
+ * line built only from the act, the venue and the date: "<Act> at <Venue>, <Weekday, Mon D>."
+ */
+export function vetCopyHooks(sheet: StreetSheet, hooks?: CopyHook[]): CopyHook[] {
+  const { hooks: out } = vetSheetHooks(sheet, hooks);
+  const headliner = headlinerName(sheet.bill);
+  const venue = sheet.bill.venue?.name?.trim() ?? "";
   if (out.length > 0 || !headliner) return out;
   const when = displayDate(sheet.bill.weekday, sheet.bill.date);
   return [{ text: `${headliner} at ${venue}${when ? `, ${when}` : ""}.`, tagIds: [] }];
@@ -860,4 +1246,21 @@ export function vetWhatsDifferent<T extends { id: string; name?: string }>(tags:
     out.push(t);
   }
   return out;
+}
+
+/**
+ * "21 tags rank higher for this bill, 14 for the room's usual crowd, and 9 rank high for both." counted again from
+ * the lists shown under it (after `vetWhatsDifferent`): each lean column without the tags listed under "Both rank
+ * high", as the plan page shows them. A summary in other words ("There is no usual crowd to compare this bill with.")
+ * is kept as it is. The plan page and the MCP bill_vs_house tool both use it.
+ */
+export function diffSummary(summary: string, r: { a: { id: string }[]; b: { id: string }[]; shared: { id: string }[] }): string {
+  const m = /^[\d,]+ tags? ranks? higher for this bill, [\d,]+ for (.+), and [\d,]+ ranks? high for both\.$/.exec(summary ?? "");
+  if (!m) return summary;
+  const both = new Set(r.shared.map((t) => t.id));
+  const a = r.a.filter((t) => !both.has(t.id)).length;
+  const b = r.b.filter((t) => !both.has(t.id)).length;
+  const s = r.shared.length;
+  const verb = (n: number) => (n === 1 ? "ranks" : "rank");
+  return `${a} ${a === 1 ? "tag" : "tags"} ${verb(a)} higher for this bill, ${b} for ${m[1]}, and ${s} ${verb(s)} high for both.`;
 }

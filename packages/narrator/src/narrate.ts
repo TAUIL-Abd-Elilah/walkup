@@ -34,7 +34,7 @@ import { NARRATOR_SYSTEM_PROMPT } from "./prompts";
 import { buildNarrationSchema, toDraft, type NarrationDraft } from "./schema";
 import { PROPER_WORD_RE, properPhrases, templateNarrate, templateSummary } from "./template";
 import type { CallUsage, LlmOptions, NarrateInput, NarrationResult, TemplateReason } from "./types";
-import { HOOK_CLAIM_RE, vetGeneratedLines } from "./vet";
+import { anBeforeNumber, HOOK_CLAIM_RE, HOOK_ROOM_SIZE_RE, liftFigureStyle, vetGeneratedLines } from "./vet";
 
 export type NarrateOptions = LlmOptions;
 
@@ -90,6 +90,8 @@ export function readableForPromoter(text: string, show: { date?: unknown; dateTe
   out = out.replace(/\b([A-Za-z]+)-\s+(?!(?:and|or|to|nor)\b)([a-z])/g, "$1-$2");
   // "a intimate room" -> "an intimate room" (a tag name dropped in after "a"); "a one-off", "a unique" stay.
   out = out.replace(/\b([Aa]) (?=[aeiou])(?!(?:one|once|uni|use|usu|ure|uti|eu)[a-z]*\b)/gi, (_m, a: string) => `${a}n `);
+  // "a 82nd percentile" -> "an 82nd percentile".
+  out = anBeforeNumber(out);
   return out.replace(/\b(\d{1,3}(?:,\d{3})+|\d+)(?:\s*USD\b|[- ]dollars?\b)/g, (_m, n: string) => `$${Number(n.replace(/,/g, "")).toLocaleString("en-US")}`);
 }
 
@@ -228,6 +230,8 @@ export function guardNarration(rawDraft: NarrationDraft, prepared: PreparedRun):
     }
     const claim = HOOK_CLAIM_RE.exec(blankProtected(h.text, [...prepared.actNames, ...venueNames]));
     if (claim) return void reasons.push(`${where}: claim the sheet can't back ("${claim[0].toLowerCase()}")`);
+    const size = HOOK_ROOM_SIZE_RE.exec(blankProtected(h.text, [...prepared.actNames, ...venueNames]));
+    if (size) return void reasons.push(`${where}: a room size from a taste tag ("${size[0].toLowerCase()}")`);
     const text = h.text.trim();
     const namesAct = prepared.actNames.some((a) => a && lower.includes(a.toLowerCase()));
     copyHooks.push({ text: namesAct || !headliner ? text : `${headliner}: ${text}`, tagIds });
@@ -286,9 +290,11 @@ export async function narrate(input: NarrateInput, opts: NarrateOptions = {}): P
   // Claims the map and the sheet's numbers do not back (directions, forecasts, superlatives, partner tags):
   // the template's line for that slot replaces the model's.
   const vetted = vetGeneratedLines(input, prepared, guarded);
+  // "about 2 times" for an area at 2.04 is written as the sheet prints it: "about 2.0 times".
+  const lifts = new Map(input.tiles.map((t) => [t.geohash, t.lift]));
   return {
     summary: vetted.summary ?? templateSummary(input, prepared),
-    tileWhy: vetted.tileWhy,
+    tileWhy: vetted.tileWhy.map((t) => ({ ...t, text: liftFigureStyle(t.text, lifts.get(t.geohash) ?? Number.NaN) })),
     partnerLines: vetted.partnerLines,
     copyHooks: guarded.copyHooks,
     templated: false,

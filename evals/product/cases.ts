@@ -3,7 +3,7 @@
  * on the fixture world (@walkup/qloo-world), adds its own checks and
  * hands one or more sheets ("subjects") to the universal checks in checks.ts.
  *
- * Golden cases (the presets and the bill swap) also run on recorded plans
+ * The golden cases (C01-C04), the budget split (C17) and the other bill in the same room (C18) also run on recorded plans
  * (live or replayed runs stored by the orchestrator): there they keep only the
  * checks the spec states, not the ones that depend on the fixture world's
  * invented numbers.
@@ -251,7 +251,7 @@ export const CASES: readonly ProductCase[] = [
       c.eq("lift baseline is the room's roster", s.cards.liftMap.results.diagnostics.baseline, "house", "S2");
       const top5 = s.cards.liftMap.results.tiles.slice(0, 5);
       c.ok("top five tiles carry gazetteer names", top5.every((t) => !!t.name), top5.map((t) => t.name ?? t.geohash).join(", "), "D1");
-      c.eq("paired with bill B for the swap", s.pairedPlanId, "g1-b", "S4");
+      c.eq("paired with bill B, the other bill in the same room", s.pairedPlanId, "g1-b", "S4");
       return { subjects: [fixtureSubject("g1-a", rig, run, GOLDEN_EXPECT_FIXTURE["g1-a"])], checks: c.list };
     },
   },
@@ -279,7 +279,7 @@ export const CASES: readonly ProductCase[] = [
       c.between("partners", s.cards.partners.results.length, 15, 25, "D1");
       c.between("pre/post spots", s.cards.prePost.results.length, 6, 8, "D1");
       c.match("media card states the age policy source", s.cards.media.summary, /all-ages show per Ticketmaster/, "S3");
-      c.eq("paired with bill A for the swap", s.pairedPlanId, "g1-a", "S4");
+      c.eq("paired with bill A, the other bill in the same room", s.pairedPlanId, "g1-a", "S4");
       return { subjects: [fixtureSubject("g1-b", rig, run, GOLDEN_EXPECT_FIXTURE["g1-b"])], checks: c.list };
     },
   },
@@ -673,7 +673,7 @@ export const CASES: readonly ProductCase[] = [
   {
     id: "C14",
     slug: "rate-limit-429-retry",
-    title: "HTTP 429 then success: retried, logged, same sheet",
+    title: "HTTP 429 then success: retried, logged, same partners",
     covers: "Global rules (at most 2 retries on 429/5xx)",
     clauses: ["S1", "S2"],
     async run() {
@@ -831,12 +831,12 @@ export const CASES: readonly ProductCase[] = [
   {
     id: "C18",
     slug: "bill-swap-specificity",
-    title: "The other bill in the same room: same room, different crowd (top-8 overlap at most 5 of 8)",
+    title: "The other bill in the same room: a different crowd (top-8 overlap at most 5 of 8)",
     covers: "Proof plan P2 specificity; the other bill in the same room; venue baseline cached",
     clauses: ["S4", "S1"],
     recorded: ["g1-a", "g1-b"],
     async run(env) {
-      const c = new Checks("swap");
+      const c = new Checks("other bill");
       let a: StreetSheet;
       let b: StreetSheet;
       const subjects: Subject[] = [];
@@ -854,7 +854,7 @@ export const CASES: readonly ProductCase[] = [
         // The plan's own calls; the trust checks (split-half heatmaps, partner house and popularity twins) are counted apart, at most 10.
         const read = readBudget(warm);
         c.between("bill B fresh calls with the venue cached (about 14-18, not counting trust checks)", warm.billLevel + warm.venueLevel - read.checks, 12, 18, "S1");
-        c.between("bill B trust-check calls (split-half heatmaps, house and popularity twins)", read.checks, 0, 10, "S1");
+        c.between("bill B trust-check calls (split-half heatmaps, partner house and popularity twins)", read.checks, 0, 10, "S1");
         subjects.push(fixtureSubject("g1-b after g1-a (warm venue)", rig, runB, { cards: ALL_OK, budget: { venueMax: 2 }, grounding: false }));
       }
       const topA = topPartnerIds(a);

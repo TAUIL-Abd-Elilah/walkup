@@ -79,7 +79,7 @@ function narration(over: Partial<Narration> = {}): Narration {
     ],
     partnerLines: [
       { entityId: "E-P1", text: "Record store in Hilltop that shares the bill's folk tag; open Thursday 10:00 to 20:00." },
-      { entityId: "E-P2", text: "Restaurant in Riverbend, a casual stop before the show." },
+      { entityId: "E-P2", text: "Restaurant in Riverbend, a casual place to leave flyers." },
     ],
     templated: false,
     ...over,
@@ -276,7 +276,7 @@ describe("vetNarration", () => {
     const tile = vetNarration(makeSheet(tileLine(1, "Riverbend shows about 1.8 times the room's usual crowd, with a high popularity share.")));
     expect(tile.replaced[0]).toMatch(/^tileWhy\[1\]: a share or percent/);
     // The budget split is a share, and a percentile is said as one.
-    expect(vetNarration(makeSheet(tileLine(1, "Riverbend shows about 1.8 times the room's usual crowd and gets 20% of the rough split of the budget."))).replaced).toEqual([]);
+    expect(vetNarration(makeSheet(tileLine(1, "Riverbend shows about 1.8 times the room's usual crowd and gets 30% of the rough split of the budget."))).replaced).toEqual([]);
     expect(vetNarration(makeSheet(tileLine(1, "Riverbend is in the 95th percentile for this crowd."))).replaced).toEqual([]);
     // What-ifs: a live sheet's numbers are the operator's own; a sample sheet's may be called what-ifs.
     const whatIf = narration({ summary: "Start in Hilltop. Capacity figures are what-ifs from the operator." });

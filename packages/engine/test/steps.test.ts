@@ -265,7 +265,7 @@ describe("partners and the usual crowd", () => {
 describe("spots, media, summary and checks", () => {
   it("picks spots near the room and keeps bars off fan copy without an age rule", () => {
     const s = prePostStep({ status: "partial", spots: 8, unknownHours: 2, radiusM: 2500, widened: { fromM: 1500, minSpots: 6 }, barsOperatorOnly: 3, legalAgeEnforced: null, ledgerRefs: ["Q22"] });
-    expect(s.decision).toBe("Picked 8 spots within 2.5 km of the room; 2 list no hours for show night, so call first.");
+    expect(s.decision).toBe("Picked 8 spots within 2.5 km of the room; 2 list no hours for show night, so call ahead.");
     expect(s.cause).toBe("Fewer than 6 came back inside 1.5 km, so the search widened to 2.5 km. Bars stay off fan copy: Ticketmaster doesn't list an age limit for the show.");
     expect(prePostStep({ status: "ok", spots: 8, unknownHours: 0, radiusM: 1500, barsOperatorOnly: 0, legalAgeEnforced: true, ledgerRefs: [] }).decision).toBe("Picked 8 spots within 1.5 km of the room, open on show night.");
     expect(prePostStep({ status: "empty", spots: 0, unknownHours: 0, radiusM: null, barsOperatorOnly: 0, legalAgeEnforced: true, ledgerRefs: [] }).decision).toBe("No spot near the room came back open on show night.");
