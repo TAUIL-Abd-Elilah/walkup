@@ -318,12 +318,16 @@ describe("nothing on the printed plan page points at what paper can't follow (sw
     expect(webHost("https://maps.google.com/?q=The+Hideout")).toBe("maps.google.com?q=The Hideout");
     expect(webHost("https://www.yelp.com/biz/the-hideout-chicago?q=bar")).toBe("yelp.com/biz/the-hideout-chicago");
     expect([...SHARED_HOSTS].sort()).toEqual([...LISTING_HOSTS].sort());
-    const sheet = PLANS.find((p) => p.sheet.cards.partners.results.some((x) => x.website))?.sheet ?? fixture("g1-a");
-    const p = sheet.cards.partners.results.find((x) => x.website);
-    if (!p?.website) return;
-    const html = renderPlan(sheet);
-    expect(screen(html)).toContain("Website");
-    expect(paper(html)).toContain(webHost(p.website));
+    // The sample's own sites are .example, which print as plain text (no Website link), so it gets a real-looking one.
+    const sample = structuredClone(fixture("g1-a"));
+    sample.cards.partners.results[0]!.website = "https://www.cafeaddis.com/menu";
+    const recorded = PLANS.find((p) => p.sheet.cards.partners.results.some((x) => x.website))?.sheet;
+    for (const sheet of recorded ? [recorded, sample] : [sample]) {
+      const p = sheet.cards.partners.results.find((x) => x.website)!;
+      const html = renderPlan(sheet);
+      expect(screen(html)).toContain("Website");
+      expect(paper(html)).toContain(webHost(p.website!));
+    }
   });
 
   it("prints a page on a shared site with its path, which wraps after a slash", () => {
