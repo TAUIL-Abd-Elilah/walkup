@@ -119,6 +119,6 @@ describe("Checks step: a summary the guard dropped is replaced, not left out", (
     expect(guardDropCounts(["2 partner lines dropped: cited entity not traced to this run's ledger."]).citation).toBe(2);
     expect(guardDropCounts(["1 partner line dropped: cited entity not traced to this run's ledger."]).citation).toBe(1);
     expect(guardDropCounts(["2 partner line(s) dropped: cited entity not traced to this run's ledger."]).citation).toBe(2);
-    expect(guardDropCounts(["15 partner lines trimmed: a tag the place doesn't list as shared was cut."])).toEqual({ citation: 0, notPartner: 0, alcohol: 0, other: 0 });
+    expect(guardDropCounts(["15 partner lines trimmed: a tag the place doesn't list as shared was cut."])).toEqual({ citation: 0, unbacked: 0, notPartner: 0, alcohol: 0, other: 0 });
   });
 });

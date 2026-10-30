@@ -1,8 +1,9 @@
 /**
  * The response envelope every tool returns, the same one the web app's JSON API
  * serves (apps/web/lib/api.ts): status, summary, planId, sheetUrl, planUrl,
- * mode, results, resolution, cards, reason, provenance, limits; paused plans add
- * pending. Built from a sheet, a paused plan or a refusal.
+ * mode, results, resolution, cards, reason, provenance, limits; a revision adds
+ * revision and parentPlanId in both; paused plans add pending. Built from a
+ * sheet, a paused plan or a refusal.
  */
 import { buyersLimit, LIMITS_EVERY_SHEET, withoutControl, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet, type StreetSheetCards } from "@walkup/contracts";
 import { FIXTURE_LIMITS } from "@walkup/orchestrator";

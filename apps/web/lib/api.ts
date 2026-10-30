@@ -61,6 +61,8 @@ export function sheetEnvelope(stored: StreetSheet, origin: string, opts: { recor
     ...(reason ? { reason } : {}),
     provenance: sheet.ledger.map((e) => e.id),
     limits: sheet.limits,
+    // A revision says so up top, as the MCP envelope does: the earlier plan, the note and what changed.
+    ...(sheet.revision ? { revision: sheet.revision, parentPlanId: sheet.revision.parentPlanId } : {}),
   };
 }
 

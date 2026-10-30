@@ -78,7 +78,7 @@ describe("Streamable HTTP", () => {
     const s = services();
     const get = await handleMcpHttpRequest(new Request(URL_MCP, { method: "GET", headers: { accept: "text/event-stream" } }), s);
     expect(get.status).toBe(405);
-    expect(get.headers.get("allow")).toBe("POST");
+    expect(get.headers.get("allow")).toBe("POST, OPTIONS");
     const del = await handleMcpHttpRequest(new Request(URL_MCP, { method: "DELETE" }), s);
     expect(del.status).toBe(405);
     const init = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "x", version: "0" } } };

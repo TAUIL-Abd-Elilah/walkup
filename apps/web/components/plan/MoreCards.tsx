@@ -358,6 +358,14 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
   const ageVsCol = ageVs === null ? null : vsTag ? Against : "Usual crowd";
   // With no age block at all, a table of dashes says nothing the line above it doesn't.
   const ageTable = demo.results.bill.length > 0 || demo.results.house.length > 0;
+  // Hosted sheets often have one bill block (one act, or one stand-in title): nothing is averaged then.
+  const onlyBlock = demo.results.bill.length === 1 ? demo.results.bill[0] : undefined;
+  const standInIds = new Set(sheet.cards.resolution.results.flatMap((x) => (x.proxy ? [x.proxy.entity.entityId] : [])));
+  const ageOver = onlyBlock
+    ? standInIds.has(onlyBlock.entityId)
+      ? " for the bill's stand-in title"
+      : " for the bill's act"
+    : ", averaged across the bill's acts";
   return (
     <section id="different" aria-labelledby="different-title" className="section scroll-mt-4">
       <details className="plain-details">
@@ -412,7 +420,7 @@ export function DifferentCard({ sheet }: { sheet: StreetSheet }) {
             <>
               <table className="table mt-2 max-w-[480px]">
                 <caption className="sr-only">
-                  Over or under index per age group, averaged across the bill&apos;s acts{ageVs === null ? "" : vsTag ? ` and ${against}` : " and the room's usual acts"}
+                  Over or under index per age group{ageOver}{ageVs === null ? "" : vsTag ? ` and ${against}` : " and the room's usual acts"}
                 </caption>
                 <thead>
                   <tr>

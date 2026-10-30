@@ -42,7 +42,8 @@ describe("plan page partner hours", () => {
     // The table cell and the phone-width line under the name.
     expect(html).toContain(">10 am to 2 pm; no time left on the route: call to arrange<");
     expect(html).toContain("Sat 10 am to 2 pm; no time left on the route: call to arrange");
-    expect(html).toContain("11:30 am to 11 pm; no time left on the first pass: call to arrange");
-    expect(html.match(/no time left on the (route|first pass): call to arrange/g)).toHaveLength(4);
+    // La Parra (11:30 am to 11 pm) fits now that the route shifts its later stops (ics.ts), so it says nothing.
+    expect(html).not.toContain("11:30 am to 11 pm; no time left");
+    expect(html.match(/no time left on the (route|first pass): call to arrange/g)).toHaveLength(2);
   });
 });

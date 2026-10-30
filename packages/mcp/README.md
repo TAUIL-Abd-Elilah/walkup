@@ -69,7 +69,7 @@ At `/mcp` the web app plugs in its own persistent per-IP limiter, so REST and MC
 **Streamable HTTP**, mounted by the web app at `/mcp` (`apps/web/app/mcp/route.ts`), runs in stateless mode.
 
 - Each POST gets its own server bound to the caller, and JSON responses (no SSE).
-- GET and DELETE answer 405, as the transport spec allows when there is no session. PUT and PATCH get the same JSON-RPC 405 with `Allow: POST`.
+- GET and DELETE answer 405, as the transport spec allows when there is no session. PUT and PATCH get the same JSON-RPC 405 with `Allow: POST, OPTIONS`. OPTIONS answers 204 with the same `Allow`.
 - Browser requests from another origin get 403. Bodies over 64 KB get 413.
 
 The route runs on the web app's engine:

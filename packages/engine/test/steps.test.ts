@@ -313,7 +313,7 @@ describe("spots, media, summary and checks", () => {
       ...Array.from({ length: 13 }, (_, i) => `partnerLines[${22 + i}]: not a partner`),
       "replaced by the template: tileWhy[0]: says 16 partners, the sheet has 8 in this area",
     ];
-    expect(guardDropCounts(reasons)).toEqual({ citation: 0, notPartner: 13, alcohol: 2, other: 0 });
+    expect(guardDropCounts(reasons)).toEqual({ citation: 0, unbacked: 0, notPartner: 13, alcohol: 2, other: 0 });
     const s = guardStep({ dropped: 15, denied: 63, alcoholHeld: 3, reasons, ledgerRefs: [] });
     // The line the template replaced is not a dropped one, and is said after the drops.
     expect(s.decision).toBe(

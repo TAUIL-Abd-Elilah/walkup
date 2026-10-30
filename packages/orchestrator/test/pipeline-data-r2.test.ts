@@ -72,7 +72,7 @@ describe("guard reasons and the Checks step", () => {
     for (const n of [1, 2, 1200]) {
       const reason = `${partnerLineCount(n)} dropped: cited entity not traced to this run's ledger.`;
       expect(reason).toMatch(/^\d+ partner lines? dropped: /);
-      expect(guardDropCounts([reason])).toEqual({ citation: n, notPartner: 0, alcohol: 0, other: 0 });
+      expect(guardDropCounts([reason])).toEqual({ citation: n, unbacked: 0, notPartner: 0, alcohol: 0, other: 0 });
     }
   });
 

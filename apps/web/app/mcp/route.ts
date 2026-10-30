@@ -19,6 +19,7 @@ import type { PlanDeps, PlanResult } from "@walkup/orchestrator";
 import {
   createMcpServices,
   handleMcpHttpRequest,
+  MCP_ALLOW,
   secretsFromEnv,
   type CapDecision,
   type FreshRunLimiter,
@@ -144,5 +145,5 @@ export async function PATCH(request: Request): Promise<Response> {
 
 /** Lists only what the server takes (Next's own answer would list every export above, all but POST a 405). */
 export function OPTIONS(): Response {
-  return new Response(null, { status: 204, headers: { allow: "POST, OPTIONS" } });
+  return new Response(null, { status: 204, headers: { allow: MCP_ALLOW } });
 }

@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-30T05:48:20.026Z",
+  "generatedAt": "2026-10-30T18:29:53.720Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -1214,7 +1214,7 @@
         {
           "name": "card resolution status",
           "status": "pass",
-          "detail": "partial (expected partial): Qloo has little on Reggie Collier, so stand-ins are used.",
+          "detail": "partial (expected partial): Qloo has little on Reggie Collier, so a stand-in is used.",
           "clause": "S2",
           "subject": "g2"
         },
@@ -2023,7 +2023,7 @@
         {
           "name": "card resolution status",
           "status": "pass",
-          "detail": "partial (expected partial): Qloo has little on Reggie Collier, so stand-ins are used.",
+          "detail": "partial (expected partial): Qloo has little on Reggie Collier, so a stand-in is used.",
           "clause": "S2",
           "subject": "g2 resumed"
         },

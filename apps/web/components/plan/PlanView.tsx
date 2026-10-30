@@ -247,6 +247,10 @@ const TEMPLATE_NO_KEY = /^(The summary came from a fixed template \(no model key
 const DROPPED_LINE = /^(?:summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHooks\[\d+\]): /;
 /** A line left out for an id, number or tag this run did not return (the engine's guard step uses the same test). */
 const CITATION_DROP = /not in this run|not on the allowlist|cites no (?:allowlisted )?tag|not traced to this run's ledger|duplicate (?:tile|entity)/;
+/** A copy line left out for a claim the run didn't back: a room size read off a taste tag, or "sold out" (engine UNBACKED_COPY_DROP_RE). */
+const UNBACKED_COPY = /: (?:a room size from a taste tag|claim the sheet can't back) \(/;
+/** A dropped line that made a claim the run didn't back. */
+const unbackedReason = (r: string) => CITATION_DROP.test(r) || UNBACKED_COPY.test(r);
 
 /** Of the lines the checks left out, how many made a claim the run didn't back (the rest broke a wording or policy rule). */
 export function unbackedDrops(guard: GuardReport): number {
@@ -255,7 +259,7 @@ export function unbackedDrops(guard: GuardReport): number {
     // "2 partner lines dropped: ...", "1 partner line dropped: ..." (older runs wrote "2 partner line(s) dropped").
     const many = /^(\d+) partner line(?:s|\(s\))? dropped: /.exec(r);
     if (many) n += Number(many[1]);
-    else if (DROPPED_LINE.test(r) && CITATION_DROP.test(r)) n++;
+    else if (DROPPED_LINE.test(r) && unbackedReason(r)) n++;
   }
   return Math.min(n, guard.dropped);
 }
@@ -274,7 +278,7 @@ export function checksLine(guard: GuardReport): string {
   // The run counts a set-aside summary as dropped ("summary: number 1.8 is not in this run"); the template replaced it.
   const summary = guard.reasons.find((r) => /^summary: /.test(r));
   const dropped = Math.max(guard.dropped - (summary ? 1 : 0), 0);
-  const unbacked = Math.min(Math.max(unbackedDrops(guard) - (summary && CITATION_DROP.test(summary) ? 1 : 0), 0), dropped);
+  const unbacked = Math.min(Math.max(unbackedDrops(guard) - (summary && unbackedReason(summary) ? 1 : 0), 0), dropped);
   const other = dropped - unbacked;
   const lines = (x: number) => `${x} ${x === 1 ? "line" : "lines"}`;
   // A failed line with no fixed wording for its slot ("... (dropped)") was left out, though `dropped` does not count it;

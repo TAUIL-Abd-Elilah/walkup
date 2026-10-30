@@ -18,6 +18,7 @@
  */
 import type { Act, ActRole, Candidate, Envelope, QlooEntity, Resolution } from "@walkup/contracts";
 import { decideFallback, errorStatus, normalizeName, resolveFromEntities, sameAct, signalAlternates, toCandidate, type SignalCheck } from "@walkup/qloo";
+import { joinAnd } from "@walkup/engine";
 import { rosterHeadliners, type RosterHeadliner } from "@walkup/tm";
 import { baselineTagFor } from "../tags";
 import { clean, cite, envelope, node, plural, venuePoint, type HouseSet, type RunContext, type Seed } from "../context";
@@ -629,7 +630,7 @@ export async function resolveAll(ctx: RunContext, choices: ChoiceStore | undefin
     const why: string[] = [];
     if (unclearSwaps.length > 0) why.push(`check the swapped ${unclearSwaps.length === 1 ? "act" : "acts"} (${unclearSwaps.join(", ")}): the entry used may not be the same act`);
     if (missing.length > 0) why.push(`${missingWhy.join("; ")}; the run continued on the matched acts`);
-    if (thin.length > 0) why.push(`Qloo has little on ${thin.join(", ")}${proxied > 0 ? ", so stand-ins are used" : ""}`);
+    if (thin.length > 0) why.push(`Qloo has little on ${joinAnd(thin)}${proxied > 0 ? `, so ${proxied === 1 ? "a stand-in is" : "stand-ins are"} used` : ""}`);
     if (proxiesDropped > 0) why.push(`Qloo has no taste data for ${plural(proxiesDropped, "stand-in title")}, so ${proxiesDropped === 1 ? "it was" : "they were"} left out`);
     reason = `${why.join("; ")}.`;
   }

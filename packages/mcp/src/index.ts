@@ -8,7 +8,7 @@
  * Request/Response, mounted at /mcp by apps/web) and stdio (src/stdio.ts).
  */
 export { createWalkupMcpServer, toCallResult, serverInstructions, SERVER_NAME, SERVER_VERSION, SERVER_INSTRUCTIONS } from "./server";
-export { handleMcpHttpRequest, MAX_MCP_BODY_BYTES } from "./http";
+export { handleMcpHttpRequest, MAX_MCP_BODY_BYTES, MCP_ALLOW } from "./http";
 export type { HttpHandlerOptions } from "./http";
 export { planShowTool, rankPartnersTool, billVsHouseTool, getSheetTool, revisePlanTool, billVsHouseOf, envelopeMode, sampleOnly, PRESET_TTL_MS, NOT_AFFILIATED, REVISE_QUESTION_REASON } from "./tools";
 export type { Caller, ToolOutcome, BillVsHouse } from "./tools";

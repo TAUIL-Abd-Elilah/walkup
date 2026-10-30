@@ -159,7 +159,7 @@ describe("HTTP methods", () => {
     for (const method of ["PUT", "PATCH", "DELETE"]) {
       const res = await handleMcpHttpRequest(new Request(url, { method, ...(method === "DELETE" ? {} : { body: "{}" }) }), s);
       expect(res.status, method).toBe(405);
-      expect(res.headers.get("allow"), method).toBe("POST");
+      expect(res.headers.get("allow"), method).toBe("POST, OPTIONS");
       expect(await res.json(), method).toEqual(want);
     }
   });

@@ -528,6 +528,20 @@
   [data-testid="source-line"] {
     break-after: avoid;
   }
+  /*
+   * The requests and limits sections' lead lines stay whole and with the table or list they introduce, so a heading
+   * and its lead never end a page alone (checked by printing every hosted sheet and sample to Letter and A4). The
+   * limits lead is its last paragraph; the page may still break after the Fan-Bar paragraph above it, which keeps
+   * the lead with its list when both don't fit under the heading.
+   */
+  #ledger > p,
+  #limits > p {
+    break-inside: avoid;
+  }
+  #ledger > p,
+  #limits > p:last-of-type {
+    break-after: avoid;
+  }
   /* A table's header row stays with its first row (Chrome ignores break-after on thead, so the row says it). */
   tbody > tr:first-child {
     break-before: avoid;

@@ -703,14 +703,59 @@ function fitBetween(placed: Timed[], it: Item, dayStart: number, gapMin: number)
 }
 
 /**
+ * Puts `it` between two of the day's stops (or before the first) by moving the stops after it later: `it` starts at
+ * its earliest fit after the stop before it, travel included, and before the stop it goes ahead of; each later stop
+ * then starts at its earliest fit inside its own hours once the stop before it ends and the team gets there, until
+ * one needs no move. Taken only when every moved stop still fits its hours (none runs past 23:59, as no window
+ * does); the first such stretch in the day wins. False, with no stop moved, when none works.
+ */
+function fitByShifting(placed: Timed[], it: Item, dayStart: number, gapMin: number): boolean {
+  const sorted = [...placed].sort((a, b) => a.t - b.t);
+  for (let i = 0; i < sorted.length; i++) {
+    const prev = sorted[i - 1];
+    const t = earliestFit(it, prev ? prev.end + travelMinutes(prev.it.pos, it.pos, gapMin) : dayStart);
+    if (t === null || t >= sorted[i]!.t) continue;
+    const moves: { s: Timed; t: number }[] = [];
+    let last: { pos: Point | null; end: number } = { pos: it.pos, end: t + it.minutes };
+    let ok = true;
+    for (const s of sorted.slice(i)) {
+      const need = last.end + travelMinutes(last.pos, s.it.pos, gapMin);
+      if (s.t >= need) break;
+      const st = earliestFit(s.it, need);
+      if (st === null) {
+        ok = false;
+        break;
+      }
+      moves.push({ s, t: st });
+      last = { pos: s.it.pos, end: st + s.it.minutes };
+    }
+    if (!ok) continue;
+    for (const { s, t: st } of moves) {
+      s.t = st;
+      s.end = st + s.it.minutes;
+    }
+    placed.push({ it, t, end: t + it.minutes });
+    return true;
+  }
+  return false;
+}
+
+/**
  * One day's stops in order. The day starts at the venue at `start` (earlier when a stop is open only before then).
  * Each step takes, among the stops that can start within 45 minutes of the soonest one (travel included), a stop in
  * the same area when there is one, else the nearest: a nearest-neighbour walk that keeps an area together and never
  * puts a stop outside its listed hours. A stop that can't fit after the others goes in a free stretch between two
- * stops when one is long enough, travel included; otherwise it is `unplaced` (never timed on top of another stop).
+ * stops when one is long enough, travel included, or in one made by moving the later stops while each still fits
+ * its hours (only when `shift` is set); otherwise it is `unplaced` (never timed on top of another stop).
  * Nothing runs past 23:59.
  */
-function scheduleDay(items: readonly Item[], start: number, gapMin: number, venue: Point | null): { placed: Timed[]; unplaced: Item[] } {
+function scheduleDay(
+  items: readonly Item[],
+  start: number,
+  gapMin: number,
+  venue: Point | null,
+  shift: boolean,
+): { placed: Timed[]; unplaced: Item[] } {
   const left = [...items];
   const placed: Timed[] = [];
   const early = left.filter((it) => earliestFit(it, start) === null && earliestFit(it, 0) !== null).map((it) => earliestFit(it, 0)!);
@@ -725,11 +770,13 @@ function scheduleDay(items: readonly Item[], start: number, gapMin: number, venu
       .map((it) => ({ it, t: earliestFit(it, cursor + (first ? 0 : travelMinutes(at, it.pos, gapMin))), km: kmApart(at, it.pos) ?? Number.POSITIVE_INFINITY }))
       .filter((x): x is { it: Item; t: number; km: number } => x.t !== null);
     if (fits.length === 0) {
-      // No room after the others: a free stretch between two stops, the closing-soonest stop first; else unplaced.
-      const unplaced: Item[] = [];
+      // No room after the others: a free stretch between two stops, the closing-soonest stop first; then, for what is
+      // still left, a stretch made by moving later stops (see `fitByShifting`); else unplaced.
+      const rest: Item[] = [];
       for (const it of [...left].sort((x, y) => deadline(x) - deadline(y) || x.slot - y.slot || x.order - y.order)) {
-        if (!fitBetween(placed, it, dayStart, gapMin)) unplaced.push(it);
+        if (!fitBetween(placed, it, dayStart, gapMin)) rest.push(it);
       }
+      const unplaced = shift ? rest.filter((it) => !fitByShifting(placed, it, dayStart, gapMin)) : rest;
       return { placed, unplaced };
     }
     const soonest = Math.min(...fits.map((f) => f.t));
@@ -780,8 +827,30 @@ function scheduleDay(items: readonly Item[], start: number, gapMin: number, venu
  * hours (a partner the first pass moves keeps that weekday in the final pass); with no such day it is not timed
  * at all, and the day's earliest event lists it (`notTimed`; a day with no timed event gets a `StreetTeamNote`), so
  * no two stops ever overlap and nothing is dropped unsaid.
+ *
+ * Moving later stops to make room (see `scheduleDay`) can change which day a stop lands on and so crowd out another
+ * stop of the pass; when the plan built that way leaves out a stop of a pass that the plan built without it times,
+ * the plan without it is used, so no stop is ever left out for the sake of another.
  */
 export function planStreetTeam(sheet: StreetSheet, opts: IcsOptions = {}): StreetTeamPlan {
+  const shifted = buildStreetTeam(sheet, opts, true);
+  const left = notTimedKeys(shifted);
+  if (left.size === 0) return shifted;
+  const plain = buildStreetTeam(sheet, opts, false);
+  const plainLeft = notTimedKeys(plain);
+  return [...left].some((k) => !plainLeft.has(k)) ? plain : shifted;
+}
+
+/** Each stop a plan has no time for, as "pass|stop" (the partner, or the area of a flyer drop). */
+function notTimedKeys(plan: StreetTeamPlan): Set<string> {
+  const keys = new Set<string>();
+  for (const v of [...plan.visits, ...plan.notes]) {
+    for (const x of v.notTimed) keys.add(`${v.pass}|${x.partner ? `p:${x.partner.entity.entityId}` : `a:${x.tileRank}:${x.tile?.geohash ?? ""}`}`);
+  }
+  return keys;
+}
+
+function buildStreetTeam(sheet: StreetSheet, opts: IcsOptions, shift: boolean): StreetTeamPlan {
   const none: StreetTeamPlan = { visits: [], notes: [] };
   const { days, notBefore, firstPassWeeksOut } = passOptions(sheet, opts);
   const dates = streetTeamPasses(sheet.bill.date, days, { notBefore, firstPassWeeksOut });
@@ -895,13 +964,13 @@ export function planStreetTeam(sheet: StreetSheet, opts: IcsOptions = {}): Stree
       }
       if (closed.length > 0) closedBy.push({ pass, slot: g.slot, date: passDates[home]!.date, weekday: passDates[home]!.weekday, partners: closed });
     }
-    const sched = dayItems.map((items) => scheduleDay(items, start, gapMin, venue));
+    const sched = dayItems.map((items) => scheduleDay(items, start, gapMin, venue, shift));
     // A stop its own day has no time left for goes to another street-team day of the pass where it fits whole, inside
     // that day's hours, without leaving out a stop that day already had time for.
     for (let k = 0; k < n; k++) {
       for (const it of [...sched[k]!.unplaced]) {
         for (const alt of elsewhere.get(it) ?? []) {
-          const trial = scheduleDay([...dayItems[alt.k]!, alt.it], start, gapMin, venue);
+          const trial = scheduleDay([...dayItems[alt.k]!, alt.it], start, gapMin, venue, shift);
           if (trial.unplaced.some((x) => x === alt.it || !sched[alt.k]!.unplaced.includes(x))) continue;
           dayItems[alt.k]!.push(alt.it);
           if (it.partner && pass === "first") movedTo.set(it.partner.entity.entityId, passDates[alt.k]!.weekday);

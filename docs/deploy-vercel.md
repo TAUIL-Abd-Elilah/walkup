@@ -46,7 +46,8 @@ for "a 82nd", wrote "about 2.0 times" for "about 2 times" where 2.0 is the area'
 lines that called the room "cozy" or "intimate" from a taste tag. A fifth pass on Oct 30 fixed wording that the rest
 of its sheet contradicts: the lift card's count of areas names its two tests, a top pick that passed over a
 higher-ranked national chain says "national chains aside", one Claude summary says "R&B" for "Music / R&B", the
-Summary step no longer counts the copy lines kept as the lines Claude wrote, and two more Claude sentences (an
+Summary step no longer counts the copy lines kept as the lines Claude wrote, the Checks step counts a dropped "cozy"
+or "intimate" copy line as a claim the run didn't back, and two more Claude sentences (an
 unbacked top percentile in an area line, and a summary's "stands out in five areas" where the lift card counts 66)
 became template wording, the last of the 16. The same pass left out a partner whose name says restaurant on two of the
 four "No restaurants" revisions (Right Spot Restaurant & Bar on FLO's, La Parra Restaurant & Bar on Greensky

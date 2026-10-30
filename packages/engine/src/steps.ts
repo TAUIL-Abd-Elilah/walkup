@@ -641,10 +641,18 @@ const DROPPED_LINE_RE = /^(?:summary|tileWhy\[\d+\]|partnerLines\[\d+\]|copyHook
 const PARTNER_LINES_DROPPED_RE = /^(\d+) partner line(?:s|\(s\))? dropped: /;
 /** A drop for an id, number, tag or line this run did not return (evals/product/checks.ts CITATION_PROBLEM). */
 const CITATION_DROP_RE = /not in this run|not on the allowlist|cites no (?:allowlisted )?tag|not traced to this run's ledger|duplicate (?:tile|entity)/;
+/**
+ * A copy line dropped for a claim the run didn't back: a room size read off a taste tag ("cozy room" for a room that
+ * holds 6,000) or a claim like "sold out" (narrator vetHookList). The Checks line counts it with the citation drops.
+ */
+export const UNBACKED_COPY_DROP_RE = /: (?:a room size from a taste tag|claim the sheet can't back) \(/;
 
-/** Dropped lines by why they went: a citation the run didn't back, a line about a non-partner, an alcohol word, the rest. */
-export function guardDropCounts(reasons: readonly string[]): { citation: number; notPartner: number; alcohol: number; other: number } {
-  const out = { citation: 0, notPartner: 0, alcohol: 0, other: 0 };
+/**
+ * Dropped lines by why they went: a citation the run didn't back, a copy claim the run didn't back, a line about a
+ * non-partner, an alcohol word, the rest.
+ */
+export function guardDropCounts(reasons: readonly string[]): { citation: number; unbacked: number; notPartner: number; alcohol: number; other: number } {
+  const out = { citation: 0, unbacked: 0, notPartner: 0, alcohol: 0, other: 0 };
   for (const r of reasons) {
     // "2 partner lines dropped: cited entity not traced to this run's ledger." counts its lines at once (also the
     // earlier "2 partner line(s) dropped").
@@ -655,6 +663,7 @@ export function guardDropCounts(reasons: readonly string[]): { citation: number;
     }
     if (!DROPPED_LINE_RE.test(r)) continue;
     if (CITATION_DROP_RE.test(r)) out.citation++;
+    else if (UNBACKED_COPY_DROP_RE.test(r)) out.unbacked++;
     else if (/: not a partner$/.test(r)) out.notPartner++;
     else if (/\balcohol word\b/.test(r)) out.alcohol++;
     else out.other++;
@@ -666,10 +675,11 @@ function droppedDecision(dropped: number, reasons: readonly string[] | undefined
   const lines = countOf(dropped, "line");
   if (!reasons) return `Dropped ${lines} that didn't pass the checks`;
   const c = guardDropCounts(reasons);
-  const other = Math.max(c.other, dropped - c.citation - c.notPartner - c.alcohol);
+  const other = Math.max(c.other, dropped - c.citation - c.unbacked - c.notPartner - c.alcohol);
   const parts: [number, string][] = (
     [
       [c.citation, "that cited something this run didn't return"],
+      [c.unbacked, "that made a claim the run didn't back"],
       [c.notPartner, c.notPartner === 1 ? "about a place that isn't a partner on this sheet" : "about places that aren't partners on this sheet"],
       [c.alcohol, c.alcohol === 1 ? "with an alcohol word on a show that isn't 21+" : "with alcohol words on a show that isn't 21+"],
       [other, "for other checks listed under Checks"],

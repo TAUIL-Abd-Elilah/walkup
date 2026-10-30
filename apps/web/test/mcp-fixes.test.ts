@@ -165,7 +165,8 @@ describe("/mcp methods", () => {
     ] as const) {
       const res = await handler(new Request(`${ORIGIN}/mcp`, { method, headers: { "content-type": "application/json" }, body: "{}" }));
       expect(res.status, method).toBe(405);
-      expect(res.headers.get("allow"), method).toBe("POST");
+      // The same Allow as OPTIONS /mcp (packages/mcp MCP_ALLOW).
+      expect(res.headers.get("allow"), method).toBe("POST, OPTIONS");
       expect(res.headers.get("content-type"), method).toMatch(/application\/json/);
       expect(await res.json(), method).toEqual(want);
     }

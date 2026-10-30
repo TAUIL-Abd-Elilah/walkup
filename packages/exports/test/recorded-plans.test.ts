@@ -167,7 +167,7 @@ describe("the recorded plans' downloads", () => {
     }
   });
 
-  // A one-day sheet (Saturday only) whose Saturday route has no time for two partners: the calendar and partners.csv
+  // A one-day sheet (Saturday only) whose Saturday route has no time for one partner: the calendar and partners.csv
   // say to call and arrange, and so do the plan page, the print view and the PDF.
   const oneDay = existsSync(PLANS) ? recorded().find((p) => p.id === "1e0da01d") : undefined;
   it.skipIf(!existsSync(PLANS) || !oneDay)(
@@ -176,10 +176,10 @@ describe("the recorded plans' downloads", () => {
       const sheet = oneDay!.sheet;
       const rows = buildSheetModel(sheet).panel2.rows;
       const row = (name: string) => rows.find((r) => r.name === name)!;
-      // No time on either pass's route, then on the first pass only.
+      // No time on either pass's route.
       expect(row("Pixca Seasonal American Bistro")).toMatchObject({ hours: "10 am to 2 pm; no time left on the route: call to arrange", dayHours: "10 am to 2 pm", routeNote: NO_TIME_ON_ROUTE });
-      expect(row("La Parra Restaurant & Bar")).toMatchObject({ hours: "11:30 am to 11 pm; no time left on the first pass: call to arrange", dayHours: "11:30 am to 11 pm" });
-      expect(rows.filter((r) => r.routeNote !== "")).toHaveLength(2);
+      expect(row("La Parra Restaurant & Bar")).toMatchObject({ hours: "11:30 am to 11 pm", dayHours: "11:30 am to 11 pm", routeNote: "" });
+      expect(rows.filter((r) => r.routeNote !== "")).toHaveLength(1);
       const pixca = sheet.cards.partners.results.find((p) => p.entity.name === "Pixca Seasonal American Bistro")!;
       expect(partnerHoursColumn(sheet).cell(pixca).withDay).toBe("Sat 10 am to 2 pm; no time left on the route: call to arrange");
       // The PDF says it in the row's Notes column (its hours cell keeps the hours), on one page, Letter and A4.

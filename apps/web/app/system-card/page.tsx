@@ -137,7 +137,8 @@ export default function SystemCardPage() {
         fixed wording that the rest of its sheet contradicts: the lift card&apos;s count of areas names its two tests (lift 1.3 or more, percentile
         70 or higher); a top pick that passed over a higher-ranked national chain says &ldquo;national chains aside&rdquo;; one Claude summary says
         &ldquo;R&amp;B&rdquo; for Ticketmaster&apos;s &ldquo;Music / R&amp;B&rdquo;; on those two Anthem revisions the Summary step no longer says
-        Claude wrote 2 copy lines (it wrote 3, and the checks kept 2); and two more of the 16 come from it, an area line that called its
+        Claude wrote 2 copy lines (it wrote 3, and the checks kept 2), and their Checks step counts the dropped &ldquo;cozy&rdquo; or
+        &ldquo;intimate&rdquo; line as a claim the run didn&apos;t back; and two more of the 16 come from it, an area line that called its
         area&apos;s percentile the top one where another area&apos;s is higher, and a summary that said the crowd stands out in five areas where
         the lift card counts 66. The same pass held the sheets to three newer rules: on two of the four &ldquo;No restaurants&rdquo; revisions a
         partner whose name says restaurant is left out (Right Spot Restaurant &amp; Bar, La Parra Restaurant &amp; Bar), so each lists 13
