@@ -65,7 +65,7 @@ describe("the landing's first screen, sample mode", () => {
     const pitch = /<section[^>]*data-testid="pitch"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "";
     const t = text(pitch);
     expect(t).toContain("For promoters and venue marketers with a booked show and seats left to sell.");
-    expect(t).toContain("Each area is compared with the room's usual crowd, not with everyone, and every area and partner links to the request behind it.");
+    expect(t).toContain("Each area is compared with the room's usual crowd, not with everyone, and the map and every partner link to the requests behind them.");
     // One primary button on the page, and it opens a sheet; here a sample, said as one.
     expect(html.match(/btn-primary/g)?.length).toBe(1);
     expect(pitch).toMatch(/<a href="\/plan\/g1-a" class="btn btn-primary"[^>]*>Open a street sheet<\/a>/);

@@ -325,7 +325,7 @@ export default async function Home() {
               It gives your street team one page: the areas where this show&apos;s fans stand out, the local places they already like there, and the
               PDF, call list and calendar file to work from.
             </p>
-            <p className="mt-2">Each area is compared with the room&apos;s usual crowd, not with everyone, and every area and partner links to the request behind it.</p>
+            <p className="mt-2">Each area is compared with the room&apos;s usual crowd, not with everyone, and the map and every partner link to the requests behind them.</p>
             {featured ? (
               <>
                 <p className="mt-5">
