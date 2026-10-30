@@ -149,7 +149,7 @@ export default function EvalPage() {
       <p className="mt-3">
         What has been checked so far, and what has not. The first section was recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and the
         Claude-alone check after it ran on live Qloo calls on Oct 28 2026. Live runs on the hosted site are paused for judging; each sheet recorded
-        there comes from a live run and was re-checked offline on Oct 28 and 29 2026, with no API call (the{" "}
+        there comes from a live run and was re-checked offline on Oct 28 to 30 2026, with no API call (the{" "}
         <Link href="/system-card#recheck" className="link">
           system card
         </Link>{" "}

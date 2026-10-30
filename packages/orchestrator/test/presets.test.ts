@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
 import type { Envelope, StreetSheet } from "@walkup/contracts";
-import { LIMITS_EVERY_SHEET } from "@walkup/contracts";
+import { buyersLimit, LIMITS_EVERY_SHEET } from "@walkup/contracts";
 import { findAlcoholTerm, findDeniedTerm, isDeniedTag } from "@walkup/engine";
 import { BUDGET_TARGET, CARD_ORDER, createMemoryChoiceStore, createMemoryPlanStore, type CallBudget, type CardKey, type PlanResult } from "../src/index";
 import { MIN_BILL_PCT, SPLIT_HALF_NODE } from "../src/steps/heat";
@@ -57,7 +57,8 @@ describe("every preset", () => {
         const s = sheet(id);
         expect(s.mode).toBe("fixture");
         expect(Object.keys(s.cards).sort()).toEqual([...CARD_ORDER].sort());
-        for (const line of LIMITS_EVERY_SHEET) expect(s.limits).toContain(line);
+        // "Where buyers live" is said of the map the run has (G3 has none).
+        for (const line of LIMITS_EVERY_SHEET) expect(s.limits).toContain(buyersLimit(line, s));
         expect(s.limits.some((l) => /^Sample data/.test(l))).toBe(true);
         for (const [k, env] of Object.entries(s.cards) as [string, Envelope<unknown>][]) {
           if (env.status !== "ok") expect(env.reason, k).toBeTruthy();

@@ -23,14 +23,16 @@
  */
 import { aboutTimes, type LedgerEntry, type LiftTile, type MediaPick, type Partner, type PrePostSpot, type QlooEntity, type SheetDiscovery, type StreetSheet } from "@walkup/contracts";
 import { annotateTile, stateFromZctas } from "@walkup/gazetteer";
-import { anBeforeNumber, liftFigureStyle, vetNarration, vetSheetHooks } from "@walkup/narrator";
+import { anBeforeNumber, classificationWording, liftFigureStyle, vetNarration, vetSheetHooks } from "@walkup/narrator";
 import {
   activationFor,
   backCatalogueLabel,
   barsExcluded,
   brandDisplayName,
   BACK_CATALOGUE_CHIP,
+  chainSkippedAhead,
   chainTailInPlaces,
+  CHAINS_ASIDE,
   cleanWebsite,
   DEFAULT_BAR_CATEGORIES,
   explainPartner,
@@ -60,7 +62,7 @@ import { splitBudget } from "./steps/budget";
 import { partnerLineReason, partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
 import { guardTrace } from "./steps/trace";
 import { CHAIN_DETECT_LIMIT, CHAIN_DETECT_LIMIT_BEFORE, PARTNER_TILES, PARTNERS_COUNT_LINE_RE, partnersCountLine } from "./steps/partners";
-import { disambiguateNames, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, numberedTiles, spreadTiles } from "./steps/heat";
+import { disambiguateNames, liftCountLine, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, numberedTiles, spreadTiles } from "./steps/heat";
 import { categoryTagMap, loadTagPins, type TagPins } from "./tags";
 import type { GazetteerLike } from "./types";
 
@@ -315,6 +317,7 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
     listSize: kept.length,
     adultsOnly: sheet.bill.legalAgeEnforced === true && op.allAges !== true,
     thinSignal,
+    ...(sheet.cards.liftMap.results.diagnostics.baseline === "none" || newTiles.length === 0 ? { noLiftMap: true } : {}),
     billTagIds,
     tagCounts: partnerTagCounts(kept),
   };
@@ -506,8 +509,9 @@ export interface RecheckOptions {
  *    failing line is replaced by the template's, with the reason added to the guard's reasons, as a new run does;
  *  - "about N times" in the template's area lines and summary and in the heat step's "Put X first" follows the one
  *    rule (`aboutTimes`: the sheet's 2-decimal lift, half up), so an area never reads two figures; Claude's lines
- *    are left to the guard (`liftFiguresByRule`), apart from two text-only fixes narrate() now makes: "an 82nd" for
- *    "a 82nd", and "about 2.0 times" for "about 2 times" where 2.0 is the area's figure (`modelLineWording`);
+ *    are left to the guard (`liftFiguresByRule`), apart from the text-only fixes narrate() now makes: "an 82nd" for
+ *    "a 82nd", "about 2.0 times" for "about 2 times" where 2.0 is the area's figure, and "this R&B show" for "this
+ *    Music / R&B show" (`modelLineWording`);
  *  - Claude's fan copy held to the copy checks narrate()'s guard runs: a line that calls the room small from a taste
  *    tag ("a cozy room") is dropped and counted, and the copy card and the Summary step say how many lines are left
  *    (`dropCopyHooks`);
@@ -523,7 +527,10 @@ export interface RecheckOptions {
  *    names the shared-website signal ("the same name or website at 3 or more places"), chain lists whose "and 7
  *    more" counted brands (now places), the acts card's "1 of 1 acts resolved" (now "act"), a ledger note that
  *    repeats its node's name, the revise step's reader on a sheet whose note the rules read on purpose, and a
- *    revision's change list against its parent.
+ *    revision's change list against its parent;
+ *  - the Summary step's count of fan copy lines only when it is a full set (Claude may have drafted more than the
+ *    checks kept), the lift card's count said as the areas that pass both tests (`liftCountWording`), and "Why this
+ *    one" saying "national chains aside" when a chain the rule skipped ranks higher (`discoveryChainsAside`).
  */
 export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { sheet: StreetSheet; report: RecheckReport } {
   const gaz = opts.gazetteer ?? DEFAULT_GAZETTEER;
@@ -688,6 +695,12 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     report.rewritten.push("acts count");
   }
 
+  // ---- The lift card's count says what it counts: the areas that pass both tests (the Lift map step's own words) --
+  if (liftCountWording(sheet)) report.rewritten.push("lift card count");
+
+  // ---- "Start with this place": a national chain the rule skipped ranks higher, so the "why" says chains are aside --
+  if (discoveryChainsAside(sheet)) report.rewritten.push("discovery why");
+
   // ---- Steps: the spots step follows the list; Summary and Checks by what the checks replaced and why each line
   // went; chain lists counted in places; the reader of a note the rules read on purpose ----------------------------
   if (syncPrePostStep(sheet)) report.rewritten.push("spots step");
@@ -705,13 +718,19 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
         // lines left now and, when fixed wording replaced Claude's summary, saying so.
         const step = (n: number, status: typeof hooks.status, replaced: boolean) =>
           narrateStep({ templated: false, hooks: n, hooksStatus: status, summaryReplaced: replaced, ledgerRefs: s.ledgerRefs });
-        const was = [false, true].find((r) => step(hooksBefore.n, hooksBefore.status, r).decision === s.decision);
+        // Also the wording before a step stopped counting kept lines as written ("Claude wrote ... and 2 fan copy
+        // lines" when Claude drafted 3): the full-set wording, which still counts.
+        const was = [false, true].find((r) => step(hooksBefore.n, hooksBefore.status, r).decision === s.decision || step(hooksBefore.n, "ok", r).decision === s.decision);
         if (was === undefined) return s;
         const replacedNow = was || summaryReplaced(sheet.guard.reasons);
         const hooksDropped = hooks.results.length !== hooksBefore.n;
-        if (replacedNow === was && !hooksDropped) return s;
+        if (!hooksDropped) {
+          const decision = step(hooksBefore.n, hooksBefore.status, replacedNow).decision;
+          if (decision === s.decision) return s;
+          report.rewritten.push(replacedNow !== was ? "summary step" : "summary step copy count");
+          return { ...s, decision };
+        }
         if (replacedNow !== was) report.rewritten.push("summary step");
-        if (!hooksDropped) return { ...s, decision: step(hooksBefore.n, hooksBefore.status, true).decision };
         report.rewritten.push("copy lines step");
         const now = step(hooks.results.length, hooks.status, replacedNow);
         const out: typeof s = { ...s, decision: now.decision, status: now.status };
@@ -835,9 +854,12 @@ function modelLineWording(sheet: StreetSheet): string[] {
   const lifts = new Map(sheet.cards.liftMap.results.tiles.map((t) => [t.geohash, t.lift]));
   let articles = 0;
   let figures = 0;
+  let genres = 0;
   const an = (text: string) => {
-    const out = anBeforeNumber(text);
-    if (out !== text) articles++;
+    const named = classificationWording(text, sheet.bill.classification);
+    if (named !== text) genres++;
+    const out = anBeforeNumber(named);
+    if (out !== named) articles++;
     return out;
   };
   const tileWhy = n.tileWhy.map((w) => {
@@ -851,9 +873,62 @@ function modelLineWording(sheet: StreetSheet): string[] {
     const text = an(l.text);
     return text === l.text ? l : { ...l, text };
   });
-  if (articles === 0 && figures === 0) return [];
+  if (articles === 0 && figures === 0 && genres === 0) return [];
   sheet.narration = { ...n, summary, tileWhy, partnerLines };
-  return [...(articles > 0 ? [`"an" before a number (${articles})`] : []), ...(figures > 0 ? [`"about N.0 times" (${figures})`] : [])];
+  return [
+    ...(articles > 0 ? [`"an" before a number (${articles})`] : []),
+    ...(figures > 0 ? [`"about N.0 times" (${figures})`] : []),
+    ...(genres > 0 ? [`genre as the header gives it (${genres})`] : []),
+  ];
+}
+
+/** The lift card's count as runs stored it: "20 areas where this bill's crowd ranks higher than the room's usual crowd." */
+const LIFT_COUNT_BEFORE = /^([\d,]+) areas? where this bill's crowd ranks higher than (.+?)\.(?= |$)/;
+/** The Lift map step's two tests: "20 areas pass both tests: at least 1.3 times ..., and percentile 70 or higher ...". */
+const BOTH_TESTS = /^([\d,]+) areas? pass(?:es)? both tests: at least (\d+(?:\.\d+)?) times .+?, and percentile (\d+) or higher\b/;
+
+/**
+ * The lift card's count as a run now says it (`liftCountLine`): the areas that pass both tests, in the Lift map step's
+ * own numbers ("20 areas pass both tests (lift 1.3 or more against the room's usual crowd, percentile 70 or higher for
+ * this crowd)"). Only when the step counts the same areas; the count itself never changes. True when the card changed.
+ */
+function liftCountWording(sheet: StreetSheet): boolean {
+  const card = sheet.cards.liftMap;
+  const m = LIFT_COUNT_BEFORE.exec(card.summary);
+  const cause = sheet.steps?.find((s) => s.id === "heat")?.cause;
+  const t = cause ? BOTH_TESTS.exec(cause) : null;
+  if (!m || !t || m[1] !== t[1]) return false;
+  card.summary = card.summary.replace(m[0], liftCountLine(Number(m[1]!.replace(/,/g, "")), m[2]!, Number(t[2]), Number(t[3])));
+  return true;
+}
+
+/** The partner rule's "why" up to its area: "the highest-ranked place for this crowd in area 2 (no place in area 1 qualified)". */
+const PARTNER_WHY_AREA = /^(the highest-ranked place for this crowd in area (\d+)(?: \([^)]*\))?)( that )/;
+
+/**
+ * "Why this one" as a run now writes it (`partnerDiscovery`): when a national chain the rule skipped would have
+ * qualified ahead of the pick (it ranks higher in the pick's area, or sits in an earlier area), the line says
+ * "national chains aside", so it never calls the pick the highest-ranked place over a chain the sheet lists higher.
+ * Text only: the pick, its ranks and the gap stay. True when the line changed.
+ */
+function discoveryChainsAside(sheet: StreetSheet): boolean {
+  const d = sheet.discovery;
+  if (!d || d.kind !== "partner" || !d.why || d.why.includes(CHAINS_ASIDE)) return false;
+  const m = PARTNER_WHY_AREA.exec(d.why);
+  const pick = sheet.cards.partners.results.find((p) => p.entity.entityId === d.entityId);
+  if (!m || !pick) return false;
+  // The areas in the order the run walked them; the line's area number must be the pick's own area there.
+  const order = storedNumbered(sheet);
+  const number = Number(m[2]);
+  if (order[number - 1] !== pick.tileGeohash) return false;
+  const entries = entryIndex(sheet.ledger ?? []);
+  const twinSize = (p: Partner) => {
+    const ref = p.chips.find((c) => isUsualCrowdChip(c.label))?.ledgerRef;
+    return ref ? (entries.get(ref)?.resultCount ?? null) : null;
+  };
+  if (!chainSkippedAhead({ partners: sheet.cards.partners.results, pick, areasBefore: order.slice(0, number - 1), twinSize })) return false;
+  sheet.discovery = { ...d, why: d.why.replace(m[0], `${m[1]}${CHAINS_ASIDE}${m[3]}`) };
+  return true;
 }
 
 /**

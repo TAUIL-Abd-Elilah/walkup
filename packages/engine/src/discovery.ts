@@ -123,6 +123,39 @@ function standsApart(p: Partner, twinSize?: (p: Partner) => number | null): bool
   return p.houseRank - p.qlooRank >= DISCOVERY_RULES.minHouseGap;
 }
 
+/** The rule's walk order inside one area: this crowd's rank, then score, then list order. */
+function walkOrder(x: { p: Partner; idx: number }, y: { p: Partner; idx: number }): number {
+  return x.p.qlooRank - y.p.qlooRank || y.p.score - x.p.score || x.idx - y.idx;
+}
+
+/**
+ * True when a national chain the rule skipped would have qualified ahead of the pick: one in an earlier area, or one in
+ * the pick's area that comes before it. The "why" then says national chains are set aside, so it never calls the pick
+ * the highest-ranked place when a chain on the same list ranks higher.
+ */
+export function chainSkippedAhead(i: {
+  partners: readonly Partner[];
+  pick: Partner;
+  /** The areas walked before the pick's own area (geohashes). */
+  areasBefore: readonly string[];
+  twinSize?: (p: Partner) => number | null;
+}): boolean {
+  const before = new Set(i.areasBefore);
+  const list = i.partners.map((p, idx) => ({ p, idx }));
+  const at = list.find(({ p }) => p === i.pick) ?? list.find(({ p }) => p.entity.entityId === i.pick.entity.entityId);
+  if (!at) return false;
+  return list.some(
+    (x) =>
+      x.p.chain === true &&
+      x.p.tileGeohash !== null &&
+      (before.has(x.p.tileGeohash) || (x.p.tileGeohash === i.pick.tileGeohash && walkOrder(x, at) < 0)) &&
+      standsApart(x.p, i.twinSize),
+  );
+}
+
+/** ", national chains aside," after the area in the partner rule's "why". */
+export const CHAINS_ASIDE = ", national chains aside,";
+
 export function partnerDiscovery(i: PartnerDiscoveryInput): SheetDiscovery | null {
   if (i.baseline !== "house" || i.partners.length === 0) return null;
   const areas: { geohash: string; name: string | undefined }[] = [];
@@ -134,7 +167,7 @@ export function partnerDiscovery(i: PartnerDiscoveryInput): SheetDiscovery | nul
     const inArea = i.partners
       .map((p, idx) => ({ p, idx }))
       .filter(({ p }) => p.tileGeohash === area.geohash && p.chain !== true)
-      .sort((x, y) => x.p.qlooRank - y.p.qlooRank || y.p.score - x.p.score || x.idx - y.idx);
+      .sort(walkOrder);
     const pick = inArea.find(({ p }) => standsApart(p, i.twinSize));
     if (pick) hit = { p: pick.p, number: a + 1, areaName: area.name ?? pick.p.tileName };
   }
@@ -154,13 +187,14 @@ export function partnerDiscovery(i: PartnerDiscoveryInput): SheetDiscovery | nul
   const detail = [typeof km === "number" ? `${km.toFixed(1)} km from the venue.` : "", p.explain?.activation ?? ""].filter(Boolean).join(" ");
   const gap = typeof p.houseRank === "number" ? `the room's usual crowd ranks ${p.houseRank - p.qlooRank} places lower` : "the room's usual crowd doesn't rank";
   const where = number === 1 ? "area 1" : `area ${number} (no place in ${number === 2 ? "area 1" : `areas 1 to ${number - 1}`} qualified)`;
+  const aside = chainSkippedAhead({ partners: i.partners, pick: p, areasBefore: areas.slice(0, number - 1).map((a) => a.geohash), ...(i.twinSize ? { twinSize: i.twinSize } : {}) });
   const refs = i.ledgerRefs?.(p) ?? p.explain?.ledgerRefs ?? p.chips.map((c) => c.ledgerRef);
   return {
     kind: "partner",
     headline,
     detail: detail || `${withArticle(categoryWord(p.category)).replace(/^./, (c) => c.toUpperCase())} on the partner list.`,
     rule: PARTNER_RULE,
-    why: `the highest-ranked place for this crowd in ${where} that ${gap}${typeof p.houseRank === "number" ? "" : " at all"}`,
+    why: `the highest-ranked place for this crowd in ${where}${aside ? CHAINS_ASIDE : ""} that ${gap}${typeof p.houseRank === "number" ? "" : " at all"}`,
     entityId: p.entity.entityId,
     ledgerRefs: [...new Set(refs.filter(Boolean))],
   };

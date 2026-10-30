@@ -50,7 +50,8 @@ describe("recheckSheet: fan copy", () => {
     expect(sheet.guard.dropped).toBe(s.guard.dropped + 1);
     expect(sheet.guard.reasons).toContain('copyHooks[1]: a room size from a taste tag ("cozy room")');
     const narrate = sheet.steps!.find((x) => x.id === "narrate")!;
-    expect(narrate.decision).toMatch(/ and 2 fan copy lines /);
+    // Claude drafted 3 and the checks kept 2: the decision doesn't count them as written, the cause does.
+    expect(narrate.decision).toMatch(/ and fan copy lines /);
     expect(narrate.cause).toBe("Only 2 copy lines passed the tag allowlist and the checks.");
     expect(report.rewritten).toEqual(expect.arrayContaining(["copy lines dropped (1)", "copy lines step"]));
     // Nothing the run found changes, and a second pass changes nothing.

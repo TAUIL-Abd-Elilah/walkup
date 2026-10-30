@@ -282,7 +282,8 @@ describe("spots, media, summary and checks", () => {
   it("says who wrote the summary", () => {
     expect(narrateStep({ templated: true, hooks: 3, hooksStatus: "ok", ledgerRefs: ["Q28"] }).decision).toBe("Wrote the summary and 3 fan copy lines from a fixed template; no model was called.");
     const model = narrateStep({ templated: false, hooks: 2, hooksStatus: "partial", ledgerRefs: ["L1"] });
-    expect(model.decision).toBe("Claude wrote the summary and 2 fan copy lines from this run's results.");
+    // Claude may have drafted more lines than the checks kept: the count is the cause's.
+    expect(model.decision).toBe("Claude wrote the summary and fan copy lines from this run's results.");
     expect(model.cause).toBe("Only 2 copy lines passed the tag allowlist and the checks.");
     const none = narrateStep({ templated: true, hooks: 0, hooksStatus: "empty", ledgerRefs: [] });
     expect(none.status).toBe("partial");

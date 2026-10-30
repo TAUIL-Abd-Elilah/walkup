@@ -31,13 +31,13 @@ export function noLiftMap(sheet: StreetSheet): boolean {
  * How far to trust the map, in one sentence: "The map holds up when the bill is split in two (0.71) and isn't just
  * where people go anyway."
  */
-export function trustSentence(split: number | null | undefined, weak: boolean, oneAct = true): string {
+export function trustSentence(split: number | null | undefined, weak: boolean, oneAct = false): string {
   const anyway = weak ? "but it mostly follows where people go anyway" : "and isn't just where people go anyway";
-  if (split === undefined) return weak ? "The map mostly follows where people go anyway." : "The map isn't just where people go anyway.";
+  // On a one-act bill the run's note, printed right under this sentence, already says there was no second half.
+  if (split === undefined || (split === null && oneAct)) return weak ? "The map mostly follows where people go anyway." : "The map isn't just where people go anyway.";
   if (split === null) {
-    // The check also comes back empty when a half's heatmap fails: only a one-act bill has too few acts.
-    const lead = oneAct ? "Too few acts to check the map by splitting the bill in two" : "The map couldn't be checked by splitting the bill in two this time";
-    return `${lead}; it ${weak ? "mostly follows" : "isn't just"} where people go anyway.`;
+    // The check also comes back empty when a half's heatmap fails.
+    return `The map couldn't be checked by splitting the bill in two this time; it ${weak ? "mostly follows" : "isn't just"} where people go anyway.`;
   }
   if (split > 0.5) return `The map holds up when the bill is split in two (${split.toFixed(2)}) ${anyway}.`;
   return `The two halves of the bill point to different areas (${split.toFixed(2)}), so treat the map as rough, ${weak ? "and it mostly follows where people go anyway" : "though it isn't just where people go anyway"}.`;

@@ -792,9 +792,26 @@ function areaSpotsProblem(ctx: VetContext, sentence: string): string | null {
 const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
 const PARTNER_COUNT_RE = /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:partner(?:s| places?)?|places? on the (?:sheet|list|street team's route))\b/gi;
 
+/**
+ * "it is the area with the 96th percentile for this crowd among the lifted areas": the top percentile among the areas,
+ * said without "highest". A superlative about the percentile, so it passes only when no numbered area (the budget
+ * split's, and the areas the narration is about) has a higher one.
+ */
+const AMONG_PCT_RE = /\bthe\s+area\s+with\s+(?:the\s+|an?\s+)?(\d{1,3})(?:st|nd|rd|th)\s+percentile\b[^.;]*?\bamong\b/i;
+
+function amongProblem(ctx: VetContext, text: string, tile: LiftTile | undefined): string | null {
+  const m = AMONG_PCT_RE.exec(blankProtected(text, ctx.protectedNames));
+  if (!m) return null;
+  const numbered = ctx.pool.filter((t) => ctx.top.includes(t) || ctx.budget.has(t.geohash));
+  const areas = numbered.length > 0 ? numbered : ctx.pool;
+  const own = tile && finite(tile.billPct) ? Math.round(tile.billPct * 1000) : null;
+  if (own !== null && areas.every((t) => !finite(t.billPct) || Math.round(t.billPct * 1000) <= own)) return null;
+  return `superlative "the area with the ${ordinal(Number(m[1]))} percentile among" not backed by the sheet's numbers`;
+}
+
 function tileProblem(ctx: VetContext, text: string, tile: LiftTile | undefined): string | null {
   const subjects = tile ? [tile] : [];
-  const base = directionProblemForTiles(ctx, text, subjects, false) ?? claimProblem(ctx, text, subjects);
+  const base = directionProblemForTiles(ctx, text, subjects, false) ?? claimProblem(ctx, text, subjects) ?? amongProblem(ctx, text, tile);
   if (base) return base;
   for (const sentence of splitSentences(text)) {
     const share = shareProblem(ctx, sentence) ?? usualCrowdPlacedProblem(ctx, sentence) ?? citySideProblem(ctx, sentence);
@@ -1114,6 +1131,18 @@ export function vetGeneratedLines(
  */
 export function anBeforeNumber(text: string): string {
   return text.replace(/\b([Aa]) (?=(?:8\d*|11|18)(?:st|nd|rd|th)?\b)/g, "$1n ");
+}
+
+/**
+ * "this Music / R&B show" -> "this R&B show": Ticketmaster's raw classification written in prose the way the sheet's
+ * header gives it (the part after the last " / "). Only the classification's own words change.
+ */
+export function classificationWording(text: string, classification: string | null | undefined): string {
+  const raw = (classification ?? "").trim();
+  if (!raw.includes(" / ")) return text;
+  const genre = raw.split(" / ").pop()?.trim() ?? "";
+  if (!genre || /^(undefined|other|miscellaneous)$/i.test(genre)) return text;
+  return text.split(raw).join(genre);
 }
 
 /**

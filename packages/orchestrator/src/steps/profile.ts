@@ -5,7 +5,7 @@
  * for radio format, alcohol rules or community inference.
  */
 import type { CompareResult, CompareTag, DemographicsBlock, StreetSheetCards } from "@walkup/contracts";
-import { dedupeTags, displayTagName, isTasteTag, tagNameKey } from "@walkup/engine";
+import { dedupeTags, displayTagName, isTasteTag, joinAnd, tagNameKey } from "@walkup/engine";
 import type { RankedTag } from "@walkup/qloo";
 import { envelope, failure, node, plural, seedIds, type HouseSet, type RunContext, type Seed } from "../context";
 import { genreBaselinePhrase } from "./heat";
@@ -33,23 +33,27 @@ export async function runDemographics(ctx: RunContext, seeds: Seed[], house: Hou
     const r = await ctx.qloo.demographics([...billIds, ...house.ids], { signalTags: tags });
     const bill = r.value.filter((b) => billIds.includes(b.entityId)).map(roundBlock);
     const houseBlocks = r.value.filter((b) => house.ids.includes(b.entityId) || tags.includes(b.entityId)).map(roundBlock);
-    const missing = seeds.filter((s) => !bill.some((b) => b.entityId === s.entity.entityId));
-    const missingPersons = missing.filter((s) => s.entity.subtype === "urn:entity:person");
-    const hasProxy = seeds.some((s) => s.kind === "proxy");
     const results = { bill, house: houseBlocks };
     if (bill.length === 0 && houseBlocks.length === 0) {
       return envelope("empty", "No age or gender blocks came back.", results, [r.ledgerRef], "Qloo returned no demographics blocks for these signals.");
     }
+    // Counted by act, not by block: an act a stand-in title speaks for is covered by the stand-in's block, and named.
+    const withBlock = seeds.filter((s) => bill.some((b) => b.entityId === s.entity.entityId));
+    const covered = [...new Set(withBlock.map((s) => s.act))];
+    const viaStandIn = [...new Set(withBlock.filter((s) => s.kind === "proxy").map((s) => s.act))].filter((a) => !withBlock.some((s) => s.act === a && s.kind !== "proxy"));
+    const missing = [...new Set(seeds.map((s) => s.act))].filter((a) => !covered.includes(a));
+    const acts = Math.max(ctx.bill.acts.length, covered.length + missing.length);
     const genre = genreBaselinePhrase(ctx.bill.classification);
     const houseLabel = house.baseline === "tag" ? genre : `${plural(houseBlocks.length, "of the room's usual acts", "of the room's usual acts")}`;
+    const standIn =
+      viaStandIn.length === 0 ? "" : ` (${joinAnd(viaStandIn)}${viaStandIn.length === covered.length ? "," : ""} through ${viaStandIn.length === 1 ? "a stand-in title" : "stand-in titles"})`;
+    const billLabel = covered.length >= acts ? `the bill's ${plural(covered.length, "act")}` : `${covered.length.toLocaleString("en-US")} of the bill's ${plural(acts, "act")}`;
     const summary =
       bill.length > 0
-        ? `Age mix for the bill's ${plural(bill.length, "act")} and ${houseLabel}.`
+        ? `Age mix for ${billLabel}${standIn} and ${houseLabel}.`
         : `Qloo has no age data for this bill's acts, so only ${houseLabel} ${house.baseline === "tag" ? "is" : "are"} shown.`;
     if (missing.length > 0) {
-      void missingPersons;
-      const names = missing.map((s) => s.entity.name).join(", ");
-      const reason = `Qloo has no age data for ${names}${hasProxy ? "; the stand-ins' data is shown" : ""}.`;
+      const reason = `Qloo has no age data for ${joinAnd(missing)}.`;
       return envelope("partial", summary, results, [r.ledgerRef], reason, ["Age figures describe whole audiences, never one person."]);
     }
     return envelope("ok", summary, results, [r.ledgerRef], undefined, ["Age figures describe whole audiences, never one person."]);

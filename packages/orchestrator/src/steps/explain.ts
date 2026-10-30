@@ -28,9 +28,10 @@ function areaAt(ctx: RunContext, p: Partner): string | undefined {
 
 /**
  * The partners with `explain` filled in, same order. `thinSignal` is the
- * sheet's thin-signal flag (it lowers every partner's confidence one step).
+ * sheet's thin-signal flag (it lowers every partner's confidence one step);
+ * `noLiftMap` says the run has no lift map, so no reason says "not in a top area".
  */
-export function explainPartners(ctx: RunContext, result: PartnersResult, seeds: readonly Seed[], opts: { thinSignal: boolean }): Partner[] {
+export function explainPartners(ctx: RunContext, result: PartnersResult, seeds: readonly Seed[], opts: { thinSignal: boolean; noLiftMap?: boolean }): Partner[] {
   if (result.partners.length === 0) return result.partners;
   const entries = new Map(ctx.ledger.entries().map((e) => [e.id, e]));
   const baseTags = categoryUrns(ctx.pins, partnerCategories(ctx)).urns.length;
@@ -41,6 +42,7 @@ export function explainPartners(ctx: RunContext, result: PartnersResult, seeds: 
     listSize: result.partners.length,
     adultsOnly: adultsOnly(ctx),
     thinSignal: opts.thinSignal,
+    ...(opts.noLiftMap ? { noLiftMap: true } : {}),
     billTagIds: new Set(seeds.flatMap((s) => (s.entity.tags ?? []).map((t) => t.id))),
     tagCounts: partnerTagCounts(result.partners),
   };

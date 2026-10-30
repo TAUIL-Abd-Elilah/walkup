@@ -63,21 +63,21 @@ describe("the system card's product eval row", () => {
   });
 });
 
-// judging-fixes.test.ts counts the 14 from the stored sheets (when plans.json is present); here the four docs that
+// judging-fixes.test.ts counts the 15 from the stored sheets (when plans.json is present); here the four docs that
 // describe the re-check tell the fourth pass the same way.
 describe("the re-check's fourth pass", () => {
   it("is told the same way in the README, the system card (both) and the hosting doc", () => {
     const readme = doc("README.md");
-    expect(readme).toContain("14 Claude sentences that fail a check now read as template wording");
+    expect(readme).toContain("15 Claude sentences that fail a check now read as template wording");
     expect(readme).toContain("A fourth pass on Oct 29 held Claude's lines to newer checks, and ten more now read as template wording: six partner lines");
     const md = doc("docs/system-card.md");
-    expect(md).toContain("and ten more from the fourth pass below");
+    expect(md).toContain("ten more from the fourth pass below and one from the fifth");
     expect(md).toContain("ten more now read as template wording: six partner lines");
     const card = renderToStaticMarkup(createElement(SystemCardPage)).replace(/<[^>]+>/g, " ").replace(/&#x27;/g, "'").replace(/\s+/g, " ");
-    expect(card).toContain("14 Claude sentences that fail a check now read as template wording");
-    expect(card).toContain("ten of the 14 come from it: six partner lines");
+    expect(card).toContain("15 Claude sentences that fail a check now read as template wording");
+    expect(card).toContain("ten of the 15 come from it: six partner lines");
     expect(card).toContain("“about 2.0 times” for “about 2 times”");
-    expect(doc("docs/deploy-vercel.md")).toContain("A fourth pass on Oct 29 held Claude's lines to newer checks (ten of the 14 template swaps above");
+    expect(doc("docs/deploy-vercel.md")).toContain("A fourth pass on Oct 29 held Claude's lines to newer checks (ten of the 15 template swaps above");
     for (const text of [readme, md]) expect(text).toContain('"about 2.0 times" for "about 2 times"');
   });
 });

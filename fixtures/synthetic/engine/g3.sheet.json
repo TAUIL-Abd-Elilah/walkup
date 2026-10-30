@@ -294,7 +294,7 @@
               ],
               "activation": "Ask to leave table cards.",
               "confidence": "low",
-              "confidenceWhy": "Rank 1 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "confidenceWhy": "Rank 1 of 8 near the venue, but the list was short and this bill's signal is thin.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q9"
@@ -442,7 +442,7 @@
               ],
               "activation": "Ask to leave flyers and a card at each chair.",
               "confidence": "low",
-              "confidenceWhy": "Rank 2 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "confidenceWhy": "Rank 2 of 8 near the venue, but the list was short and this bill's signal is thin.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q9"
@@ -590,7 +590,7 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "low",
-              "confidenceWhy": "Rank 3 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "confidenceWhy": "Rank 3 of 8 near the venue, but the list was short and this bill's signal is thin.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q9"
@@ -743,7 +743,7 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "low",
-              "confidenceWhy": "Rank 4 of 8 near the venue, not in a top area, but the list was short and this bill's signal is thin.",
+              "confidenceWhy": "Rank 4 of 8 near the venue, but the list was short and this bill's signal is thin.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q9"
@@ -878,7 +878,7 @@
               ],
               "activation": "Ask to put up a poster.",
               "confidence": "low",
-              "confidenceWhy": "Rank 5 of 8 near the venue, not in a top area, but the list was short, it ranked in the lower half and this bill's signal is thin.",
+              "confidenceWhy": "Rank 5 of 8 near the venue, but the list was short, it ranked in the lower half and this bill's signal is thin.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q9"
@@ -1026,7 +1026,7 @@
               ],
               "activation": "Ask to leave flyers at the counter.",
               "confidence": "low",
-              "confidenceWhy": "Rank 7 of 8 near the venue, not in a top area, but the list was short, it ranked in the lower half and this bill's signal is thin.",
+              "confidenceWhy": "Rank 7 of 8 near the venue, but the list was short, it ranked in the lower half and this bill's signal is thin.",
               "limits": "Suggested, not affiliated: no partner has agreed to anything.",
               "ledgerRefs": [
                 "Q9"
@@ -1986,7 +1986,7 @@
     "limits": [
       "Whether this plan sells tickets: nothing here measures sales.",
       "What fans will buy: these are tastes, not purchases.",
-      "Where buyers live: the areas show where this bill's fans stand out from the room's usual crowd.",
+      "Where buyers live: this sheet has no lift map, and a lift map shows only where fans stand out.",
       "Anything about one person, or whether a partner will move tickets.",
       "Planning tool; no sales data for this show is known or shown.",
       "Thin signal: treat as a starting list.",

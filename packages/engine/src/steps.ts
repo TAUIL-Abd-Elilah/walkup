@@ -609,7 +609,9 @@ export function summaryReplaced(reasons: readonly string[]): boolean {
 }
 
 export function narrateStep(i: NarrateStepInput): TraceStep {
-  const lines = i.hooks > 0 ? ` and ${countOf(i.hooks, "fan copy line")}` : "";
+  // `hooks` counts the lines the checks kept. Claude may have drafted more, so when fewer than a full set were kept the
+  // decision leaves the count out ("Claude wrote ... and fan copy lines") and the cause says how many passed.
+  const lines = i.hooks > 0 ? (!i.templated && i.hooksStatus !== "ok" ? " and fan copy lines" : ` and ${countOf(i.hooks, "fan copy line")}`) : "";
   const decision = i.templated
     ? `Wrote the summary${lines} from a fixed template; no model was called`
     : i.summaryReplaced

@@ -73,7 +73,7 @@ function dayWords(ymd: string): string {
 /**
  * The recorded-mode sentence: when the sheets were recorded, that live runs are paused, and that each recorded sheet
  * comes from a live run and any change since was made offline with no API call (on the hosted sheets, `recheckSheet`
- * run by `scripts/refresh-recorded-plans.ts --recheck` on Oct 28 and 29 2026: wording and checks changed, no Qloo or
+ * run by `scripts/refresh-recorded-plans.ts --recheck` on Oct 28 to 30 2026: wording and checks changed, no Qloo or
  * Ticketmaster answer did; a store that never had that pass has no change since, so the sentence holds there too). Said of recorded
  * sheets only, so it holds on a page that shows a sample sheet too (a preset with no live run shows one, marked so:
  * "No live run of this show was recorded"). RecordedStrip sets the text up to the first ". " in bold, so the first

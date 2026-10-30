@@ -94,6 +94,7 @@ export {
   vetWhatsDifferent,
   diffSummary,
   anBeforeNumber,
+  classificationWording,
   liftFigureStyle,
   vetHookList,
   vetGeneratedLines,

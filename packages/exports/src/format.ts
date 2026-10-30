@@ -3,7 +3,7 @@
  * No locale guessing and no clock: the same sheet always formats the same way.
  */
 import type { Bill, LedgerEntry, LiftTile, OperatorInputs, Partner, PartnerExplain, StreetSheet, Weekday } from "@walkup/contracts";
-import { WEEKDAYS } from "@walkup/contracts";
+import { genreFans, WEEKDAYS } from "@walkup/contracts";
 import { stateFromZctas, stateFromZip } from "@walkup/gazetteer/states";
 
 /** Tiles at or above this lift are "top" tiles (same threshold as the engine's minLift and the web sheet). */
@@ -146,16 +146,8 @@ export function formatLift(lift: number): string {
   return `${lift.toFixed(2)}x`;
 }
 
-/**
- * "comedy fans in general" from a Ticketmaster classification ("Comedy", "Music / Country (Americana)"); a genre with
- * two capitals keeps its case ("R&B fans in general"), as the run's steps write it.
- */
-export function genreFans(classification: string | undefined): string {
-  const raw = classification ?? "";
-  const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
-  if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
-  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
-}
+/** "comedy fans in general" from a Ticketmaster classification; one rule in @walkup/contracts (`buyersLimit` uses it). */
+export { genreFans };
 
 /** What a sheet's lift is compared with, in words: the room's usual crowd, or the genre's fans on a tag baseline. */
 export function liftBaselineWords(sheet: Pick<StreetSheet, "bill" | "cards">): string {

@@ -268,7 +268,7 @@
       },
       "liftMap": {
         "status": "ok",
-        "summary": "30 areas where this bill's crowd ranks higher than the room's usual crowd. The top 4 are in Brentwood, West Nashville, Nashville and Goodlettsville.",
+        "summary": "30 areas pass both tests (lift 1.3 or more against the room's usual crowd, percentile 70 or higher for this crowd). The top 4 are in Brentwood, West Nashville, Nashville and Goodlettsville.",
         "results": {
           "tiles": [
             {

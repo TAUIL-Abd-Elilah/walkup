@@ -125,7 +125,7 @@ export function tagInProse(name: string): string {
   return properPhrases(words.join(" "));
 }
 
-/** Only genre and audience tags fill the copy slots, never adjectives or themes ("Cozy", "Friendship", "City life"). */
+/** Only genre tags fill the copy slots (audience tags are skipped where slots are filled), never adjectives or themes ("Cozy", "Friendship", "City life"). */
 const SLOT_NAMESPACES = ["urn:tag:genre:music", "urn:tag:genre:media", "urn:tag:genre:person", "urn:tag:audience:"];
 export function isSlotTag(t: { id: string }): boolean {
   return SLOT_NAMESPACES.some((ns) => t.id.startsWith(ns));

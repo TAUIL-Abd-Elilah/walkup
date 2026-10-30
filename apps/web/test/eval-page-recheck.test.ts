@@ -1,7 +1,7 @@
 /**
- * /eval's opening paragraph: the recorded sheets come from live runs and were re-checked offline on Oct 28 and 29 2026
+ * /eval's opening paragraph: the recorded sheets come from live runs and were re-checked offline on Oct 28 to 30 2026
  * (deploy/vercel/plans.json, `scripts/refresh-recorded-plans.ts --recheck`; the pass that wrote the shipped file ran
- * at 07:49 UTC on Oct 29), so the page never says a sheet is exactly what a live run produced, and it links to the
+ * on Oct 30), so the page never says a sheet is exactly what a live run produced, and it links to the
  * system card's paragraph on what the re-check changed.
  */
 import { renderToStaticMarkup } from "react-dom/server";
@@ -19,7 +19,7 @@ describe("/eval says how the recorded sheets were made", () => {
   it("says each comes from a live run and was re-checked offline, and points to what changed", () => {
     const { html, text } = intro();
     expect(text).toContain(
-      "Live runs on the hosted site are paused for judging; each sheet recorded there comes from a live run and was re-checked offline on Oct 28 and 29 2026, with no API call (the system card says what changed).",
+      "Live runs on the hosted site are paused for judging; each sheet recorded there comes from a live run and was re-checked offline on Oct 28 to 30 2026, with no API call (the system card says what changed).",
     );
     expect(html).toContain('href="/system-card#recheck"');
     expect(text).not.toMatch(/what a live run produced/);

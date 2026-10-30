@@ -317,6 +317,16 @@ export function ownHeatLine(against: string, rho: number | null): string {
 }
 
 /**
+ * The lift card's count, said as what it counts, in the Lift map step's own words: "20 areas pass both tests (lift 1.3
+ * or more against the room's usual crowd, percentile 70 or higher for this crowd)." Not "stand out": the summary uses
+ * that for the numbered areas, a different number.
+ */
+export function liftCountLine(n: number, against: string, minLift: number, billFloor: number): string {
+  const pct = Math.round(billFloor <= 1 ? billFloor * 100 : billFloor);
+  return `${plural(n, "area")} ${n === 1 ? "passes" : "pass"} both tests (lift ${minLift} or more against ${against}, percentile ${pct} or higher for this crowd).`;
+}
+
+/**
  * "comedy fans in general" for a genre-tag baseline ("fans of this genre in general" without a genre). A genre with
  * two capitals keeps its case ("R&B fans in general", "EDM").
  */
@@ -551,7 +561,7 @@ export async function runHeat(ctx: RunContext, seeds: Seed[], house: HouseSet): 
   const named = result.spread.slice(0, NARRATED_TILES).map((t) => t.name ?? "an unnamed area");
   let summary =
     top.length > 0
-      ? `${plural(top.length, "area")} where this bill's crowd ranks higher than ${against}. ${named.length === 1 ? "The top one is" : `The top ${named.length} are`} ${joinNames(named)}.`
+      ? `${liftCountLine(top.length, against, LIFT_DEFAULTS.minLift, MIN_BILL_PCT)} ${named.length === 1 ? "The top one is" : `The top ${named.length} are`} ${joinNames(named)}.`
       : `No area reached a lift of 1.3 against ${against}, so partners are picked near the venue.`;
   if (reached.adjusted > 0) summary += ` ${plural(reached.adjusted, "area")} weighted down because you already reach their ZIPs.`;
   if (result.excludedAreas > 0) summary += ` ${plural(result.excludedAreas, "area")} left out at your request.`;

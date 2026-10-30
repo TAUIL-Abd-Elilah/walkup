@@ -12,6 +12,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   LIMITS_EVERY_SHEET,
+  buyersLimit,
   type EnvelopeStatus,
   type LedgerEntry,
   type QlooEntity,
@@ -511,7 +512,8 @@ export async function checkSubject(s: Subject, opts: CheckOptions = {}): Promise
   c.ok("every card present", missing.length === 0, missing.length ? `missing ${missing.join(", ")}` : `${CARD_ORDER.length} cards`, "D1");
   const unexplained = CARD_ORDER.filter((k) => sheet.cards[k] && sheet.cards[k].status !== "ok" && !sheet.cards[k].reason);
   c.ok("every non-ok card says why", unexplained.length === 0, unexplained.join(", ") || "all explained", "S2");
-  const lostLimits = LIMITS_EVERY_SHEET.filter((l) => !sheet.limits.includes(l));
+  // The run stores the buyers line as said of the map the sheet has (`buyersLimit`), so check for that wording.
+  const lostLimits = LIMITS_EVERY_SHEET.map((l) => buyersLimit(l, sheet)).filter((l) => !sheet.limits.includes(l));
   c.ok("prints what the sheet does not establish", lostLimits.length === 0, lostLimits.length ? `missing: ${lostLimits.join(" | ")}` : `${LIMITS_EVERY_SHEET.length} limits`, "D1");
   const fixtureLine = sheet.limits.some((l) => /^Sample data/.test(l));
   const fixtureNotes = sheet.ledger.filter((x) => /fixture world: synthetic response/.test(x.note ?? "")).length;

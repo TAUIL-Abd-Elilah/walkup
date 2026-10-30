@@ -304,8 +304,8 @@ describe("nothing names a comparison, a map or a count the sheet doesn't have (s
     const tag = tagSheet();
     expect(buyersLimit(BUYERS, tag)).toBe(`Where buyers live: the areas show where this bill's fans stand out from ${liftBaselineWords(tag)}.`);
     expect(liftBaselineWords(tag)).toBe("country fans in general");
-    // The stored sheet keeps its line; only the view changes.
-    expect(fixture("g3").limits).toContain(BUYERS);
+    // A run now stores the line said of its own map (g3 has no lift map).
+    expect(fixture("g3").limits).toContain(NO_LIFT_BUYERS_LIMIT);
   });
 
   it("labels the age table and the lean columns by the crowd they came from, not by the map's baseline", () => {
@@ -358,13 +358,20 @@ describe("nothing names a comparison, a map or a count the sheet doesn't have (s
   });
 
   it("says a split-half check that didn't run on a bill with two acts couldn't run, not that there were too few acts", () => {
-    expect(trustSentence(null, false)).toMatch(/^Too few acts to check the map by splitting the bill in two;/);
+    // One act: the run's note under the sentence says why there was no check, so the sentence doesn't say it again.
+    expect(trustSentence(null, false, true)).toBe("The map isn't just where people go anyway.");
+    expect(trustSentence(null, true, true)).toBe("The map mostly follows where people go anyway.");
     expect(trustSentence(null, false, false)).toBe("The map couldn't be checked by splitting the bill in two this time; it isn't just where people go anyway.");
+    expect(trustSentence(null, false)).toBe(trustSentence(null, false, false));
     // Every hosted sheet has one act: the table names that, and says what the check does rather than that it ran.
     for (const { id, sheet } of PAGES.filter((p) => p.sheet.cards.liftMap.results.liftDiagnostics?.splitHalfSpearman === null)) {
       const html = different(renderPlan(sheet));
       expect(html, id).toContain("Split-half agreement Too few acts to split in two The check splits the bill in two and maps each half apart.");
       expect(html, id).not.toContain("The bill split in two halves and mapped apart");
+      // The lift card says the one-act reason once, in the run's note (browser-print-bp-r5-2).
+      const card = everything(/<section id="lift"[\s\S]*?<\/section>/.exec(renderPlan(sheet))?.[0] ?? "");
+      expect(card, id).toContain("This bill has one act, so there was no second half to check the map against.");
+      expect(card, id).not.toMatch(/Too few acts to check the map|couldn't be checked by splitting/);
     }
     const failed = structuredClone(fixture("g1-a"));
     failed.cards.liftMap.results.liftDiagnostics!.splitHalfSpearman = null;

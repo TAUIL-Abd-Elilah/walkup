@@ -36,7 +36,7 @@ import {
   type PresetShow,
   type StoredPlan,
 } from "@walkup/orchestrator";
-import { baseLimits, cardStatuses, errorEnvelope, planUrlFor, sheetUrlFor, worstStatus, type PauseLike, type PendingPick, type PlanMode, type ToolEnvelope } from "./envelope";
+import { baseLimits, cardStatuses, errorEnvelope, liftHeatRef, planUrlFor, sheetLimits, sheetUrlFor, worstStatus, type PauseLike, type PendingPick, type PlanMode, type ToolEnvelope } from "./envelope";
 import { lookupEvent } from "./event";
 import { callerKey, type CapDecision } from "./limits";
 import { inputProblem } from "./policy";
@@ -457,7 +457,7 @@ function rankEnvelope(sheet: StreetSheet, caller: Caller): ToolEnvelope<Declared
     cards: cardStatuses(sheet),
     ...(card.status !== "ok" && card.reason ? { reason: card.reason } : {}),
     provenance: card.provenance.length > 0 ? [...card.provenance] : sheet.ledger.map((e) => e.id),
-    limits: unique([...card.limits, ...sheet.limits, NOT_AFFILIATED]),
+    limits: unique([...card.limits, ...sheetLimits(sheet), NOT_AFFILIATED]),
   };
 }
 
@@ -542,6 +542,8 @@ export interface BillVsHouse {
    */
   baseline: "house" | "tag" | "none";
   tiles: StreetSheet["cards"]["liftMap"]["results"]["tiles"];
+  /** The receipt for the tiles: the bill heatmap they came from (the widened one when the search widened). */
+  heatRef?: string;
   diagnostics: StreetSheet["cards"]["liftMap"]["results"]["diagnostics"];
   whatsDifferent: StreetSheet["cards"]["whatsDifferent"]["results"];
   demographics: StreetSheet["cards"]["demographics"]["results"];
@@ -559,11 +561,13 @@ export function billVsHouseOf(sheet: StreetSheet): BillVsHouse {
   if (sheet.bill.venue.state) venue.state = sheet.bill.venue.state;
   const stored = whatsDifferent.results;
   const diff = { ...stored, a: vetWhatsDifferent(stored.a), b: vetWhatsDifferent(stored.b), shared: vetWhatsDifferent(stored.shared) };
+  const heatRef = liftMap.results.tiles.length > 0 ? liftHeatRef(sheet) : undefined;
   return {
     planId: sheet.planId,
     bill: { acts: sheet.bill.acts.map((a) => ({ name: a.name, role: a.role })), venue, date: sheet.bill.date, weekday: sheet.bill.weekday },
     baseline: liftMap.results.diagnostics.baseline,
     tiles: liftMap.results.tiles,
+    ...(heatRef ? { heatRef } : {}),
     diagnostics: liftMap.results.diagnostics,
     whatsDifferent: diff,
     demographics: demographics.results,
@@ -603,7 +607,7 @@ export async function billVsHouseTool(services: McpServices, caller: Caller, arg
     resolution: sheet.cards.resolution.results,
     ...(status !== "ok" && reason ? { reason } : {}),
     provenance: unique(cards.flatMap((c) => c.provenance)),
-    limits: unique([...cards.flatMap((c) => c.limits), ...sheet.limits]),
+    limits: unique([...cards.flatMap((c) => c.limits), ...sheetLimits(sheet)]),
   };
   return ok(envelope);
 }

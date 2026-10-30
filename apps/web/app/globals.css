@@ -524,6 +524,10 @@
   summary {
     break-after: avoid;
   }
+  /* A section's source line sits under its heading row, so it stays with what follows too. */
+  [data-testid="source-line"] {
+    break-after: avoid;
+  }
   /* A table's header row stays with its first row (Chrome ignores break-after on thead, so the row says it). */
   tbody > tr:first-child {
     break-before: avoid;

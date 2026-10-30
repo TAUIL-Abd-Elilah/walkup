@@ -314,7 +314,7 @@
       },
       "liftMap": {
         "status": "ok",
-        "summary": "45 areas where this bill's crowd ranks higher than the room's usual crowd. The top 4 are in Virginia Beach, Hampton, Suffolk (Huntersville) and Suffolk (Green Meadow Point).",
+        "summary": "45 areas pass both tests (lift 1.3 or more against the room's usual crowd, percentile 70 or higher for this crowd). The top 4 are in Virginia Beach, Hampton, Suffolk (Huntersville) and Suffolk (Green Meadow Point).",
         "results": {
           "tiles": [
             {
@@ -5920,7 +5920,7 @@
       },
       "demographics": {
         "status": "partial",
-        "summary": "Age mix for the bill's 1 act and 11 of the room's usual acts.",
+        "summary": "Age mix for 1 of the bill's 3 acts (Reggie Collier, through a stand-in title) and 11 of the room's usual acts.",
         "results": {
           "bill": [
             {
@@ -6113,7 +6113,7 @@
         "limits": [
           "Age figures describe whole audiences, never one person."
         ],
-        "reason": "Qloo has no age data for Dorian Pike, Sidecar; the stand-ins' data is shown."
+        "reason": "Qloo has no age data for Dorian Pike and Sidecar."
       },
       "whatsDifferent": {
         "status": "ok",

@@ -168,6 +168,8 @@ export interface ConfidenceInput {
   poolSize: number;
   /** False when the place came from the near-venue list, not a top area. */
   inTopArea: boolean;
+  /** True when the run has no lift map (no usual crowd to compare with, or no areas): there is no top area to miss. */
+  noLiftMap?: boolean;
   /** Radius the search widened to (m), or null when it did not widen. */
   widenedRadiusM: number | null;
   widenedCategories: boolean;
@@ -207,7 +209,8 @@ export function partnerConfidence(i: ConfidenceInput): { confidence: PartnerConf
     concerns.push("this bill's signal is thin");
   }
   const of = i.poolSize > 0 ? ` of ${i.poolSize}` : "";
-  const where = i.inTopArea ? "in a top area" : "near the venue, not in a top area";
+  // With no lift map there are no areas, so the reason says only where the place was picked (the score is the same).
+  const where = i.inTopArea ? "in a top area" : i.noLiftMap ? "near the venue" : "near the venue, not in a top area";
   // "near the top of its list" only adds words to "Rank 2 of 28": the reason names the other strengths.
   const said = strengths.filter((x) => x !== "near the top of its list");
   const plus = said.length > 0 ? `; ${joinAnd(said)}` : "";
@@ -226,6 +229,8 @@ export interface ExplainContext {
   /** Ticketmaster says adults only and the operator has not said all ages. */
   adultsOnly: boolean;
   thinSignal: boolean;
+  /** The run has no lift map (no usual crowd to compare with, or no areas). */
+  noLiftMap?: boolean;
   billTagIds?: ReadonlySet<string>;
   tagCounts?: ReadonlyMap<string, number>;
 }
@@ -275,6 +280,7 @@ export function explainPartner(i: ExplainPartnerInput, ctx: ExplainContext): Par
     billTagNames,
     poolSize: i.poolSize,
     inTopArea: p.tileGeohash !== null,
+    ...(ctx.noLiftMap ? { noLiftMap: true } : {}),
     widenedRadiusM: i.widenedRadiusM ?? null,
     widenedCategories: i.widenedCategories ?? false,
     hoursKnown,

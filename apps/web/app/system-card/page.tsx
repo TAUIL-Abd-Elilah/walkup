@@ -113,7 +113,7 @@ export default function SystemCardPage() {
         runs are paused for judging; each recorded sheet comes from a live run and was re-checked offline afterwards, as the next paragraph says.
       </p>
       <p id="recheck" className="mt-2 scroll-mt-24">
-        On Oct 28 and 29 2026 the recorded sheets were re-checked offline with the newer checks, with no API call. 14 Claude sentences that fail a check
+        On Oct 28 to 30 2026 the recorded sheets were re-checked offline with the newer checks, with no API call. 15 Claude sentences that fail a check
         now read as template wording, with the reason in the sheet&apos;s checks. Partner lines say a place is &ldquo;near&rdquo; its area unless the
         address is on that street, and each area carries its own state. Each revision&apos;s change list was rebuilt over the five numbered areas. One
         spot listed as a restaurant, SWIG, is a bar by its Qloo tags (a bar and grill, with dive-bar tags), so it left the two &ldquo;All ages, no
@@ -127,14 +127,19 @@ export default function SystemCardPage() {
         shared-website signal in the chain note, and removed a repeated label from 16
         Ticketmaster roster receipts. A third pass on Oct 29 made every &ldquo;about N times&rdquo; follow one rule (the sheet&apos;s 2-decimal lift,
         rounded half up), so an area reads the same figure on the plan page, the PDF, the Steps panel and street-team.ics; four stored lines changed. A
-        fourth pass on Oct 29 held Claude&apos;s lines to newer checks, and ten of the 14 come from it: six partner lines that called a partner a stop
+        fourth pass on Oct 29 held Claude&apos;s lines to newer checks, and ten of the 15 come from it: six partner lines that called a partner a stop
         before or after the show, though it is not on the sheet&apos;s spots list; a summary that called an area&apos;s places spots; a summary that
         named three areas where the crowd stands out most, though another stands out more; an area line with the wrong percentile; and an area line
         that called the budget split equal where the shares differ. The same pass wrote &ldquo;an 82nd&rdquo; and &ldquo;an 80th&rdquo; for
         &ldquo;a 82nd&rdquo; and &ldquo;a 80th&rdquo;, and &ldquo;about 2.0 times&rdquo; for &ldquo;about 2 times&rdquo; in eight area lines at
         lift 2.04x. It also dropped two fan copy lines that called the room &ldquo;cozy&rdquo; or &ldquo;intimate&rdquo; from a taste tag (the
-        tag describes the crowd&apos;s taste, not the room), on two revisions at The Anthem, which now list 2 copy lines. No Qloo or Ticketmaster
-        answer, ranking, partner list or ledger number changed.
+        tag describes the crowd&apos;s taste, not the room), on two revisions at The Anthem, which now list 2 copy lines. A fifth pass on Oct 30
+        fixed wording that the rest of its sheet contradicts: the lift card&apos;s count of areas names its two tests (lift 1.3 or more, percentile
+        70 or higher); a top pick that passed over a higher-ranked national chain says &ldquo;national chains aside&rdquo;; one Claude summary says
+        &ldquo;R&amp;B&rdquo; for Ticketmaster&apos;s &ldquo;Music / R&amp;B&rdquo;; on those two Anthem revisions the Summary step no longer says
+        Claude wrote 2 copy lines (it wrote 3, and the checks kept 2); and one more of the 15 comes from it, an area line that called its
+        area&apos;s percentile the top one where another area&apos;s is higher. No Qloo or Ticketmaster answer, ranking, partner list or ledger
+        number changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>

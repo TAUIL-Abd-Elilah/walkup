@@ -9,8 +9,7 @@
  * The checks are @walkup/narrator's, the same ones a new run goes through. The stored sheet, sheet.json and the API
  * stay as recorded.
  */
-import { LIMITS_EVERY_SHEET, type StreetSheet } from "@walkup/contracts";
-import { liftBaselineWords } from "@walkup/exports/format";
+import { buyersLimit, type StreetSheet } from "@walkup/contracts";
 import { diffSummary, vetCopyHooks, vetNarration, vetWhatsDifferent } from "@walkup/narrator/vet";
 
 /** The "How this crowd differs" summary counted from the checked lists; MCP's bill_vs_house uses the same one. */
@@ -44,22 +43,8 @@ export const NO_LIFT_PARTNERS = "There is no lift map on this run, so partners a
  */
 const NO_AREA_SUMMARY = "No area stands out on this run, so partners are picked near the venue.";
 
-/** The every-sheet limit about where buyers live, as every run stores it. */
-const BUYERS_LIMIT = LIMITS_EVERY_SHEET.find((l) => l.startsWith("Where buyers live:")) ?? "";
-
-/** Said instead on a sheet with no lift map (no usual crowd to compare with, or no areas): there are no areas to read. */
-export const NO_LIFT_BUYERS_LIMIT = "Where buyers live: this sheet has no lift map, and a lift map shows only where fans stand out.";
-
-/**
- * The stored "Where buyers live" limit names the areas and the room's usual crowd. On a sheet with no lift map it says
- * there is none; on a genre baseline it names the genre's fans, as the lift card does. Any other line is kept.
- */
-export function buyersLimit(line: string, sheet: Pick<StreetSheet, "bill" | "cards">): string {
-  if (line !== BUYERS_LIMIT) return line;
-  if (noLift(sheet)) return NO_LIFT_BUYERS_LIMIT;
-  const against = liftBaselineWords(sheet);
-  return against === "the room's usual crowd" ? line : line.replace(/the room's usual crowd\.$/, `${against}.`);
-}
+/** The "Where buyers live" limit said of the map this sheet has; a new run stores it the same way. */
+export { buyersLimit, NO_LIFT_BUYERS_LIMIT } from "@walkup/contracts";
 
 /** True when every partner was picked near the venue: no area was searched (no lift map, or no area held places). */
 export function nearVenueOnly(sheet: Pick<StreetSheet, "cards">): boolean {

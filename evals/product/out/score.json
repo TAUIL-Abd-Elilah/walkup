@@ -4,7 +4,7 @@
   "source": "fixture-world",
   "worldSeed": "houselights-world-v1",
   "recordedPlans": null,
-  "generatedAt": "2026-10-29T23:47:41.911Z",
+  "generatedAt": "2026-10-30T03:16:18.722Z",
   "passed": 20,
   "failed": 0,
   "knownGaps": 0,
@@ -1256,7 +1256,7 @@
         {
           "name": "card demographics status",
           "status": "pass",
-          "detail": "partial (expected partial): Qloo has no age data for Dorian Pike, Sidecar; the stand-ins' data is shown.",
+          "detail": "partial (expected partial): Qloo has no age data for Dorian Pike and Sidecar.",
           "clause": "S2",
           "subject": "g2"
         },
@@ -2065,7 +2065,7 @@
         {
           "name": "card demographics status",
           "status": "pass",
-          "detail": "partial (expected partial): Qloo has no age data for Dorian Pike, Sidecar; the stand-ins' data is shown.",
+          "detail": "partial (expected partial): Qloo has no age data for Dorian Pike and Sidecar.",
           "clause": "S2",
           "subject": "g2 resumed"
         },

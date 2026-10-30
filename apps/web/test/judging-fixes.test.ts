@@ -84,7 +84,7 @@ function recheckTemplateSwaps(before: StoredPlan[], after: StoredPlan[]): string
   );
 }
 
-describe("the offline re-check (Oct 28 and 29), said the same way on the site and in the docs", () => {
+describe("the offline re-check (Oct 28 to 30), said the same way on the site and in the docs", () => {
   // SWIG is listed as a restaurant; its name says nothing about drink. Qloo's tags (a bar and grill, dive-bar decor
   // and feel) are what left it out of the "All ages, no bars" revisions.
   const SWIG = "One spot listed as a restaurant, SWIG, is a bar by its Qloo tags (a bar and grill, with dive-bar tags)";
@@ -108,9 +108,9 @@ describe("the offline re-check (Oct 28 and 29), said the same way on the site an
     for (const text of [readme, card, vercel, skill]) {
       expect(text).not.toMatch(/what a live run produced|by its name or tags \(SWIG\)|were not touched/);
     }
-    expect(readme).toContain("each recorded sheet comes from a live run, with every receipt and download, and was re-checked offline on Oct 28 and 29 2026 with no API call");
-    expect(readme).toContain("**Re-checked offline, Oct 28 and 29 2026.**");
-    expect(vercel).toContain(`the README's "Re-checked offline, Oct 28 and 29 2026" lists what changed`);
+    expect(readme).toContain("each recorded sheet comes from a live run, with every receipt and download, and was re-checked offline on Oct 28 to 30 2026 with no API call");
+    expect(readme).toContain("**Re-checked offline, Oct 28 to 30 2026.**");
+    expect(vercel).toContain(`the README's "Re-checked offline, Oct 28 to 30 2026" lists what changed`);
     expect(card).toContain("each recorded sheet comes from a live run and was re-checked offline afterwards");
     // The hosting doc no longer says the parents were left alone: the re-check rewrote them too.
     expect(vercel).toContain("Recording them did not change the parents.");

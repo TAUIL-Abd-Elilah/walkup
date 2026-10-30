@@ -7,7 +7,7 @@
 import type { DeclaredPartnerScore, LiftTile, StreetSheet } from "@walkup/contracts";
 import { areaLabel } from "@walkup/exports/format";
 import { numberedTiles } from "@walkup/orchestrator";
-import { recordedDay, type ToolEnvelope } from "./envelope";
+import { liftHeatRef, recordedDay, type ToolEnvelope } from "./envelope";
 import { TM_EVENT_SUBTYPE } from "./event";
 import type { BillVsHouse } from "./tools";
 
@@ -43,7 +43,8 @@ function ref(r: string | undefined): string {
 /**
  * The sheet's numbered areas 1-5, as the Street Sheet page, the PDF and the CSVs list them: lift 1.3 and up, highest
  * first, none within 3 km of another or sharing its ZIP (numberedTiles), each named with its own state (areaLabel).
- * Never the map's first five squares, which can be one area twice.
+ * Never the map's first five squares, which can be one area twice. `provenance` is the heat request the tiles came
+ * from (`liftHeatRef`): on a map that widened to 60 km, the widened one, as partners.csv and the calendar cite it.
  */
 function areaLines(tiles: readonly LiftTile[], provenance: string | undefined): string[] {
   return numberedTiles(tiles, MAX_TILES).map((t, i) => `  ${i + 1}. ${t.name ? areaLabel(t) : `tile ${t.geohash}`} (lift ${t.lift.toFixed(2)})${ref(provenance)}`);
@@ -59,7 +60,7 @@ function sheetLines(s: StreetSheet): string[] {
   const lift = s.cards.liftMap;
   if (lift.results.tiles.length > 0 && lift.results.diagnostics.baseline !== "none") {
     const base = lift.results.diagnostics.baseline === "house" ? "the room's usual crowd" : "a genre baseline";
-    const areas = areaLines(lift.results.tiles, lift.provenance[0]);
+    const areas = areaLines(lift.results.tiles, liftHeatRef(s));
     out.push(areas.length > 0 ? `Numbered areas on the sheet, where this crowd over-indexes vs ${base}:` : NO_NUMBERED_AREA);
     out.push(...areas);
   }
@@ -95,7 +96,8 @@ function billVsHouseLines(r: BillVsHouse, provenance: string[]): string[] {
     }`,
   );
   if (r.tiles.length > 0) {
-    const areas = areaLines(r.tiles, provenance[0]);
+    // The heat request the tiles came from (the widened map when the search widened), else the first receipt.
+    const areas = areaLines(r.tiles, r.heatRef ?? provenance[0]);
     out.push(areas.length > 0 ? "Numbered areas on the sheet (highest lift first):" : NO_NUMBERED_AREA);
     out.push(...areas);
   }

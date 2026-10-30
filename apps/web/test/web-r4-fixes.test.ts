@@ -161,6 +161,13 @@ describe("headings stay with what follows on paper (browser-print-final-bp-2)", 
     expect(rule("h2, h3, .section > :first-child, summary")).toMatch(/break-after:\s*avoid/);
   });
 
+  it("keeps a section's source line with what follows, so a heading and its source line never end a page alone (browser-print-bp-r5-1)", () => {
+    expect(rule('[data-testid="source-line"]')).toMatch(/break-after:\s*avoid/);
+    // The rule's selector is the attribute PlanCard prints on the line, right under the heading row.
+    const html = renderPlan(fixture("g1-a"));
+    expect(html).toMatch(/<section id="lift"[^>]*><div class="print-avoid-break [^"]*">(?:(?!<\/div>)[\s\S])*<\/div><p [^>]*data-testid="source-line"/);
+  });
+
   it("keeps a section's heading row in one piece, so a wrapped heading never ends a page without its status word", () => {
     // 57cd1eda A4: the lift card's long heading wrapped its row onto three lines and the page broke inside the row.
     expect(rule(".print-avoid-break, li, tr")).toMatch(/break-inside:\s*avoid/);

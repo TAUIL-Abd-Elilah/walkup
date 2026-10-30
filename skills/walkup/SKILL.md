@@ -14,7 +14,7 @@ This skill is a thin client. The Walkup server holds every API key and does all 
 
 ## Setup
 
-Set `WALKUP_URL` to a Walkup server: the hosted instance, `https://walkup-eight.vercel.app` (recorded mode: it serves sheets recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and changes to them recorded ahead, most on Oct 28 2026, each from a live run and all re-checked offline on Oct 28 and 29 2026 with no API call; live runs are paused for judging, so `sheet` and `health` work and `plan`/`rank-partners` are not run), or your own (`npm run dev` in the repository serves `http://localhost:3000`). In OpenClaw you can set it per skill under `skills.entries.walkup.env`. The bundled CLI falls back to `http://localhost:3000` when the variable is empty.
+Set `WALKUP_URL` to a Walkup server: the hosted instance, `https://walkup-eight.vercel.app` (recorded mode: it serves sheets recorded from live Qloo and Ticketmaster runs on Oct 21 2026, and changes to them recorded ahead, most on Oct 28 2026, each from a live run and all re-checked offline on Oct 28 to 30 2026 with no API call; live runs are paused for judging, so `sheet` and `health` work and `plan`/`rank-partners` are not run), or your own (`npm run dev` in the repository serves `http://localhost:3000`). In OpenClaw you can set it per skill under `skills.entries.walkup.env`. The bundled CLI falls back to `http://localhost:3000` when the variable is empty.
 
 No API key is needed or accepted. Self-hosters set `QLOO_API_KEY` and the other keys on the server only.
 

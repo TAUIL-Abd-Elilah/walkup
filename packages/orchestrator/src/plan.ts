@@ -16,6 +16,7 @@
  */
 import { randomUUID } from "node:crypto";
 import {
+  buyersLimit,
   createMemoryLedger,
   LIMITS_EVERY_SHEET,
   withoutControl,
@@ -302,7 +303,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   );
   // "Why this place" on every partner, before the card streams.
   const thinPartners = ctx.thinSignal || heat.thin || heat.widened || partners.partners.length < 15;
-  const explained = quiet(() => explainPartners(ctx, partners, seeds, { thinSignal: thinPartners }), partners.partners);
+  const noLiftMap = heat.card.results.diagnostics.baseline === "none" || heat.card.results.tiles.length === 0;
+  const explained = quiet(() => explainPartners(ctx, partners, seeds, { thinSignal: thinPartners, noLiftMap }), partners.partners);
   partners.partners = explained;
   partners.card = { ...partners.card, results: explained };
   emit(ctx, "partners", partners.card);
@@ -359,7 +361,8 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   if (receipt.line) reasons.unshift(receipt.line);
   if (ctx.personTagsStripped) reasons.push("Person-entity tags stripped before storage.");
 
-  const limits: string[] = [...LIMITS_EVERY_SHEET];
+  // "Where buyers live" said of the map this run has: none, or a genre baseline (`buyersLimit`).
+  const limits: string[] = LIMITS_EVERY_SHEET.map((l) => buyersLimit(l, { bill: ctx.bill, cards }));
   if (whatIfs) limits.push("Planning tool; no sales data for this show is known or shown.");
   if (ctx.thinSignal || heat.thin || heat.widened || partners.partners.length < 15) limits.push("Thin signal: treat as a starting list.");
   if (mode === "fixture") limits.push(...FIXTURE_LIMITS);

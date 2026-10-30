@@ -722,6 +722,36 @@ export const LIMITS_EVERY_SHEET = [
   "Anything about one person, or whether a partner will move tickets.",
 ] as const;
 
+/** The every-sheet limit about where buyers live, as a run with a lift map compared with the room's usual crowd says it. */
+export const BUYERS_LIMIT: string = LIMITS_EVERY_SHEET[2];
+
+/** Said instead on a sheet with no lift map (no usual crowd to compare with, or no areas): there are no areas to read. */
+export const NO_LIFT_BUYERS_LIMIT = "Where buyers live: this sheet has no lift map, and a lift map shows only where fans stand out.";
+
+/**
+ * "comedy fans in general" from a Ticketmaster classification ("Comedy", "Music / Country (Americana)"); a genre with
+ * two capitals keeps its case ("R&B fans in general"), as the run's steps write it.
+ */
+export function genreFans(classification: string | undefined): string {
+  const raw = classification ?? "";
+  const g = (/\(([^)]+)\)\s*$/.exec(raw)?.[1] ?? raw.split("/").pop() ?? "").trim();
+  if (!g || /^(undefined|other|miscellaneous)$/i.test(g)) return "fans of this genre in general";
+  return `${/[A-Z].*[A-Z]/.test(g) ? g : g.toLowerCase()} fans in general`;
+}
+
+/**
+ * The "Where buyers live" limit said of the map this sheet has: the stored line names the areas and the room's usual
+ * crowd, so on a sheet with no lift map it says there is none, and on a genre baseline it names the genre's fans, as
+ * the lift card does. Any other line is kept, so it can run on a line already said this way. The run stores it, and
+ * the pages, the PDF and MCP say it of older sheets.
+ */
+export function buyersLimit(line: string, sheet: Pick<StreetSheet, "bill" | "cards">): string {
+  if (line !== BUYERS_LIMIT) return line;
+  const lift = sheet.cards.liftMap.results;
+  if (lift.diagnostics?.baseline === "none" || lift.tiles.length === 0) return NO_LIFT_BUYERS_LIMIT;
+  return lift.diagnostics?.baseline === "tag" ? line.replace(/the room's usual crowd\.$/, `${genreFans(sheet.bill.classification)}.`) : line;
+}
+
 // ---------------------------------------------------------------------------
 // Lift in words (one rule for every "about 1.8 times" on a sheet)
 // ---------------------------------------------------------------------------

@@ -34,7 +34,7 @@ import { NARRATOR_SYSTEM_PROMPT } from "./prompts";
 import { buildNarrationSchema, toDraft, type NarrationDraft } from "./schema";
 import { PROPER_WORD_RE, properPhrases, templateNarrate, templateSummary } from "./template";
 import type { CallUsage, LlmOptions, NarrateInput, NarrationResult, TemplateReason } from "./types";
-import { anBeforeNumber, HOOK_CLAIM_RE, HOOK_ROOM_SIZE_RE, liftFigureStyle, vetGeneratedLines } from "./vet";
+import { anBeforeNumber, classificationWording, HOOK_CLAIM_RE, HOOK_ROOM_SIZE_RE, liftFigureStyle, vetGeneratedLines } from "./vet";
 
 export type NarrateOptions = LlmOptions;
 
@@ -79,8 +79,10 @@ export interface GuardedNarration {
  * Writes the run's ISO show date and "<n> USD" the way the sheet does ("Wednesday, Feb 17", "$6,000"), for a
  * model that copied them from the facts. Nothing else in the text changes.
  */
-export function readableForPromoter(text: string, show: { date?: unknown; dateText?: unknown }): string {
+export function readableForPromoter(text: string, show: { date?: unknown; dateText?: unknown; classification?: unknown }): string {
   let out = text;
+  // "this Music / R&B show" -> "this R&B show", as the sheet's header gives the genre.
+  if (typeof show.classification === "string") out = classificationWording(out, show.classification);
   if (typeof show.date === "string" && typeof show.dateText === "string" && show.date) {
     // "on Wednesday, 2027-02-17" would repeat the weekday: drop a weekday written just before the date.
     out = out.replace(new RegExp(`(?:\\b[A-Z][a-z]+day,?\\s+)?${show.date.replace(/-/g, "\\-")}`, "g"), show.dateText);
@@ -139,7 +141,7 @@ export function tagNamesInSentenceCase(text: string, names: readonly string[], p
 }
 
 export function guardNarration(rawDraft: NarrationDraft, prepared: PreparedRun): GuardedNarration {
-  const show = (prepared.facts["show"] ?? {}) as { date?: unknown; dateText?: unknown };
+  const show = (prepared.facts["show"] ?? {}) as { date?: unknown; dateText?: unknown; classification?: unknown };
   const factPartners = (prepared.facts["partners"] ?? []) as { entityId: string; sharedTags?: string[] }[];
   const tagWords = [...prepared.allowlist.map((t) => t.name), ...factPartners.flatMap((p) => p.sharedTags ?? [])];
   const fix = (t: string) => readableForPromoter(t, show);

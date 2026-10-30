@@ -4,7 +4,7 @@
  * mode, results, resolution, cards, reason, provenance, limits; paused plans add
  * pending. Built from a sheet, a paused plan or a refusal.
  */
-import { LIMITS_EVERY_SHEET, withoutControl, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet, type StreetSheetCards } from "@walkup/contracts";
+import { buyersLimit, LIMITS_EVERY_SHEET, withoutControl, type Candidate, type EnvelopeStatus, type Resolution, type SheetRevision, type StreetSheet, type StreetSheetCards } from "@walkup/contracts";
 import { FIXTURE_LIMITS } from "@walkup/orchestrator";
 
 /**
@@ -138,8 +138,23 @@ export function sheetEnvelope(stored: StreetSheet, origin: string | null, opts: 
     cards: cardStatuses(sheet),
     ...(reason ? { reason } : {}),
     provenance: sheet.ledger.map((e) => e.id),
-    limits: [...sheet.limits],
+    limits: sheetLimits(sheet),
   };
+}
+
+/** A sheet's limits as the pages and the PDF say them: "Where buyers live" said of the map this sheet has (`buyersLimit`). */
+export function sheetLimits(sheet: StreetSheet): string[] {
+  return (sheet.limits ?? []).map((l) => buyersLimit(l, sheet));
+}
+
+/**
+ * The bill heatmap the lift tiles came from, as partners.csv and the calendar cite it: the widened one when the search
+ * widened to 60 km (its ledger note says so), else the first heat request. The first request is set aside then.
+ */
+export function liftHeatRef(sheet: Pick<StreetSheet, "cards" | "ledger">): string | undefined {
+  const prov = sheet.cards.liftMap.provenance;
+  const notes = new Map((sheet.ledger ?? []).map((e) => [e.id, e.note ?? ""]));
+  return prov.find((id) => /\bbill heat \(widened\b/.test(notes.get(id) ?? "")) ?? prov[0];
 }
 
 export function baseLimits(mode: PlanMode): string[] {
