@@ -6291,23 +6291,22 @@
         "summary": "3 lines, each built only from approved Qloo tags.",
         "results": [
           {
-            "text": "Dorian Pike: R&B and soul at Hampton Coliseum, Saturday, Dec 19.",
+            "text": "Dorian Pike: Stand-up comedy and sitcom at Hampton Coliseum, Saturday, Dec 19.",
             "tagIds": [
-              "urn:tag:genre:music:r_and_b",
-              "urn:tag:genre:music:soul"
+              "urn:tag:keyword:media:stand_up_comedy",
+              "urn:tag:keyword:media:sitcom"
             ]
           },
           {
-            "text": "Dorian Pike for the hip-hop crowd: Saturday night at Hampton Coliseum.",
+            "text": "Dorian Pike for the late night crowd: Saturday night at Hampton Coliseum.",
             "tagIds": [
-              "urn:tag:genre:music:hip_hop"
+              "urn:tag:keyword:media:late_night"
             ]
           },
           {
-            "text": "Dorian Pike: Jazz and americana, live at Hampton Coliseum.",
+            "text": "Dorian Pike: Game night, live at Hampton Coliseum.",
             "tagIds": [
-              "urn:tag:genre:music:jazz",
-              "urn:tag:genre:music:americana"
+              "urn:tag:keyword:media:game_night"
             ]
           }
         ],
@@ -6320,7 +6319,7 @@
       }
     },
     "narration": {
-      "summary": "Dorian Pike, Sidecar and Reggie Collier at Hampton Coliseum, Saturday, Dec 19. This crowd stands out from the room's usual crowd in 4 areas; the strongest, Virginia Beach, is about 1.8 times the room's usual crowd. The sheet suggests 22 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward stand-up comedy, sitcom and friendship.",
+      "summary": "Dorian Pike, Sidecar and Reggie Collier at Hampton Coliseum, Saturday, Dec 19. This crowd stands out from the room's usual crowd in the sheet's top 4 areas; the strongest, Virginia Beach, is about 1.8 times the room's usual crowd. The sheet suggests 22 partners of 5 kinds; none has agreed to anything. It also lists 8 spots for before and after the show, 4 podcasts and 1 sponsor brand. Compared with the room's usual crowd, this one leans toward stand-up comedy, sitcom and friendship.",
       "tileWhy": [
         {
           "geohash": "dq9cgz",

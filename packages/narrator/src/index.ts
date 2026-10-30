@@ -63,7 +63,7 @@ export {
 } from "./openrouter";
 export { OPENROUTER_MODEL, OPENROUTER_BASE_URL } from "./constants";
 
-export { prepareRun, renderFactsMessage, type PreparedRun, type RunIds, type AllowTag } from "./facts";
+export { comedyBill, prepareRun, renderFactsMessage, type PreparedRun, type RunIds, type AllowTag } from "./facts";
 export { buildNarrationSchema, toDraft, type NarrationDraft, type NarrationWire } from "./schema";
 export { jsonOutputFormat, strictJsonSchema } from "./json-schema";
 export {

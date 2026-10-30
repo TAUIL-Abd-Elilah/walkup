@@ -19,7 +19,8 @@
  *   figure written just after another area's name or set against another ("more than 2 times") is not the area's
  *   own; in the summary, only figures within a few words of the one area a sentence names are. An "equal" or "same"
  *   budget split must be equal on the sheet ("about evenly" and "the other four areas": within half a point). "The
- *   Midlothian spots" fails: an area's places are partners, and the sheet's spots are near the room.
+ *   Midlothian spots" fails: an area's places are partners, and the sheet's spots are near the room. "Stands out in
+ *   five areas" fails unless five is the lift card's count of areas that pass both tests (when the count is known).
  * - Partner lines: may name only the tags the partner panel shows as "Tags it shares" (`explain.tags`; the
  *   place's own tags on sheets without them). Any genre or audience word known to the sheet that is not one
  *   of them fails the line, as does a weekday other than the street-team day, "close to the room" for a place
@@ -339,6 +340,8 @@ interface VetContext {
   streetDay: string;
   showDay: string;
   budget: Map<string, number>;
+  /** The lift card's count: the areas that pass both tests. Null when the sheet or input doesn't say. */
+  passCount: number | null;
   /** True only when the sheet's counts are what-ifs (a sample sheet): otherwise "what-if" wording fails a line. */
   whatIfs: boolean;
   summaryTemplate: () => string;
@@ -528,7 +531,7 @@ function summaryProblem(ctx: VetContext, summary: string): string | null {
     if (share) return share;
     const placed = usualCrowdPlacedProblem(ctx, sentence) ?? citySideProblem(ctx, sentence);
     if (placed) return placed;
-    const equal = equalSplitProblem(ctx, sentence, undefined) ?? areaSpotsProblem(ctx, sentence);
+    const equal = equalSplitProblem(ctx, sentence, undefined) ?? areaSpotsProblem(ctx, sentence) ?? areaCountProblem(ctx, sentence);
     if (equal) return equal;
     // A sentence about one area holds that area's numbers (any of its squares, when a name has more than one), for the
     // figures written within a few words of its name: "Five areas sit at the 73rd percentile or higher, led by U Street /
@@ -790,6 +793,36 @@ function areaSpotsProblem(ctx: VetContext, sentence: string): string | null {
 }
 
 const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+
+/** "stands out in five areas", "differs from the room's usual crowd across 5 areas": a count of the areas that stand out. */
+const AREA_COUNT_RE =
+  /\b(?:stands?\s+out|differs?|over-?index(?:es)?)\b[^.;]*?\b(?:in|across)\s+(\d[\d,]*|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:areas?|neighbou?rhoods?)\b/i;
+
+/**
+ * "The Roots draws a crowd that stands out in five areas" under a lift card that says "66 areas pass both tests": the
+ * count must be the card's. "In the sheet's top 5 areas" and "stands out most in A, B and C" are not counts of it.
+ */
+function areaCountProblem(ctx: VetContext, sentence: string): string | null {
+  if (ctx.passCount === null) return null;
+  const m = AREA_COUNT_RE.exec(blankProtected(sentence, ctx.protectedNames));
+  if (!m) return null;
+  const word = m[1]!.toLowerCase();
+  const n = COUNT_WORDS[word] ?? Number(word.replace(/,/g, ""));
+  if (n === ctx.passCount) return null;
+  return `says the crowd stands out in ${m[1]} ${n === 1 ? "area" : "areas"}; the lift card counts ${ctx.passCount} that pass both tests`;
+}
+
+/** The lift card's count, from the Lift map step's tests or the card's own first sentence (either wording runs stored). */
+function sheetPassCount(sheet: StreetSheet): number | null {
+  const cause = sheet.steps?.find((s) => s.id === "heat")?.cause ?? "";
+  const card = sheet.cards?.liftMap?.summary ?? "";
+  if (/^No area passed both tests\b/.test(cause)) return 0;
+  const m =
+    /^([\d,]+) areas? pass(?:es)? both tests\b/.exec(cause) ??
+    /^([\d,]+) areas? pass(?:es)? both tests\b/.exec(card) ??
+    /^([\d,]+) areas? where this bill's crowd ranks higher than\b/.exec(card);
+  return m ? Number(m[1]!.replace(/,/g, "")) : null;
+}
 const PARTNER_COUNT_RE = /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:partner(?:s| places?)?|places? on the (?:sheet|list|street team's route))\b/gi;
 
 /**
@@ -1041,6 +1074,7 @@ function sheetContext(sheet: StreetSheet, narration: Narration | undefined): Vet
     streetDay,
     showDay: (sheet.bill.weekday ?? "").toLowerCase(),
     budget: new Map((sheet.budgetSplit ?? []).map((b) => [b.geohash, b.share])),
+    passCount: sheetPassCount(sheet),
     whatIfs: sheet.mode === "fixture" && sheet.hypothetical === true,
     summaryTemplate: () => (summary ??= honest(templateSummary(input))),
     tileTemplate: (t) => honest(templateTileWhy(t)),
@@ -1086,6 +1120,7 @@ function inputContext(input: NarrateInput, prepared: PreparedRun): VetContext {
     streetDay: (input.streetTeamDay ?? bill.weekday ?? "").toLowerCase(),
     showDay: (bill.weekday ?? "").toLowerCase(),
     budget,
+    passCount: finite(input.liftPassCount) ? input.liftPassCount : null,
     whatIfs: input.hypothetical === true,
     summaryTemplate: () => (summary ??= templateSummary(input, prepared)),
     tileTemplate: (t) => templateTileWhy(t),

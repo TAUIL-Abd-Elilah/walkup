@@ -42,7 +42,8 @@
  * mall, plaza, station, park: `isNonVenue`), not a food cart, kiosk or stand
  * (`isFoodStand`), not adult-themed (`isAdultThemed`), not in an excluded
  * category (and, when bars are excluded, not a place whose name or bar-type
- * tags say it is a drinking place: `isDrinkLed`), not `is_closed`, and not
+ * tags say it is a drinking place: `isDrinkLed`; when restaurants are, not a
+ * place whose name says restaurant: `nameSaysRestaurant`), not `is_closed`, and not
  * explicitly closed on the street-team weekday according to
  * `properties.hours` (Qloo's `filter.hours` already applied). A place kept
  * with no readable clock hours that day (none listed, "Open" with no times,
@@ -54,7 +55,7 @@
  * dropped.
  */
 import type { Chip, LiftTile, Partner, QlooEntity, Weekday } from "@walkup/contracts";
-import { barsExcluded, DEFAULT_BAR_CATEGORIES, distanceOf, isBarCategory, isClosedEntity, isDrinkLed, isFoodStand, isNonVenue, propString, resolveCategory, type CategoryOptions } from "./category";
+import { barsExcluded, DEFAULT_BAR_CATEGORIES, distanceOf, isBarCategory, isClosedEntity, isDrinkLed, isFoodStand, isNonVenue, nameSaysRestaurant, propString, resolveCategory, restaurantsExcluded, type CategoryOptions } from "./category";
 import { chainSignals, isAdultThemed, isSameBusiness, MAX_CHAINS_PER_LIST, normalizeChainName, type ChainEntry, type ChainIndex, type ChainList } from "./chains";
 import { clockHours, hoursOnDay, type HoursOptions } from "./hours";
 import { clamp, cmpNum, cmpStr, isFiniteNumber } from "./num";
@@ -269,6 +270,8 @@ function eligibility(entity: QlooEntity, opts: PartnerScoringOptions, excluded: 
   if (excludedCats.has(category)) return { ok: false, drop: "category" };
   // "No bars" also means a place whose name or bar-type tags say drinks, whatever its display category.
   if (barsExcluded(excludedCats, opts.barCategories ?? DEFAULT_BAR_CATEGORIES) && isDrinkLed(entity)) return { ok: false, drop: "category" };
+  // "No restaurants" also means a place whose name says restaurant ("La Parra Restaurant & Bar", a wine bar by its tags).
+  if (restaurantsExcluded(excludedCats) && nameSaysRestaurant(entity.name)) return { ok: false, drop: "category" };
   return { ok: true, id, hoursText, hoursKnown, category };
 }
 

@@ -9,7 +9,7 @@
  * searched again); other removed rows cite the new search that no longer has them.
  */
 import type { LiftTile, OperatorInputs, Partner, PrePostSpot, RevisionChange, StreetSheet, Weekday } from "@walkup/contracts";
-import { barsExcluded, DEFAULT_BAR_CATEGORIES, hoursOnDay, isDrinkLed, liftInWords } from "@walkup/engine";
+import { barsExcluded, DEFAULT_BAR_CATEGORIES, hoursOnDay, isDrinkLed, liftInWords, nameSaysRestaurant, restaurantsExcluded } from "@walkup/engine";
 import { categoriesInWords, categoryWord, dayWord } from "@walkup/narrator";
 import { isExcludedArea, mapSearchKm, numberedTiles, THIN_CELLS } from "../steps/heat";
 import { reviseSummary } from "./summary";
@@ -32,18 +32,27 @@ function stepRefs(sheet: StreetSheet, id: string, fallback: readonly string[]): 
 /**
  * The left-out types of a revision, and for one place why it is left out: its type ("left out by type (all-ages
  * show)"), or, with bars left out, a drinking place by its name or tags whatever its type ("Capitol Square Bar &
- * Grill", a restaurant: "left out: a drinking place by its name or tags (all-ages show)"). Null when neither.
+ * Grill", a restaurant: "left out: a drinking place by its name or tags (all-ages show)"); with restaurants left out,
+ * a place whose name says restaurant ("La Parra Restaurant & Bar", a wine bar: "left out: a restaurant by its name (your
+ * exclusions)"). Null when none.
  */
 function excludedTypes(op: OperatorInputs): { keys: Set<string>; reason: string; leftOut: (category: string | undefined, entity: Parameters<typeof isDrinkLed>[0]) => string | null } {
   const keys = new Set((op.excludeCategories ?? []).map((k) => k.trim().toLowerCase()));
   if (op.allAges === true) for (const k of DEFAULT_BAR_CATEGORIES) keys.add(k);
   const noBars = barsExcluded(keys);
+  const noRestaurants = restaurantsExcluded(keys);
   const reason = op.allAges === true ? "all-ages show" : "your exclusions";
   return {
     keys,
     reason,
     leftOut: (category, entity) =>
-      !!category && keys.has(category) ? `left out by type (${reason})` : noBars && isDrinkLed(entity) ? `left out: a drinking place by its name or tags (${reason})` : null,
+      !!category && keys.has(category)
+        ? `left out by type (${reason})`
+        : noBars && isDrinkLed(entity)
+          ? `left out: a drinking place by its name or tags (${reason})`
+          : noRestaurants && nameSaysRestaurant(entity.name)
+            ? "left out: a restaurant by its name (your exclusions)"
+            : null,
   };
 }
 

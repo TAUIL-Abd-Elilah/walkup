@@ -561,6 +561,10 @@ export const SPOT_NOT_IN_USUAL_SHORT = "not in its list";
 
 /** A declared partner Qloo could not rank, in the same words on the web, on paper, in the CSV and over MCP. */
 export const DECLARED_UNRANKED = "not in Qloo's catalog, kept in your order";
+/** The area cell of a place on the operator's own list (partners.csv and offer-codes.csv): it isn't searched by area. */
+export const DECLARED_AREA = "Your list: not tied to an area";
+/** The type cell of a place on the operator's own list that Qloo could not find. */
+export const DECLARED_NO_TYPE = "Not in Qloo's catalog";
 
 /**
  * How a spot ranks for this crowd against the room's usual crowd, in one phrase:

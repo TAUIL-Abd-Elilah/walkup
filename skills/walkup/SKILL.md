@@ -128,7 +128,7 @@ In full: the event text or URL, partner names, any what-if numbers you pass (sea
 | Comedy bills | Thinner; one-word stage names collide | `needs_input` pickers, proxy seeds shown in receipts, `partial` badges |
 | Venues that opened recently | Often not in the catalog yet | The Ticketmaster coordinates are used; "Venue not in the catalog yet, so the run uses the Ticketmaster point." |
 | Smaller metros | Fewer heatmap cells and places | Radius widens to 60 km; "Thin signal: treat as a starting list." |
-| Partner categories | Bars, pubs, restaurants, cafes, book stores, clothing stores, barber shops and beauty salons (the categories pinned in `config/tags.json`; record stores could not be pinned) | Categories come from pinned tags only |
+| Partner categories | Bars, restaurants, cafes, book stores, clothing stores, barber shops and beauty salons, plus pubs and sports bars on the more-categories retry, and soul food restaurants then or when the operator picks them (the categories pinned in `config/tags.json`; night clubs are pinned only to be left out; record stores could not be pinned) | Searched by pinned tags only; each place's kind on the sheet (bakery, wine bar, brewery...) comes from its own Qloo tags |
 | Podcasts | Ranked by this bill's crowd | Labelled national ("Local ranking not checked yet, so all are national.") unless location is shown to move the ranking |
 | Sponsors | One brand, labelled national | Alcohol, tobacco and gambling excluded on shows that aren't 21+ or that the operator marked all ages |
 | The user's own partners | Up to 20 names | Not in the catalog: "not in Qloo's catalog, kept in your order" |

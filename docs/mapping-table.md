@@ -79,6 +79,7 @@ One row per input or output of each Qloo call. Read left to right: a field on ou
 | Q10 | `Venue.lon`, `Venue.lat` | `filter.location=POINT(lon lat)`, `filter.location.radius=1500` (2500 on fallback) | filter | n/a | `qloo` |
 | Q10 | `restaurant`, `bar`, `cafe` from `config/tags.json` | `filter.tags` | filter | n/a | `qloo` |
 | Q10 | `Bill.weekday` | `filter.hours=<show weekday>` | filter | n/a | `qloo` |
+| Q10 | | `filter.exclude.entities=<venue>`, `feature.explainability=true`, `take=25`; no `filter.price_level.max` | option | n/a | `qloo` |
 | Q10 | house set entity IDs (weekly twin call) | `signal.interests.entities` | signal | `PrePostSpot.deltaRank` | `qloo` -> `engine` |
 | Q10 | | `results.entities[]` (as Q9) | output | `PrePostSpot.entity`, `.chips` | `qloo` |
 | Q10 | `config/chains.json` | the same fields as the Q9 chain row | output | `PrePostSpot.chain` (the same `chainSignals` as Q9): chains go after the local spots before the list is cut to 8 | `engine` |

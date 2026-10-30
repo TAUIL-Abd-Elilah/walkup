@@ -347,7 +347,7 @@ export default function EvalPage() {
 
         <h3 className="mt-6">A partial map</h3>
         <p className="mt-2">
-          FLO&apos;s map is marked partial: only 159 areas came back, so the search widened to 60 km. Some suburban areas still carry national chains when
+          FLO&apos;s map is marked partial: only 131 map squares came back within 40 km (fewer than 200), so the search widened to 60 km, and only 159 came back there. Some suburban areas still carry national chains when
           no local place fits; they are listed after local places and labelled.
         </p>
         <ShowsLine shows="the sheet says when its map is thin." not="which areas a fuller map would pick." />

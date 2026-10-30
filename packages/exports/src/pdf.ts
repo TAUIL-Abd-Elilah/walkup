@@ -68,6 +68,11 @@ type Kid = El | string | null;
 const noHyphen = (word: string): string[] => [word];
 
 /** Text node; every string child is made drawable by the standard fonts. */
+/** "Thu 7:30 am to 2:30 pm" with a no-break space before each am/pm (WinAnsi has it), so a wrap never splits a time. */
+export function keepTimesWhole(s: string): string {
+  return s.replace(/(\d) (am|pm)\b/g, "$1\u00a0$2");
+}
+
 function text(style: Style | Style[] | undefined, ...kids: Kid[]): El {
   const clean = kids.filter((k): k is El | string => k !== null).map((k) => (typeof k === "string" ? pdfText(k) : k));
   return h(Text, { style, hyphenationCallback: noHyphen }, ...clean);
@@ -329,7 +334,8 @@ function partnerCols(_m: SheetModel, st: Styles): Col[] {
   };
   const area: Col = { key: "area", head: () => "Area", width: "12.5%", cell: (r) => areaText(r, st) };
   // Two lines for one visit day; a third when a holiday's move puts the passes on two weekdays (the place column is three).
-  const hours: Col = { key: "hours", head: (mm) => mm.panel2.hoursHeader, width: "9%", cell: (r) => text(lines(st.cell, 3), r.dayHours) };
+  // Each time keeps its am/pm on the same line ("2:30 pm", never "2:30" / "pm"): a no-break space joins them.
+  const hours: Col = { key: "hours", head: (mm) => mm.panel2.hoursHeader, width: "9%", cell: (r) => text(lines(st.cell, 3), keepTimesWhole(r.dayHours)) };
   const why: Col = {
     key: "why",
     head: () => "Why",

@@ -59,7 +59,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 1. Lift per geohash-6: `(pct_rank(bill.affinity) + 0.5) / (pct_rank(house.affinity) + 0.5)` with ranks from 0 to 1 (the sheet writes it as (percentile + 50) / (percentile + 50)), so lift stays between 1/3 and 3; shrunk toward 1 for low-popularity cells. Affinities are never compared across calls except as percentile ranks within one response.
 2. Top tiles have lift of at least 1.3, this crowd's percentile of at least 70 (the bill floor) and adult population above a floor.
 3. If Spearman(bill lift, raw heat) is above 0.9, the map shows `lift weak` and partners fall back to near-venue ranking.
-4. Partner score: `(1 - (qloo_rank - 1) / n) × (lift_tile / max_lift)`; at most 2 per category per tile, at least 1 non-bar per tile, at most 8 per tile; ties broken by distance; `is_closed=true` dropped and counted; hours include the street-team day (filter plus parsed hours).
+4. Partner score: `(1 - (qloo_rank - 1) / n) × (lift_tile / max_lift)`; at most 2 per category per tile, at least 1 non-bar per tile when the area has an eligible one, at most 8 per tile; ties broken by distance; `is_closed=true` dropped and counted; hours include the street-team day (filter plus parsed hours).
 5. Already-reached ZIPs (aggregate counts) down-weight tiles.
 6. The pre/post load balancer is a greedy water-fill with a deterministic tie-break, capped by operator-editable "assumed" capacities.
 7. The budget split is proportional to tile lift × ACS adults 21+, with a per-tile minimum, labelled "heuristic, not a forecast".
@@ -84,7 +84,7 @@ All three are prewarmed, cached for 30 days and recorded as fixtures. Counts are
 1. Denied tag namespaces and keywords (`DENIED_TAG_PREFIXES`, `DENIED_TAG_KEYWORDS` in `packages/contracts`) never reach copy, chips or persisted data; tested in CI with a regression fixture.
 2. Person-entity tags are stripped before anything is persisted.
 3. Community channels appear only when the operator declares them.
-4. Alcohol and age rules come from Ticketmaster `ageRestrictions`; on all-ages shows the fan-facing pre/post list has restaurants and cafes only and the sponsor excludes alcohol, tobacco and gambling.
+4. Alcohol and age rules come from Ticketmaster `ageRestrictions`; on all-ages shows (and when Ticketmaster gives no age rule) bars stay on the promoter's list but off anything fans see, so the fan-facing pre/post list keeps the restaurants, cafes and bakeries, and the sponsor excludes alcohol, tobacco and gambling; when the operator marks the show all ages, bars leave the partner and spot lists too.
 5. No email to anyone the operator did not type. Partners are "suggested, not affiliated".
 6. Every count on a sample sheet is marked as a what-if ("(assumed)" after the count on the PDF, or "Counts are what-ifs" when none is printed); a live sheet's counts are the operator's own; copy never says "soft" or "tracking"; there is no public ranking of shows.
 7. No jokes, artist voice or likeness in generated copy. Candidate and campaign events are refused.

@@ -66,7 +66,7 @@ Deps (`PlanDeps`): `qloo` (shared client; each run uses `withLedger`), `tm(ledge
 
 ## The revise loop (`src/revise/`)
 
-An operator's note about a finished sheet ("All ages: no bars", "skip Germantown", "only Saturday", "within 10 km") becomes a new sheet under a new plan id.
+An operator's note about a finished sheet ("All ages: no bars", "skip H Street NE", "only Saturday", "within 10 km") becomes a new sheet under a new plan id.
 
 ```ts
 import { parentRequest, revisePlan } from "@walkup/orchestrator";

@@ -9,7 +9,7 @@
  */
 import type { DeclaredPartnerScore, LiftTile, Partner, QlooEntity, StreetSheet } from "@walkup/contracts";
 import { WEEKDAYS } from "@walkup/contracts";
-import { geohashPolygon, haversineM, isValidGeohash, websiteNotShown } from "@walkup/engine";
+import { clockHours, geohashPolygon, haversineM, hoursOnDay, isValidGeohash, resolveCategory, websiteNotShown } from "@walkup/engine";
 import { areaZips } from "./area-zips";
 import { toCsv, type CsvCell, type CsvOptions } from "./csv";
 import {
@@ -17,6 +17,8 @@ import {
   categoryLabel,
   codeFragment,
   dayHoursText,
+  DECLARED_AREA,
+  DECLARED_NO_TYPE,
   DECLARED_UNRANKED,
   FIXTURE_NOTICE,
   hoursWeekday,
@@ -170,12 +172,14 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
         order,
         "your list",
         d.declared.label,
-        "",
-        "",
+        // The type and that day's hours from the place's own Qloo record, as for a suggested partner; the area and the
+        // street-team day stay out (your list isn't searched by area or routed), and the cells say so.
+        d.entity ? categoryLabel(resolveCategory(d.entity)) : DECLARED_NO_TYPE,
+        DECLARED_AREA,
         null,
         prop(d.entity, "address"),
         "",
-        "",
+        declaredHours(d.entity, day),
         "",
         notListed(prop(d.entity, "phone"), PHONE_NOT_LISTED),
         notListed(prop(d.entity, "website"), WEBSITE_NOT_LISTED),
@@ -197,6 +201,14 @@ export function partnersCsvRows(sheet: StreetSheet, opts: PartnersCsvOptions = {
     }
   }
   return rows;
+}
+
+/** A declared place's hours on `day` from its own record ("Thu 9 am to 7 pm", "Closed Thu"), else the hours-not-listed words. */
+function declaredHours(entity: QlooEntity | undefined, day: (typeof WEEKDAYS)[number] | undefined): string {
+  if (!entity || !day) return dayHoursText(null, day);
+  const h = hoursOnDay(entity.properties?.hours, day);
+  if (h.status === "closed") return `Closed ${weekdayShort(day)}`;
+  return dayHoursText(clockHours(h), day);
 }
 
 /** partners.csv: the street team's call list (suggested partners, then the operator's own list). */
@@ -489,7 +501,7 @@ export function offerCodeRows(sheet: StreetSheet, opts: OfferCodeOptions = {}): 
         description: `${fx}Code for ${d.declared.label} (your list)`,
         channel: "your list",
         assignedTo: d.declared.label,
-        tile: "",
+        tile: DECLARED_AREA,
       });
     }
   }

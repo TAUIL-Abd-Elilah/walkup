@@ -448,7 +448,9 @@ function sheetLines(sheet) {
     }
   }
   if (sheet?.guard && typeof sheet.guard.dropped === "number") {
-    lines.push(`Guard: ${sheet.guard.dropped} claim(s) dropped, ${sheet.guard.deniedTagCount ?? 0} tag(s) denied by policy.`);
+    const dropped = sheet.guard.dropped;
+    const denied = sheet.guard.deniedTagCount ?? 0;
+    lines.push(`Guard: ${dropped} claim${dropped === 1 ? "" : "s"} dropped, ${denied} tag${denied === 1 ? "" : "s"} denied by policy.`);
   }
   if (Array.isArray(sheet?.ledger)) {
     const qloo = sheet.ledger.filter((/** @type {Json} */ e) => e?.kind === "qloo");

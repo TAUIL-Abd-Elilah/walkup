@@ -164,7 +164,7 @@ export interface ReviseBody {
 export function parseReviseBody(v: unknown): Result<ReviseBody> {
   if (!isObj(v)) return { ok: false, reason: 'Send a JSON object, e.g. {"instruction": "All ages: no bars"}.' };
   const raw = v.instruction;
-  if (typeof raw !== "string" || raw.trim() === "") return { ok: false, reason: 'Send instruction: a short note on what to change, e.g. "All ages: no bars" or "skip Germantown".' };
+  if (typeof raw !== "string" || raw.trim() === "") return { ok: false, reason: 'Send instruction: a short note on what to change, e.g. "All ages: no bars" or "skip H Street NE".' };
   const instruction = cleanText(raw, MAX_REVISE_CHARS);
   if (!instruction) return { ok: false, reason: `Keep the note to ${MAX_REVISE_CHARS} characters or fewer.` };
   if (looksLikeEmail(instruction)) return { ok: false, reason: "That looks like contact details. Say what to change on the sheet instead." };

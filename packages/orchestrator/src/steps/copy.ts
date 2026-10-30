@@ -78,6 +78,8 @@ export interface CopyInputs {
   compare: CompareResult | null;
   budget: BudgetShare[];
   hypothetical: boolean;
+  /** The lift card's count (every area that passes both tests), for the narration guard. */
+  liftPassCount?: number;
 }
 
 type Narration = NonNullable<StreetSheet["narration"]>;
@@ -305,6 +307,7 @@ export async function runCopy(ctx: RunContext, inp: CopyInputs): Promise<CopyRes
       numbers: [...whatIf, { label: "partners on the sheet", value: inp.partners.length }, ...shares],
       hypothetical: inp.hypothetical,
       streetTeamDay: streetDay(ctx),
+      ...(inp.liftPassCount !== undefined ? { liftPassCount: inp.liftPassCount } : {}),
     },
     { client: ctx.narrator.client, ...(ctx.narrator.spend ? { spend: ctx.narrator.spend } : {}), ledger: ctx.ledger },
   );

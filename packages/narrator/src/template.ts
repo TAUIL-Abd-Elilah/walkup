@@ -145,7 +145,8 @@ export function templateSummary(input: NarrateInput, prepared: PreparedRun = pre
 
   if (input.tiles.length > 0) {
     const top = [...input.tiles].sort((a, b) => b.lift - a.lift || a.geohash.localeCompare(b.geohash))[0]!;
-    const lead = `This crowd stands out from the room's usual crowd in ${plural(input.tiles.length, "area")}`;
+    // The tiles here are the sheet's top areas only; the lift card counts every area that passes both tests.
+    const lead = `This crowd stands out from the room's usual crowd in the sheet's top ${input.tiles.length === 1 ? "area" : plural(input.tiles.length, "area")}`;
     if (input.tiles.length === 1) parts.push(`${lead}: ${top.name ?? "one area"}, ${liftWords(top.lift)}.`);
     else parts.push(`${lead}; the strongest${top.name ? `, ${top.name},` : ""} is ${liftWords(top.lift)}.`);
   } else {
@@ -195,7 +196,14 @@ export function templateNarrate(
   // Genre tags only (never audience or identity tags), one per word; fewer usable tags means fewer lines,
   // never a filled slot. Every line names the act.
   const slot: { tag: AllowTag; word: string }[] = [];
-  for (const t of hookTags(prepared).filter((x) => isSlotTag(x) && !isAudienceTag(x))) {
+  // A comedy bill has no music genre on its allowlist (`comedyBill`): its media keywords ("Stand-up comedy", "Sitcom")
+  // fill the slots instead: the ones the comparison with the room's usual crowd puts on this bill's side or both
+  // (any, when there is no comparison), never one the usual crowd leans toward more.
+  const compare = input.compareTags;
+  const usual = new Set(prepared.comedy ? (compare?.b ?? []).map((t) => t.id) : []);
+  const billSide = new Set([...(compare?.a ?? []), ...(compare?.shared ?? [])].map((t) => t.id));
+  const comedyKeyword = (x: AllowTag) => prepared.comedy && x.id.startsWith("urn:tag:keyword:media") && (billSide.size === 0 || billSide.has(x.id));
+  for (const t of hookTags(prepared).filter((x) => ((isSlotTag(x) && !isAudienceTag(x)) || comedyKeyword(x)) && !usual.has(x.id))) {
     const word = tagInProse(t.name);
     if (word && !slot.some((x) => x.word === word)) slot.push({ tag: t, word });
   }

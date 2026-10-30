@@ -33,6 +33,7 @@ import {
   chainSkippedAhead,
   chainTailInPlaces,
   CHAINS_ASIDE,
+  categoryWord,
   cleanWebsite,
   DEFAULT_BAR_CATEGORIES,
   explainPartner,
@@ -43,14 +44,18 @@ import {
   isNonVenue,
   isUsualCrowdChip,
   LIFT_DEFAULTS,
+  nameSaysRestaurant,
   narrateStep,
   PARTNER_DEFAULTS,
   partnerTagCounts,
   pickDiscovery,
   normalizeChainName,
   pickPodcasts,
+  placeTypeKeys,
+  popularityStep,
   propString,
   resolveCategory,
+  restaurantsExcluded,
   roundTo,
   summaryReplaced,
   usualCrowdChipLabel,
@@ -59,9 +64,9 @@ import {
 import { diffSheets } from "./revise/diff";
 import { REVISE_STEP_ID, RULES_CHOSEN_READER } from "./revise/step";
 import { splitBudget } from "./steps/budget";
-import { partnerLineReason, partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
+import { partnerLineCount, partnerLineReason, partnerLinesNearArea, partnerLinesWithinTags, tidyAreaPhrases, usualCrowdWording } from "./steps/copy";
 import { guardTrace } from "./steps/trace";
-import { CHAIN_DETECT_LIMIT, CHAIN_DETECT_LIMIT_BEFORE, PARTNER_TILES, PARTNERS_COUNT_LINE_RE, partnersCountLine } from "./steps/partners";
+import { CHAIN_DETECT_LIMIT, CHAIN_DETECT_LIMIT_BEFORE, PARTNER_TILES, PARTNERS_COUNT_LINE_RE, partnersCountLine, usualCrowdMarkdownLine } from "./steps/partners";
 import { disambiguateNames, liftCountLine, MIN_BILL_PCT, MIN_SPLIT_HALF, NARRATED_TILES, numberedTiles, spreadTiles } from "./steps/heat";
 import { categoryTagMap, loadTagPins, type TagPins } from "./tags";
 import type { GazetteerLike } from "./types";
@@ -262,11 +267,13 @@ export function refreshSheet(input: StreetSheet, opts: RefreshOptions = {}): { s
   const excluded = new Set((op.excludeCategories ?? []).map((k) => k.trim().toLowerCase()));
   if (op.allAges === true) for (const k of DEFAULT_BAR_CATEGORIES) excluded.add(k);
   const noBars = barsExcluded(excluded);
+  const noRestaurants = restaurantsExcluded(excluded);
   const keepPlace = (e: QlooEntity, category: string): string | null => {
     if (isNonVenue(e)) return "not a business";
     if (isFoodStand(e)) return "a food cart or kiosk";
     if (excluded.has(category)) return `left out by type (${op.allAges === true ? "all-ages show" : "your exclusions"})`;
     if (noBars && isDrinkLed(e)) return `a drinking place by its name or tags (${op.allAges === true ? "all-ages show" : "your exclusions"})`;
+    if (noRestaurants && nameSaysRestaurant(e.name)) return "a restaurant by its name (your exclusions)";
     return null;
   };
   const twinSizeOf = (ref: string) => resultCount(ref);
@@ -566,6 +573,7 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
 
   // ---- At most 2 of a kind per area ----------------------------------------------------------------
   const adultsOnly = sheet.bill.legalAgeEnforced === true && op.allAges !== true;
+  report.rewritten.push(...departmentStoreKinds(sheet, adultsOnly));
   const kindKey = (p: Pick<Partner, "tileGeohash">, kind: string) => `${p.tileGeohash ?? "near"}\u0000${kind}`;
   const kindCount = new Map<string, number>();
   for (const p of sheet.cards.partners.results) kindCount.set(kindKey(p, p.category), (kindCount.get(kindKey(p, p.category)) ?? 0) + 1);
@@ -629,6 +637,28 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
     }
   }
 
+  // ---- Places whose name says restaurant on a sheet with restaurants left out ----------------------------
+  if (restaurantsExcluded(excluded)) {
+    // Only the operator leaves restaurants out (an all-ages show leaves out bars).
+    const why = "a restaurant by its name (your exclusions)";
+    const before = report.droppedSpots.length;
+    const spots = sheet.cards.prePost.results.filter((s) => {
+      if (!nameSaysRestaurant(s.entity.name)) return true;
+      report.droppedSpots.push({ name: s.entity.name, why });
+      return false;
+    });
+    if (report.droppedSpots.length > before) {
+      sheet.cards.prePost.results = spots;
+      recountDrinkSpots(sheet, report.droppedSpots.length - before, "your exclusions", "restaurant");
+    }
+    // The discovery stays: "Start with this place" is a pick the sheet explains on its own.
+    const gone = sheet.cards.partners.results.filter((p) => nameSaysRestaurant(p.entity.name) && p.entity.entityId !== sheet.discovery?.entityId);
+    if (gone.length > 0) {
+      for (const p of gone) report.droppedPartners.push({ name: p.entity.name, why });
+      report.rewritten.push(...dropPartners(sheet, gone, "your exclusions"));
+    }
+  }
+
   // ---- The partners card's opening count follows the list (a near-venue list is not an area) ---------------
   const counted = sheet.cards.partners.summary.replace(PARTNERS_COUNT_LINE_RE, partnersCountLine(sheet.cards.partners.results));
   if (counted !== sheet.cards.partners.summary) {
@@ -656,6 +686,11 @@ export function recheckSheet(input: StreetSheet, opts: RecheckOptions = {}): { s
       report.rewritten.push("partners reason");
     }
   }
+
+  // ---- The template summary says its count is the top areas, not every area that passes (the lift card's count) --
+  // Before the guard, which now fails "stands out ... in 5 areas" under a card that counts more: a summary the
+  // template already wrote is reworded, not reported as replaced.
+  if (templateSummaryTopAreas(sheet)) report.rewritten.push("summary top areas");
 
   // ---- Narration: "near" the area, then the guard ----------------------------------------------------
   if (sheet.narration) {
@@ -789,7 +824,9 @@ function pct100(v: number): number {
 /** The template's line for one area: "About 2.1 times <baseline>. 86th percentile for this crowd, 13th for <baseline>." */
 const TEMPLATE_TILE_LINE = /^About (\d+\.\d) times (.+?)\. (\d+)(?:st|nd|rd|th) percentile for this crowd, (\d+)(?:st|nd|rd|th) for (.+)\.$/;
 /** The template summary's strongest area: "...; the strongest, Highwood, is about 2.5 times" or "...: Highwood, about 2.5 times". */
-const TEMPLATE_SUMMARY_TOP = /(This crowd stands out from .+? in \d+ areas?(?:; the strongest(?:, (.+?),)? is|: (.+?),) about )(\d+\.\d)( times )/;
+const TEMPLATE_SUMMARY_TOP = /(This crowd stands out from .+? in (?:the sheet's top (?:\d+ areas|area)|\d+ areas?)(?:; the strongest(?:, (.+?),)? is|: (.+?),) about )(\d+\.\d)( times )/;
+/** The template summary's count as it was before Oct 30 2026: "stands out ... in 5 areas" counted only the top areas. */
+const TEMPLATE_SUMMARY_COUNT_BEFORE = /\bThis crowd stands out from the room's usual crowd in (?:(1) area:|(\d+) areas;)/;
 const HEAT_DECISION = /^(Put (.+) first: about )(\d+\.\d)( times )/;
 
 /**
@@ -841,6 +878,22 @@ function liftFiguresByRule(sheet: StreetSheet): string[] {
     });
   }
   return out;
+}
+
+/**
+ * The template summary as it now reads: "This crowd stands out from the room's usual crowd in 5 areas" said only the
+ * narrated top areas, under a lift card that counts every area passing both tests (17), so it reads "stands out from
+ * the room's usual crowd in the sheet's top 5 areas", as the template now writes it. Only on a summary the template
+ * wrote (templated, or Claude's the guard replaced). True when it changed.
+ */
+function templateSummaryTopAreas(sheet: StreetSheet): boolean {
+  const n = sheet.narration;
+  if (!n || !(n.templated || summaryReplaced(sheet.guard.reasons))) return false;
+  const lead = "This crowd stands out from the room's usual crowd in the sheet's top";
+  const summary = n.summary.replace(TEMPLATE_SUMMARY_COUNT_BEFORE, (_m, one: string | undefined, many: string | undefined) => (one ? `${lead} area:` : `${lead} ${many} areas;`));
+  if (summary === n.summary) return false;
+  sheet.narration = { ...n, summary };
+  return true;
 }
 
 /**
@@ -973,15 +1026,16 @@ export function chainsLastInArea(text: string): string {
 }
 
 /**
- * After drinking places are dropped from the spots, the counts the sheet states follow the list: the spots card's
- * "8 spots ..." (and its chain sentence), the step's "Picked 8 spots", and the summary's "8 spots for before and after
- * the show". Each spot's share of the crowd stays as the run computed it.
+ * After drinking places (or, with restaurants left out, places named restaurants) are dropped from the spots, the
+ * counts the sheet states follow the list: the spots card's "8 spots ..." (and its chain sentence), the step's "Picked
+ * 8 spots", and the summary's "8 spots for before and after the show". Each spot's share of the crowd stays as the run
+ * computed it.
  */
-function recountDrinkSpots(sheet: StreetSheet, dropped: number, why: string): void {
+function recountDrinkSpots(sheet: StreetSheet, dropped: number, why: string, kind: "bar" | "restaurant" = "bar"): void {
   const n = sheet.cards.prePost.results.length;
   const word = (x: number) => (x === 1 ? "spot" : "spots");
   const chains = sheet.cards.prePost.results.filter((s) => s.chain === true).length;
-  const left = `Left out ${dropped === 1 ? "1 place that is a bar by its" : `${dropped} places that are bars by their`} name or tags (${why}).`;
+  const left = droppedByNameLine(dropped, kind, why);
   sheet.cards.prePost.summary = `${sheet.cards.prePost.summary
     .replace(/^\d+ spots?\b/, `${n} ${word(n)}`)
     .replace(/\b\d+ of \d+ spots? (is a national chain|are national chains)/, () => `${chains} of ${n} ${word(n)} ${chains === 1 ? "is a national chain" : "are national chains"}`)} ${left}`;
@@ -993,6 +1047,199 @@ function recountDrinkSpots(sheet: StreetSheet, dropped: number, why: string): vo
   if (sheet.narration?.summary) {
     sheet.narration = { ...sheet.narration, summary: sheet.narration.summary.replace(/\b\d+ spots? for before and after the show/, `${n} ${word(n)} for before and after the show`) };
   }
+}
+
+/**
+ * A place stored as a clothing store only because Qloo tags it Department store gets the kind its own tags give now
+ * (`resolveCategory`: a department-store tag alone no longer reads as clothes; "Walmart Neighborhood Market", a
+ * supermarket, was "clothing store" before Oct 30 2026), with that kind's ask and, when its partner line opens with
+ * the old kind, the new one there. A store with a clothing tag of its own keeps its kind. Returns what changed.
+ */
+function departmentStoreKinds(sheet: StreetSheet, adultsOnly: boolean): string[] {
+  const out: string[] = [];
+  const categoryTags = categoryTagMap(loadTagPins());
+  const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+  const article = (w: string) => (/^[aeiou]/i.test(w) ? "An" : "A");
+  sheet.cards.partners.results = sheet.cards.partners.results.map((p) => {
+    if (p.category !== "clothing_store" || !placeTypeKeys(p.entity).includes("department_store")) return p;
+    const to = resolveCategory(p.entity, { categoryTags });
+    if (to === p.category) return p;
+    const row: Partner = { ...p, category: to };
+    if (p.explain && p.explain.activation === activationFor(p.category, { adultsOnly })) row.explain = { ...p.explain, activation: activationFor(to, { adultsOnly }) };
+    const from = categoryWord(p.category);
+    const word = categoryWord(to);
+    if (sheet.narration) {
+      const opener = new RegExp(`^(?:(?:A|An) )?${escapeRe(cap(from))}(?= )|^(?:A|An) ${escapeRe(from)}(?= )`);
+      const partnerLines = sheet.narration.partnerLines.map((l) => {
+        if (l.entityId !== p.entity.entityId) return l;
+        const m = opener.exec(l.text);
+        if (!m) return l;
+        return { ...l, text: l.text.replace(m[0], /^(?:A|An) /.test(m[0]) ? `${article(word)} ${word}` : cap(word)) };
+      });
+      sheet.narration = { ...sheet.narration, partnerLines };
+    }
+    out.push(`kind: ${p.entity.name} ${p.category} -> ${to} (a department-store tag alone is not clothes)`);
+    return row;
+  });
+  return out;
+}
+
+/** "Left out 1 place that is a bar by its name or tags (all-ages show)." / "... a restaurant by its name (your exclusions)." */
+function droppedByNameLine(n: number, kind: "bar" | "restaurant", why: string): string {
+  const bar = n === 1 ? "1 place that is a bar by its name or tags" : `${n} places that are bars by their name or tags`;
+  const restaurant = n === 1 ? "1 place that is a restaurant by its name" : `${n} places that are restaurants by their name`;
+  return `Left out ${kind === "bar" ? bar : restaurant} (${why}).`;
+}
+
+function plural(n: number, one: string): string {
+  return `${n.toLocaleString("en-US")} ${n === 1 ? one : `${one}s`}`;
+}
+
+/**
+ * Drops partners the sheet's own rule now leaves out (`gone`, all of them on the list) and has the counts the sheet
+ * states follow the list, as a run that never picked them would state them: the partners card's "N of M picks also
+ * rank for the room's usual crowd", "N of M partners are national chains" and "Found N partners", the partners
+ * step's "Kept N places across A top areas", the usual-crowd step's "Marked down N of the M places", the popularity
+ * check (each area's popularity-alone list without the places the rule leaves out, cut to the area's partners: only
+ * when the stored list is long enough), and the fixed-wording summary's "The sheet suggests N partners of K kinds".
+ * The card and the step say what was left out and why (`why`: "your exclusions"). Scores, ranks, areas and the ledger
+ * stay. Returns what changed.
+ */
+function dropPartners(sheet: StreetSheet, gone: readonly Partner[], why: string): string[] {
+  const out: string[] = ["partners left out by name"];
+  const goneIds = new Set(gone.map((p) => p.entity.entityId));
+  const kept = sheet.cards.partners.results.filter((p) => !goneIds.has(p.entity.entityId));
+  sheet.cards.partners.results = kept;
+  const linesBefore = sheet.narration?.partnerLines.length ?? 0;
+  if (sheet.narration) sheet.narration = { ...sheet.narration, partnerLines: sheet.narration.partnerLines.filter((l) => !goneIds.has(l.entityId)) };
+  const n = kept.length;
+  const left = droppedByNameLine(gone.length, "restaurant", why);
+  const penalizedGone = gone.filter((p) => (p.ubiquityPenalty ?? 0) > 0).length;
+  const less = (x: string) => Math.max(0, Number(x.replace(/,/g, "")) - penalizedGone);
+
+  const card = sheet.cards.partners;
+  let summary = card.summary.replace(
+    /\b([\d,]+) of [\d,]+ picks? also ranks? for the room's usual crowd, so (?:its score was|their scores were) marked down \(more when the two ranks are close\)\./,
+    (_m, x: string) => usualCrowdMarkdownLine(less(x), n),
+  );
+  summary = summary.replace(/\b([\d,]+) of [\d,]+ partners? (is a national chain|are national chains)/, (_m, x: string, verb: string) => `${x} of ${plural(n, "partner")} ${verb}`);
+  card.summary = `${summary} ${left}`;
+  if (card.reason) card.reason = card.reason.replace(/\bFound [\d,]+ partners?;/, `Found ${plural(n, "partner")};`);
+
+  const areas = new Set(kept.filter((p) => p.tileGeohash).map((p) => p.tileGeohash)).size;
+  const near = kept.filter((p) => !p.tileGeohash).length;
+  const popular = popularityWithout(sheet, kept);
+  if (popular) {
+    sheet.popularityCheck = popular;
+    out.push("popularity check");
+  }
+  if (sheet.steps) {
+    sheet.steps = sheet.steps.map((s) => {
+      if (s.id === "partners") {
+        const decision = s.decision
+          .replace(/^Kept [\d,]+ places? across [\d,]+ top areas?(?=, at most 2 of a kind in each)/, `Kept ${plural(n, "place")} across ${plural(areas, "top area")}`)
+          .replace(/^Kept [\d,]+ places? near the venue/, `Kept ${plural(n, "place")} near the venue`)
+          .replace(/^Kept [\d,]+ places?: [\d,]+ in [\d,]+ top areas? and [\d,]+ near the venue/, `Kept ${plural(n, "place")}: ${n - near} in ${plural(areas, "top area")} and ${near} near the venue`);
+        return { ...s, decision, cause: `${s.cause ? `${s.cause} ` : ""}${left}` };
+      }
+      if (s.id === "partners-usual") {
+        const decision = s.decision
+          .replace(/^Marked down ([\d,]+) of the [\d,]+ places?(?= that )/, (_m, x: string) => `Marked down ${less(x)} of the ${plural(n, "place")}`)
+          .replace(/^None of the [\d,]+ places?(?= ranks as high)/, `None of the ${plural(n, "place")}`);
+        return decision === s.decision ? s : { ...s, decision };
+      }
+      if (s.id === "partners-popular" && popular) {
+        const step = popularityStep({
+          partners: popular.partners,
+          notInPopularTop: popular.notInPopularTop,
+          areas: popular.perArea.length,
+          nearVenueOnly: popular.perArea.length === 1 && popular.perArea[0]?.tileGeohash === null,
+          failed: [],
+          ledgerRefs: s.ledgerRefs,
+        });
+        return { ...s, decision: step.decision };
+      }
+      return s;
+    });
+  }
+  if (sheet.narration) {
+    const kinds = new Set(kept.map((p) => p.category)).size;
+    const text = sheet.narration.summary.replace(/\bThe sheet suggests [\d,]+ partners? of [\d,]+ kinds?;/, `The sheet suggests ${plural(n, "partner")} of ${plural(kinds, "kind")};`);
+    if (text !== sheet.narration.summary) {
+      sheet.narration = { ...sheet.narration, summary: text };
+      out.push("summary partner count");
+    }
+  }
+  const reasons = guardCountsWithout(sheet, gone, linesBefore);
+  if (reasons) {
+    sheet.guard = { ...sheet.guard, reasons };
+    out.push("guard note counts");
+  }
+  return out;
+}
+
+/**
+ * The guard notes the Checks list prints keep counts true after partners are dropped: "tileWhy[i]: says five
+ * partners, the sheet has N in this area" takes the partners left in that area (when the area lost one), and "N
+ * partner lines trimmed" loses the dropped lines when every line had been trimmed, else is capped at the lines left.
+ * Null when nothing changes.
+ */
+function guardCountsWithout(sheet: StreetSheet, gone: readonly Partner[], linesBefore: number): string[] | null {
+  const lostTiles = new Set(gone.map((p) => p.tileGeohash).filter((g): g is string => !!g));
+  const tileWhy = sheet.narration?.tileWhy ?? [];
+  // Only Claude's own lines can be trimmed: a line the template replaced is not among them.
+  const tpl = sheet.guard.reasons.filter((r) => /^replaced by the template: partnerLines\[/.test(r)).length;
+  const lines = Math.max(0, (sheet.narration?.partnerLines.length ?? 0) - tpl);
+  const claudeBefore = Math.max(0, linesBefore - tpl);
+  const reasons = sheet.guard.reasons.map((r) => {
+    const area = /^((?:replaced by the template: )?tileWhy\[(\d+)\]: says (\S+) partners?, the sheet has )([\d,]+)( in this area)$/.exec(r);
+    if (area) {
+      const geohash = tileWhy[Number(area[2])]?.geohash;
+      if (!geohash || !lostTiles.has(geohash)) return r;
+      const have = sheet.cards.partners.results.filter((p) => p.tileGeohash === geohash).length;
+      const said = area[3]!.toLowerCase();
+      // A line that now matches the sheet would not have been flagged: leave the note as the run wrote it.
+      if ((COUNT_WORDS[said] ?? Number(said)) === have) return r;
+      return `${area[1]}${have}${area[5]}`;
+    }
+    const trimmed = /^([\d,]+)( partner lines? trimmed: .*)$/.exec(r);
+    if (trimmed) {
+      const n = Number(trimmed[1]!.replace(/,/g, ""));
+      const next = n === claudeBefore ? lines : Math.min(n, lines);
+      return next === n ? r : `${partnerLineCount(next)}${trimmed[2]!.replace(/^ partner lines? /, " ")}`;
+    }
+    return r;
+  });
+  return reasons.some((r, i) => r !== sheet.guard.reasons[i]) ? reasons : null;
+}
+
+const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+
+/**
+ * The popularity check without the places the "no restaurants" rule now leaves out: each area's popularity-alone list
+ * (as stored, after eligibility) loses the places whose name says restaurant and is cut to the area's partners left.
+ * Null when there is no check, or when an area's stored list is too short to cut (a live run would list more).
+ */
+function popularityWithout(sheet: StreetSheet, kept: readonly Partner[]): StreetSheet["popularityCheck"] | null {
+  const c = sheet.popularityCheck;
+  if (!c) return null;
+  const perArea: NonNullable<StreetSheet["popularityCheck"]>["perArea"] = [];
+  for (const a of c.perArea) {
+    const mine = kept.filter((p) => (p.tileGeohash ?? null) === (a.tileGeohash ?? null)).map((p) => p.entity.entityId);
+    if (mine.length === 0) continue;
+    const list = (a.popularTop ?? []).filter((x) => !nameSaysRestaurant(x.name));
+    if (!a.popularTop || list.length < mine.length) return null;
+    const top = list.slice(0, mine.length).map((x, i) => ({ ...x, rank: i + 1, onSheet: mine.includes(x.entityId) }));
+    const inTop = new Set(top.map((x) => x.entityId));
+    perArea.push({ ...a, partners: mine.length, notInPopularTop: mine.filter((id) => !inTop.has(id)).length, popularTop: top });
+  }
+  return {
+    ...c,
+    partners: perArea.reduce((x, r) => x + r.partners, 0),
+    notInPopularTop: perArea.reduce((x, r) => x + r.notInPopularTop, 0),
+    perArea,
+    ledgerRefs: [...new Set(perArea.map((r) => r.ledgerRef))],
+  };
 }
 
 /**

@@ -340,6 +340,7 @@ export async function planShow(request: PlanRequest, deps: PlanDeps, opts: PlanO
   const copy = await runCopy(ctx, {
     seeds,
     tiles: heat.spread.slice(0, 5),
+    liftPassCount: heat.top.length,
     partners: partners.partners,
     rawPartnerTags,
     prePost: prePost.results,

@@ -129,7 +129,7 @@ export function createWalkupMcpServer(services: McpServices, caller: Caller): Mc
     {
       title: "Revise a Street Sheet",
       description:
-        "Change a finished plan with the user's note, e.g. \"All ages: no bars\", \"skip Germantown\", \"only Saturday\" or \"within 10 km\". " +
+        "Change a finished plan with the user's note, e.g. \"All ages: no bars\", \"skip H Street NE\", \"only Saturday\" or \"within 10 km\". " +
         "The note is read by the model with fixed tools (all ages, leave out place types, skip areas on the sheet, street-team days, radius 5-60 km), or by fixed rules when no model is set up. " +
         "Returns the revised sheet under a new plan id, with results.revision listing the tool calls and every change with receipts. An unclear note returns needs_input with a question and changes nothing. Counts as a fresh run; unchanged requests come from the cache.",
       inputSchema: inputs.revisePlan,

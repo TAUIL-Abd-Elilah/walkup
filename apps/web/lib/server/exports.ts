@@ -73,7 +73,9 @@ export async function exportResponse(sheet: StreetSheet, kind: ExportKind, opts:
     },
   });
   if (!file) throw new Error(`export ${kind} produced no file`);
-  const disposition = `${opts.inline && kind === "pdf" ? "inline" : "attachment"}; filename="${file.filename}"`;
+  // The A4 file gets its own name, so saving both sizes never gives "street-sheet (1).pdf".
+  const filename = kind === "pdf" && opts.pageSize === "A4" ? file.filename.replace(/\.pdf$/, "-a4.pdf") : file.filename;
+  const disposition = `${opts.inline && kind === "pdf" ? "inline" : "attachment"}; filename="${filename}"`;
   return new Response(new Uint8Array(file.data), {
     status: 200,
     headers: {

@@ -117,12 +117,14 @@ pages are dynamic), so every page and `/healthz` show the machine's own mode.
 | `CENSUS_API_KEY` | secret | Optional: the gazetteer already carries adult counts. |
 | `OPENROUTER_API_KEY` | secret | Claude through OpenRouter (narration, free-text parsing, change notes). `OPENROUTER_MODEL` (plain env) overrides the slug `anthropic/claude-haiku-5.5`. |
 | `ANTHROPIC_API_KEY` | secret | Optional instead of the OpenRouter key: Claude directly, with the server-side refusal fallback. With neither key, narration uses the labelled template and change notes the fixed rules. |
+| `WALKUP_LLM_PROVIDER` | plain env, optional | `anthropic` prefers the Anthropic route when both model keys are set. Unset: OpenRouter first. |
 | `RESEND_API_KEY` | secret | |
 | `RESEND_FROM` | secret | A sender on a domain verified in Resend. Not sensitive, but set per deployment. |
 | `WALKUP_DATA_DIR` | `fly.toml` `[env]` and the image | `/data` (the volume). |
 | `WALKUP_MODE` | `fly.toml` `[env]` and the image | `auto`: live while `QLOO_API_KEY` and `TICKETMASTER_API_KEY` are set, the synthetic sample world (fixture) without them. `recorded`: stored live sheets only, no new plans. `fixture`: the sample world whatever else is set. |
 | `WALKUP_QLOO_UNTIL` | secret or `fly.toml` `[env]`, from late October | The time Qloo stops answering, e.g. `2026-11-02` (00:00 UTC). From then on the server is in recorded mode. Unset: no date. |
-| `WALKUP_RECORDED_REVISE` | plain env, optional | `off` makes revisions in recorded mode answer the plain 503 again and hides "Change something" on recorded sheets. Unset: the box opens the sheet's ready-made changes (see [Recorded mode](#recorded-mode-live-runs-paused)). |
+| `WALKUP_OPERATOR_TOKEN` | secret, optional | 32 or more characters. With `Authorization: Bearer <token>`, `POST /api/plan {"presetId", "rerecord": true}` plans a live preset again (see Re-recording under [Recorded mode](#recorded-mode-live-runs-paused)). Unset or shorter: nobody can re-record. |
+| `WALKUP_RECORDED_REVISE` | plain env, optional (the server reads it; not in `.env.example`) | `off` makes revisions in recorded mode answer the plain 503 again and hides "Change something" on recorded sheets. Unset: the box opens the sheet's ready-made changes (see [Recorded mode](#recorded-mode-live-runs-paused)). |
 | `QLOO_MONTH_GUARD_FLOOR` | `fly.toml` `[env]` | `1500`: fresh Qloo calls stop below 1,500 calls left this month. |
 | `WALKUP_RECORD` | secret, only while recording | `1` writes Qloo bodies to `/data/fixtures/raw`. Unset it afterwards. |
 | `WALKUP_FIXTURES_DIR` | `fly.toml` `[env]` and the image | `/data/fixtures` (`raw/` recorded on the volume, `synthetic/` from the image). |

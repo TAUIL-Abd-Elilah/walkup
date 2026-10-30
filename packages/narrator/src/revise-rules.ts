@@ -78,7 +78,7 @@ const DAY_WORDS: [RegExp, Weekday][] = [
 
 const EXCLUDE_RE =
   /^(?:please\s+)?(?:no|not|none|without|skip|skipping|drop|exclude|remove|avoid|cut|ditch|lose|leave out|leave off|take out|stay out of|stay away from|nothing in|nothing from|not in|no partners in|no places in|no more)\s+(?:in\s+|from\s+|of\s+)?(.+)$/;
-const FILLER_RE = /\b(please|thanks|thank you|ok|okay|keep|stay|it|can you|could you|let'?s|make it|make the|set it to|set|the show is|this show is|it'?s|its|is|a|an|the|show|plan|sheet|instead|too|also|just|for|this|that|us|me)\b/g;
+const FILLER_RE = /\b(please|thanks|thank you|ok|okay|keep|stay|it|can you|could you|let'?s|make it|make the|set it to|set|the show is|this show is|it'?s|its|is|a|an|the|show|plan|sheet|instead|too|also|just|only|for|this|that|us|me)\b/g;
 const TARGET_NOISE_RE = /\b(the|any|more|area|areas|neighbou?rhoods?|parts?|places|spots|partners|on the list|please)\b/g;
 
 function normalize(s: string): string {
@@ -246,7 +246,7 @@ function readClause(clause: string, summary: ReviseSummary, prevExcluding: boole
 
   // Radius.
   const r = /(\d+(?:\.\d+)?)\s*(km|kms|kilomet(?:er|re)s?|k|mi|miles?)\b/.exec(c);
-  if (r && /\b(within|inside|under|radius|around|max|maximum|up to|no more than|keep|stay|search|of the room|of the venue|from the room|from the venue)\b|^\d/.test(c)) {
+  if (r && /\b(within|inside|under|only|radius|around|max|maximum|up to|no more than|keep|stay|search|of the room|of the venue|from the room|from the venue)\b|^\d/.test(c)) {
     const n = Number(r[1]);
     const km = /^mi/.test(r[2] ?? "") ? n * KM_PER_MILE : n;
     const rounded = Math.round(km * 10) / 10;

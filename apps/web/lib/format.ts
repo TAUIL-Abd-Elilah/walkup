@@ -212,6 +212,18 @@ export function webHost(url: string): string {
   }
 }
 
+/**
+ * A website on a reserved name that never resolves ("cafe.example", RFC 2606). The sample sheets' made-up places use
+ * these, so the page says where the website is as plain text instead of a link to a browser error.
+ */
+export function isUnreachableWebsite(url: string): boolean {
+  try {
+    return /\.(example|invalid|test|localhost)$/i.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
 /** "(615) 555-0100" -> "tel:+16155550100"; "+1 555-0101" keeps its own country code. */
 export function telHref(phone: string): string {
   const digits = phone.replace(/\D/g, "");

@@ -141,3 +141,8 @@ export async function PUT(request: Request): Promise<Response> {
 export async function PATCH(request: Request): Promise<Response> {
   return handle(request);
 }
+
+/** Lists only what the server takes (Next's own answer would list every export above, all but POST a 405). */
+export function OPTIONS(): Response {
+  return new Response(null, { status: 204, headers: { allow: "POST, OPTIONS" } });
+}

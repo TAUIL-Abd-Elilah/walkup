@@ -369,12 +369,13 @@ function recordedOr(services: McpServices, caller: Caller, v: PlanView): ToolOut
 
 export async function planShowTool(services: McpServices, caller: Caller, args: PlanShowArgs): Promise<ToolOutcome> {
   // Recorded state: reading a preset's recorded sheet or a stored plan still works; anything that would run does not.
+  // A call that names no show (or two) says so first, never only that live runs are paused.
+  const which = exactlyOne({ event: args.event, presetId: args.presetId, planId: args.planId });
+  if (which) return fail(services, 400, which);
   const reads = args.event === undefined && args.picks === undefined && !operatorOverrides(args.operator) && (args.presetId !== undefined || args.planId !== undefined);
   const off = reads ? null : recordedRefusal(services);
   if (off) return off;
   const rec = { recorded: Boolean(services.policy.recorded) };
-  const which = exactlyOne({ event: args.event, presetId: args.presetId, planId: args.planId });
-  if (which) return fail(services, 400, which);
   const problem = inputProblem([{ field: "event", value: args.event }, ...(args.picks ?? []).map((p) => ({ field: "picks", value: p.input }))]);
   if (problem) return fail(services, 400, problem.reason);
   const overrides = operatorOverrides(args.operator);
@@ -462,6 +463,8 @@ function rankEnvelope(sheet: StreetSheet, caller: Caller): ToolEnvelope<Declared
 }
 
 export async function rankPartnersTool(services: McpServices, caller: Caller, args: RankPartnersArgs): Promise<ToolOutcome> {
+  // An id with no plan behind it answers 404 "No plan with id ...", never the paused text alone.
+  if (args.planId !== undefined && !presetById(args.planId) && !(await services.store.get(args.planId))) return fail(services, 404, `No plan with id ${args.planId}.`);
   const off = recordedRefusal(services);
   if (off) return off;
   const which = exactlyOne({ planId: args.planId, event: args.event, presetId: args.presetId });

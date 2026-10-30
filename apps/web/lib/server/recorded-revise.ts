@@ -18,6 +18,7 @@ import { join } from "node:path";
 import type { SheetRevision, StreetSheet } from "@walkup/contracts";
 import { createFileSpendStore, createNarratorClient, SpendGuard } from "@walkup/narrator";
 import { readInstruction, type PlanDeps, type RevisionReading, type StoredPlan } from "@walkup/orchestrator";
+import { PLAN_ID_RE } from "../api";
 import { changesNothing, findReadyMade, normaliseOverrides } from "../revise-match";
 import { runtimeMode } from "../mode";
 import { stores } from "./engine";
@@ -25,7 +26,7 @@ import { dataDir } from "./env";
 import type { RequestContext } from "./http";
 import { reviseAllowed } from "./limits";
 import { readyMadeActive, REVISION_LOOKBACK } from "./recorded";
-import { loadPlan, recordedRefusal, type ServiceResponse } from "./service";
+import { loadPlan, recordedRefusal, type LoadedPlan, type ServiceResponse } from "./service";
 
 export { readyMadeActive, RECORDED_REVISE_ENV, recordedReviseOn } from "./recorded";
 
@@ -98,18 +99,23 @@ function changeOf(p: StoredPlan): ReadyMadeChange {
   return { planId: sheet.planId, instruction: (sheet.revision?.instruction ?? "").trim(), createdAt: sheet.createdAt };
 }
 
-/** The ready-made changes of a plan (by plan or preset id), or none when the box should not show. */
-export async function readyMadeChanges(id: string): Promise<ReadyMadeChange[]> {
+/** The ready-made changes of a loaded plan, or none when the box should not show. */
+async function readyMadeChanges(v: LoadedPlan): Promise<ReadyMadeChange[]> {
   if (!readyMadeActive()) return [];
-  const v = await loadPlan(id, { view: "api" });
-  if (v?.kind !== "sheet" || v.sheet.mode !== "live" || v.sheet.revision) return [];
+  if (v.kind !== "sheet" || v.sheet.mode !== "live" || v.sheet.revision) return [];
   return (await readyMadeRevisions(v.sheet.planId)).map(changeOf);
 }
 
-/** GET /api/plan/<id>/ready-made: what the recorded revise box shows. */
+/**
+ * GET /api/plan/<id>/ready-made: what the recorded revise box shows (by plan or preset id). A malformed id is a 400
+ * and an unknown one a 404, as on the plan's other routes.
+ */
 export async function readyMadeFor(id: string): Promise<ServiceResponse> {
+  if (!PLAN_ID_RE.test(id)) return { status: 400, body: { reason: "Plan ids match ^[A-Za-z0-9_-]{1,64}$." } };
+  const v = await loadPlan(id, { view: "api" });
+  if (!v) return { status: 404, body: { reason: `No plan with id ${id}.` } };
   const on = readyMadeActive();
-  const changes = on ? await readyMadeChanges(id) : [];
+  const changes = on ? await readyMadeChanges(v) : [];
   return { status: 200, body: { mode: runtimeMode().kind, enabled: on && changes.length > 0, reader: recordedReader(), changes } };
 }
 

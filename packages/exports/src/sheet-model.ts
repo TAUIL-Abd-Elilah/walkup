@@ -586,6 +586,15 @@ export interface PartnerHoursCell {
   routeNote: string;
 }
 
+/** A host reserved for examples and tests (".example", ".invalid", ".test", ".localhost"): it never resolves. */
+function unreachableHost(url: string): boolean {
+  try {
+    return /\.(example|invalid|test|localhost)$/i.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * What a partner's hours add when street-team.ics has no time left for it, in partners.csv's words: on every visit,
  * or on one pass only ("no time left on the first pass: call to arrange"). "" when every visit is timed.
@@ -780,7 +789,8 @@ export function buildSheetModel(sheet: StreetSheet, opts: SheetModelOptions = {}
       // No phone: said out loud, with the website's domain when there is one, so the row still has a way in.
       phoneText: p.phone && p.phone.trim() !== "" ? formatPhone(p.phone) : web ? `${PHONE_NOT_LISTED} · ${shortDomain(web)}` : PHONE_NOT_LISTED,
       web: web ? shortDomain(web) : "",
-      webUrl: web && /^https?:\/\//i.test(web) ? web : null,
+      // A made-up place's ".example" site never resolves: its domain stays as text, with no link.
+      webUrl: web && /^https?:\/\//i.test(web) && !unreachableHost(web) ? web : null,
       activation: ex?.activation?.trim() ?? "",
       why: partnerWhyLine(p),
       confidence: ex?.confidence ?? null,

@@ -328,7 +328,8 @@ describe("React tree", () => {
     );
     const rows = walk(streetSheetDocument(s)).filter((n) => n.type === "VIEW" && (n.props.style as { minHeight?: number } | undefined)?.minHeight !== undefined);
     const cells = (r: Node) => (r.props.children as Node[]).filter(isElement).map((c) => textOf(c));
-    expect(cells(rows[0]!).slice(4)).toEqual(["11:50 pm to 2 am", expect.any(String), "No time left on the route: call to arrange"]);
+    // A no-break space keeps each time with its am/pm when the narrow cell wraps.
+    expect(cells(rows[0]!).slice(4)).toEqual(["11:50 pm to 2 am", expect.any(String), "No time left on the route: call to arrange"]);
     expect(rows.slice(1).map((r) => cells(r)[6])).toEqual(["", "", "", "", ""]);
     // Six partners, five rows: "+1 more partner", not "partners".
     const cut = textOf(streetSheetDocument(makeSheet(), { maxPartners: 5 }));

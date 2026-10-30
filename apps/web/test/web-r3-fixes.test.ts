@@ -24,6 +24,7 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { SheetRevision, StreetSheet } from "@walkup/contracts";
+import { isUnreachableWebsite } from "../lib/format";
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }), headers: async () => new Headers() }));
 vi.mock("next/navigation", () => ({
@@ -317,7 +318,9 @@ describe("no view-time rewrite doubles or breaks a word (sweep)", () => {
         has("hours", r.dayHours);
         has("phone", r.phone ? null : "Phone not listed");
         has("why", r.why);
-        if (r.webUrl && !html.includes(`href="${r.webUrl.replace(/&/g, "&amp;")}"`)) missing.push(`${id} website: ${r.webUrl}`);
+        // A made-up place's ".example" website is said as text: it never resolves, so it is no link (r7 pages-N1).
+        if (r.webUrl && isUnreachableWebsite(r.webUrl)) has("website", new URL(r.webUrl).hostname);
+        else if (r.webUrl && !html.includes(`href="${r.webUrl.replace(/&/g, "&amp;")}"`)) missing.push(`${id} website: ${r.webUrl}`);
       }
       const rows = [...html.matchAll(/<tr>[\s\S]*?<\/tr>/g)].map((r) => flat(r[0]));
       for (const r of m.panel4.rows) {

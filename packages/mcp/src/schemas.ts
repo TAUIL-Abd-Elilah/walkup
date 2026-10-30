@@ -25,7 +25,7 @@ const EventSchema = z
   .trim()
   .min(3)
   .max(500)
-  .describe('A Ticketmaster event link (https://www.ticketmaster.com/.../event/<id>) or "Artist @ Venue, Date", e.g. "Hollis Creek String Band @ The Truth, Nov 20 2026".');
+  .describe('A Ticketmaster event link (https://www.ticketmaster.com/.../event/<id>) or "Artist @ Venue, Date", e.g. "Rhiannon Giddens @ The Anthem, Feb 28 2027".');
 
 const PresetBase = z.string().trim().min(1).max(64);
 
@@ -62,7 +62,7 @@ const InstructionSchema = z
   .trim()
   .min(1)
   .max(300)
-  .describe(`What to change, in the user's own words, e.g. "All ages: no bars", "skip Germantown", "only Saturday", "within 10 km". No contact details.`);
+  .describe(`What to change, in the user's own words, e.g. "All ages: no bars", "skip H Street NE", "only Saturday", "within 10 km". No contact details.`);
 
 const PartnerNamesSchema = z
   .array(z.string().trim().min(1).max(120))

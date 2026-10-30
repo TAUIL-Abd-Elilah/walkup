@@ -109,7 +109,8 @@ const KINDS: Readonly<Record<string, Kind>> = {
   shoe_store: k("clothing_store", "retail"),
   sneaker_store: k("clothing_store", "retail"),
   sportswear_store: k("clothing_store", "retail"),
-  department_store: k("clothing_store", "retail"),
+  // No `department_store`: Qloo tags supermarkets with it too ("Walmart Neighborhood Market", Oct 30 2026), so on its
+  // own it says nothing about clothes. A clothing store carries its own clothing tag.
   barber_shop: k("barber_shop", "retail"),
   barbershop: k("barber_shop", "retail"),
   beauty_salon: k("beauty_salon", "retail"),
@@ -466,6 +467,23 @@ export function isDrinkLed(e: Pick<QlooEntity, "tags" | "name">): boolean {
     const kind = kindOf(key);
     return kind !== null && kind.family === "bar" && kind.specific;
   });
+}
+
+/** "Restaurant" in a place name ("La Parra Restaurant & Bar", "Right Spot Restaurant & Bar"). */
+const RESTAURANT_NAME_RE = /\b(?:restaurants?|restaurante)\b/i;
+
+/**
+ * True for a place a "no restaurants" note should leave out whatever its display category: its name says
+ * restaurant. Tags can't decide it: nearly every bar carries the generic restaurant tags (module comment).
+ */
+export function nameSaysRestaurant(name: string | null | undefined): boolean {
+  return RESTAURANT_NAME_RE.test((name ?? "").normalize("NFKC"));
+}
+
+/** True when the excluded categories leave out restaurants (the operator's "no restaurants"). */
+export function restaurantsExcluded(excludedCategories: Iterable<string>): boolean {
+  for (const c of excludedCategories) if (c.trim().toLowerCase() === "restaurant") return true;
+  return false;
 }
 
 /** Place-type keys of a cart, kiosk, stand or truck: somewhere to buy food, not a room a crowd can sit in. */

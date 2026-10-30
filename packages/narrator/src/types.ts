@@ -36,6 +36,8 @@ export interface NarrateInput {
   hypothetical?: boolean;
   /** The day each partner's hours are for (the first street-team day). Absent: the show's weekday. */
   streetTeamDay?: string;
+  /** The lift card's count: every area that passes both tests (the guard checks "stands out in N areas" against it). */
+  liftPassCount?: number;
 }
 
 /** Usage and estimated cost of the Anthropic calls behind one result. */

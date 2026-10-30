@@ -139,6 +139,8 @@ export function sheetEnvelope(stored: StreetSheet, origin: string | null, opts: 
     ...(reason ? { reason } : {}),
     provenance: sheet.ledger.map((e) => e.id),
     limits: sheetLimits(sheet),
+    // A revision says so up top, as its page does: the earlier plan, the note and what changed.
+    ...(sheet.revision ? { revision: sheet.revision, parentPlanId: sheet.revision.parentPlanId } : {}),
   };
 }
 

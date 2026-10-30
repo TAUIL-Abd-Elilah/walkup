@@ -46,16 +46,16 @@ describe("the offline re-check's dates", () => {
       expect(fifth).toBeGreaterThan(fourth);
       expect(text).toContain('says "national chains aside"');
     }
-    // The fifth pass made the 15th template swap; judging-fixes.test.ts counts the 15 from the stored sheets.
-    expect(doc("README.md")).toContain("15 Claude sentences that fail a check now read as template wording");
-    expect(doc("README.md")).toContain("the ten the fourth pass below found and the one the fifth pass found.");
-    expect(doc("docs/system-card.md")).toContain("ten more from the fourth pass below and one from the fifth).");
-    expect(card).toContain("ten of the 15 come from it: six partner lines");
-    expect(card).toContain("and one more of the 15 comes from it, an area line that called its area's percentile the top one");
-    expect(doc("docs/deploy-vercel.md")).toContain("A fourth pass on Oct 29 held Claude's lines to newer checks (ten of the 15 template swaps above");
-    expect(doc("docs/deploy-vercel.md")).toContain("became template wording, the last of the 15.");
+    // The fifth pass made the 15th and 16th template swaps; judging-fixes.test.ts counts the 16 from the stored sheets.
+    expect(doc("README.md")).toContain("16 Claude sentences that fail a check now read as template wording");
+    expect(doc("README.md")).toContain("the ten the fourth pass below found and the two the fifth pass found.");
+    expect(doc("docs/system-card.md")).toContain("ten more from the fourth pass below and two from the fifth).");
+    expect(card).toContain("ten of the 16 come from it: six partner lines");
+    expect(card).toContain("and two more of the 16 come from it, an area line that called its area's percentile the top one");
+    expect(doc("docs/deploy-vercel.md")).toContain("A fourth pass on Oct 29 held Claude's lines to newer checks (ten of the 16 template swaps above");
+    expect(doc("docs/deploy-vercel.md")).toContain("became template wording, the last of the 16.");
     for (const text of [doc("README.md"), doc("docs/system-card.md"), card]) {
-      expect(text.indexOf("No Qloo or Ticketmaster answer, ranking, partner list or ledger number changed.")).toBeGreaterThan(
+      expect(text.indexOf("No Qloo or Ticketmaster answer, ledger number or ranking of the places kept changed.")).toBeGreaterThan(
         text.indexOf("A fifth pass on Oct 30"),
       );
     }

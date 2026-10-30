@@ -30,6 +30,8 @@ export interface PreparedRun {
   alcoholAllowed: boolean;
   /** Allowlisted tags that are distinctive to the bill (compare side a), in compare order. */
   distinctiveTags: AllowTag[];
+  /** Every act on the bill is a comedian (`comedyBill`): music genres are not copy for it. */
+  comedy: boolean;
   allowedNumbers: AllowedNumbers;
   /** Strings blanked before word and number checks (names, ids, tag names). */
   protectedStrings: string[];
@@ -80,6 +82,14 @@ function tagsFromCompare(tags: ReadonlyArray<CompareTag> | undefined, allowed: M
   return out;
 }
 
+const MUSIC_GENRE_NS = "urn:tag:genre:music";
+
+/** True when the bill has acts and every one is a comedian (Ticketmaster files the show under Comedy). */
+export function comedyBill(bill: { acts?: ReadonlyArray<{ isComedian?: boolean }> }): boolean {
+  const acts = bill.acts ?? [];
+  return acts.length > 0 && acts.every((a) => a.isComedian === true);
+}
+
 /** The act fan copy names: the first headliner, else the first act. Empty when the bill has no act. */
 export function headlinerName(bill: { acts?: ReadonlyArray<{ name: string; role: string }> }): string {
   const acts = bill.acts ?? [];
@@ -98,8 +108,10 @@ export function prepareRun(input: NarrateInput): PreparedRun {
   const cleaned = cleanAllowlist(input.allowlistTags.map((t) => ({ id: t.id, name: t.name })));
   const drinkable = alcoholAllowed ? cleaned.allowed : cleaned.allowed.filter((t) => !isAlcoholTag(t));
   const deniedCount = cleaned.deniedCount + (cleaned.allowed.length - drinkable.length);
-  // Audience and identity tags describe people, never the show: they are not offered to copy at all.
-  const allowlist = drinkable.filter((t) => !isAudienceTag(t));
+  // Audience and identity tags describe people, never the show: they are not offered to copy at all. On a comedy bill a
+  // music genre the taste profile carries ("Alternative rock") would read as the act's genre, so it isn't either.
+  const comedy = comedyBill(bill);
+  const allowlist = drinkable.filter((t) => !isAudienceTag(t) && !(comedy && t.id.startsWith(MUSIC_GENRE_NS)));
   const allowedById = new Map(allowlist.map((t) => [t.id, t]));
   const distinctiveTags = tagsFromCompare(input.compareTags?.a, allowedById).slice(0, 8);
   const sharedTags = tagsFromCompare(input.compareTags?.shared, allowedById).slice(0, 5);
@@ -258,6 +270,7 @@ export function prepareRun(input: NarrateInput): PreparedRun {
     deniedTagCount: deniedCount,
     alcoholAllowed,
     distinctiveTags,
+    comedy,
     allowedNumbers: { values, literals },
     protectedStrings,
     actNames,

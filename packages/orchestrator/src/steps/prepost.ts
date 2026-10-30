@@ -7,7 +7,7 @@
  * night is never presented as open: its chip and the card say "call ahead".
  */
 import type { PrePostSpot, QlooEntity, StreetSheetCards } from "@walkup/contracts";
-import { barsExcluded, buildPrePostSpots, chainSummary, clockHours, hoursOnDay, isDrinkLed, resolveCategory, type PrePostReport } from "@walkup/engine";
+import { barsExcluded, buildPrePostSpots, chainSummary, clockHours, hoursOnDay, isDrinkLed, nameSaysRestaurant, resolveCategory, restaurantsExcluded, type PrePostReport } from "@walkup/engine";
 import { CHAINS } from "../chains";
 import { categoryTagMap, categoryUrns, PREPOST_CATEGORIES } from "../tags";
 import { cite, clean, droppedFrom, droppedReason, envelope, failure, node, plural, signal, venuePoint, type HouseSet, type RunContext, type Seed } from "../context";
@@ -56,14 +56,16 @@ export function prePostTypeDrops(ctx: RunContext): PrePostTypeDrops | null {
  * when the operator says all ages (Ticketmaster's 21+ never relaxes that).
  * When bars are out, so is a place whose name or bar-type tags say it is a
  * drinking place, whatever its category ("Live-K Karaoke Bar", an Irish pub
- * Qloo files as a restaurant).
+ * Qloo files as a restaurant). When restaurants are out, so is a place whose
+ * name says restaurant ("La Parra Restaurant & Bar", a wine bar by its tags).
  */
 function dropByType(ctx: RunContext, entities: QlooEntity[]): QlooEntity[] {
   const excluded = new Set(excludedCategoriesFor(ctx));
   if (excluded.size === 0) return entities;
   const tags = categoryTagMap(ctx.pins);
   const noBars = barsExcluded(excluded);
-  const kept = entities.filter((e) => !excluded.has(resolveCategory(e, { categoryTags: tags })) && !(noBars && isDrinkLed(e)));
+  const noRestaurants = restaurantsExcluded(excluded);
+  const kept = entities.filter((e) => !excluded.has(resolveCategory(e, { categoryTags: tags })) && !(noBars && isDrinkLed(e)) && !(noRestaurants && nameSaysRestaurant(e.name)));
   const count = entities.length - kept.length;
   if (count > 0) TYPE_DROPS.set(ctx, { count, reason: ctx.operator.allAges === true ? "all-ages show" : "your exclusions" });
   return kept;

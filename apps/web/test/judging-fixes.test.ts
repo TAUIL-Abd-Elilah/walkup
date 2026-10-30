@@ -78,9 +78,12 @@ const NUMBER_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven
 
 /** Guard reasons for a Claude sentence swapped for template wording that a stored sheet has and its pre-pass copy lacked. */
 function recheckTemplateSwaps(before: StoredPlan[], after: StoredPlan[]): string[] {
-  const had = new Map(before.map((p) => [p.planId, new Set(p.sheet.guard?.reasons ?? [])]));
+  // A swap is new when its slot ("summary", "tileWhy[2]") had none before: the re-check may reword an old swap's
+  // reason (a partner count after a partner left the list) without making a new one.
+  const slot = (r: string) => /^replaced by the template: ([^:]+):/.exec(r)?.[1];
+  const had = new Map(before.map((p) => [p.planId, new Set((p.sheet.guard?.reasons ?? []).map(slot).filter(Boolean))]));
   return after.flatMap((p) =>
-    (p.sheet.guard?.reasons ?? []).filter((r) => r.startsWith("replaced by the template:") && !had.get(p.planId)?.has(r)),
+    (p.sheet.guard?.reasons ?? []).filter((r) => r.startsWith("replaced by the template:") && !had.get(p.planId)?.has(slot(r))),
   );
 }
 

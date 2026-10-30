@@ -246,7 +246,8 @@ test("plan posts only the event and operator what-ifs, and prints the sheet", as
   // Category keys read as words, as on the web page and in the MCP text.
   assert.match(r.stdout, /Synthetic Records \(record store, Tile A\) \[Q9\]/);
   assert.doesNotMatch(r.stdout, /record_store/);
-  assert.match(r.stdout, /Guard: 0 claim\(s\) dropped, 2 tag\(s\) denied by policy/);
+  assert.match(r.stdout, /Guard: 0 claims dropped, 2 tags denied by policy\./);
+  assert.doesNotMatch(r.stdout, /\(s\)/);
   assert.match(r.stdout, /3 entries, 2 Qloo calls \(1 from cache\)/);
   assert.match(r.stdout, /does not show that it sells tickets/);
   assert.match(r.stdout, new RegExp(`Street Sheet: ${base}/s/plan_abc123`));

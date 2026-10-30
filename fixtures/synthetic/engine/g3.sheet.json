@@ -1449,9 +1449,9 @@
         "summary": "1 line, built only from approved Qloo tags.",
         "results": [
           {
-            "text": "Ada Pell: Alternative rock at Super Funny Comedy Club, Friday, Dec 4.",
+            "text": "Ada Pell: Late night at Super Funny Comedy Club, Friday, Dec 4.",
             "tagIds": [
-              "urn:tag:genre:music:alternative_rock"
+              "urn:tag:keyword:media:late_night"
             ]
           }
         ],

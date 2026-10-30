@@ -1,7 +1,7 @@
 "use client";
 import { Fragment, useMemo, useState } from "react";
 import type { Partner, StreetSheet } from "@walkup/contracts";
-import { joinAnd, shortUrl, telHref, webHost } from "../../lib/format";
+import { isUnreachableWebsite, joinAnd, shortUrl, telHref, webHost } from "../../lib/format";
 import { FANBAR_HREF, PARTNER_RANK_LINE, categoryLabel } from "../../lib/labels";
 import { areaName, humanTimes, isThinSignal, normalizeName, partnerLine, partnerSearchAreas, partnerSummary, popularityLine, tagInSentence, topTiles, withWithout } from "../../lib/sheet-utils";
 import { WithWithout } from "../WithWithout";
@@ -152,6 +152,22 @@ export function PartnerWhy({ p, area }: { p: Partner; area?: string | undefined 
   );
 }
 
+/** Where a website is ("facebook.com/cafeaddis"); a long page path wraps after a slash. */
+function hostWords(url: string) {
+  return webHost(url)
+    .split("/")
+    .map((part, i) => (
+      <Fragment key={i}>
+        {i > 0 ? (
+          <>
+            /<wbr />
+          </>
+        ) : null}
+        {part}
+      </Fragment>
+    ));
+}
+
 /** Phone and website in ink with an underline: they are for calling, not part of the reading. */
 function Contact({ p }: { p: Partner }) {
   const bits = [
@@ -165,24 +181,14 @@ function Contact({ p }: { p: Partner }) {
         {PHONE_NOT_LISTED}
       </span>
     ),
-    p.website ? (
+    // A sample sheet's made-up place has a website that never resolves: where it is, as text, not a dead link.
+    p.website && isUnreachableWebsite(p.website) ? (
+      <span key="web">{hostWords(p.website)}</span>
+    ) : p.website ? (
       <a key="web" className="underline underline-offset-2" href={p.website} target="_blank" rel="noreferrer" title={shortUrl(p.website)}>
         <span className="print:hidden">Website</span>
-        {/* Paper has no link to follow, so it prints where the website is. A long page path wraps after a slash. */}
-        <span className="hidden print:inline">
-          {webHost(p.website)
-            .split("/")
-            .map((part, i) => (
-              <Fragment key={i}>
-                {i > 0 ? (
-                  <>
-                    /<wbr />
-                  </>
-                ) : null}
-                {part}
-              </Fragment>
-            ))}
-        </span>
+        {/* Paper has no link to follow, so it prints where the website is. */}
+        <span className="hidden print:inline">{hostWords(p.website)}</span>
         <span className="sr-only"> of {p.entity.name} (opens in a new tab)</span>
       </a>
     ) : null,

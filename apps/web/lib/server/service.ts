@@ -589,6 +589,7 @@ export async function resolvePlan(id: string, raw: unknown, ctx: RequestContext)
 
 /** GET /api/plan/<id>: where a plan stands (for clients that poll instead of streaming). */
 export async function planSnapshot(id: string, ctx: RequestContext): Promise<ServiceResponse> {
+  if (!PLAN_ID_RE.test(id)) return { status: 400, body: { reason: "Plan ids match ^[A-Za-z0-9_-]{1,64}$." } };
   const v = await loadPlan(id, { view: "api", sessionId: ctx.sessionId });
   if (!v) return { status: 404, body: { reason: `No plan with id ${id}.` } };
   const base = { planId: v.planId, planUrl: `${ctx.origin}/plan/${v.planId}`, streamUrl: `${ctx.origin}/api/plan/${v.planId}/stream` };

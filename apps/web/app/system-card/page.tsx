@@ -60,7 +60,7 @@ const VERIFIED: { shape: string; usedFor: string; result: string; status: "verif
   { shape: "Heatmap with a genre tag as the signal", usedFor: "Genre baseline when the roster is short", result: "The stand-up comedy tag returned 0 areas near a comedy club. Comedy gets no genre baseline; no music genre tag is pinned yet.", status: "changed" },
   { shape: "urn:demographics", usedFor: "Age mix", result: "One block per signal, 6 age buckets, 2 gender keys.", status: "verified" },
   { shape: "/v2/analysis/compare, bill against usual crowd", usedFor: "How this crowd differs", result: "take has no effect, so each list is cut on our side.", status: "verified, changed" },
-  { shape: "Place insights per area: radius, pinned category tags (union), filter.hours, price cap, explainability, take=50", usedFor: "Partners, their usual-crowd rank, spots near the venue", result: "filter.hours honoured: 5 places closed that day without it, 0 with it. Exclusion filters not checked yet.", status: "verified" },
+  { shape: "Place insights per area: radius, pinned category tags (union), filter.hours, price cap, explainability, take=50", usedFor: "Partners and their usual-crowd rank; spots near the venue use the same filters with no price cap and take=25", result: "filter.hours honoured: 5 places closed that day without it, 0 with it. Exclusion filters not checked yet.", status: "verified" },
   { shape: "Pinned category tags", usedFor: "Partner and spot categories", result: "11 of 14 pinned (6 to 10 places within 25 km, each carrying the tag); record store, Irish pub and place of worship dropped.", status: "verified, changed" },
   { shape: "filter.results.entities with the bill as the signal", usedFor: "Call order for your partners", result: "A 10-entity shortlist came back fully scored.", status: "verified" },
   { shape: "Podcasts with signal.location", usedFor: "Podcasts", result: "15 rows with a usable seed; the day-one errors came from a seed Qloo had no taste data for. Location effect not shown, so labelled national.", status: "verified" },
@@ -113,7 +113,7 @@ export default function SystemCardPage() {
         runs are paused for judging; each recorded sheet comes from a live run and was re-checked offline afterwards, as the next paragraph says.
       </p>
       <p id="recheck" className="mt-2 scroll-mt-24">
-        On Oct 28 to 30 2026 the recorded sheets were re-checked offline with the newer checks, with no API call. 15 Claude sentences that fail a check
+        On Oct 28 to 30 2026 the recorded sheets were re-checked offline with the newer checks, with no API call. 16 Claude sentences that fail a check
         now read as template wording, with the reason in the sheet&apos;s checks. Partner lines say a place is &ldquo;near&rdquo; its area unless the
         address is on that street, and each area carries its own state. Each revision&apos;s change list was rebuilt over the five numbered areas. One
         spot listed as a restaurant, SWIG, is a bar by its Qloo tags (a bar and grill, with dive-bar tags), so it left the two &ldquo;All ages, no
@@ -127,7 +127,7 @@ export default function SystemCardPage() {
         shared-website signal in the chain note, and removed a repeated label from 16
         Ticketmaster roster receipts. A third pass on Oct 29 made every &ldquo;about N times&rdquo; follow one rule (the sheet&apos;s 2-decimal lift,
         rounded half up), so an area reads the same figure on the plan page, the PDF, the Steps panel and street-team.ics; four stored lines changed. A
-        fourth pass on Oct 29 held Claude&apos;s lines to newer checks, and ten of the 15 come from it: six partner lines that called a partner a stop
+        fourth pass on Oct 29 held Claude&apos;s lines to newer checks, and ten of the 16 come from it: six partner lines that called a partner a stop
         before or after the show, though it is not on the sheet&apos;s spots list; a summary that called an area&apos;s places spots; a summary that
         named three areas where the crowd stands out most, though another stands out more; an area line with the wrong percentile; and an area line
         that called the budget split equal where the shares differ. The same pass wrote &ldquo;an 82nd&rdquo; and &ldquo;an 80th&rdquo; for
@@ -137,9 +137,13 @@ export default function SystemCardPage() {
         fixed wording that the rest of its sheet contradicts: the lift card&apos;s count of areas names its two tests (lift 1.3 or more, percentile
         70 or higher); a top pick that passed over a higher-ranked national chain says &ldquo;national chains aside&rdquo;; one Claude summary says
         &ldquo;R&amp;B&rdquo; for Ticketmaster&apos;s &ldquo;Music / R&amp;B&rdquo;; on those two Anthem revisions the Summary step no longer says
-        Claude wrote 2 copy lines (it wrote 3, and the checks kept 2); and one more of the 15 comes from it, an area line that called its
-        area&apos;s percentile the top one where another area&apos;s is higher. No Qloo or Ticketmaster answer, ranking, partner list or ledger
-        number changed.
+        Claude wrote 2 copy lines (it wrote 3, and the checks kept 2); and two more of the 16 come from it, an area line that called its
+        area&apos;s percentile the top one where another area&apos;s is higher, and a summary that said the crowd stands out in five areas where
+        the lift card counts 66. The same pass held the sheets to three newer rules: on two of the four &ldquo;No restaurants&rdquo; revisions a
+        partner whose name says restaurant is left out (Right Spot Restaurant &amp; Bar, La Parra Restaurant &amp; Bar), so each lists 13
+        partners and its counts follow; a department-store tag alone no longer makes a place a clothing store (Walmart Neighborhood Market on one
+        of The Roots&apos; revisions is now a bakery, by its own tags); and the fixed-wording summary says the crowd stands out &ldquo;in the
+        sheet&apos;s top 5 areas&rdquo;. No Qloo or Ticketmaster answer, ledger number or ranking of the places kept changed.
       </p>
       <nav aria-label="Sections" className="mt-6">
         <h2 className="text-base">On this page</h2>
@@ -376,7 +380,7 @@ export default function SystemCardPage() {
             <li>New venues not yet in the catalog: the run uses the Ticketmaster point instead.</li>
             <li>Sparse small metros: the radius widens and the sheet says so.</li>
             <li>
-              A sparse map in a big metro: on FLO&apos;s live sheet only 159 areas came back, so the search widened to 60 km and the map is marked partial.
+              A sparse map in a big metro: on FLO&apos;s live sheet only 131 map squares came back within 40 km, so the search widened to 60 km (159 squares there) and the map is marked partial.
               Some suburban areas then carry national chains when no local place fits; they are listed after local places and labelled.
             </li>
             <li>

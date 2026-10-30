@@ -7,7 +7,7 @@ import { LESS_SURE_NOTE, LIFT_KEY } from "@walkup/exports/format";
 import { buildSheetModel, podcastsOmittedText, spotColumnWidths, type PartnerRow, type SheetModel, type SpotRow } from "@walkup/exports/sheet-model";
 import { PrintButton } from "@/components/sheet/PrintButton";
 import { StaticLiftMap } from "@/components/StaticLiftMap";
-import { telHref } from "@/lib/format";
+import { isUnreachableWebsite, telHref } from "@/lib/format";
 import { liftColor } from "@/lib/lift";
 import { runtimeMode } from "@/lib/mode";
 import { presetForPlan } from "@/lib/presets";
@@ -101,7 +101,8 @@ function PartnerName({ row, partner }: { row: PartnerRow; partner: Partner | und
       ) : null}
     </span>
   );
-  return row.webUrl ? (
+  // A sample sheet's made-up place has a website that never resolves (".example"): no link to a browser error.
+  return row.webUrl && !isUnreachableWebsite(row.webUrl) ? (
     <a href={row.webUrl} className="hover:underline" title={partner?.website ?? row.webUrl}>
       {name}
     </a>
